@@ -16,9 +16,9 @@ Goal: Establish a clean and maintainable technical base.
 - [x] Configure Git and GitHub
 - [x] Review and finalize `.gitignore`
 - [x] Define naming and coding conventions
-- [ ] Configure essential Godot project settings
-- [ ] Create initial input mappings
-- [ ] Create a basic main/test scene
+- [x] Configure essential Godot project settings
+- [x] Create initial input mappings
+- [x] Create a basic main/test scene
 - [x] Make the first Git commit
 
 ---

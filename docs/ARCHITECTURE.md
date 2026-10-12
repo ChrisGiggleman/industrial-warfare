@@ -28,3 +28,19 @@ res://
 ├── tests/
 ├── icon.svg
 └── project.godot
+
+### Input Actions
+
+Input action names use lowercase `snake_case` and describe player intent rather than specific hardware inputs.
+
+Examples:
+
+`move_forward`
+
+`interact`
+
+`primary_action`
+
+`camera_zoom_in`
+
+Gameplay code should reference input actions rather than hard-coded keyboard or mouse buttons.

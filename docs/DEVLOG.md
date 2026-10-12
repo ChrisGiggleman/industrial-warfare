@@ -150,3 +150,46 @@ The local `main` branch is now configured to track:
 ### Milestone
 
 The Industrial Warfare project is now publicly backed up and version-controlled on GitHub.
+
+### Godot Project Configuration — ~9:20 PM
+
+Configured the initial Godot project settings for the prototype.
+
+Display configuration:
+
+- Base resolution: 1920 × 1080
+- Stretch mode: `canvas_items`
+- Stretch aspect: `keep`
+- Window resizing enabled
+
+### Initial Input Map
+
+Created the first gameplay input actions:
+
+- `move_forward` — W
+- `move_backward` — S
+- `move_left` — A
+- `move_right` — D
+- `interact` — E
+- `primary_action` — Left Mouse Button
+- `secondary_action` — Right Mouse Button
+- `camera_zoom_in` — Mouse Wheel Up
+- `camera_zoom_out` — Mouse Wheel Down
+
+Movement controls use physical keyboard bindings so input remains based on key position rather than keyboard character layout.
+
+### Main Scene Foundation
+
+Created:
+
+`res://scenes/core/main.tscn`
+
+Initial scene structure:
+
+```text
+Main
+├── Camera3D
+├── Ground
+├── DirectionalLight3D
+├── WorldEnvironment
+└── ReferenceCube
