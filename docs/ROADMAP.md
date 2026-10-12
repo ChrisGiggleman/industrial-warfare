@@ -13,13 +13,13 @@ Goal: Establish a clean and maintainable technical base.
 - [x] Create Godot 4.6.2 project
 - [x] Establish initial project folders
 - [x] Create documentation structure
-- [ ] Configure Git and GitHub
-- [ ] Review and finalize `.gitignore`
-- [ ] Define naming and coding conventions
+- [x] Configure Git and GitHub
+- [x] Review and finalize `.gitignore`
+- [x] Define naming and coding conventions
 - [ ] Configure essential Godot project settings
 - [ ] Create initial input mappings
 - [ ] Create a basic main/test scene
-- [ ] Make the first Git commit
+- [x] Make the first Git commit
 
 ---
 
