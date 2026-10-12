@@ -1,0 +1,16 @@
+# Godot 4+ generated data
+.godot/
+/android/
+
+# VS Code local workspace settings
+.vscode/
+*.code-workspace
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local game builds / exports
+/builds/
+/exports/
