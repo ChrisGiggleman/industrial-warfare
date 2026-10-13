@@ -1,15 +1,19 @@
 extends MeshInstance3D
 
 
-var original_scale: Vector3
+var original_material: Material
+var highlight_material: StandardMaterial3D
 
 
 func _ready() -> void:
-	original_scale = scale
+	original_material = material_override
+
+	highlight_material = StandardMaterial3D.new()
+	highlight_material.albedo_color = Color(1.0, 0.8, 0.2)
 
 
 func set_selected(is_selected: bool) -> void:
 	if is_selected:
-		scale = original_scale * 1.1
+		material_override = highlight_material
 	else:
-		scale = original_scale
+		material_override = original_material

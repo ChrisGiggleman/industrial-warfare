@@ -76,4 +76,7 @@ ReferenceCube [selectable]
 └── ReferenceCubeBody
     └── CollisionShape3D
 
-Selectable objects expose a set_selected() method and the interaction manager tracks the current selection
+
+Selectable objects expose a `set_selected()` method. The interaction system controls selection state, while each selectable object is responsible for its own visual feedback.
+
+The current prototype uses a material override for selected objects. This can later be replaced by outlines, emission, selection rings, or shaders without changing the WorldInteraction selection logic.

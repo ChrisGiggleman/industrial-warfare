@@ -254,3 +254,11 @@ Main
 - The test cube scales to 110% when selected.
 - Clicking the ground deselects the current object and restores its original scale.
 - Verified repeated selections do not stack the scale effect.
+
+### Material-Based Selection Highlight
+
+- Replaced the temporary scale-based selection effect with a material-based highlight.
+- `selectable_object.gd` now creates a gold `StandardMaterial3D` for selected objects.
+- Selecting the ReferenceCube applies the highlight material.
+- Deselecting restores the object's original material.
+- Confirmed selection, deselection, WASD movement, camera zoom, and raycasting continue to work correctly.

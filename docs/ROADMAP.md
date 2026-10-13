@@ -110,4 +110,4 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Detect clicked collider
 - [x] Make test objects selectable
 - [x] Add visible selection feedback
-
+- [x] Replace temporary scale selection with material highlight
