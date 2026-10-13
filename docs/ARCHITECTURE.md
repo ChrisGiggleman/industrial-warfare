@@ -62,3 +62,16 @@ Main
 ├── CameraRig
 │   └── Camera3D
 └── WorldInteraction
+
+### Selectable Objects
+
+Logical game objects can be placed in the `selectable` scene group.
+
+Physics colliders may exist as child nodes beneath the logical object. When a raycast hits a collider, the interaction system walks up the node hierarchy until it finds a node in the `selectable` group.
+
+Example:
+
+```text
+ReferenceCube [selectable]
+└── ReferenceCubeBody
+    └── CollisionShape3D

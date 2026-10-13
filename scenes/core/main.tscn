@@ -20,6 +20,8 @@ sky = SubResource("Sky_fgbdc")
 
 [sub_resource type="BoxMesh" id="BoxMesh_6rktp"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_i4cec"]
+
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
@@ -37,9 +39,14 @@ transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.866
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1776571605]
 environment = SubResource("Environment_i4cec")
 
-[node name="ReferenceCube" type="MeshInstance3D" parent="." unique_id=2141545394]
+[node name="ReferenceCube" type="MeshInstance3D" parent="." unique_id=2141545394 groups=["selectable"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("BoxMesh_6rktp")
+
+[node name="ReferenceCubeBody" type="StaticBody3D" parent="ReferenceCube" unique_id=716075544]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ReferenceCube/ReferenceCubeBody" unique_id=1793247131]
+shape = SubResource("BoxShape3D_i4cec")
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=1468734782]
 script = ExtResource("1_fgbdc")

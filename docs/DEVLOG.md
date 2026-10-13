@@ -234,3 +234,14 @@ Main
   - the collider that was hit
   - the exact 3D world position
 - Confirmed camera movement and zoom continue to work correctly.
+
+### Selectable Object Foundation
+
+- Added collision to the existing `ReferenceCube`.
+- Added the `ReferenceCube` to the `selectable` scene group.
+- Updated `WorldInteraction` to distinguish between raw physics colliders and logical selectable objects.
+- Implemented parent traversal so collisions on child physics bodies can resolve to their selectable parent object.
+- Verified:
+  - Ground clicks report `StaticBody3D`.
+  - Cube clicks report `ReferenceCube`.
+  - Raycast hit positions are correctly returned on different cube faces.

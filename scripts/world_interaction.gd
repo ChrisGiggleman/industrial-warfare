@@ -26,6 +26,15 @@ func _print_mouse_world_position() -> void:
 
 	if result:
 		var hit_position: Vector3 = result["position"]
-		var collider: Object = result["collider"]
+		var collider: Node = result["collider"]
+
+		var current_node: Node = collider
+
+		while current_node != null:
+			if current_node.is_in_group("selectable"):
+				print("Selected ", current_node.name, " at ", hit_position)
+				return
+
+			current_node = current_node.get_parent()
 
 		print("Hit ", collider.name, " at ", hit_position)

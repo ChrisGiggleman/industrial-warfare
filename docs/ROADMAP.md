@@ -108,4 +108,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Cast a 3D ray from the mouse cursor
 - [x] Detect clicked world position
 - [x] Detect clicked collider
-- [ ] Make test objects selectable
+- [x] Make test objects selectable
+- [ ] Add visible selection feedback
+
