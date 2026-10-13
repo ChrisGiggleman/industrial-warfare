@@ -152,3 +152,37 @@ and explicitly typed the related variables as `float`.
 ### Lesson Learned
 
 When using strict GDScript typing, prefer type-specific helper functions such as `clampf()` when working with floating-point values.
+
+
+### `TROUBLESHOOTING.md`
+
+The indentation issue is worth documenting too:
+
+```markdown
+## GDScript Mixed Tabs and Spaces Error
+
+### Symptoms
+
+Godot reported errors such as:
+
+`Expected indented block after "if" block`
+
+and:
+
+`Used space character for indentation instead of tab as used before in the file`
+
+### Cause
+
+Some lines in `world_interaction.gd` used spaces while the rest of the file used tabs.
+
+The `if result:` block was also initially indented one level too far.
+
+### Resolution
+
+- Realigned `if result:` with the other statements inside the function.
+- Indented the code inside the `if` block by one additional tab.
+- Used VS Code's `Convert Indentation to Tabs` command.
+
+### Lesson Learned
+
+GDScript indentation defines code structure. Avoid mixing tabs and spaces within the same file.

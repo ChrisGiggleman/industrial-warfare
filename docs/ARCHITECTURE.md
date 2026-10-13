@@ -52,3 +52,13 @@ The main camera uses a `CameraRig` architecture.
 ```text
 CameraRig (Node3D)
 └── Camera3D
+
+## World Interaction System
+
+Player interaction logic is separated from the camera controller.
+
+```text
+Main
+├── CameraRig
+│   └── Camera3D
+└── WorldInteraction

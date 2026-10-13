@@ -222,3 +222,15 @@ Main
 - Camera zoom keeps the existing viewing angle.
 - Tuned camera movement speed from `10.0` to `16.0` after playtesting.
 - Verified WASD movement works correctly at multiple zoom levels.
+
+### Mouse / World Interaction Foundation
+
+- Added collision to the 20 × 20 meter ground plane using `StaticBody3D` and `CollisionShape3D`.
+- Added a dedicated `WorldInteraction` Node.
+- Created `res://scripts/world_interaction.gd`.
+- Added an exported reference to `Camera3D`.
+- Implemented mouse-to-world raycasting using the existing `primary_action` input.
+- Verified that left-clicking the ground returns:
+  - the collider that was hit
+  - the exact 3D world position
+- Confirmed camera movement and zoom continue to work correctly.

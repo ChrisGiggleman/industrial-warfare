@@ -1,9 +1,13 @@
 [gd_scene format=3 uid="uid://cu438d6ipbh1t"]
 
 [ext_resource type="Script" uid="uid://c3sckria1ahv7" path="res://scripts/camera_controller.gd" id="1_fgbdc"]
+[ext_resource type="Script" uid="uid://dcv31fgeqtpub" path="res://scripts/world_interaction.gd" id="2_i4cec"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
 size = Vector2(20, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fgbdc"]
+size = Vector3(20, 0.1, 20)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6rktp"]
 
@@ -20,6 +24,12 @@ sky = SubResource("Sky_fgbdc")
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
 mesh = SubResource("PlaneMesh_6rktp")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground/StaticBody3D" unique_id=514861447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("BoxShape3D_fgbdc")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1549780858]
 transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
@@ -38,3 +48,7 @@ move_speed = 16.0
 [node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=789918748]
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 10)
 current = true
+
+[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera")]
+script = ExtResource("2_i4cec")
+camera = NodePath("../CameraRig/Camera3D")
