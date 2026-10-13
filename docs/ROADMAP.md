@@ -114,3 +114,5 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Complete basic selectable-object interaction loop
 - [x] Separate placement-surface raycasting from selectable-object collision
 - [x] Add grid snapping to placement cursor
+- [x] Add placement occupancy checking
+- [x] Add valid/invalid placement feedback

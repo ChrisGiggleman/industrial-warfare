@@ -91,3 +91,11 @@ Initial interaction collision-layer convention:
 The hover/placement ray currently queries only Layer 1, allowing placement-position tracking to remain independent from selectable-object collision.
 
 Selection raycasts remain capable of detecting selectable objects on Layer 2.
+
+### Interaction Collision Layers
+
+- Layer 1 — Ground / placement surfaces
+- Layer 2 — Selectable objects
+- Layer 3 — Placement blockers
+
+Selectable objects may also belong to Layer 3 when they should prevent construction within their occupied space.

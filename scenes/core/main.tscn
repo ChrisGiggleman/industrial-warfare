@@ -26,13 +26,13 @@ sky = SubResource("Sky_fgbdc")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2dmjg"]
 albedo_color = Color(0.14117648, 0.96862745, 0, 1)
 
-[sub_resource type="SphereMesh" id="SphereMesh_b6u03"]
-radius = 0.15
-height = 0.3
+[sub_resource type="BoxMesh" id="BoxMesh_2dmjg"]
+size = Vector3(1, 0.04, 1)
 
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00392437, 0.03314972, 0.01133728)
 mesh = SubResource("PlaneMesh_6rktp")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
@@ -53,7 +53,7 @@ mesh = SubResource("BoxMesh_6rktp")
 script = ExtResource("1_2dmjg")
 
 [node name="ReferenceCubeBody" type="StaticBody3D" parent="ReferenceCube" unique_id=716075544]
-collision_layer = 2
+collision_layer = 6
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ReferenceCube/ReferenceCubeBody" unique_id=1793247131]
 shape = SubResource("BoxShape3D_i4cec")
@@ -73,4 +73,4 @@ hover_marker = NodePath("../HoverMarker")
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")
-mesh = SubResource("SphereMesh_b6u03")
+mesh = SubResource("BoxMesh_2dmjg")

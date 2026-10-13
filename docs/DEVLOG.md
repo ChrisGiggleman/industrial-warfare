@@ -285,3 +285,16 @@ Main
 - HoverMarker now snaps its X/Z position to a 1-meter placement grid.
 - Vertical position continues to come from the ground surface.
 - Verified grid snapping works while camera movement, zoom, selection, and collision-layer separation remain functional.
+
+### Placement Validity Prototype
+
+- Added Collision Layer 3 for placement-blocking objects.
+- ReferenceCube now belongs to:
+  - Layer 2 — selectable objects
+  - Layer 3 — placement blockers
+- Added a 1×1 placement occupancy check using `PhysicsShapeQueryParameters3D`.
+- Placement preview now changes color based on occupancy:
+  - Green — valid/open grid cell
+  - Red — blocked grid cell
+- Verified placement checks remain independent from object selection.
+- Camera movement, zoom, selection, and grid snapping continue to work correctly.

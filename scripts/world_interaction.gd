@@ -5,8 +5,15 @@ extends Node
 @export var hover_marker: MeshInstance3D
 @export var ray_length: float = 1000.0
 @export var grid_size: float = 1.0
+@export var valid_placement_color: Color = Color(0.0, 1.0, 0.0)
+@export var invalid_placement_color: Color = Color(1.0, 0.0, 0.0)
 
 var selected_object: Node = null
+var hover_material: StandardMaterial3D
+
+
+func _ready() -> void:
+	hover_material = hover_marker.material_override as StandardMaterial3D
 
 
 func _process(_delta: float) -> void:
@@ -88,12 +95,36 @@ func _update_hover_marker() -> void:
 
 		var snapped_position := Vector3(
 			snappedf(hit_position.x, grid_size),
-			hit_position.y + 0.15,
+			hit_position.y + 0.02,
 			snappedf(hit_position.z, grid_size)
 		)
 
 		hover_marker.visible = true
 		hover_marker.global_position = snapped_position
 
+		var placement_clear: bool = _is_placement_clear(snapped_position)
+
+		if placement_clear:
+			hover_material.albedo_color = valid_placement_color
+		else:
+			hover_material.albedo_color = invalid_placement_color
+
 	else:
 		hover_marker.visible = false
+
+
+func _is_placement_clear(position: Vector3) -> bool:
+	var check_shape := BoxShape3D.new()
+	check_shape.size = Vector3(0.9, 1.0, 0.9)
+
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = check_shape
+	query.transform.origin = position + Vector3(0.0, 0.5, 0.0)
+	query.collision_mask = 4
+
+	var results: Array[Dictionary] = get_viewport().world_3d.direct_space_state.intersect_shape(
+		query,
+		1
+	)
+
+	return results.is_empty()
