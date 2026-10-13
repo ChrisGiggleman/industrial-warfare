@@ -1,12 +1,16 @@
 [gd_scene format=3 uid="uid://ck6vnv4xqupue"]
 
+[ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_01ywg"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 0.8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_xycqu"]
 size = Vector3(0.8, 1, 0.8)
 
-[node name="TestBuilding" type="Node3D" unique_id=1418987496 groups=["selectable"]]
+[node name="TestBuilding" type="Node3D" unique_id=1418987496 node_paths=PackedStringArray("selection_mesh") groups=["selectable"]]
+script = ExtResource("1_01ywg")
+selection_mesh = NodePath("BuildingMesh")
 
 [node name="BuildingBody" type="StaticBody3D" parent="." unique_id=782605382]
 collision_layer = 6

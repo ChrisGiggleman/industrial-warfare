@@ -322,3 +322,12 @@ Main
 - Placement is blocked on occupied cells.
 - Newly placed buildings immediately act as placement blockers.
 - Verified multiple buildings can be placed during a single play session.
+### Building Placement Ghost
+
+- Added a translucent building preview using the configured `PackedScene`.
+- Placement ghost follows the grid-snapped placement position.
+- Ghost collision is disabled so it does not interfere with placement validity checks.
+- Added placement ghost cleanup when exiting Build Mode.
+- Added safeguards to prevent multiple placement ghosts from accumulating.
+- Confirmed placed buildings remain after the temporary ghost is removed.
+- Verified camera movement, zoom, selection, highlighting, placement validity, and Build Mode continue working together.

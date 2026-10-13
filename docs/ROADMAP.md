@@ -125,3 +125,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Instantiate first building at runtime
 - [x] Prevent placement on occupied grid cells
 - [x] Support multiple runtime placements
+- [x] Add building placement ghost
+- [x] Remove placement ghost when exiting Build Mode
+- [ ] Show placement validity directly on building ghost

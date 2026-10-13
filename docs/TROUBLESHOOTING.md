@@ -186,3 +186,26 @@ The `if result:` block was also initially indented one level too far.
 ### Lesson Learned
 
 GDScript indentation defines code structure. Avoid mixing tabs and spaces within the same file.
+
+## Selection Highlight Stopped Working After Selectable Script Refactor
+
+### Symptoms
+
+Selectable objects were still detected correctly, but neither the ReferenceCube nor TestBuilding changed to the selected highlight color.
+
+### Cause
+
+`selectable_object.gd` was refactored to use an exported `selection_mesh` reference.
+
+After the refactor, the `Selection Mesh` property was empty on existing selectable objects, so the script had no MeshInstance3D to apply the highlight material to.
+
+### Resolution
+
+Assigned the appropriate mesh explicitly:
+
+- `ReferenceCube` → `Selection Mesh = ReferenceCube`
+- `TestBuilding` → `Selection Mesh = BuildingMesh`
+
+### Lesson Learned
+
+When a script refactor introduces a new exported Node reference, existing scene instances may require that Inspector property to be reassigned manually.

@@ -29,6 +29,9 @@ var placement_mode_active: bool = false
 var current_placement_position: Vector3 = Vector3.ZERO
 var placement_is_valid: bool = false
 
+var placement_ghost: Node3D = null
+var ghost_material: StandardMaterial3D
+
 
 # =============================================================================
 # INITIALIZATION
@@ -83,17 +86,22 @@ func _unhandled_input(event: InputEvent) -> void:
 # PLACEMENT MODE TOGGLE
 # =============================================================================
 # Enables or disables build/placement mode.
-# Entering placement mode clears the current object selection.
+# Entering placement mode clears the current object selection and creates
+# the temporary building preview.
+#
+# Leaving placement mode hides the placement tile and removes the ghost.
 
 func _toggle_placement_mode() -> void:
 	placement_mode_active = not placement_mode_active
 
 	if placement_mode_active:
 		_select_object(null)
+		_create_placement_ghost()
 		print("Placement mode enabled")
 	else:
 		hover_marker.visible = false
 		placement_is_valid = false
+		_destroy_placement_ghost()
 		print("Placement mode disabled")
 
 
@@ -201,11 +209,15 @@ func _update_hover_marker() -> void:
 			snappedf(hit_position.z, grid_size)
 		)
 
-		# The thin preview tile sits slightly above the ground to prevent overlap.
+				# The thin preview tile sits slightly above the ground to prevent overlap.
 		hover_marker.visible = true
 		hover_marker.global_position = (
 			current_placement_position + Vector3(0.0, 0.02, 0.0)
 		)
+
+		# Move the building ghost to the snapped placement position.
+		if placement_ghost != null:
+			placement_ghost.global_position = current_placement_position
 
 		# Check whether the current grid cell is occupied.
 		placement_is_valid = _is_placement_clear(current_placement_position)
@@ -280,3 +292,53 @@ func _try_place_object() -> void:
 		new_object.global_position = current_placement_position
 
 	print("Placed object at ", current_placement_position)
+
+# =============================================================================
+# PLACEMENT GHOST CREATION
+# =============================================================================
+# Creates a temporary visual copy of the currently placeable scene.
+#
+# Collision is disabled so the ghost does not block its own placement check.
+# A transparent material is applied to the ghost's mesh.
+
+func _create_placement_ghost() -> void:
+	_destroy_placement_ghost()
+	if placeable_scene == null:
+		return
+
+	var ghost_instance: Node = placeable_scene.instantiate()
+
+	if not ghost_instance is Node3D:
+		return
+
+	placement_ghost = ghost_instance as Node3D
+
+	# Disable all collision shapes inside the preview object.
+	for child in placement_ghost.find_children("*", "CollisionShape3D", true, false):
+		if child is CollisionShape3D:
+			child.disabled = true
+
+	# Create a transparent preview material.
+	ghost_material = StandardMaterial3D.new()
+	ghost_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ghost_material.albedo_color = Color(0.0, 1.0, 0.0, 0.4)
+
+	# Apply the preview material to every mesh inside the ghost.
+	for child in placement_ghost.find_children("*", "MeshInstance3D", true, false):
+		if child is MeshInstance3D:
+			child.material_override = ghost_material
+
+	get_tree().current_scene.add_child(placement_ghost)
+
+# =============================================================================
+# PLACEMENT GHOST CLEANUP
+# =============================================================================
+# Removes the temporary placement preview from the scene.
+# Called when placement mode ends or before a new ghost is created.
+
+func _destroy_placement_ghost() -> void:
+	if placement_ghost != null and is_instance_valid(placement_ghost):
+		placement_ghost.queue_free()
+
+	placement_ghost = null
+	ghost_material = null
