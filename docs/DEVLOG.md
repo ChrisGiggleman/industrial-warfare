@@ -215,3 +215,10 @@ Main
 
 ### Notes
 - Current movement speed feels slightly slow and will be tuned after camera zoom is implemented.
+
+### Camera Zoom and Tuning
+- Added mouse-wheel camera zoom using existing input actions.
+- Added minimum and maximum zoom limits.
+- Camera zoom keeps the existing viewing angle.
+- Tuned camera movement speed from `10.0` to `16.0` after playtesting.
+- Verified WASD movement works correctly at multiple zoom levels.

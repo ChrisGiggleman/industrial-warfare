@@ -124,3 +124,31 @@ The script contents initially contained invalid syntax. After correcting the scr
 ### Lesson Learned
 
 A GDScript file existing in the project does not cause it to execute automatically. The script must be attached to an active node or otherwise instantiated by the project.
+
+## GDScript Variant Type Warning Treated as Error
+
+### Symptoms
+
+Godot reported:
+
+`The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)`
+
+### Cause
+
+The generic `clamp()` function caused the inferred result type to be treated as `Variant`.
+
+### Resolution
+
+Replaced:
+
+`clamp()`
+
+with:
+
+`clampf()`
+
+and explicitly typed the related variables as `float`.
+
+### Lesson Learned
+
+When using strict GDScript typing, prefer type-specific helper functions such as `clampf()` when working with floating-point values.
