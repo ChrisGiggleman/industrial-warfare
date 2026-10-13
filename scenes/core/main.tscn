@@ -33,7 +33,7 @@ size = Vector3(1, 0.04, 1)
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00392437, 0.03314972, 0.01133728)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.024633884, 0.03314972, 0.02122879)
 mesh = SubResource("PlaneMesh_6rktp")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
@@ -73,6 +73,10 @@ script = ExtResource("2_i4cec")
 camera = NodePath("../CameraRig/Camera3D")
 hover_marker = NodePath("../HoverMarker")
 placeable_scene = ExtResource("4_b6u03")
+ray_length = null
+grid_size = null
+valid_placement_color = null
+invalid_placement_color = null
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")

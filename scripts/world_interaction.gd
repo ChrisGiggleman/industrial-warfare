@@ -177,10 +177,8 @@ func _select_object(object: Node) -> void:
 # =============================================================================
 # Tracks the mouse over valid placement surfaces.
 #
-# The ray only checks Collision Layer 1, which is reserved for placement
-# surfaces such as the ground.
-#
-# The result is snapped to the configured grid size.
+# The placement ghost follows the grid-snapped ground position.
+# The ghost turns green when placement is valid and red when blocked.
 
 func _update_hover_marker() -> void:
 	var mouse_position: Vector2 = get_viewport().get_mouse_position()
@@ -202,18 +200,16 @@ func _update_hover_marker() -> void:
 	if result:
 		var hit_position: Vector3 = result["position"]
 
-		# Store the actual ground-level location where a building would be placed.
+		# Store the snapped ground-level position where the building would be placed.
 		current_placement_position = Vector3(
 			snappedf(hit_position.x, grid_size),
 			hit_position.y,
 			snappedf(hit_position.z, grid_size)
 		)
 
-				# The thin preview tile sits slightly above the ground to prevent overlap.
-		hover_marker.visible = true
-		hover_marker.global_position = (
-			current_placement_position + Vector3(0.0, 0.02, 0.0)
-		)
+		# The old placement tile is hidden because the building ghost
+		# now provides the placement preview.
+		hover_marker.visible = false
 
 		# Move the building ghost to the snapped placement position.
 		if placement_ghost != null:
@@ -222,16 +218,28 @@ func _update_hover_marker() -> void:
 		# Check whether the current grid cell is occupied.
 		placement_is_valid = _is_placement_clear(current_placement_position)
 
-		if placement_is_valid:
-			hover_material.albedo_color = valid_placement_color
-		else:
-			hover_material.albedo_color = invalid_placement_color
+		# Change the ghost color based on placement validity.
+		if ghost_material != null:
+			if placement_is_valid:
+				ghost_material.albedo_color = Color(
+					valid_placement_color.r,
+					valid_placement_color.g,
+					valid_placement_color.b,
+					0.4
+				)
+			else:
+				ghost_material.albedo_color = Color(
+					invalid_placement_color.r,
+					invalid_placement_color.g,
+					invalid_placement_color.b,
+					0.4
+				)
 
 	else:
 		hover_marker.visible = false
 		placement_is_valid = false
 
-
+		
 # =============================================================================
 # PLACEMENT VALIDITY CHECK
 # =============================================================================
@@ -321,7 +329,12 @@ func _create_placement_ghost() -> void:
 	# Create a transparent preview material.
 	ghost_material = StandardMaterial3D.new()
 	ghost_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	ghost_material.albedo_color = Color(0.0, 1.0, 0.0, 0.4)
+	ghost_material.albedo_color = Color(
+	valid_placement_color.r,
+	valid_placement_color.g,
+	valid_placement_color.b,
+	0.4
+)
 
 	# Apply the preview material to every mesh inside the ghost.
 	for child in placement_ghost.find_children("*", "MeshInstance3D", true, false):

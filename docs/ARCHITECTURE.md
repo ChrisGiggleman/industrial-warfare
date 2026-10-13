@@ -130,3 +130,16 @@ Placement flow:
 6. The new scene instance is added to the active world and positioned at the snapped location.
 
 This allows future buildings and machines to use reusable scenes rather than being created directly by `WorldInteraction`.
+
+### Placement Ghost
+
+Build Mode uses a temporary instance of the configured `PackedScene` as a placement preview.
+
+The ghost:
+- has collision disabled
+- follows the grid-snapped placement position
+- displays translucent green when placement is valid
+- displays translucent red when placement is blocked
+- is destroyed when Build Mode ends
+
+The actual placed building remains a separate scene instance with normal collision and selection behavior.

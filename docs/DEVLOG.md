@@ -331,3 +331,14 @@ Main
 - Added safeguards to prevent multiple placement ghosts from accumulating.
 - Confirmed placed buildings remain after the temporary ghost is removed.
 - Verified camera movement, zoom, selection, highlighting, placement validity, and Build Mode continue working together.
+
+### Finalized Building Ghost Preview
+
+- Replaced the temporary placement tile with the actual building ghost as the placement indicator.
+- Placement ghost now displays:
+  - translucent green when placement is valid
+  - translucent red when placement is blocked
+- Removed the old green/red square preview from normal placement visuals.
+- Placement ghost is created when Build Mode starts and safely removed when Build Mode ends.
+- Added cleanup safeguards to prevent multiple placement ghosts from accumulating.
+- Verified building placement, collision blocking, selection highlighting, camera movement, and zoom continue working correctly.

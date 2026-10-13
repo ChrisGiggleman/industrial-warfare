@@ -127,4 +127,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Support multiple runtime placements
 - [x] Add building placement ghost
 - [x] Remove placement ghost when exiting Build Mode
-- [ ] Show placement validity directly on building ghost
+- [x] Show placement validity directly on building ghost
+- [x] Remove temporary placement tile from placement visuals
+- [x] Clean up placement ghost when leaving Build Mode
