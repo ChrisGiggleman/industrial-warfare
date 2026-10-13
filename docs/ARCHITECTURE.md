@@ -99,3 +99,34 @@ Selection raycasts remain capable of detecting selectable objects on Layer 2.
 - Layer 3 — Placement blockers
 
 Selectable objects may also belong to Layer 3 when they should prevent construction within their occupied space.
+
+### Interaction Modes
+
+`WorldInteraction` currently supports two basic interaction states:
+
+- **Normal Mode**
+  - Object selection is enabled.
+  - Placement preview is hidden.
+
+- **Placement Mode**
+  - Activated with `toggle_placement_mode`.
+  - Object selection is temporarily disabled.
+  - Grid-snapped placement preview becomes active.
+  - Placement validity is shown using green/red visual feedback.
+
+The current implementation uses a Boolean placement-state flag. This keeps the early architecture simple while leaving room for a more advanced interaction-state system later if needed.
+
+### Runtime Building Placement
+
+Constructible objects are stored as reusable `.tscn` scenes and referenced through `PackedScene`.
+
+Placement flow:
+
+1. Player enters placement mode.
+2. Mouse position is projected onto a valid placement surface.
+3. Position is snapped to the placement grid.
+4. Placement-blocker collision is checked.
+5. If valid, the configured `PackedScene` is instantiated.
+6. The new scene instance is added to the active world and positioned at the snapped location.
+
+This allows future buildings and machines to use reusable scenes rather than being created directly by `WorldInteraction`.

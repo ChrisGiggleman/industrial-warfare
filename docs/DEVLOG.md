@@ -309,3 +309,16 @@ Main
 - Object selection is disabled while placement mode is active.
 - Pressing `B` again exits placement mode and hides the placement preview.
 - Verified WASD camera movement and zoom continue working in both modes.
+
+### First Runtime Building Placement
+
+- Created reusable `test_building.tscn`.
+- Structured the building with a ground-level `Node3D` root.
+- Added visible mesh and matching collision.
+- Added the global `selectable` group for reusable selectable scenes.
+- Connected the building scene to `WorldInteraction` using `PackedScene`.
+- Implemented runtime building instantiation.
+- Left-click now places a building on valid grid cells while placement mode is active.
+- Placement is blocked on occupied cells.
+- Newly placed buildings immediately act as placement blockers.
+- Verified multiple buildings can be placed during a single play session.

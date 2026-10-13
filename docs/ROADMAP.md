@@ -120,4 +120,8 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Toggle placement mode with input action
 - [x] Disable normal selection while placement mode is active
 - [x] Show placement preview only during placement mode
-- [ ] Place first test object
+- [x] Place first test object
+- [x] Create reusable test building scene
+- [x] Instantiate first building at runtime
+- [x] Prevent placement on occupied grid cells
+- [x] Support multiple runtime placements
