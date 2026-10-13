@@ -109,5 +109,5 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Detect clicked world position
 - [x] Detect clicked collider
 - [x] Make test objects selectable
-- [ ] Add visible selection feedback
+- [x] Add visible selection feedback
 

@@ -75,3 +75,5 @@ Example:
 ReferenceCube [selectable]
 └── ReferenceCubeBody
     └── CollisionShape3D
+
+Selectable objects expose a set_selected() method and the interaction manager tracks the current selection

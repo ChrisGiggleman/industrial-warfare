@@ -245,3 +245,12 @@ Main
   - Ground clicks report `StaticBody3D`.
   - Cube clicks report `ReferenceCube`.
   - Raycast hit positions are correctly returned on different cube faces.
+
+  ### Visible Selection Feedback
+
+- Added `selectable_object.gd` to the `ReferenceCube`.
+- Added persistent selection tracking in `world_interaction.gd`.
+- Selectable objects now receive a simple visual selection state.
+- The test cube scales to 110% when selected.
+- Clicking the ground deselects the current object and restores its original scale.
+- Verified repeated selections do not stack the scale effect.

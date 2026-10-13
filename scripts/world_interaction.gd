@@ -4,6 +4,8 @@ extends Node
 @export var camera: Camera3D
 @export var ray_length: float = 1000.0
 
+var selected_object: Node = null
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("primary_action"):
@@ -32,9 +34,24 @@ func _print_mouse_world_position() -> void:
 
 		while current_node != null:
 			if current_node.is_in_group("selectable"):
+				_select_object(current_node)
 				print("Selected ", current_node.name, " at ", hit_position)
 				return
 
 			current_node = current_node.get_parent()
 
+		_select_object(null)
 		print("Hit ", collider.name, " at ", hit_position)
+
+
+func _select_object(object: Node) -> void:
+	if selected_object == object:
+		return
+
+	if selected_object != null and selected_object.has_method("set_selected"):
+		selected_object.call("set_selected", false)
+
+	selected_object = object
+
+	if selected_object != null and selected_object.has_method("set_selected"):
+		selected_object.call("set_selected", true)
