@@ -10,19 +10,39 @@ extends Node
 
 var selected_object: Node = null
 var hover_material: StandardMaterial3D
+var placement_mode_active: bool = false
 
 
 func _ready() -> void:
 	hover_material = hover_marker.material_override as StandardMaterial3D
+	hover_marker.visible = false
 
 
 func _process(_delta: float) -> void:
-	_update_hover_marker()
+	if placement_mode_active:
+		_update_hover_marker()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_placement_mode"):
+		_toggle_placement_mode()
+		return
+
+	if placement_mode_active:
+		return
+
 	if event.is_action_pressed("primary_action"):
 		_print_mouse_world_position()
+
+func _toggle_placement_mode() -> void:
+	placement_mode_active = not placement_mode_active
+
+	if placement_mode_active:
+		_select_object(null)
+		print("Placement mode enabled")
+	else:
+		hover_marker.visible = false
+		print("Placement mode disabled")
 
 
 func _print_mouse_world_position() -> void:

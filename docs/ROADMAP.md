@@ -116,3 +116,8 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Add grid snapping to placement cursor
 - [x] Add placement occupancy checking
 - [x] Add valid/invalid placement feedback
+- [x] Add basic placement mode
+- [x] Toggle placement mode with input action
+- [x] Disable normal selection while placement mode is active
+- [x] Show placement preview only during placement mode
+- [ ] Place first test object

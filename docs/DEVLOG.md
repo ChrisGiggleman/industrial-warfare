@@ -298,3 +298,14 @@ Main
   - Red — blocked grid cell
 - Verified placement checks remain independent from object selection.
 - Camera movement, zoom, selection, and grid snapping continue to work correctly.
+
+### Placement Mode Foundation
+
+- Added the `toggle_placement_mode` input action bound to `B`.
+- Added placement-mode state tracking to `WorldInteraction`.
+- Placement preview is hidden during normal interaction mode.
+- Pressing `B` enables placement mode and displays the grid-snapped placement preview.
+- Entering placement mode automatically deselects the currently selected object.
+- Object selection is disabled while placement mode is active.
+- Pressing `B` again exits placement mode and hides the placement preview.
+- Verified WASD camera movement and zoom continue working in both modes.
