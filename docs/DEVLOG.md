@@ -262,3 +262,9 @@ Main
 - Selecting the ReferenceCube applies the highlight material.
 - Deselecting restores the object's original material.
 - Confirmed selection, deselection, WASD movement, camera zoom, and raycasting continue to work correctly.
+
+### Selection Behavior Completed
+
+- Added deselection when clicking empty space.
+- Selection now behaves consistently across selectable objects, non-selectable ground, and empty space.
+- Confirmed material highlighting, deselection, raycasting, camera movement, and zoom all work together without errors.

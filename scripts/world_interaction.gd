@@ -42,7 +42,10 @@ func _print_mouse_world_position() -> void:
 
 		_select_object(null)
 		print("Hit ", collider.name, " at ", hit_position)
-
+		
+	else:
+		_select_object(null)
+		print("Hit nothing")
 
 func _select_object(object: Node) -> void:
 	if selected_object == object:
