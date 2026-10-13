@@ -44,3 +44,11 @@ Examples:
 `camera_zoom_in`
 
 Gameplay code should reference input actions rather than hard-coded keyboard or mouse buttons.
+
+## Camera System
+
+The main camera uses a `CameraRig` architecture.
+
+```text
+CameraRig (Node3D)
+└── Camera3D

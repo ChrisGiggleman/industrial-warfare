@@ -88,3 +88,39 @@ Record whether the issue was fully resolved.
 ### Lesson Learned
 
 Document anything that may help prevent or diagnose the problem in the future.
+
+
+That architectural decision is worth documenting because it was intentional.
+
+### 4. `TROUBLESHOOTING.md`
+
+We actually had our first useful development problem, so record it:
+
+```markdown
+## Camera Controller Script Did Not Execute
+
+### Symptoms
+
+The expected message:
+
+`Camera controller initialized.`
+
+did not appear in the Godot Output panel.
+
+An earlier attempt also produced a GDScript parse error.
+
+### Cause
+
+The script contents initially contained invalid syntax. After correcting the script, the `CameraRig` node was found to have an empty Script property, meaning `camera_controller.gd` was no longer attached.
+
+### Resolution
+
+1. Corrected `camera_controller.gd` syntax.
+2. Selected `CameraRig`.
+3. Attached `res://scripts/camera_controller.gd` through the Inspector.
+4. Ran the project and confirmed:
+   `Camera controller initialized.`
+
+### Lesson Learned
+
+A GDScript file existing in the project does not cause it to execute automatically. The script must be attached to an active node or otherwise instantiated by the project.

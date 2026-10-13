@@ -95,3 +95,10 @@ After the First Night vertical slice is stable, evaluate:
 - Different enemy factions
 - Advanced warfare systems
 - Performance optimization
+
+- [x] Create CameraRig architecture
+- [x] Create first GDScript
+- [x] Connect camera controller to existing input actions
+- [x] Implement basic WASD camera panning
+- [ ] Implement camera zoom
+- [ ] Tune camera movement and zoom speeds

@@ -193,3 +193,25 @@ Main
 ├── DirectionalLight3D
 ├── WorldEnvironment
 └── ReferenceCube
+
+## 2026-10-12 — Camera Controller Foundation
+
+### Completed
+- Added a `CameraRig` Node3D to the main scene.
+- Reparented `Camera3D` beneath `CameraRig`.
+- Created the project's first GDScript:
+  - `res://scripts/camera_controller.gd`
+- Verified script execution using `_ready()`.
+- Added basic WASD camera panning using the existing Input Map actions.
+- Camera movement operates across the X/Z world plane.
+- Movement is frame-rate independent using `delta`.
+- Initial camera movement speed is `10.0`.
+
+### Testing
+- W, A, S, and D movement tested successfully.
+- Diagonal movement tested successfully.
+- Camera stops when movement input is released.
+- No runtime errors encountered after final setup.
+
+### Notes
+- Current movement speed feels slightly slow and will be tuned after camera zoom is implemented.
