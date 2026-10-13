@@ -268,3 +268,13 @@ Main
 - Added deselection when clicking empty space.
 - Selection now behaves consistently across selectable objects, non-selectable ground, and empty space.
 - Confirmed material highlighting, deselection, raycasting, camera movement, and zoom all work together without errors.
+
+### Placement Surface Collision Separation
+
+- Separated placement-surface detection from selectable-object detection using physics collision layers.
+- Ground remains on Collision Layer 1.
+- ReferenceCube collision moved to Collision Layer 2.
+- Hover/placement ray now queries only Layer 1.
+- HoverMarker tracks the ground underneath selectable objects rather than climbing onto their collision surfaces.
+- Object selection continues to detect and highlight ReferenceCube correctly.
+- Verified camera movement and zoom remain functional.

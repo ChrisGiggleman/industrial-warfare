@@ -80,3 +80,14 @@ ReferenceCube [selectable]
 Selectable objects expose a `set_selected()` method. The interaction system controls selection state, while each selectable object is responsible for its own visual feedback.
 
 The current prototype uses a material override for selected objects. This can later be replaced by outlines, emission, selection rings, or shaders without changing the WorldInteraction selection logic.
+
+### Interaction Collision Layers
+
+Initial interaction collision-layer convention:
+
+- Layer 1 — Ground / placement surfaces
+- Layer 2 — Selectable objects
+
+The hover/placement ray currently queries only Layer 1, allowing placement-position tracking to remain independent from selectable-object collision.
+
+Selection raycasts remain capable of detecting selectable objects on Layer 2.

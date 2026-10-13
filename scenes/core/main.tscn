@@ -23,6 +23,13 @@ sky = SubResource("Sky_fgbdc")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_i4cec"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2dmjg"]
+albedo_color = Color(0.14117648, 0.96862745, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_b6u03"]
+radius = 0.15
+height = 0.3
+
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
@@ -46,6 +53,7 @@ mesh = SubResource("BoxMesh_6rktp")
 script = ExtResource("1_2dmjg")
 
 [node name="ReferenceCubeBody" type="StaticBody3D" parent="ReferenceCube" unique_id=716075544]
+collision_layer = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ReferenceCube/ReferenceCubeBody" unique_id=1793247131]
 shape = SubResource("BoxShape3D_i4cec")
@@ -58,6 +66,11 @@ move_speed = 16.0
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 10)
 current = true
 
-[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera")]
+[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "hover_marker")]
 script = ExtResource("2_i4cec")
 camera = NodePath("../CameraRig/Camera3D")
+hover_marker = NodePath("../HoverMarker")
+
+[node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
+material_override = SubResource("StandardMaterial3D_2dmjg")
+mesh = SubResource("SphereMesh_b6u03")
