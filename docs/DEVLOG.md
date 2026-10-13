@@ -278,3 +278,10 @@ Main
 - HoverMarker tracks the ground underneath selectable objects rather than climbing onto their collision surfaces.
 - Object selection continues to detect and highlight ReferenceCube correctly.
 - Verified camera movement and zoom remain functional.
+
+### Grid-Snapped Placement Tracking
+
+- Added configurable `grid_size` to the world interaction system.
+- HoverMarker now snaps its X/Z position to a 1-meter placement grid.
+- Vertical position continues to come from the ground surface.
+- Verified grid snapping works while camera movement, zoom, selection, and collision-layer separation remain functional.

@@ -4,6 +4,7 @@ extends Node
 @export var camera: Camera3D
 @export var hover_marker: MeshInstance3D
 @export var ray_length: float = 1000.0
+@export var grid_size: float = 1.0
 
 var selected_object: Node = null
 
@@ -79,14 +80,20 @@ func _update_hover_marker() -> void:
 	)
 
 	query.collision_mask = 1
-	
+
 	var result: Dictionary = get_viewport().world_3d.direct_space_state.intersect_ray(query)
 
 	if result:
 		var hit_position: Vector3 = result["position"]
 
+		var snapped_position := Vector3(
+			snappedf(hit_position.x, grid_size),
+			hit_position.y + 0.15,
+			snappedf(hit_position.z, grid_size)
+		)
+
 		hover_marker.visible = true
-		hover_marker.global_position = hit_position + Vector3(0.0, 0.15, 0.0)
+		hover_marker.global_position = snapped_position
 
 	else:
 		hover_marker.visible = false

@@ -113,3 +113,4 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Replace temporary scale selection with material highlight
 - [x] Complete basic selectable-object interaction loop
 - [x] Separate placement-surface raycasting from selectable-object collision
+- [x] Add grid snapping to placement cursor
