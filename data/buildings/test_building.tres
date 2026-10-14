@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3 uid="uid://dqdqus3owmjqn"]
+
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_02i35"]
+[ext_resource type="PackedScene" uid="uid://ck6vnv4xqupue" path="res://scenes/buildings/test_building.tscn" id="1_ki6ym"]
+
+[resource]
+script = ExtResource("1_02i35")
+building_id = &"test_building"
+display_name = "Test Building"
+description = "Small prototype building used to test construction and building gameplay systems."
+category = &"Prototype"
+building_scene = ExtResource("1_ki6ym")
+metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
