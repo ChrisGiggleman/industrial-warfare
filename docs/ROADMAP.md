@@ -175,3 +175,32 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Complete final regression test
 
 **Status: Complete**
+
+## Building Definition and Building Runtime Foundation 
+
+- [x] Create reusable BuildingDefinition resource
+- [x] Create data-driven prototype building definitions
+- [x] Refactor Build Mode to use BuildingDefinition data
+- [x] Remove legacy PackedScene buildable collection
+- [x] Add reusable BuildingRuntime component
+- [x] Assign BuildingDefinition data to placed building instances
+- [ ] Create reusable item/resource definition system
+- [ ] Create basic building inventory component
+- [ ] Create production recipe definition system
+- [ ] Create reusable producer component
+- [ ] Create first autonomous prototype producer
+
+## Factory & Production Foundation
+
+- [x] Create BuildingDefinition resource architecture
+- [x] Create prototype building data assets
+- [x] Make Build Mode data-driven
+- [x] Add BuildingRuntime component
+- [x] Inject building definitions into runtime instances
+- [ ] Create ItemDefinition resource
+- [ ] Create reusable InventoryComponent
+- [ ] Create ProductionRecipe resource
+- [ ] Create ProducerComponent
+- [ ] Produce first test resource automatically
+
+**Status: In Progress**

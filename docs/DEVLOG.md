@@ -591,3 +591,77 @@ No gameplay regressions were found.
 ### Status
 
 Chat 02 — Camera & Player Interaction Foundation: COMPLETE
+
+---
+
+## 2026-10-14 — Chat 03: Factory Building & Production Foundation
+
+Chat 03 began the transition from prototype building placement into reusable factory-game architecture.
+
+### Data-Driven Building Definitions
+
+Created a reusable custom Godot Resource:
+
+`res://scripts/data/building_definition.gd`
+
+The `BuildingDefinition` resource currently stores:
+
+- Unique building ID
+- Display name
+- Description
+- Category
+- Building scene
+
+Created the first building-definition assets:
+
+- `res://data/buildings/test_building.tres`
+- `res://data/buildings/test_building_large.tres`
+
+The `.tres` resource describes what a building is, while the `.tscn` scene describes how the building exists in the world.
+
+### Build System Refactor
+
+Refactored `world_interaction.gd` so the construction system uses:
+
+`Array[BuildingDefinition]`
+
+instead of:
+
+`Array[PackedScene]`
+
+The selected `BuildingDefinition` now supplies the `PackedScene` used for:
+
+- Placement ghosts
+- Runtime building placement
+- Building selection validation
+
+The old `buildable_scenes` array was removed after the new definition-based system passed regression testing.
+
+### Selected Building Definition Helper
+
+Added a reusable helper for retrieving the currently selected `BuildingDefinition`.
+
+This centralizes validation of:
+
+- Empty building-definition collections
+- Invalid building indices
+- Missing definitions
+
+Other systems can now retrieve the selected building data without repeating array-validation logic.
+
+### Building Runtime Component
+
+Created:
+
+`res://scripts/components/building_runtime.gd`
+
+Each prototype building scene now contains a reusable `BuildingRuntime` child component.
+
+Current prototype structure:
+
+```text
+TestBuilding
+├── BuildingBody
+│   └── CollisionShape3D
+├── BuildingMesh
+└── BuildingRuntime

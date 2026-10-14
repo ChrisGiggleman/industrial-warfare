@@ -236,3 +236,16 @@ Entering Build Mode produced an error similar to:
 
 ```text
 Invalid assignment of property or key 'text' on a base object of type 'null instance'
+
+---
+
+## BuildingDefinition Resource Script Attached to Node3D
+
+### Problem
+
+After creating `building_definition.gd`, Godot reported an error when loading the project.
+
+### Error
+
+```text
+Script inherits from native type 'Resource', so it can't be assigned to an object of type: 'Node3D'

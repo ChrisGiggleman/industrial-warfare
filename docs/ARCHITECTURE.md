@@ -22,9 +22,13 @@ The goal is to keep systems modular, understandable, testable, and easy to expan
 res://
 ├── assets/
 ├── data/
+│   └── buildings/
 ├── docs/
 ├── scenes/
+│   └── buildings/
 ├── scripts/
+│   ├── components/
+│   └── data/
 ├── tests/
 ├── icon.svg
 └── project.godot
@@ -144,18 +148,49 @@ The ghost:
 
 The actual placed building remains a separate scene instance with normal collision and selection behavior.
 
-### Buildable Scene Collection
+### Buildable Definition Collection
 
-`WorldInteraction` stores buildable objects as an exported `Array[PackedScene]`.
+`WorldInteraction` stores available construction options as:
+
+`Array[BuildingDefinition]`
 
 The currently selected building is tracked by array index.
 
 Prototype bindings:
 
-- Slot 1 → `test_building.tscn`
-- Slot 2 → `test_building_large.tscn`
+- Slot 1 → `test_building.tres`
+- Slot 2 → `test_building_large.tres`
 
-Changing building selection recreates the placement ghost using the newly selected PackedScene. Placement validity therefore automatically uses the selected building's collision footprint.
+Each definition contains the `PackedScene` required for placement.
+
+Changing the selected building recreates the placement ghost using the scene referenced by the new definition.
+
+Placement validity therefore continues to use the selected building's actual collision footprint.
+
+The construction controller no longer maintains a separate array of hard-coded building scenes.
+
+## Building Definition Architecture
+
+Building metadata is stored in a custom Godot Resource:
+
+`BuildingDefinition`
+
+Current fields:
+
+- `building_id`
+- `display_name`
+- `description`
+- `category`
+- `building_scene`
+
+The intended separation is:
+
+```text
+BuildingDefinition (.tres)
+        ↓
+describes
+        ↓
+Building Scene (.tscn)
 
 ### Demolition Tool
 
@@ -310,3 +345,35 @@ The ghost is temporary and is destroyed when:
 - Demolition Mode begins
 - the selected building changes
 - a replacement ghost is created
+
+
+---
+
+# Add `Building Runtime Architecture`
+
+Immediately after that:
+
+```markdown
+## Building Runtime Architecture
+
+Placed structures use a reusable `BuildingRuntime` component.
+
+Prototype scene structure:
+
+```text
+Building Root
+├── Physics / Collision
+├── Mesh
+└── BuildingRuntime
+
+---
+
+## One existing Architecture cleanup
+
+You currently have **two consecutive sections named**:
+
+```markdown
+### Interaction Collision Layers
+Layer 1 — Ground / placement surfaces
+Layer 2 — Selectable objects
+Layer 3 — Placement blockers

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ck6vnv4xqupue"]
 
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_01ywg"]
+[ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_5ceut"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 1.8)
@@ -22,3 +23,6 @@ shape = SubResource("BoxShape3D_01ywg")
 [node name="BuildingMesh" type="MeshInstance3D" parent="." unique_id=1701998984]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("BoxMesh_xycqu")
+
+[node name="BuildingRuntime" type="Node" parent="." unique_id=315977768]
+script = ExtResource("2_5ceut")

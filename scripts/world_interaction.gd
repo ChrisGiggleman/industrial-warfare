@@ -219,6 +219,28 @@ func _toggle_placement_mode() -> void:
 
 		print("Placement mode disabled")
 
+# =============================================================================
+# SELECTED BUILDING DEFINITION
+# =============================================================================
+
+# Returns the BuildingDefinition currently selected for construction.
+#
+# Returns null when:
+#   - the building-definition list is empty
+#   - the selected index is outside the valid array range
+#   - the selected definition is missing
+
+func _get_selected_building_definition() -> BuildingDefinition:
+	if buildable_definitions.is_empty():
+		return null
+
+	if selected_building_index < 0:
+		return null
+
+	if selected_building_index >= buildable_definitions.size():
+		return null
+
+	return buildable_definitions[selected_building_index]
 
 # =============================================================================
 # SELECTED BUILDING SCENE
@@ -230,17 +252,8 @@ func _toggle_placement_mode() -> void:
 #   - the selected index is outside the valid array range
 
 func _get_selected_building_scene() -> PackedScene:
-	if buildable_definitions.is_empty():
-		return null
-
-	if selected_building_index < 0:
-		return null
-
-	if selected_building_index >= buildable_definitions.size():
-		return null
-
 	var selected_definition: BuildingDefinition = (
-		buildable_definitions[selected_building_index]
+		_get_selected_building_definition()
 	)
 
 	if selected_definition == null:
@@ -681,6 +694,17 @@ func _try_place_object() -> void:
 	var new_object: Node = selected_scene.instantiate()
 
 	get_tree().current_scene.add_child(new_object)
+
+	var selected_definition: BuildingDefinition = (
+		_get_selected_building_definition()
+	)
+
+	var building_runtime: BuildingRuntime = (
+		new_object.get_node_or_null("BuildingRuntime") as BuildingRuntime
+	)
+
+	if building_runtime != null and selected_definition != null:
+		building_runtime.initialize(selected_definition)
 
 	if new_object is Node3D:
 		new_object.global_position = current_placement_position
