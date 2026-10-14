@@ -132,3 +132,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Add 90-degree placement rotation
 - [x] Apply placement rotation to ghost preview
 - [x] Preserve rotation on placed buildings
+- [x] Support rectangular building footprints
+- [x] Make placement validity rotation-aware
+- [x] Use actual building collision shape for placement checks

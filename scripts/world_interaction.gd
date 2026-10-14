@@ -24,6 +24,7 @@ extends Node
 
 var selected_object: Node = null
 var hover_material: StandardMaterial3D
+var placement_ghost_collisions: Array[CollisionShape3D] = []
 
 var placement_mode_active: bool = false
 var current_placement_position: Vector3 = Vector3.ZERO
@@ -269,34 +270,39 @@ func _update_hover_marker() -> void:
 # =============================================================================
 # PLACEMENT VALIDITY CHECK
 # =============================================================================
-# Tests a roughly 1x1 meter area above the requested placement position.
+# Checks the placement ghost's actual collision shapes against objects on
+# Collision Layer 3.
 #
-# Collision Layer 3 is reserved for objects that block construction.
-#
-# Returns:
-#   true  = area is empty
-#   false = another placement-blocking object occupies the cell
+# Because the query uses each ghost collision shape's global transform,
+# building rotation is automatically included in the validity check.
 
-func _is_placement_clear(position: Vector3) -> bool:
-	var check_shape := BoxShape3D.new()
-	check_shape.size = Vector3(0.9, 1.0, 0.9)
+func _is_placement_clear(_position: Vector3) -> bool:
+	if placement_ghost_collisions.is_empty():
+		return false
 
-	var query := PhysicsShapeQueryParameters3D.new()
+	for collision_shape in placement_ghost_collisions:
+		if collision_shape.shape == null:
+			continue
 
-	query.shape = check_shape
-	query.transform.origin = position + Vector3(0.0, 0.5, 0.0)
+		var query := PhysicsShapeQueryParameters3D.new()
 
-	# Collision Layer 3 = Placement blockers.
-	query.collision_mask = 4
+		query.shape = collision_shape.shape
+		query.transform = collision_shape.global_transform
 
-	var results: Array[Dictionary] = (
-		get_viewport().world_3d.direct_space_state.intersect_shape(
-			query,
-			1
+		# Collision Layer 3 = Placement blockers.
+		query.collision_mask = 4
+
+		var results: Array[Dictionary] = (
+			get_viewport().world_3d.direct_space_state.intersect_shape(
+				query,
+				1
+			)
 		)
-	)
 
-	return results.is_empty()
+		if not results.is_empty():
+			return false
+
+	return true
 
 
 # =============================================================================
@@ -356,9 +362,12 @@ func _create_placement_ghost() -> void:
 	placement_ghost.rotation_degrees.y = placement_rotation_degrees
 
 	# Disable all collision shapes inside the preview object.
+	placement_ghost_collisions.clear()
+
 	for child in placement_ghost.find_children("*", "CollisionShape3D", true, false):
 		if child is CollisionShape3D:
 			child.disabled = true
+			placement_ghost_collisions.append(child)
 
 	# Create a transparent preview material.
 	ghost_material = StandardMaterial3D.new()
@@ -389,3 +398,4 @@ func _destroy_placement_ghost() -> void:
 
 	placement_ghost = null
 	ghost_material = null
+	placement_ghost_collisions.clear()

@@ -355,3 +355,21 @@ Main
 - Placement ghost updates to the selected rotation.
 - Runtime-instantiated buildings inherit the current placement rotation.
 - Verified camera movement, zoom, Build Mode, placement validity, selection, and highlighting continue to work correctly.
+
+### Directional Test Building
+
+- Changed TestBuilding from a square footprint to a rectangular prototype.
+- Building mesh and collision now measure 0.8 × 1.0 × 1.8 meters.
+- Verified placement ghost visibly rotates in 90-degree increments.
+- Placed buildings preserve their selected rotation.
+- Runtime buildings remain selectable and use the gold selection highlight.
+- Existing camera, zoom, Build Mode, and placement blocking systems continue to work.
+
+### Rotation-Aware Placement Footprints
+
+- Updated placement validity checks to use the placement ghost's actual collision shapes.
+- Removed the previous fixed 1×1 placement-check box.
+- Placement validity now respects the real dimensions of the placeable scene.
+- Rotating the placement ghost also rotates the placement-validity footprint.
+- Verified rectangular buildings correctly report blocked placement when any portion overlaps an existing placement blocker.
+- Confirmed placement, rotation, selection, highlighting, camera movement, and zoom continue to function correctly.
