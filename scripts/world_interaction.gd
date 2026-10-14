@@ -29,7 +29,13 @@ const PLACEMENT_GHOST_ALPHA: float = 0.4
 @export var build_hud_panel: Control
 @export var build_hud: CanvasLayer
 
-@export var buildable_scenes: Array[PackedScene] = []
+# Building definitions available to the construction system.
+# Each definition contains the data describing a buildable structure.
+@export var buildable_definitions: Array[BuildingDefinition] = []
+
+# Legacy scene list retained temporarily while the placement system is
+# migrated to BuildingDefinition resources.
+# @export var buildable_scenes: Array[PackedScene] = []
 
 @export var ray_length: float = 1000.0
 @export var grid_size: float = 1.0
@@ -220,26 +226,33 @@ func _toggle_placement_mode() -> void:
 # Returns the PackedScene currently selected for construction.
 #
 # Returns null when:
-#   - the buildable-scene list is empty
+#   - the building-definition list is empty
 #   - the selected index is outside the valid array range
 
 func _get_selected_building_scene() -> PackedScene:
-	if buildable_scenes.is_empty():
+	if buildable_definitions.is_empty():
 		return null
 
 	if selected_building_index < 0:
 		return null
 
-	if selected_building_index >= buildable_scenes.size():
+	if selected_building_index >= buildable_definitions.size():
 		return null
 
-	return buildable_scenes[selected_building_index]
+	var selected_definition: BuildingDefinition = (
+		buildable_definitions[selected_building_index]
+	)
+
+	if selected_definition == null:
+		return null
+
+	return selected_definition.building_scene
 
 
 # =============================================================================
 # BUILDING SELECTION
 # =============================================================================
-# Changes which building scene is selected for construction.
+# Changes which building definition is selected for construction.
 #
 # Changing buildings:
 #   - resets placement rotation to 0 degrees
@@ -247,10 +260,13 @@ func _get_selected_building_scene() -> PackedScene:
 #   - updates the Build HUD selection highlight
 
 func _select_building(index: int) -> void:
-	if index < 0 or index >= buildable_scenes.size():
+	if index < 0 or index >= buildable_definitions.size():
 		return
 
-	if buildable_scenes[index] == null:
+	if buildable_definitions[index] == null:
+		return
+
+	if buildable_definitions[index].building_scene == null:
 		return
 
 	selected_building_index = index
@@ -265,7 +281,10 @@ func _select_building(index: int) -> void:
 			selected_building_index
 		)
 
-	print("Selected building slot ", index + 1)
+	print(
+		"Selected building: ",
+		buildable_definitions[index].display_name
+	)
 
 
 # =============================================================================

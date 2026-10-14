@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://cu438d6ipbh1t"]
 
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_2dmjg"]
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_44pk5"]
 [ext_resource type="Script" uid="uid://c3sckria1ahv7" path="res://scripts/camera_controller.gd" id="1_fgbdc"]
 [ext_resource type="Script" uid="uid://dcv31fgeqtpub" path="res://scripts/world_interaction.gd" id="2_i4cec"]
 [ext_resource type="PackedScene" uid="uid://ck6vnv4xqupue" path="res://scenes/buildings/test_building.tscn" id="4_b6u03"]
 [ext_resource type="PackedScene" uid="uid://wv2w4mvn0fmn" path="res://scenes/buildings/test_building_large.tscn" id="5_ebys2"]
+[ext_resource type="Resource" uid="uid://dqdqus3owmjqn" path="res://data/buildings/test_building.tres" id="5_jpx65"]
+[ext_resource type="Resource" uid="uid://dhg1mmhl7hwe6" path="res://data/buildings/test_building_large.tres" id="6_fu2j5"]
 [ext_resource type="PackedScene" uid="uid://bc4bw8kjtmn7g" path="res://scenes/ui/build_hud.tscn" id="6_jvmw0"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
@@ -74,6 +77,7 @@ script = ExtResource("2_i4cec")
 camera = NodePath("../CameraRig/Camera3D")
 build_hud_panel = NodePath("../BuildHUD/BuildPanel")
 build_hud = NodePath("../BuildHUD")
+buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5")])
 buildable_scenes = Array[PackedScene]([ExtResource("4_b6u03"), ExtResource("5_ebys2")])
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
