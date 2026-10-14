@@ -342,3 +342,16 @@ Main
 - Placement ghost is created when Build Mode starts and safely removed when Build Mode ends.
 - Added cleanup safeguards to prevent multiple placement ghosts from accumulating.
 - Verified building placement, collision blocking, selection highlighting, camera movement, and zoom continue working correctly.
+
+### Placement Rotation
+
+- Added the `rotate_placement` input action bound to `R`.
+- Placement rotation advances in 90-degree increments.
+- Rotation cycles through:
+  - 0°
+  - 90°
+  - 180°
+  - 270°
+- Placement ghost updates to the selected rotation.
+- Runtime-instantiated buildings inherit the current placement rotation.
+- Verified camera movement, zoom, Build Mode, placement validity, selection, and highlighting continue to work correctly.

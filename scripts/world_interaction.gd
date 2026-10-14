@@ -28,6 +28,7 @@ var hover_material: StandardMaterial3D
 var placement_mode_active: bool = false
 var current_placement_position: Vector3 = Vector3.ZERO
 var placement_is_valid: bool = false
+var placement_rotation_degrees: float = 0.0
 
 var placement_ghost: Node3D = null
 var ghost_material: StandardMaterial3D
@@ -74,8 +75,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if placement_mode_active:
+		if event.is_action_pressed("rotate_placement"):
+			_rotate_placement()
+			return
+
 		if event.is_action_pressed("primary_action"):
 			_try_place_object()
+			return
+
 		return
 
 	if event.is_action_pressed("primary_action"):
@@ -104,6 +111,25 @@ func _toggle_placement_mode() -> void:
 		_destroy_placement_ghost()
 		print("Placement mode disabled")
 
+
+# =============================================================================
+# PLACEMENT ROTATION
+# =============================================================================
+# Rotates the current placement preview clockwise in 90-degree increments.
+#
+# Rotation cycles:
+#   0 -> 90 -> 180 -> 270 -> 0
+
+func _rotate_placement() -> void:
+	placement_rotation_degrees += 90.0
+
+	if placement_rotation_degrees >= 360.0:
+		placement_rotation_degrees = 0.0
+
+	if placement_ghost != null:
+		placement_ghost.rotation_degrees.y = placement_rotation_degrees
+
+	print("Placement rotation: ", placement_rotation_degrees, " degrees")
 
 # =============================================================================
 # OBJECT SELECTION RAYCAST
@@ -239,7 +265,7 @@ func _update_hover_marker() -> void:
 		hover_marker.visible = false
 		placement_is_valid = false
 
-		
+
 # =============================================================================
 # PLACEMENT VALIDITY CHECK
 # =============================================================================
@@ -298,8 +324,15 @@ func _try_place_object() -> void:
 
 	if new_object is Node3D:
 		new_object.global_position = current_placement_position
+		new_object.rotation_degrees.y = placement_rotation_degrees
 
-	print("Placed object at ", current_placement_position)
+	print(
+	"Placed object at ",
+	current_placement_position,
+	" with rotation ",
+	placement_rotation_degrees,
+	" degrees"
+)
 
 # =============================================================================
 # PLACEMENT GHOST CREATION
@@ -320,6 +353,7 @@ func _create_placement_ghost() -> void:
 		return
 
 	placement_ghost = ghost_instance as Node3D
+	placement_ghost.rotation_degrees.y = placement_rotation_degrees
 
 	# Disable all collision shapes inside the preview object.
 	for child in placement_ghost.find_children("*", "CollisionShape3D", true, false):

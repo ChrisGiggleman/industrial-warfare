@@ -102,7 +102,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Implement basic WASD camera panning
 - [x] Implement camera zoom
 - [x] Tune camera movement and zoom speeds
-
 - [x] Add ground collision
 - [x] Create WorldInteraction controller
 - [x] Cast a 3D ray from the mouse cursor
@@ -130,3 +129,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Show placement validity directly on building ghost
 - [x] Remove temporary placement tile from placement visuals
 - [x] Clean up placement ghost when leaving Build Mode
+- [x] Add 90-degree placement rotation
+- [x] Apply placement rotation to ghost preview
+- [x] Preserve rotation on placed buildings
