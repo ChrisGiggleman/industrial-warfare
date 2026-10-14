@@ -411,3 +411,183 @@ Main
 - Leaving demolition mode restores the placement ghost.
 - Leaving Build Mode clears demolition state and all demolition highlighting.
 - Verified build, rotate, switch building type, select, demolish, rebuild, camera movement, and zoom all continue to work correctly.
+
+## Chat 02 — Camera & Player Interaction Foundation Complete
+
+Completed the first full player-interaction foundation for Industrial Warfare.
+
+### Camera
+
+- Added RTS-style camera movement using WASD.
+- Added mouse-wheel zoom.
+- Tuned camera movement speed for better world navigation.
+- Camera controls remain available during normal interaction and Build Mode.
+
+### Object Selection
+
+- Added mouse raycasting from the active camera into the 3D world.
+- Added the global `selectable` group for logical selectable objects.
+- Selection raycasts walk upward through the collider hierarchy to locate the logical selectable root.
+- Clicking a selectable object gives it a gold visual highlight.
+- Clicking ground or empty space clears the current selection.
+- Selection visuals are controlled by `selectable_object.gd`.
+
+### Collision Layer Conventions
+
+Established the initial physics-layer conventions:
+
+- Layer 1 — Ground / placement surfaces
+- Layer 2 — Selectable-object collision
+- Layer 3 — Placement blockers
+
+These layers allow placement queries to ignore buildings while still detecting the ground beneath them.
+
+### Build Mode
+
+Added a dedicated Build Mode controlled with `B`.
+
+Build Mode currently supports:
+
+- Building placement
+- Grid snapping
+- Placement validity checking
+- Building rotation
+- Multiple building types
+- Placement preview ghost
+- Build HUD
+- Demolition Tool
+
+Right-click exits Build Mode.
+
+### Grid-Based Placement
+
+- Added configurable grid snapping.
+- Current grid size is 1 meter.
+- X and Z placement coordinates snap to the grid.
+- Ground raycasts determine placement height.
+
+### Placement Ghost
+
+- Replaced the original flat placement marker with a full building ghost.
+- Placement ghost uses the selected building scene as its source.
+- Ghost collision shapes are disabled from normal physics interaction.
+- Actual collision-shape dimensions are reused for placement validation.
+- Green ghost indicates valid placement.
+- Red ghost indicates blocked placement.
+- Ghost respects current building rotation.
+
+The obsolete HoverMarker prototype was removed during the final refactor.
+
+### Rotation
+
+- `R` rotates the placement preview clockwise in 90-degree increments.
+- Rotation cycles through:
+  - 0 degrees
+  - 90 degrees
+  - 180 degrees
+  - 270 degrees
+- Placed structures inherit the preview rotation.
+- Placement collision checks use the rotated collision-shape transform.
+
+### Multiple Building Types
+
+Added two prototype building scenes:
+
+- Small Building
+- Large Building
+
+Build Mode controls:
+
+- `1` — Small Building
+- `2` — Large Building
+
+Changing the selected building recreates the placement ghost and resets its rotation.
+
+### Build HUD
+
+Created a prototype Build HUD using a separate `build_hud.tscn` scene.
+
+The HUD displays:
+
+- Current mode
+- Available building slots
+- Selected building
+- Current controls
+
+The active building slot receives a gold selection marker.
+
+This text-based HUD is intentionally temporary and can later be replaced by an icon-based quick-build hotbar.
+
+### Demolition Tool
+
+Moved demolition into Build Mode so destructive world modification cannot happen accidentally during normal selection.
+
+Controls:
+
+- `Delete` — Toggle Demolition Tool
+- `LMB` — Demolish targeted player-built structure
+- `Delete` again — Return to placement
+- `RMB` — Exit Build Mode
+
+Player-created structures belong to the global `player_built` group.
+
+Non-player-built objects, including the ReferenceCube, remain protected.
+
+### Demolition Feedback
+
+- Demolition Mode changes the HUD title and controls.
+- HUD uses red visual styling while demolition is active.
+- Valid player-built targets turn red while underneath the mouse cursor.
+- Red targeting follows the cursor between buildings.
+- Highlight clears when:
+  - moving away from a building
+  - returning to Placement Mode
+  - exiting Build Mode
+  - demolishing the targeted structure
+
+### Final Refactor
+
+Performed a cleanup pass after all interaction systems were functional.
+
+Changes included:
+
+- Removed obsolete HoverMarker code and scene node.
+- Renamed `_update_hover_marker()` to `_update_placement_preview()`.
+- Renamed `_print_mouse_world_position()` to `_select_under_mouse()`.
+- Removed an unused placement-check function parameter.
+- Replaced physics-mask magic numbers with named constants.
+- Replaced repeated rotation and ghost-alpha values with named constants.
+- Improved demolition-hover cleanup.
+- Improved comments and section organization.
+- Refactored selectable-object visual state so demolition highlighting has priority over normal selection highlighting.
+
+### Regression Test
+
+Completed a full regression test after refactoring.
+
+Verified successfully:
+
+- Camera movement
+- Camera zoom
+- Object selection
+- Selection clearing
+- Build Mode entry/exit
+- Small and Large Building selection
+- Grid snapping
+- Placement preview
+- Valid/invalid placement colors
+- Collision blocking
+- Building rotation
+- Rotation-aware footprints
+- Object placement
+- Demolition Mode
+- Demolition hover highlighting
+- Protected non-player-built objects
+- Returning from demolition to placement
+- Exiting Build Mode from demolition
+
+No gameplay regressions were found.
+
+### Status
+
+Chat 02 — Camera & Player Interaction Foundation: COMPLETE

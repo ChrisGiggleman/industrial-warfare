@@ -173,3 +173,140 @@ Demolition flow:
 6. Left-click removes the targeted structure with `queue_free()`.
 7. Delete returns to placement mode.
 8. Leaving Build Mode clears demolition state and hover feedback.
+
+## Player Interaction Architecture
+
+Player interaction is currently coordinated by `WorldInteraction`.
+
+The system is divided into three primary interaction states:
+
+### Normal Mode
+
+Normal Mode is used for non-destructive world interaction.
+
+Current behavior:
+
+- Left-click performs a camera-to-world raycast.
+- The collider hierarchy is searched for a node belonging to the `selectable` group.
+- The logical root object becomes selected.
+- Selection visuals are delegated to the selected object through `set_selected()`.
+
+### Build Mode
+
+Build Mode is entered with `B`.
+
+While active:
+
+- Normal object selection is disabled.
+- A placement ghost represents the currently selected building.
+- Mouse position is projected onto Collision Layer 1.
+- Placement snaps to the configured grid.
+- Building collision shapes are reused to validate placement against Collision Layer 3.
+- Green indicates valid placement.
+- Red indicates blocked placement.
+- `R` rotates the building in 90-degree increments.
+- Number keys select the prototype building type.
+- Right-click exits Build Mode.
+
+### Demolition Tool
+
+Demolition is implemented as a tool inside Build Mode rather than as a normal-world action.
+
+Flow:
+
+1. Enter Build Mode.
+2. Press Delete.
+3. Placement ghost is removed.
+4. HUD switches to Demolition Mode.
+5. Mouse raycasting searches for objects in the `player_built` group.
+6. Valid targets receive red hover feedback.
+7. Left-click removes the targeted object.
+8. Delete returns to placement.
+9. Right-click exits Build Mode completely.
+
+This prevents destructive actions from being mixed with normal object selection.
+
+## Object Groups
+
+### `selectable`
+
+Marks logical world objects that may be selected by the player.
+
+The collider itself does not need to be the group member. WorldInteraction walks upward through the node hierarchy until a `selectable` ancestor is found.
+
+### `player_built`
+
+Marks structures created by the player that are allowed to be demolished.
+
+Objects may be:
+
+- selectable only
+- selectable and player-built
+
+The ReferenceCube is selectable but intentionally not player-built.
+
+## Physics Layers
+
+Current project conventions:
+
+| Layer | Purpose |
+|---|---|
+| 1 | Ground / placement surfaces |
+| 2 | Selectable-object collision |
+| 3 | Placement blockers |
+
+Placement ground raycasts use Layer 1.
+
+Placement-overlap queries use Layer 3.
+
+This separation allows the placement cursor to reach the ground beneath existing structures while independently checking whether the building footprint is blocked.
+
+## Selectable Object Visual State
+
+`selectable_object.gd` owns the object's interaction visuals.
+
+Supported states:
+
+1. Demolition hover
+2. Normal selection
+3. Original material
+
+Demolition hover has higher visual priority than normal selection.
+
+WorldInteraction requests state changes but does not directly modify object materials.
+
+This keeps interaction logic and object presentation separated.
+
+## Build HUD
+
+`build_hud.gd` owns the presentation of current Build Mode state.
+
+Responsibilities include:
+
+- displaying selected building slot
+- displaying Build Mode
+- displaying Demolition Mode
+- changing visual styling based on the active tool
+
+WorldInteraction communicates with the HUD through methods rather than directly manipulating individual labels.
+
+The current text HUD is a prototype and is expected to evolve into an icon-based quick-build interface later.
+
+## Placement Ghost
+
+The placement ghost is created from the currently selected buildable PackedScene.
+
+Its normal physics collisions are disabled, but its CollisionShape3D resources are retained and used for placement-overlap queries.
+
+This means placement validation automatically reflects:
+
+- building dimensions
+- building footprint
+- building rotation
+
+The ghost is temporary and is destroyed when:
+
+- Build Mode ends
+- Demolition Mode begins
+- the selected building changes
+- a replacement ghost is created

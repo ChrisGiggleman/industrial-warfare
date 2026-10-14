@@ -35,7 +35,6 @@ size = Vector3(1, 0.04, 1)
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.033020973, 0.03314972, 0.0012626648)
 mesh = SubResource("PlaneMesh_6rktp")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
@@ -70,10 +69,9 @@ move_speed = 16.0
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 10)
 current = true
 
-[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "hover_marker", "build_hud_panel", "build_hud")]
+[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "build_hud_panel", "build_hud")]
 script = ExtResource("2_i4cec")
 camera = NodePath("../CameraRig/Camera3D")
-hover_marker = NodePath("../HoverMarker")
 build_hud_panel = NodePath("../BuildHUD/BuildPanel")
 build_hud = NodePath("../BuildHUD")
 buildable_scenes = Array[PackedScene]([ExtResource("4_b6u03"), ExtResource("5_ebys2")])

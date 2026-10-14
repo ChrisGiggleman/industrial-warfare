@@ -227,3 +227,12 @@ Assigned:
 
 ### Lesson Learned
 Separate exported references may control different parts of the same UI system. A visible HUD does not necessarily mean all gameplay-to-UI references are connected.
+
+## Build HUD Null Instance Caused by Node Name Mismatch
+
+### Symptom
+
+Entering Build Mode produced an error similar to:
+
+```text
+Invalid assignment of property or key 'text' on a base object of type 'null instance'

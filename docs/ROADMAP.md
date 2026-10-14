@@ -147,3 +147,31 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Add demolition HUD state
 - [x] Add demolition hover targeting
 - [x] Clear demolition state when leaving Build Mode
+
+## Camera & Player Interaction Foundation
+
+- [x] Create RTS-style camera rig
+- [x] Add WASD camera movement
+- [x] Add mouse-wheel camera zoom
+- [x] Add world mouse raycasting
+- [x] Add selectable-object system
+- [x] Add visual selection feedback
+- [x] Establish collision-layer conventions
+- [x] Add Build Mode
+- [x] Add grid-snapped placement
+- [x] Add placement validity checks
+- [x] Add building placement ghost
+- [x] Add valid/invalid ghost coloring
+- [x] Add 90-degree building rotation
+- [x] Add rotation-aware placement footprints
+- [x] Add multiple prototype building types
+- [x] Add prototype Build HUD
+- [x] Add player-built object classification
+- [x] Add demolition tool
+- [x] Restrict demolition to Build Mode
+- [x] Add demolition HUD state
+- [x] Add demolition hover targeting
+- [x] Complete interaction-system refactor
+- [x] Complete final regression test
+
+**Status: Complete**
