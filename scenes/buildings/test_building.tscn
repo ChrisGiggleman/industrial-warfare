@@ -8,7 +8,7 @@ size = Vector3(0.8, 1, 1.8)
 [sub_resource type="BoxMesh" id="BoxMesh_xycqu"]
 size = Vector3(0.8, 1, 1.8)
 
-[node name="TestBuilding" type="Node3D" unique_id=1418987496 node_paths=PackedStringArray("selection_mesh") groups=["selectable"]]
+[node name="TestBuilding" type="Node3D" unique_id=1418987496 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
 script = ExtResource("1_01ywg")
 selection_mesh = NodePath("BuildingMesh")
 

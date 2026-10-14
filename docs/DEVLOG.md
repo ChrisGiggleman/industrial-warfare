@@ -395,3 +395,19 @@ Main
 - Rotation continues to work for each selected building.
 - Verified multiple building types can be placed during the same Build Mode session.
 - Placement blocking prevents overlap between different building types.
+
+### Demolition Tool and Visual Targeting
+
+- Moved demolition from normal interaction into Build Mode.
+- Added a dedicated demolition tool toggled with Delete.
+- Placement ghost is hidden while demolition mode is active.
+- Added demolition-specific HUD state:
+  - Red `DEMOLITION MODE` title
+  - `LMB - Demolish`
+  - `Delete - Return to Build`
+- Added red hover highlighting for player-built structures targeted for demolition.
+- Hover highlighting follows the mouse and clears when leaving the target.
+- ReferenceCube and other non-player-built objects remain protected from demolition.
+- Leaving demolition mode restores the placement ghost.
+- Leaving Build Mode clears demolition state and all demolition highlighting.
+- Verified build, rotate, switch building type, select, demolish, rebuild, camera movement, and zoom all continue to work correctly.

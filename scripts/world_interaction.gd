@@ -8,6 +8,8 @@ extends Node
 
 @export var camera: Camera3D
 @export var hover_marker: MeshInstance3D
+@export var build_hud_panel: Control
+@export var build_hud: CanvasLayer
 @export var buildable_scenes: Array[PackedScene] = []
 
 @export var ray_length: float = 1000.0
@@ -28,6 +30,8 @@ var placement_ghost_collisions: Array[CollisionShape3D] = []
 var selected_building_index: int = 0
 
 var placement_mode_active: bool = false
+var demolition_mode_active: bool = false
+var demolition_hover_target: Node = null
 var current_placement_position: Vector3 = Vector3.ZERO
 var placement_is_valid: bool = false
 var placement_rotation_degrees: float = 0.0
@@ -46,15 +50,25 @@ func _ready() -> void:
 	hover_material = hover_marker.material_override as StandardMaterial3D
 	hover_marker.visible = false
 
+	if build_hud_panel != null:
+		build_hud_panel.visible = false
+
 
 # =============================================================================
 # FRAME UPDATE
 # =============================================================================
 # Runs every rendered frame.
-# The placement preview only updates while placement mode is active.
+# Build-related hover behavior only updates while placement mode is active.
+# Placement mode updates the building ghost.
+# Demolition mode updates the demolition hover target.
 
 func _process(_delta: float) -> void:
-	if placement_mode_active:
+	if not placement_mode_active:
+		return
+
+	if demolition_mode_active:
+		_update_demolition_hover()
+	else:
 		_update_hover_marker()
 
 
@@ -64,16 +78,20 @@ func _process(_delta: float) -> void:
 # Handles interaction inputs.
 #
 # Normal Mode:
-#   Left Click  = Select object
+#   Left Click = Select object
 #
 # Placement Mode:
-#   Left Click  = Attempt to place building
-#   Right Click = Cancel placement mode
+#   Left Click  = Place building
+#   Right Click = Exit Build Mode
+#   Delete      = Toggle Demolition Tool
 #   1           = Select building slot 1
 #   2           = Select building slot 2
-#   R           = Rotate placement preview 90 degrees
+#   R           = Rotate placement preview
 #
-# B / toggle_placement_mode switches between normal and placement modes.
+# Demolition Tool:
+#   Left Click  = Demolish player-built structure
+#   Delete      = Return to placement tool
+#   Right Click = Exit Build Mode
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_placement_mode"):
@@ -83,6 +101,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if placement_mode_active:
 		if event.is_action_pressed("secondary_action"):
 			_toggle_placement_mode()
+			return
+
+		if event.is_action_pressed("demolish_selected"):
+			_toggle_demolition_mode()
+			return
+
+		if demolition_mode_active:
+			if event.is_action_pressed("primary_action"):
+				_try_demolish_under_mouse()
+				return
+
 			return
 
 		if event.is_action_pressed("select_building_1"):
@@ -106,7 +135,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("primary_action"):
 		_print_mouse_world_position()
 
-
 # =============================================================================
 # PLACEMENT MODE TOGGLE
 # =============================================================================
@@ -114,7 +142,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # Entering placement mode clears the current object selection and creates
 # the temporary building preview.
 #
-# Leaving placement mode hides the placement tile and removes the ghost.
+# Leaving placement mode removes placement/demolition state and hides the HUD.
 
 func _toggle_placement_mode() -> void:
 	placement_mode_active = not placement_mode_active
@@ -122,11 +150,30 @@ func _toggle_placement_mode() -> void:
 	if placement_mode_active:
 		_select_object(null)
 		_create_placement_ghost()
+
+		if build_hud_panel != null:
+			build_hud_panel.visible = true
+
+		if build_hud != null and build_hud.has_method("set_selected_building"):
+			build_hud.call("set_selected_building", selected_building_index)
+
+		if build_hud != null and build_hud.has_method("set_demolition_mode"):
+			build_hud.call("set_demolition_mode", false)
+
 		print("Placement mode enabled")
+
 	else:
+		demolition_mode_active = false
 		hover_marker.visible = false
 		placement_is_valid = false
 		_destroy_placement_ghost()
+
+		if build_hud != null and build_hud.has_method("set_demolition_mode"):
+			build_hud.call("set_demolition_mode", false)
+
+		if build_hud_panel != null:
+			build_hud_panel.visible = false
+
 		print("Placement mode disabled")
 
 # =============================================================================
@@ -149,8 +196,9 @@ func _get_selected_building_scene() -> PackedScene:
 # =============================================================================
 # Changes which building scene is currently selected for construction.
 #
-# If Build Mode is already active, the placement ghost is recreated
-# immediately using the newly selected building.
+# If Build Mode is already active:
+#   - the placement ghost is recreated
+#   - the HUD updates to highlight the selected building
 
 func _select_building(index: int) -> void:
 	if index < 0 or index >= buildable_scenes.size():
@@ -165,7 +213,140 @@ func _select_building(index: int) -> void:
 	if placement_mode_active:
 		_create_placement_ghost()
 
+	if build_hud != null and build_hud.has_method("set_selected_building"):
+		build_hud.call("set_selected_building", selected_building_index)
+
 	print("Selected building slot ", index + 1)
+
+# =============================================================================
+# DEMOLITION MODE
+# =============================================================================
+# Toggles between normal building placement and the demolition tool
+# while Build Mode is active.
+#
+# Demolition Mode:
+#   - placement ghost is removed
+#   - HUD changes to demolition controls
+#
+# Returning to Build Mode:
+#   - placement ghost is recreated
+#   - HUD returns to building controls
+
+func _toggle_demolition_mode() -> void:
+	demolition_mode_active = not demolition_mode_active
+
+	if demolition_mode_active:
+		_destroy_placement_ghost()
+		placement_is_valid = false
+
+		if build_hud != null and build_hud.has_method("set_demolition_mode"):
+			build_hud.call("set_demolition_mode", true)
+
+		print("Demolition mode enabled")
+	else:
+		_create_placement_ghost()
+
+		if build_hud != null and build_hud.has_method("set_demolition_mode"):
+			build_hud.call("set_demolition_mode", false)
+
+		print("Demolition mode disabled")
+
+# =============================================================================
+# DEMOLITION RAYCAST
+# =============================================================================
+# Casts a ray beneath the mouse cursor and removes the logical object
+# if it belongs to the "player_built" group.
+
+func _try_demolish_under_mouse() -> void:
+	var mouse_position: Vector2 = get_viewport().get_mouse_position()
+
+	var ray_origin: Vector3 = camera.project_ray_origin(mouse_position)
+	var ray_direction: Vector3 = camera.project_ray_normal(mouse_position)
+	var ray_end: Vector3 = ray_origin + ray_direction * ray_length
+
+	var query := PhysicsRayQueryParameters3D.create(
+		ray_origin,
+		ray_end
+	)
+
+	var result: Dictionary = get_viewport().world_3d.direct_space_state.intersect_ray(query)
+
+	if result.is_empty():
+		print("Nothing to demolish")
+		return
+
+	var collider: Node = result["collider"]
+	var current_node: Node = collider
+
+	while current_node != null:
+		if current_node.is_in_group("player_built"):
+			print("Demolished ", current_node.name)
+			current_node.queue_free()
+			return
+
+		current_node = current_node.get_parent()
+
+	print("Target cannot be demolished")
+
+# =============================================================================
+# DEMOLITION HOVER
+# =============================================================================
+# Finds the player-built structure currently underneath the mouse cursor
+# and gives it red demolition-target feedback.
+
+func _update_demolition_hover() -> void:
+	var mouse_position: Vector2 = get_viewport().get_mouse_position()
+
+	var ray_origin: Vector3 = camera.project_ray_origin(mouse_position)
+	var ray_direction: Vector3 = camera.project_ray_normal(mouse_position)
+	var ray_end: Vector3 = ray_origin + ray_direction * ray_length
+
+	var query := PhysicsRayQueryParameters3D.create(
+		ray_origin,
+		ray_end
+	)
+
+	var result: Dictionary = get_viewport().world_3d.direct_space_state.intersect_ray(query)
+
+	var new_target: Node = null
+
+	if result:
+		var collider: Node = result["collider"]
+		var current_node: Node = collider
+
+		while current_node != null:
+			if current_node.is_in_group("player_built"):
+				new_target = current_node
+				break
+
+			current_node = current_node.get_parent()
+
+	if demolition_hover_target == new_target:
+		return
+
+	if demolition_hover_target != null:
+		if is_instance_valid(demolition_hover_target):
+			if demolition_hover_target.has_method("set_demolition_hover"):
+				demolition_hover_target.call("set_demolition_hover", false)
+
+	demolition_hover_target = new_target
+
+	if demolition_hover_target != null:
+		if demolition_hover_target.has_method("set_demolition_hover"):
+			demolition_hover_target.call("set_demolition_hover", true)
+
+# =============================================================================
+# DEMOLITION HOVER CLEANUP
+# =============================================================================
+# Removes demolition highlighting from the current hover target.
+
+func _clear_demolition_hover() -> void:
+	if demolition_hover_target != null:
+		if is_instance_valid(demolition_hover_target):
+			if demolition_hover_target.has_method("set_demolition_hover"):
+				demolition_hover_target.call("set_demolition_hover", false)
+
+	demolition_hover_target = null
 
 # =============================================================================
 # PLACEMENT ROTATION

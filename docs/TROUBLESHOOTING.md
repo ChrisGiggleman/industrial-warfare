@@ -209,3 +209,21 @@ Assigned the appropriate mesh explicitly:
 ### Lesson Learned
 
 When a script refactor introduces a new exported Node reference, existing scene instances may require that Inspector property to be reassigned manually.
+
+## Build HUD Appeared but Selected Building Did Not Highlight
+
+### Symptoms
+The Build HUD displayed correctly during Build Mode, but neither building slot changed to the selected gold/yellow color.
+
+### Cause
+`WorldInteraction` had `Build Hud Panel` assigned, which allowed the HUD to show and hide, but the `Build Hud` reference itself was empty.
+
+Without the `BuildHUD` root reference, `WorldInteraction` could not call `set_selected_building()`.
+
+### Resolution
+Assigned:
+- `Build Hud Panel` → `BuildHUD/BuildPanel`
+- `Build Hud` → `BuildHUD`
+
+### Lesson Learned
+Separate exported references may control different parts of the same UI system. A visible HUD does not necessarily mean all gameplay-to-UI references are connected.

@@ -141,3 +141,9 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Support multiple buildable scenes
 - [x] Switch buildable type during Build Mode
 - [x] Preserve footprint-aware placement across building types
+- [x] Add demolition tool
+- [x] Restrict demolition to player-built structures
+- [x] Move demolition into Build Mode
+- [x] Add demolition HUD state
+- [x] Add demolition hover targeting
+- [x] Clear demolition state when leaving Build Mode

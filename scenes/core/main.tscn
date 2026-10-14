@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://dcv31fgeqtpub" path="res://scripts/world_interaction.gd" id="2_i4cec"]
 [ext_resource type="PackedScene" uid="uid://ck6vnv4xqupue" path="res://scenes/buildings/test_building.tscn" id="4_b6u03"]
 [ext_resource type="PackedScene" uid="uid://wv2w4mvn0fmn" path="res://scenes/buildings/test_building_large.tscn" id="5_ebys2"]
+[ext_resource type="PackedScene" uid="uid://bc4bw8kjtmn7g" path="res://scenes/ui/build_hud.tscn" id="6_jvmw0"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
 size = Vector2(20, 20)
@@ -34,7 +35,7 @@ size = Vector3(1, 0.04, 1)
 [node name="Main" type="Node3D" unique_id=284048942]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.024633884, 0.03314972, 0.02122879)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.033020973, 0.03314972, 0.0012626648)
 mesh = SubResource("PlaneMesh_6rktp")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
@@ -69,12 +70,18 @@ move_speed = 16.0
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 10)
 current = true
 
-[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "hover_marker")]
+[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "hover_marker", "build_hud_panel", "build_hud")]
 script = ExtResource("2_i4cec")
 camera = NodePath("../CameraRig/Camera3D")
 hover_marker = NodePath("../HoverMarker")
+build_hud_panel = NodePath("../BuildHUD/BuildPanel")
+build_hud = NodePath("../BuildHUD")
 buildable_scenes = Array[PackedScene]([ExtResource("4_b6u03"), ExtResource("5_ebys2")])
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")
 mesh = SubResource("BoxMesh_2dmjg")
+
+[node name="BuildHUD" parent="." unique_id=1882342599 instance=ExtResource("6_jvmw0")]
+
+[editable path="BuildHUD"]

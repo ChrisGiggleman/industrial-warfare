@@ -156,3 +156,20 @@ Prototype bindings:
 - Slot 2 → `test_building_large.tscn`
 
 Changing building selection recreates the placement ghost using the newly selected PackedScene. Placement validity therefore automatically uses the selected building's collision footprint.
+
+### Demolition Tool
+
+Demolition is treated as a tool within Build Mode rather than a normal-world interaction.
+
+Player-built structures belong to the global `player_built` group.
+
+Demolition flow:
+
+1. Player enters Build Mode.
+2. Delete toggles demolition mode.
+3. Placement ghost is removed.
+4. Mouse raycasting identifies player-built structures.
+5. Valid demolition targets receive red hover feedback.
+6. Left-click removes the targeted structure with `queue_free()`.
+7. Delete returns to placement mode.
+8. Leaving Build Mode clears demolition state and hover feedback.

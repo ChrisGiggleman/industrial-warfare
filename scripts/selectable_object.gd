@@ -9,7 +9,7 @@ extends Node3D
 
 @export var selection_mesh: MeshInstance3D
 @export var selected_color: Color = Color(1.0, 0.8, 0.2)
-
+@export var demolition_color: Color = Color(1.0, 0.2, 0.2)
 
 # =============================================================================
 # RUNTIME STATE
@@ -18,7 +18,7 @@ extends Node3D
 
 var original_material: Material
 var highlight_material: StandardMaterial3D
-
+var demolition_material: StandardMaterial3D
 
 # =============================================================================
 # INITIALIZATION
@@ -35,6 +35,8 @@ func _ready() -> void:
 
 	highlight_material = StandardMaterial3D.new()
 	highlight_material.albedo_color = selected_color
+	demolition_material = StandardMaterial3D.new()
+	demolition_material.albedo_color = demolition_color
 
 
 # =============================================================================
@@ -49,5 +51,20 @@ func set_selected(is_selected: bool) -> void:
 
 	if is_selected:
 		selection_mesh.material_override = highlight_material
+	else:
+		selection_mesh.material_override = original_material
+
+# =============================================================================
+# DEMOLITION HOVER STATE
+# =============================================================================
+# Provides red visual feedback when this object is targeted by the
+# demolition tool.
+
+func set_demolition_hover(is_hovered: bool) -> void:
+	if selection_mesh == null:
+		return
+
+	if is_hovered:
+		selection_mesh.material_override = demolition_material
 	else:
 		selection_mesh.material_override = original_material
