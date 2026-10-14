@@ -322,6 +322,7 @@ Main
 - Placement is blocked on occupied cells.
 - Newly placed buildings immediately act as placement blockers.
 - Verified multiple buildings can be placed during a single play session.
+
 ### Building Placement Ghost
 
 - Added a translucent building preview using the configured `PackedScene`.
@@ -373,3 +374,11 @@ Main
 - Rotating the placement ghost also rotates the placement-validity footprint.
 - Verified rectangular buildings correctly report blocked placement when any portion overlaps an existing placement blocker.
 - Confirmed placement, rotation, selection, highlighting, camera movement, and zoom continue to function correctly.
+
+### Placement Mode Cancellation
+
+- Added Right Mouse Button cancellation using the existing `secondary_action`.
+- Right-click exits Build Mode without placing an object.
+- Placement ghost is cleaned up through the existing placement-mode shutdown logic.
+- Normal object selection resumes immediately after cancellation.
+- Verified rotation, placement, WASD movement, and camera zoom continue working.

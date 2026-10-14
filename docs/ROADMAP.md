@@ -135,3 +135,4 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Support rectangular building footprints
 - [x] Make placement validity rotation-aware
 - [x] Use actual building collision shape for placement checks
+- [x] Cancel placement mode with secondary action

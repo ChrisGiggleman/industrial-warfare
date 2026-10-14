@@ -63,12 +63,14 @@ func _process(_delta: float) -> void:
 # Handles interaction inputs.
 #
 # Normal Mode:
-#   Left Click = Select object
+#   Left Click  = Select object
 #
 # Placement Mode:
-#   Left Click = Attempt to place building
+#   Left Click  = Attempt to place building
+#   Right Click = Cancel placement mode
+#   R           = Rotate placement preview 90 degrees
 #
-# B / toggle_placement_mode switches between the two modes.
+# B / toggle_placement_mode switches between normal and placement modes.
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_placement_mode"):
@@ -76,6 +78,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if placement_mode_active:
+		if event.is_action_pressed("secondary_action"):
+			_toggle_placement_mode()
+			return
+
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
 			return
