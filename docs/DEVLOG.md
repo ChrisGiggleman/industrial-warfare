@@ -382,3 +382,16 @@ Main
 - Placement ghost is cleaned up through the existing placement-mode shutdown logic.
 - Normal object selection resumes immediately after cancellation.
 - Verified rotation, placement, WASD movement, and camera zoom continue working.
+
+### Multiple Buildable Objects
+
+- Replaced the single placeable PackedScene with an array of buildable scenes.
+- Added build-selection inputs:
+  - `1` — TestBuilding
+  - `2` — TestBuildingLarge
+- Added runtime tracking of the currently selected building type.
+- Placement ghost is recreated immediately when switching building types.
+- Each building automatically uses its own collision shape for placement validity.
+- Rotation continues to work for each selected building.
+- Verified multiple building types can be placed during the same Build Mode session.
+- Placement blocking prevents overlap between different building types.

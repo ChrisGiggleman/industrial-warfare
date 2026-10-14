@@ -96,6 +96,8 @@ After the First Night vertical slice is stable, evaluate:
 - Advanced warfare systems
 - Performance optimization
 
+## Phase 1 Checklist
+
 - [x] Create CameraRig architecture
 - [x] Create first GDScript
 - [x] Connect camera controller to existing input actions
@@ -136,3 +138,6 @@ After the First Night vertical slice is stable, evaluate:
 - [x] Make placement validity rotation-aware
 - [x] Use actual building collision shape for placement checks
 - [x] Cancel placement mode with secondary action
+- [x] Support multiple buildable scenes
+- [x] Switch buildable type during Build Mode
+- [x] Preserve footprint-aware placement across building types

@@ -143,3 +143,16 @@ The ghost:
 - is destroyed when Build Mode ends
 
 The actual placed building remains a separate scene instance with normal collision and selection behavior.
+
+### Buildable Scene Collection
+
+`WorldInteraction` stores buildable objects as an exported `Array[PackedScene]`.
+
+The currently selected building is tracked by array index.
+
+Prototype bindings:
+
+- Slot 1 → `test_building.tscn`
+- Slot 2 → `test_building_large.tscn`
+
+Changing building selection recreates the placement ghost using the newly selected PackedScene. Placement validity therefore automatically uses the selected building's collision footprint.

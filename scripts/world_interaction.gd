@@ -8,7 +8,7 @@ extends Node
 
 @export var camera: Camera3D
 @export var hover_marker: MeshInstance3D
-@export var placeable_scene: PackedScene
+@export var buildable_scenes: Array[PackedScene] = []
 
 @export var ray_length: float = 1000.0
 @export var grid_size: float = 1.0
@@ -25,6 +25,7 @@ extends Node
 var selected_object: Node = null
 var hover_material: StandardMaterial3D
 var placement_ghost_collisions: Array[CollisionShape3D] = []
+var selected_building_index: int = 0
 
 var placement_mode_active: bool = false
 var current_placement_position: Vector3 = Vector3.ZERO
@@ -68,6 +69,8 @@ func _process(_delta: float) -> void:
 # Placement Mode:
 #   Left Click  = Attempt to place building
 #   Right Click = Cancel placement mode
+#   1           = Select building slot 1
+#   2           = Select building slot 2
 #   R           = Rotate placement preview 90 degrees
 #
 # B / toggle_placement_mode switches between normal and placement modes.
@@ -80,6 +83,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if placement_mode_active:
 		if event.is_action_pressed("secondary_action"):
 			_toggle_placement_mode()
+			return
+
+		if event.is_action_pressed("select_building_1"):
+			_select_building(0)
+			return
+
+		if event.is_action_pressed("select_building_2"):
+			_select_building(1)
 			return
 
 		if event.is_action_pressed("rotate_placement"):
@@ -118,6 +129,43 @@ func _toggle_placement_mode() -> void:
 		_destroy_placement_ghost()
 		print("Placement mode disabled")
 
+# =============================================================================
+# SELECTED BUILDING SCENE
+# =============================================================================
+# Returns the PackedScene currently selected for construction.
+# Returns null if no valid building scene is available.
+
+func _get_selected_building_scene() -> PackedScene:
+	if buildable_scenes.is_empty():
+		return null
+
+	if selected_building_index < 0 or selected_building_index >= buildable_scenes.size():
+		return null
+
+	return buildable_scenes[selected_building_index]
+
+# =============================================================================
+# BUILDING SELECTION
+# =============================================================================
+# Changes which building scene is currently selected for construction.
+#
+# If Build Mode is already active, the placement ghost is recreated
+# immediately using the newly selected building.
+
+func _select_building(index: int) -> void:
+	if index < 0 or index >= buildable_scenes.size():
+		return
+
+	if buildable_scenes[index] == null:
+		return
+
+	selected_building_index = index
+	placement_rotation_degrees = 0.0
+
+	if placement_mode_active:
+		_create_placement_ghost()
+
+	print("Selected building slot ", index + 1)
 
 # =============================================================================
 # PLACEMENT ROTATION
@@ -326,11 +374,13 @@ func _try_place_object() -> void:
 		print("Placement blocked")
 		return
 
-	if placeable_scene == null:
-		print("No placeable scene assigned")
+	var selected_scene: PackedScene = _get_selected_building_scene()
+
+	if selected_scene == null:
+		print("No buildable scene selected")
 		return
 
-	var new_object: Node = placeable_scene.instantiate()
+	var new_object: Node = selected_scene.instantiate()
 
 	get_tree().current_scene.add_child(new_object)
 
@@ -356,10 +406,12 @@ func _try_place_object() -> void:
 
 func _create_placement_ghost() -> void:
 	_destroy_placement_ghost()
-	if placeable_scene == null:
+	var selected_scene: PackedScene = _get_selected_building_scene()
+
+	if selected_scene == null:
 		return
 
-	var ghost_instance: Node = placeable_scene.instantiate()
+	var ghost_instance: Node = selected_scene.instantiate()
 
 	if not ghost_instance is Node3D:
 		return
