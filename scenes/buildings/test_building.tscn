@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_01ywg"]
 [ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_5ceut"]
+[ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_4ie2m"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 1.8)
@@ -26,3 +27,6 @@ mesh = SubResource("BoxMesh_xycqu")
 
 [node name="BuildingRuntime" type="Node" parent="." unique_id=315977768]
 script = ExtResource("2_5ceut")
+
+[node name="InventoryComponent" type="Node" parent="." unique_id=153902443]
+script = ExtResource("3_4ie2m")
