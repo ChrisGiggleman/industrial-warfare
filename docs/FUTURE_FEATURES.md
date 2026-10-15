@@ -4,7 +4,7 @@ This document stores ideas that may be explored after the core prototype and Fir
 
 These features are not commitments.
 
-The purpose of this file is to preserve good ideas without allowing them to distract from the current development goal.
+The purpose of this file is to preserve useful ideas without allowing them to distract from the active roadmap.
 
 ---
 
@@ -12,17 +12,17 @@ The purpose of this file is to preserve good ideas without allowing them to dist
 
 Possible future ideas:
 
-- Larger procedural maps
-- Multiple biomes
-- Multiple planets
-- Planet-specific resources
-- Weather systems
-- Environmental hazards
-- Abandoned towns
-- Small cities
-- Industrial ruins
-- Underground locations
-- Strategic resource zones
+- larger procedural maps
+- multiple biomes
+- multiple planets
+- planet-specific resources
+- weather systems
+- environmental hazards
+- abandoned towns
+- small cities
+- industrial ruins
+- underground locations
+- strategic resource zones
 
 ---
 
@@ -32,14 +32,14 @@ Different worlds may contain different hostile factions.
 
 Possible examples:
 
-- Zombies
-- Mutated creatures
-- Alien wildlife
-- Hostile machines
-- Rogue military forces
-- Automated defense networks
+- zombies
+- mutated creatures
+- alien wildlife
+- hostile machines
+- rogue military forces
+- automated defense networks
 
-Each enemy faction should eventually influence how the player builds and defends their industrial base.
+Each enemy faction should eventually influence how the player builds and defends an industrial base.
 
 ---
 
@@ -47,17 +47,17 @@ Each enemy faction should eventually influence how the player builds and defends
 
 Possible future zombie-world systems:
 
-- Multiple zombie archetypes
-- Large urban infection zones
-- Buildings that act as spawn locations
-- Zombie migration
-- Horde behavior
-- Noise-based attraction
-- Nighttime aggression changes
-- City-clearing operations
-- Fortified settlements
-- High-risk loot zones
-- Infection mechanics
+- multiple zombie archetypes
+- large urban infection zones
+- buildings that act as spawn locations
+- zombie migration
+- horde behavior
+- noise-based attraction
+- nighttime aggression changes
+- city-clearing operations
+- fortified settlements
+- high-risk loot zones
+- infection mechanics
 
 ---
 
@@ -65,38 +65,38 @@ Possible future zombie-world systems:
 
 Possible future automation systems:
 
-- Advanced conveyor networks
-- Splitters and mergers
-- Inserters
-- Trains
-- Trucks
-- Drones
-- Pipes
-- Fluid processing
-- Robotics
-- Automated warehouses
-- Smart logistics
-- Production priorities
-- Factory monitoring systems
+- advanced conveyor networks
+- splitters and mergers
+- inserters
+- trains
+- trucks
+- drones
+- pipes
+- fluid processing
+- robotics
+- automated warehouses
+- smart logistics
+- production priorities
+- factory monitoring systems
 
 ---
 
-## Industrial Warfare
+## Industrial Warfare Systems
 
 Possible future combat systems:
 
-- Automated turrets
-- Artillery
-- Defensive walls
-- Minefields
-- Armored vehicles
-- Tanks
-- Combat drones
-- Missile systems
-- Radar
-- Long-range targeting
-- Forward operating bases
-- Automated defensive networks
+- automated turrets
+- artillery
+- defensive walls
+- minefields
+- armored vehicles
+- tanks
+- combat drones
+- missile systems
+- radar
+- long-range targeting
+- forward operating bases
+- automated defensive networks
 
 ---
 
@@ -104,14 +104,14 @@ Possible future combat systems:
 
 Possible future progression systems:
 
-- Research trees
-- Technology tiers
-- Equipment upgrades
-- Factory upgrades
-- Weapon upgrades
-- Defensive technology
-- New logistics technologies
-- Planet-specific technologies
+- research trees
+- technology tiers
+- equipment upgrades
+- factory upgrades
+- weapon upgrades
+- defensive technology
+- new logistics technologies
+- planet-specific technologies
 
 ---
 
@@ -119,14 +119,14 @@ Possible future progression systems:
 
 Possible future player features:
 
-- Personal weapons
-- Equipment
-- Armor
-- Inventory upgrades
-- Vehicles
-- Exploration tools
-- Construction tools
-- Repair systems
+- personal weapons
+- equipment
+- armor
+- inventory upgrades
+- vehicles
+- exploration tools
+- construction tools
+- repair systems
 
 ---
 
@@ -134,15 +134,15 @@ Possible future player features:
 
 Possible long-term systems:
 
-- Territory control
-- Supply lines
-- Enemy-controlled regions
-- Forward bases
-- Resource scarcity
-- Strategic map objectives
-- Large-scale assaults
-- Factory evacuation
-- Planetary objectives
+- territory control
+- supply lines
+- enemy-controlled regions
+- forward bases
+- resource scarcity
+- strategic map objectives
+- large-scale assaults
+- factory evacuation
+- planetary objectives
 
 ---
 
@@ -152,10 +152,10 @@ Multiplayer is not part of the initial development target.
 
 Possible future evaluation:
 
-- Cooperative factory building
-- Cooperative defense
-- Shared logistics
-- Dedicated servers
+- cooperative factory building
+- cooperative defense
+- shared logistics
+- dedicated servers
 
 Multiplayer should only be considered after the single-player architecture and core gameplay systems are stable.
 
@@ -163,6 +163,6 @@ Multiplayer should only be considered after the single-player architecture and c
 
 ## Development Rule
 
-Ideas placed in this document should not automatically be added to the active roadmap.
+Ideas in this document should not automatically be added to the active roadmap.
 
 A feature should move from `FUTURE_FEATURES.md` to `ROADMAP.md` only when it becomes part of an intentional development milestone.
