@@ -1,8 +1,8 @@
 # Industrial Warfare — Technical Architecture
 
-This document describes the technical organization and development conventions for the Industrial Warfare Godot project.
+This document describes the current technical organization of the Industrial Warfare Godot project.
 
-The goal is to keep systems modular, understandable, testable, and easy to expand as the game grows.
+The architecture is intentionally modular so individual systems can be tested, replaced, and expanded without turning a single controller into the entire game.
 
 ---
 
@@ -22,156 +22,245 @@ The goal is to keep systems modular, understandable, testable, and easy to expan
 res://
 ├── assets/
 ├── data/
-│   └── buildings/
+│   ├── buildings/
+│   ├── items/
+│   └── recipes/
 ├── docs/
+│   └── screenshots/
 ├── scenes/
-│   └── buildings/
+│   ├── buildings/
+│   ├── core/
+│   └── ui/
 ├── scripts/
 │   ├── components/
 │   └── data/
 ├── tests/
 ├── icon.svg
 └── project.godot
+```
 
-### Input Actions
+### Folder Responsibilities
 
-Input action names use lowercase `snake_case` and describe player intent rather than specific hardware inputs.
+- `data/` — concrete `.tres` game-data assets.
+- `scripts/data/` — reusable custom `Resource` classes that define data schemas.
+- `scripts/components/` — reusable gameplay components attached to scene child nodes.
+- `scenes/buildings/` — reusable physical building scenes.
+- `scenes/core/` — primary game scenes such as `main.tscn`.
+- `scenes/ui/` — reusable interface scenes.
+- `docs/` — design, architecture, troubleshooting, roadmap, and devlog documentation.
 
-Examples:
+---
 
-`move_forward`
+## Coding and Naming Conventions
 
-`interact`
+- Project folders and filenames use lowercase `snake_case`.
+- Custom class names use PascalCase, such as `BuildingDefinition`.
+- GDScript uses tabs for indentation.
+- Input actions describe player intent instead of hardware keys.
+- Large scripts are divided with section headers:
 
-`primary_action`
+```gdscript
+# =============================================================================
+# SECTION NAME
+# =============================================================================
+```
 
-`camera_zoom_in`
+- Gameplay systems should prefer exported references, reusable components, and data resources over hard-coded scene paths and building-specific logic.
 
-Gameplay code should reference input actions rather than hard-coded keyboard or mouse buttons.
+---
 
-## Camera System
+## Main Scene Architecture
 
-The main camera uses a `CameraRig` architecture.
+The current main scene coordinates world, camera, interaction, and UI systems.
 
-```text
-CameraRig (Node3D)
-└── Camera3D
-
-## World Interaction System
-
-Player interaction logic is separated from the camera controller.
+Conceptually:
 
 ```text
 Main
+├── Ground
+├── DirectionalLight3D
+├── WorldEnvironment
+├── ReferenceCube
 ├── CameraRig
 │   └── Camera3D
-└── WorldInteraction
+├── WorldInteraction
+├── BuildHUD
+└── ProductionDebugHUD
+```
 
-### Selectable Objects
+---
 
-Logical game objects can be placed in the `selectable` scene group.
+## Camera System
 
-Physics colliders may exist as child nodes beneath the logical object. When a raycast hits a collider, the interaction system walks up the node hierarchy until it finds a node in the `selectable` group.
-
-Example:
+The camera uses a `CameraRig` Node3D with `Camera3D` as a child.
 
 ```text
-ReferenceCube [selectable]
-└── ReferenceCubeBody
-    └── CollisionShape3D
+CameraRig
+└── Camera3D
+```
 
+`camera_controller.gd` currently provides:
 
-Selectable objects expose a `set_selected()` method. The interaction system controls selection state, while each selectable object is responsible for its own visual feedback.
+- RTS-style WASD panning
+- Mouse-wheel zoom
+- Configurable movement and zoom limits
 
-The current prototype uses a material override for selected objects. This can later be replaced by outlines, emission, selection rings, or shaders without changing the WorldInteraction selection logic.
+Camera control remains available during normal interaction and Build Mode.
 
-### Interaction Collision Layers
+---
 
-Initial interaction collision-layer convention:
+## Input Architecture
 
-- Layer 1 — Ground / placement surfaces
-- Layer 2 — Selectable objects
+Gameplay code references Godot Input Map actions instead of hard-coded keys.
 
-The hover/placement ray currently queries only Layer 1, allowing placement-position tracking to remain independent from selectable-object collision.
+Current examples include:
 
-Selection raycasts remain capable of detecting selectable objects on Layer 2.
+- `move_forward`
+- `move_backward`
+- `move_left`
+- `move_right`
+- `primary_action`
+- `secondary_action`
+- `camera_zoom_in`
+- `camera_zoom_out`
+- `toggle_placement_mode`
+- `rotate_placement`
+- `select_building_1`
+- `select_building_2`
+- `demolish_selected`
 
-### Interaction Collision Layers
+The current prototype bindings include:
 
-- Layer 1 — Ground / placement surfaces
-- Layer 2 — Selectable objects
-- Layer 3 — Placement blockers
+- WASD — camera movement
+- Mouse wheel — zoom
+- LMB — primary interaction
+- RMB — secondary/cancel interaction
+- `B` — Build Mode
+- `R` — rotate building
+- `1` / `2` — prototype building selection
+- `Delete` — toggle Demolition Tool while in Build Mode
 
-Selectable objects may also belong to Layer 3 when they should prevent construction within their occupied space.
+---
 
-### Interaction Modes
+## World Interaction Architecture
 
-`WorldInteraction` currently supports two basic interaction states:
+`world_interaction.gd` coordinates player interaction with the 3D world.
 
-- **Normal Mode**
-  - Object selection is enabled.
-  - Placement preview is hidden.
+Its current responsibilities include:
 
-- **Placement Mode**
-  - Activated with `toggle_placement_mode`.
-  - Object selection is temporarily disabled.
-  - Grid-snapped placement preview becomes active.
-  - Placement validity is shown using green/red visual feedback.
+- object selection
+- Build Mode state
+- placement ghost creation
+- grid snapping
+- placement validity checks
+- building selection
+- building instantiation
+- runtime definition injection
+- placement rotation
+- Demolition Tool behavior
+- communication with the Build HUD
+- communication with the Production Debug HUD
 
-The current implementation uses a Boolean placement-state flag. This keeps the early architecture simple while leaving room for a more advanced interaction-state system later if needed.
+Building-specific production and inventory behavior does **not** belong in `WorldInteraction`.
 
-### Runtime Building Placement
+---
 
-Constructible objects are stored as reusable `.tscn` scenes and referenced through `PackedScene`.
+## Interaction States
 
-Placement flow:
+### Normal Mode
 
-1. Player enters placement mode.
-2. Mouse position is projected onto a valid placement surface.
-3. Position is snapped to the placement grid.
-4. Placement-blocker collision is checked.
-5. If valid, the configured `PackedScene` is instantiated.
-6. The new scene instance is added to the active world and positioned at the snapped location.
+- LMB raycasts into the world.
+- Selectable objects can be selected.
+- Clicking ground or empty space clears selection.
+- Selected objects control their own visual feedback.
+- Selected building data is forwarded to the Production Debug HUD.
 
-This allows future buildings and machines to use reusable scenes rather than being created directly by `WorldInteraction`.
+### Build Mode
 
-### Placement Ghost
+Entered with `B`.
 
-Build Mode uses a temporary instance of the configured `PackedScene` as a placement preview.
+- Normal selection is disabled.
+- The active building receives a placement ghost.
+- Mouse position is projected onto the ground.
+- Placement snaps to a configurable 1-meter grid.
+- Green indicates valid placement.
+- Red indicates blocked placement.
+- `R` rotates in 90-degree increments.
+- `1` and `2` select prototype building definitions.
+- LMB places a valid building.
+- RMB exits Build Mode.
 
-The ghost:
-- has collision disabled
-- follows the grid-snapped placement position
-- displays translucent green when placement is valid
-- displays translucent red when placement is blocked
-- is destroyed when Build Mode ends
+### Demolition Tool
 
-The actual placed building remains a separate scene instance with normal collision and selection behavior.
+Demolition exists inside Build Mode.
 
-### Buildable Definition Collection
+- `Delete` enters or leaves the Demolition Tool.
+- Placement ghost is removed while demolition is active.
+- Valid `player_built` targets receive red hover feedback.
+- LMB demolishes the current valid target.
+- Non-player-built objects such as `ReferenceCube` remain protected.
+- RMB exits Build Mode completely.
 
-`WorldInteraction` stores available construction options as:
+---
 
-`Array[BuildingDefinition]`
+## Physics Layers
 
-The currently selected building is tracked by array index.
+| Layer | Purpose |
+|---|---|
+| 1 | Ground / placement surfaces |
+| 2 | Selectable-object collision |
+| 3 | Placement blockers |
 
-Prototype bindings:
+Placement ground raycasts use Layer 1.
 
-- Slot 1 → `test_building.tres`
-- Slot 2 → `test_building_large.tres`
+Selection can detect objects on Layer 2.
 
-Each definition contains the `PackedScene` required for placement.
+Placement overlap queries use Layer 3.
 
-Changing the selected building recreates the placement ghost using the scene referenced by the new definition.
+This separation lets placement raycasts reach the ground beneath existing structures while collision checks independently determine whether the new building footprint is blocked.
 
-Placement validity therefore continues to use the selected building's actual collision footprint.
+---
 
-The construction controller no longer maintains a separate array of hard-coded building scenes.
+## Object Groups
 
-## Building Definition Architecture
+### `selectable`
 
-Building metadata is stored in a custom Godot Resource:
+Marks logical objects that may be selected.
+
+A collider may be a child of the logical object. `WorldInteraction` walks upward through the node hierarchy until it finds a `selectable` ancestor.
+
+### `player_built`
+
+Marks structures the player is allowed to demolish.
+
+A building may be both:
+
+- `selectable`
+- `player_built`
+
+`ReferenceCube` is selectable but intentionally not player-built.
+
+---
+
+## Selectable Object Visual State
+
+`selectable_object.gd` owns selection and demolition visual feedback.
+
+Current priority:
+
+1. Demolition hover
+2. Normal selection
+3. Original material
+
+The interaction controller requests state changes but does not directly manage each object's material implementation.
+
+This keeps interaction logic separate from presentation.
+
+---
+
+## Data-Driven Building Definitions
+
+Building metadata is represented by the custom resource class:
 
 `BuildingDefinition`
 
@@ -183,197 +272,381 @@ Current fields:
 - `category`
 - `building_scene`
 
-The intended separation is:
+Prototype assets:
+
+- `res://data/buildings/test_building.tres`
+- `res://data/buildings/test_building_large.tres`
+
+The separation is:
 
 ```text
 BuildingDefinition (.tres)
-        ↓
-describes
-        ↓
+        ↓ references
 Building Scene (.tscn)
+```
 
-### Demolition Tool
+The `.tres` file describes **what the building is**.
 
-Demolition is treated as a tool within Build Mode rather than a normal-world interaction.
+The `.tscn` file describes **how the building exists in the world**.
 
-Player-built structures belong to the global `player_built` group.
+`WorldInteraction` stores construction options as:
 
-Demolition flow:
+```gdscript
+Array[BuildingDefinition]
+```
 
-1. Player enters Build Mode.
-2. Delete toggles demolition mode.
-3. Placement ghost is removed.
-4. Mouse raycasting identifies player-built structures.
-5. Valid demolition targets receive red hover feedback.
-6. Left-click removes the targeted structure with `queue_free()`.
-7. Delete returns to placement mode.
-8. Leaving Build Mode clears demolition state and hover feedback.
+It no longer maintains a separate hard-coded `Array[PackedScene]`.
 
-## Player Interaction Architecture
+---
 
-Player interaction is currently coordinated by `WorldInteraction`.
+## Runtime Building Placement
 
-The system is divided into three primary interaction states:
+Placement flow:
 
-### Normal Mode
+```text
+Selected BuildingDefinition
+        ↓
+building_scene
+        ↓
+Placement Ghost / Validation
+        ↓
+Instantiate Building Scene
+        ↓
+Add to Current World
+        ↓
+Initialize BuildingRuntime
+```
 
-Normal Mode is used for non-destructive world interaction.
+The selected `BuildingDefinition` is used for both ghost creation and actual placement.
 
-Current behavior:
+This keeps construction data centralized and allows future building metadata such as costs, icons, unlock rules, and categories to be added without hard-coding individual buildings into the interaction controller.
 
-- Left-click performs a camera-to-world raycast.
-- The collider hierarchy is searched for a node belonging to the `selectable` group.
-- The logical root object becomes selected.
-- Selection visuals are delegated to the selected object through `set_selected()`.
-
-### Build Mode
-
-Build Mode is entered with `B`.
-
-While active:
-
-- Normal object selection is disabled.
-- A placement ghost represents the currently selected building.
-- Mouse position is projected onto Collision Layer 1.
-- Placement snaps to the configured grid.
-- Building collision shapes are reused to validate placement against Collision Layer 3.
-- Green indicates valid placement.
-- Red indicates blocked placement.
-- `R` rotates the building in 90-degree increments.
-- Number keys select the prototype building type.
-- Right-click exits Build Mode.
-
-### Demolition Tool
-
-Demolition is implemented as a tool inside Build Mode rather than as a normal-world action.
-
-Flow:
-
-1. Enter Build Mode.
-2. Press Delete.
-3. Placement ghost is removed.
-4. HUD switches to Demolition Mode.
-5. Mouse raycasting searches for objects in the `player_built` group.
-6. Valid targets receive red hover feedback.
-7. Left-click removes the targeted object.
-8. Delete returns to placement.
-9. Right-click exits Build Mode completely.
-
-This prevents destructive actions from being mixed with normal object selection.
-
-## Object Groups
-
-### `selectable`
-
-Marks logical world objects that may be selected by the player.
-
-The collider itself does not need to be the group member. WorldInteraction walks upward through the node hierarchy until a `selectable` ancestor is found.
-
-### `player_built`
-
-Marks structures created by the player that are allowed to be demolished.
-
-Objects may be:
-
-- selectable only
-- selectable and player-built
-
-The ReferenceCube is selectable but intentionally not player-built.
-
-## Physics Layers
-
-Current project conventions:
-
-| Layer | Purpose |
-|---|---|
-| 1 | Ground / placement surfaces |
-| 2 | Selectable-object collision |
-| 3 | Placement blockers |
-
-Placement ground raycasts use Layer 1.
-
-Placement-overlap queries use Layer 3.
-
-This separation allows the placement cursor to reach the ground beneath existing structures while independently checking whether the building footprint is blocked.
-
-## Selectable Object Visual State
-
-`selectable_object.gd` owns the object's interaction visuals.
-
-Supported states:
-
-1. Demolition hover
-2. Normal selection
-3. Original material
-
-Demolition hover has higher visual priority than normal selection.
-
-WorldInteraction requests state changes but does not directly modify object materials.
-
-This keeps interaction logic and object presentation separated.
-
-## Build HUD
-
-`build_hud.gd` owns the presentation of current Build Mode state.
-
-Responsibilities include:
-
-- displaying selected building slot
-- displaying Build Mode
-- displaying Demolition Mode
-- changing visual styling based on the active tool
-
-WorldInteraction communicates with the HUD through methods rather than directly manipulating individual labels.
-
-The current text HUD is a prototype and is expected to evolve into an icon-based quick-build interface later.
+---
 
 ## Placement Ghost
 
-The placement ghost is created from the currently selected buildable PackedScene.
+The placement ghost is a temporary instance of the selected building scene.
 
-Its normal physics collisions are disabled, but its CollisionShape3D resources are retained and used for placement-overlap queries.
+It:
 
-This means placement validation automatically reflects:
+- follows the snapped placement position
+- uses the building's real collision shapes for overlap testing
+- disables those collision shapes for normal physics interaction
+- turns translucent green when valid
+- turns translucent red when blocked
+- respects current rotation
 
-- building dimensions
-- building footprint
-- building rotation
+The ghost's root uses:
 
-The ghost is temporary and is destroyed when:
+```gdscript
+process_mode = Node.PROCESS_MODE_DISABLED
+```
+
+This is important because building scenes may contain gameplay components such as producers. A visual placement preview must not run production or other gameplay logic.
+
+The ghost is destroyed when:
 
 - Build Mode ends
 - Demolition Mode begins
 - the selected building changes
 - a replacement ghost is created
 
-
 ---
 
-# Add `Building Runtime Architecture`
+## Runtime Building Composition
 
-Immediately after that:
+Placed buildings use reusable child components rather than placing all gameplay behavior on the root script.
 
-```markdown
-## Building Runtime Architecture
-
-Placed structures use a reusable `BuildingRuntime` component.
-
-Prototype scene structure:
+Current prototype structure:
 
 ```text
 Building Root
-├── Physics / Collision
-├── Mesh
-└── BuildingRuntime
+├── BuildingBody
+│   └── CollisionShape3D
+├── BuildingMesh
+├── BuildingRuntime
+├── InventoryComponent
+└── ProducerComponent      # only on production-capable buildings
+```
+
+The building root continues to own selectable-object behavior.
+
+### `BuildingRuntime`
+
+`building_runtime.gd` stores the `BuildingDefinition` associated with the placed building instance.
+
+Initialization flow:
+
+```text
+WorldInteraction
+        ↓
+selected BuildingDefinition
+        ↓
+instantiate building_scene
+        ↓
+find BuildingRuntime
+        ↓
+initialize(definition)
+```
+
+This allows an individual building to know which data definition created it.
+
+### Component Philosophy
+
+Not every building requires every component.
+
+Future scenes can be composed from only the behavior they need, for example:
+
+```text
+Storage Building
+├── BuildingRuntime
+└── InventoryComponent
+
+Extractor
+├── BuildingRuntime
+├── InventoryComponent
+└── ProducerComponent
+
+Future Powered Machine
+├── BuildingRuntime
+├── InventoryComponent
+├── ProducerComponent
+└── PowerConsumerComponent
+```
 
 ---
 
-## One existing Architecture cleanup
+## Item Data Architecture
 
-You currently have **two consecutive sections named**:
+Items are represented by:
 
-```markdown
-### Interaction Collision Layers
-Layer 1 — Ground / placement surfaces
-Layer 2 — Selectable objects
-Layer 3 — Placement blockers
+`ItemDefinition`
+
+Current fields:
+
+- `item_id`
+- `display_name`
+- `description`
+
+Prototype item:
+
+- `res://data/items/test_ore.tres`
+
+The inventory and recipe systems use `ItemDefinition` resources rather than scattering item-name strings throughout gameplay code.
+
+---
+
+## Item Amount Data
+
+`ItemAmount` represents:
+
+```text
+ItemDefinition + integer quantity
+```
+
+It is used by recipe input and output arrays.
+
+Current fields:
+
+- `item`
+- `amount`
+
+This resource can also be reused later for systems such as building costs if that remains appropriate.
+
+---
+
+## Inventory Architecture
+
+`InventoryComponent` is a reusable Node component.
+
+Current storage model:
+
+```text
+Dictionary
+Key   = ItemDefinition
+Value = integer quantity
+```
+
+Current API:
+
+- `add_item(item, amount)`
+- `remove_item(item, amount)`
+- `get_amount(item)`
+- `has_amount(item, amount)`
+
+Current limitations:
+
+- no capacity limit
+- no slot system
+- no stack-size rules
+- no logistics connections
+- no inventory UI intended for final gameplay
+
+Each placed building has its own component instance, so inventories remain independent between buildings.
+
+---
+
+## Production Recipe Architecture
+
+Production data is represented by:
+
+`ProductionRecipe`
+
+Current fields:
+
+- `recipe_id`
+- `display_name`
+- `production_time`
+- `inputs: Array[ItemAmount]`
+- `outputs: Array[ItemAmount]`
+
+Prototype recipe:
+
+- `res://data/recipes/prototype_extraction.tres`
+
+Current prototype:
+
+```text
+Prototype Extraction
+Production Time: 2 seconds
+Inputs: none
+Outputs: 1 Test Ore
+```
+
+The recipe schema already supports input definitions, but **input checking and input consumption are not implemented yet**.
+
+---
+
+## Producer Architecture
+
+`ProducerComponent` is responsible for timed autonomous production.
+
+Current flow:
+
+```text
+ProducerComponent
+        ↓
+ProductionRecipe
+        ↓
+accumulate production_progress
+        ↓
+production_time reached
+        ↓
+iterate recipe outputs
+        ↓
+InventoryComponent.add_item()
+```
+
+The current prototype producer:
+
+- runs `Prototype Extraction`
+- completes one cycle every 2 seconds
+- adds 1 Test Ore per cycle
+- stores output in its own `InventoryComponent`
+
+Only the small `TestBuilding` currently has a `ProducerComponent`.
+
+`TestBuildingLarge` intentionally acts as a non-producing control building.
+
+---
+
+## Current Factory Data Flow
+
+```text
+BuildingDefinition
+        ↓
+Building Scene
+        ↓
+BuildingRuntime
+
+ProductionRecipe
+        ↓
+ProducerComponent
+        ↓
+ItemAmount
+        ↓
+ItemDefinition
+        ↓
+InventoryComponent
+```
+
+This is the first reusable factory-production foundation.
+
+Conveyors, power, resource nodes, machine inputs, capacity rules, and upgrades can later connect to this architecture without requiring `WorldInteraction` to own those systems.
+
+---
+
+## Build HUD
+
+`build_hud.gd` owns construction-mode presentation.
+
+Responsibilities include:
+
+- selected building slot
+- Build Mode state
+- Demolition Mode state
+- control reminders
+- mode-specific styling
+
+`WorldInteraction` communicates with the HUD through methods rather than directly modifying individual labels.
+
+The current Build HUD is a prototype and may later evolve into an icon-based quick-build interface.
+
+---
+
+## Production Debug HUD
+
+`production_debug_hud.gd` provides temporary visibility into selected building state.
+
+Current behavior:
+
+- selected producer:
+  - building name
+  - recipe name
+  - live stored output quantity
+- selected non-producer building:
+  - building name
+  - `Recipe: None`
+- selected non-building object:
+  - reports that no building data exists
+- no selection:
+  - reports that no building is selected
+
+The HUD refreshes while a building is selected so inventory values update as production continues.
+
+This is a debugging/prototype interface, not the final factory UI.
+
+---
+
+## Current Architectural Boundaries
+
+The following systems are intentionally **not** part of the current production foundation:
+
+- resource nodes in the world
+- mining depletion
+- recipe input consumption
+- storage capacity
+- conveyors
+- inserters
+- logistics routing
+- power networks
+- build costs
+- research/unlocks
+- machine upgrades
+- save/load
+- polished production UI
+
+These should be added as separate milestones rather than folded into the current prototype components prematurely.
+
+---
+
+## Architectural Principles
+
+Industrial Warfare currently follows these rules:
+
+1. Keep interaction, data, runtime behavior, and UI responsibilities separate.
+2. Prefer reusable components over large monolithic building scripts.
+3. Prefer custom `Resource` data over hard-coded per-building logic.
+4. Add only the complexity required by the current milestone.
+5. Regression-test established systems after architectural changes.
+6. Keep placeholder visuals acceptable while gameplay systems are being proven.

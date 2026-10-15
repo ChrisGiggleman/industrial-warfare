@@ -1,8 +1,22 @@
 # Industrial Warfare — Troubleshooting Log
 
-This document records technical problems encountered during development, their causes, solutions, and lessons learned.
+This document records technical problems encountered during development, their causes, fixes, and reusable lessons.
 
-The purpose is to create a reusable knowledge base as the project grows.
+The goal is to preserve solutions that may help diagnose similar problems later.
+
+---
+
+## Entry Format
+
+Each troubleshooting entry should record:
+
+- problem or symptom
+- relevant environment/system
+- exact error when available
+- cause
+- solution
+- result
+- lesson learned
 
 ---
 
@@ -10,242 +24,334 @@ The purpose is to create a reusable knowledge base as the project grows.
 
 ### Problem
 
-While creating the initial Markdown documentation files with PowerShell, the following command failed:
+While creating the initial Markdown files, this command failed:
 
-`New-Item docs\DEVLOG.md -ItemType File`
+```powershell
+New-Item docs\DEVLOG.md -ItemType File
+```
 
 PowerShell returned a `DirectoryNotFoundException`.
 
 ### Environment
 
-Current terminal location:
+The terminal was already located at:
 
-`E:\GameDev\industrial-warfare\docs`
+```text
+E:\GameDev\industrial-warfare\docs
+```
 
 ### Cause
 
-The terminal was already inside the `docs` directory.
+The relative path added `docs\` a second time, causing PowerShell to look for:
 
-Adding `docs\` to the filename caused PowerShell to attempt to access:
-
-`E:\GameDev\industrial-warfare\docs\docs\DEVLOG.md`
-
-The nested `docs` directory did not exist.
+```text
+E:\GameDev\industrial-warfare\docs\docs\DEVLOG.md
+```
 
 ### Solution
 
-Because the terminal was already inside the correct directory, the command was changed to:
+Used the filename directly:
 
-`New-Item DEVLOG.md -ItemType File`
-
-The same correction was used for the remaining Markdown files.
+```powershell
+New-Item DEVLOG.md -ItemType File
+```
 
 ### Result
 
-All documentation files were successfully created.
+The documentation files were created successfully.
 
 ### Lesson Learned
 
-Relative paths are resolved from the terminal's current working directory.
-
-Before running file-management commands, verify the current location shown in the PowerShell prompt.
+Relative paths are resolved from the terminal's current working directory. Check the PowerShell prompt before running file-management commands.
 
 ---
 
-## Troubleshooting Entry Template
-
-### Date — Problem Title
+## 2026-10-12 — Camera Controller Script Did Not Execute
 
 ### Problem
 
-Describe what happened.
+The expected output:
 
-### Environment
+```text
+Camera controller initialized.
+```
 
-Record relevant information such as:
-
-- Godot version
-- Operating system
-- Scene or system
-- Relevant hardware or software
-
-### Error
-
-Record the exact error message when available.
-
-### Cause
-
-Describe the identified cause.
-
-### Solution
-
-Document the steps that fixed the issue.
-
-### Result
-
-Record whether the issue was fully resolved.
-
-### Lesson Learned
-
-Document anything that may help prevent or diagnose the problem in the future.
-
-
-That architectural decision is worth documenting because it was intentional.
-
-### 4. `TROUBLESHOOTING.md`
-
-We actually had our first useful development problem, so record it:
-
-```markdown
-## Camera Controller Script Did Not Execute
-
-### Symptoms
-
-The expected message:
-
-`Camera controller initialized.`
-
-did not appear in the Godot Output panel.
+did not appear.
 
 An earlier attempt also produced a GDScript parse error.
 
 ### Cause
 
-The script contents initially contained invalid syntax. After correcting the script, the `CameraRig` node was found to have an empty Script property, meaning `camera_controller.gd` was no longer attached.
+After correcting the script syntax, `camera_controller.gd` was no longer attached to the `CameraRig` node.
 
-### Resolution
+A script existing in the project does not execute automatically unless it is attached, instantiated, autoloaded, or otherwise called by the project.
 
-1. Corrected `camera_controller.gd` syntax.
+### Solution
+
+1. Corrected the GDScript syntax.
 2. Selected `CameraRig`.
-3. Attached `res://scripts/camera_controller.gd` through the Inspector.
-4. Ran the project and confirmed:
-   `Camera controller initialized.`
+3. Attached:
+
+```text
+res://scripts/camera_controller.gd
+```
+
+4. Ran the project again.
+
+### Result
+
+The initialization message appeared and camera behavior worked.
 
 ### Lesson Learned
 
-A GDScript file existing in the project does not cause it to execute automatically. The script must be attached to an active node or otherwise instantiated by the project.
+When code appears correct but never runs, verify that the script is attached to the expected active node.
 
-## GDScript Variant Type Warning Treated as Error
+---
 
-### Symptoms
+## 2026-10-12 — Variant Type Warning Treated as Error
+
+### Problem
 
 Godot reported:
 
-`The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)`
+```text
+The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+```
 
 ### Cause
 
-The generic `clamp()` function caused the inferred result type to be treated as `Variant`.
+The generic `clamp()` helper caused the result to be inferred as `Variant` under the project's strict typing/warning behavior.
 
-### Resolution
+### Solution
 
-Replaced:
+Replaced the generic call with:
 
-`clamp()`
+```gdscript
+clampf()
+```
 
-with:
+and explicitly typed related values as `float`.
 
-`clampf()`
+### Result
 
-and explicitly typed the related variables as `float`.
+The warning/error was resolved.
 
 ### Lesson Learned
 
-When using strict GDScript typing, prefer type-specific helper functions such as `clampf()` when working with floating-point values.
+When working with strictly typed floating-point values, prefer type-specific helpers such as `clampf()` when available.
 
+---
 
-### `TROUBLESHOOTING.md`
+## 2026-10-12 — GDScript Indentation Error
 
-The indentation issue is worth documenting too:
+### Problem
 
-```markdown
-## GDScript Mixed Tabs and Spaces Error
+Godot reported errors including:
 
-### Symptoms
+```text
+Expected indented block after "if" block
+```
 
-Godot reported errors such as:
+and, during earlier edits:
 
-`Expected indented block after "if" block`
-
-and:
-
-`Used space character for indentation instead of tab as used before in the file`
+```text
+Used space character for indentation instead of tab as used before in the file
+```
 
 ### Cause
 
-Some lines in `world_interaction.gd` used spaces while the rest of the file used tabs.
+GDScript uses indentation as syntax.
 
-The `if result:` block was also initially indented one level too far.
+Several edits had one of these problems:
 
-### Resolution
+- a line that belonged inside an `if` block was aligned with the `if`
+- a block was indented one level too far or too little
+- tabs and spaces were mixed
 
-- Realigned `if result:` with the other statements inside the function.
-- Indented the code inside the `if` block by one additional tab.
-- Used VS Code's `Convert Indentation to Tabs` command.
+This type of issue appeared more than once while editing `world_interaction.gd`.
+
+### Solution
+
+- Aligned the `if` statement with the correct surrounding scope.
+- Indented statements controlled by the `if` exactly one additional level.
+- Used tabs consistently.
+- Used VS Code's indentation tools when needed.
+
+### Result
+
+The scripts parsed and all affected gameplay tests passed.
 
 ### Lesson Learned
 
-GDScript indentation defines code structure. Avoid mixing tabs and spaces within the same file.
+In GDScript, visual indentation is program structure. When adding a block, verify both the parent scope and every child line before running the project.
 
-## Selection Highlight Stopped Working After Selectable Script Refactor
+---
 
-### Symptoms
+## 2026-10-12 — Selection Highlight Stopped Working After Refactor
 
-Selectable objects were still detected correctly, but neither the ReferenceCube nor TestBuilding changed to the selected highlight color.
+### Problem
+
+Objects were still selectable, but `ReferenceCube` and `TestBuilding` no longer changed to the selected highlight material.
 
 ### Cause
 
-`selectable_object.gd` was refactored to use an exported `selection_mesh` reference.
+`selectable_object.gd` had been refactored to use an exported `selection_mesh` reference.
 
-After the refactor, the `Selection Mesh` property was empty on existing selectable objects, so the script had no MeshInstance3D to apply the highlight material to.
+Existing scenes had no value assigned to that new Inspector property, so the script had no `MeshInstance3D` to highlight.
 
-### Resolution
+### Solution
 
-Assigned the appropriate mesh explicitly:
+Assigned the correct mesh references:
 
 - `ReferenceCube` → `Selection Mesh = ReferenceCube`
 - `TestBuilding` → `Selection Mesh = BuildingMesh`
 
+### Result
+
+Selection highlighting returned.
+
 ### Lesson Learned
 
-When a script refactor introduces a new exported Node reference, existing scene instances may require that Inspector property to be reassigned manually.
+When a refactor introduces a new exported node reference, existing scenes may require manual Inspector updates.
 
-## Build HUD Appeared but Selected Building Did Not Highlight
+---
 
-### Symptoms
-The Build HUD displayed correctly during Build Mode, but neither building slot changed to the selected gold/yellow color.
+## 2026-10-12 — Build HUD Appeared but Selected Slot Did Not Highlight
+
+### Problem
+
+The Build HUD appeared correctly, but the selected building slot did not receive its gold/yellow highlight.
 
 ### Cause
-`WorldInteraction` had `Build Hud Panel` assigned, which allowed the HUD to show and hide, but the `Build Hud` reference itself was empty.
 
-Without the `BuildHUD` root reference, `WorldInteraction` could not call `set_selected_building()`.
+`WorldInteraction` had a valid `Build Hud Panel` reference for visibility, but its separate `Build Hud` root reference was empty.
 
-### Resolution
+Without the root reference, `WorldInteraction` could not call:
+
+```text
+set_selected_building()
+```
+
+### Solution
+
 Assigned:
-- `Build Hud Panel` → `BuildHUD/BuildPanel`
-- `Build Hud` → `BuildHUD`
+
+```text
+Build Hud Panel → BuildHUD/BuildPanel
+Build Hud       → BuildHUD
+```
+
+### Result
+
+The HUD continued to show/hide correctly and the active building slot highlighted correctly.
 
 ### Lesson Learned
-Separate exported references may control different parts of the same UI system. A visible HUD does not necessarily mean all gameplay-to-UI references are connected.
 
-## Build HUD Null Instance Caused by Node Name Mismatch
+A visible UI scene does not guarantee every gameplay-to-UI reference is assigned. Distinct exported references may control separate responsibilities.
 
-### Symptom
+---
+
+## 2026-10-12 — Build HUD Null Instance Caused by Node Name Mismatch
+
+### Problem
 
 Entering Build Mode produced an error similar to:
 
 ```text
 Invalid assignment of property or key 'text' on a base object of type 'null instance'
+```
+
+### Cause
+
+`build_hud.gd` referenced:
+
+```text
+$BuildPanel/PanelMargin/BuildInfo/CancelLabel
+```
+
+but the scene node was named:
+
+```text
+Cancellabel
+```
+
+Godot node paths are sensitive to exact spelling and capitalization.
+
+The mismatch caused the expected label reference to resolve to `null`.
+
+### Solution
+
+Renamed the scene node exactly to:
+
+```text
+CancelLabel
+```
+
+and verified the script path matched the scene tree.
+
+### Result
+
+The null-instance error was resolved and Build HUD text updated correctly.
+
+### Lesson Learned
+
+When `$Node/Path` references unexpectedly return `null`, compare every scene-tree name against the script path, including capitalization.
 
 ---
 
-## BuildingDefinition Resource Script Attached to Node3D
+## 2026-10-14 — BuildingDefinition Resource Script Attached to Node3D
 
 ### Problem
 
-After creating `building_definition.gd`, Godot reported an error when loading the project.
+After creating `building_definition.gd`, Godot reported a type-assignment error.
 
 ### Error
 
 ```text
 Script inherits from native type 'Resource', so it can't be assigned to an object of type: 'Node3D'
+```
+
+### Cause
+
+`building_definition.gd` defines data:
+
+```gdscript
+extends Resource
+class_name BuildingDefinition
+```
+
+The script had accidentally been placed in the Script property of the `Main` scene's `Node3D`.
+
+A custom `Resource` script is not a Node script and cannot be attached to a `Node3D`.
+
+### Solution
+
+1. Selected the affected `Main` Node3D.
+2. Removed `building_definition.gd` from its Script property.
+3. Kept the script as a standalone custom Resource definition.
+4. Created `.tres` assets using `BuildingDefinition`.
+
+### Result
+
+The project loaded normally and all existing interaction systems passed testing.
+
+### Lesson Learned
+
+Check the base class before attaching a script to a scene node.
+
+- `Node`, `Node3D`, `Control`, and related classes can be attached to compatible scene nodes.
+- `Resource` scripts define reusable data and are typically instantiated as `.tres` resources instead.
+
+---
+
+## Diagnostic Checklist
+
+When a new error appears:
+
+1. Read the first parser/runtime error, not only the final cascade message.
+2. Confirm the script is attached to the intended node or exists only as data when appropriate.
+3. Check exported references in the Inspector.
+4. Compare script node paths to exact scene-tree names.
+5. Check indentation and tabs.
+6. Verify custom `Resource` scripts are not attached to Node types.
+7. Re-run the smallest relevant gameplay test before changing additional systems.
