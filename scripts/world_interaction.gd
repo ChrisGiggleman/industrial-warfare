@@ -744,6 +744,9 @@ func _create_placement_ghost() -> void:
 		return
 
 	placement_ghost = ghost_instance as Node3D
+	# Placement ghosts are visual previews only.
+	# Disable gameplay processing for the ghost and its child components.
+	placement_ghost.process_mode = Node.PROCESS_MODE_DISABLED
 	placement_ghost.rotation_degrees.y = placement_rotation_degrees
 
 	placement_ghost_collisions.clear()
