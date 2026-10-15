@@ -29,6 +29,8 @@ const PLACEMENT_GHOST_ALPHA: float = 0.4
 @export var build_hud_panel: Control
 @export var build_hud: CanvasLayer
 
+@export var production_debug_hud: ProductionDebugHUD
+
 # Building definitions available to the construction system.
 # Each definition contains the data describing a buildable structure.
 @export var buildable_definitions: Array[BuildingDefinition] = []
@@ -566,6 +568,12 @@ func _select_object(object: Node) -> void:
 	if selected_object != null:
 		if selected_object.has_method("set_selected"):
 			selected_object.call("set_selected", true)
+
+		if production_debug_hud != null:
+			production_debug_hud.set_selected_building(selected_object)
+	else:
+		if production_debug_hud != null:
+			production_debug_hud.clear_selection()
 
 
 # =============================================================================

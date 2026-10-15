@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://dcdrdn55bn320"]
+
+[ext_resource type="Script" uid="uid://bj0dey7nt23td" path="res://scripts/production_debug_hud.gd" id="1_00wox"]
+
+[node name="ProductionDebugHUD" type="CanvasLayer" unique_id=60506702 node_paths=PackedStringArray("info_label")]
+script = ExtResource("1_00wox")
+info_label = NodePath("InfoPanel/PanelMargin/InfoLabel")
+
+[node name="InfoPanel" type="PanelContainer" parent="." unique_id=643426401]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -320.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 130.0
+grow_horizontal = 0
+
+[node name="PanelMargin" type="MarginContainer" parent="InfoPanel" unique_id=2118228831]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="InfoLabel" type="Label" parent="InfoPanel/PanelMargin" unique_id=1694813052]
+layout_mode = 2
+text = "PRODUCTION DEBUG
+
+No building selected."

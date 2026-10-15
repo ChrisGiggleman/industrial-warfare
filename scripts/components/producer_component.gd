@@ -80,11 +80,4 @@ func _produce_outputs() -> void:
 			output.amount
 		)
 
-		print(
-			"Produced ",
-			output.amount,
-			" ",
-			output.item.display_name,
-			" | Stored: ",
-			inventory_component.get_amount(output.item)
-		)
+	
