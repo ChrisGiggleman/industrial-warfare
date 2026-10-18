@@ -118,14 +118,19 @@ The factory should grow through understandable stages.
 
 ### Resource Extraction
 
-Raw resources should come from world locations or resource nodes.
+**Implemented in the Chat 04 prototype.** Raw ore now comes from selectable world deposits, rather than being created for free by a production recipe.
 
-Extractor/miner buildings should eventually:
+- Each resource deposit has a data definition specifying its resource item and whether its supply is infinite or finite.
+- `ResourceNodeRuntime` reports the quantity actually available during extraction.
+- The **Test Extractor** has a detection area and must be placed within range of a compatible world resource node.
+- An extractor outside resource range has invalid/red placement feedback and cannot be built there.
+- Once placed near a deposit, the extractor collects Test Ore automatically and stores it in its own inventory.
+- A prototype infinite deposit does not deplete; a finite deposit decreases in supply and stops yielding ore at zero.
+- Selection/debug information shows deposit supply and extractor status, including stored quantity.
 
-- operate on valid resource locations
-- generate raw materials
-- store or output those materials
-- optionally deplete or interact with resource availability later
+**Current design direction:** Infinite deposits are the default for the early factory-and-defense loop so players can focus on building and defending production. Finite deposits are supported for later balance experiments, special resources, or scarcity-oriented scenarios. This is a direction, not a finalized economy balance.
+
+Current prototype limitations: one test resource type, no transport between inventories, no inventory capacity rules, and no player-facing mining UI.
 
 ### Production
 
@@ -137,7 +142,7 @@ A production recipe can conceptually define:
 - produced outputs
 - production time
 
-The initial prototype proves autonomous output production first. Input consumption, logistics, power, and capacity can be added in later milestones.
+Chat 03 proved a standalone autonomous output recipe. In Chat 04, the Test Extractor switched to actual world-node extraction; the original temporary recipe asset was retired. The separate `ProductionRecipe` / `ProducerComponent` framework remains for future processing and manufacturing machines. Recipe input checking/consumption, logistics, power, and capacity are not implemented yet.
 
 ### Storage
 
@@ -248,19 +253,18 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 
 ## Current Prototype Priorities
 
-The current prototype should prioritize:
+The current prototype has completed reliable placement, data-driven building definitions, reusable item/inventory data, the first timed producer framework, and deposit-based resource extraction.
 
-1. reliable building placement
-2. data-driven building definitions
-3. item and inventory representation
-4. autonomous production
-5. resource extraction
-6. simple production inputs
-7. storage and logistics
-8. basic machine/power constraints
-9. hostile enemies and defensive structures
+Upcoming priorities:
 
-This order is intended to prove the factory side of the loop before adding combat pressure.
+1. basic storage capacity and a dedicated storage building
+2. controlled inventory-to-inventory item transfer
+3. first automated logistics or conveyor experiment
+4. recipe input checks and consumption for manufacturing machines
+5. basic machine/power constraints
+6. hostile enemies, building health, and defensive structures
+
+This sequence is intended to establish a small functioning factory loop before adding combat pressure.
 
 ---
 
