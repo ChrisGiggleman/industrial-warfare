@@ -24,12 +24,13 @@ res://
 ├── data/
 │   ├── buildings/
 │   ├── items/
-│   └── recipes/
+│   └── resource_nodes/
 ├── docs/
 │   └── screenshots/
 ├── scenes/
 │   ├── buildings/
 │   ├── core/
+│   ├── resource_nodes/
 │   └── ui/
 ├── scripts/
 │   ├── components/
@@ -45,6 +46,7 @@ res://
 - `scripts/data/` — reusable custom `Resource` classes that define data schemas.
 - `scripts/components/` — reusable gameplay components attached to scene child nodes.
 - `scenes/buildings/` — reusable physical building scenes.
+- `scenes/resource_nodes/` — selectable world resource scenes.
 - `scenes/core/` — primary game scenes such as `main.tscn`.
 - `scenes/ui/` — reusable interface scenes.
 - `docs/` — design, architecture, troubleshooting, roadmap, and devlog documentation.
@@ -152,7 +154,7 @@ Its current responsibilities include:
 - Build Mode state
 - placement ghost creation
 - grid snapping
-- placement validity checks
+- physical-footprint and extractor resource-range placement checks
 - building selection
 - building instantiation
 - runtime definition injection
@@ -208,16 +210,16 @@ Demolition exists inside Build Mode.
 | Layer | Purpose |
 |---|---|
 | 1 | Ground / placement surfaces |
-| 2 | Selectable-object collision |
+| 2 | Selectable-object collision, including ore deposits |
 | 3 | Placement blockers |
 
 Placement ground raycasts use Layer 1.
 
-Selection can detect objects on Layer 2.
+Selection and resource-deposit detection use Layer 2; an extractor's range check confirms the hit belongs to a `ResourceNodeRuntime`.
 
-Placement overlap queries use Layer 3.
+Physical footprint overlap queries use Layer 3.
 
-This separation lets placement raycasts reach the ground beneath existing structures while collision checks independently determine whether the new building footprint is blocked.
+An extractor's `Area3D` detector shape is not a physical construction blocker. This separation allows independent ground, footprint, and resource-range checks.
 
 ---
 
@@ -274,7 +276,7 @@ Current fields:
 
 Prototype assets:
 
-- `res://data/buildings/test_building.tres`
+- `res://data/buildings/test_extractor.tres`
 - `res://data/buildings/test_building_large.tres`
 
 The separation is:
@@ -330,8 +332,10 @@ The placement ghost is a temporary instance of the selected building scene.
 It:
 
 - follows the snapped placement position
-- uses the building's real collision shapes for overlap testing
-- disables those collision shapes for normal physics interaction
+- tests only `PhysicsBody3D` collision shapes for physical footprint overlaps
+- excludes `Area3D` detection shapes from physical footprint blockers
+- disables collision shapes for ordinary ghost physics interactions
+- additionally checks resource range when the ghost has `ExtractorComponent`
 - turns translucent green when valid
 - turns translucent red when blocked
 - respects current rotation
@@ -342,7 +346,9 @@ The ghost's root uses:
 process_mode = Node.PROCESS_MODE_DISABLED
 ```
 
-This is important because building scenes may contain gameplay components such as producers. A visual placement preview must not run production or other gameplay logic.
+This is important because building scenes may contain gameplay components such as producers. A visual placement preview must not run extraction, production, or other gameplay logic.
+
+Resource-range validation builds a `PhysicsShapeQueryParameters3D` from the extractor ghost's `ExtractionArea/CollisionShape3D` and queries resource colliders on Layer 2; actual extraction runs only after placement.
 
 The ghost is destroyed when:
 
@@ -357,19 +363,21 @@ The ghost is destroyed when:
 
 Placed buildings use reusable child components rather than placing all gameplay behavior on the root script.
 
-Current prototype structure:
+Current Test Extractor scene (`res://scenes/buildings/test_extractor.tscn`):
 
 ```text
-Building Root
-├── BuildingBody
+TestExtractor [selectable, player_built]
+├── BuildingBody (StaticBody3D)
 │   └── CollisionShape3D
 ├── BuildingMesh
 ├── BuildingRuntime
 ├── InventoryComponent
-└── ProducerComponent      # only on production-capable buildings
+├── ExtractorComponent
+└── ExtractionArea (Area3D, Layer 2 detection)
+    └── CollisionShape3D (radius 2.5)
 ```
 
-The building root continues to own selectable-object behavior.
+The building root owns selectable-object behavior. The large test building remains a non-extractor and requires no nearby ore.
 
 ### `BuildingRuntime`
 
@@ -405,7 +413,8 @@ Storage Building
 Extractor
 ├── BuildingRuntime
 ├── InventoryComponent
-└── ProducerComponent
+├── ExtractorComponent
+└── ExtractionArea
 
 Future Powered Machine
 ├── BuildingRuntime
@@ -413,6 +422,35 @@ Future Powered Machine
 ├── ProducerComponent
 └── PowerConsumerComponent
 ```
+
+---
+
+## World Resource Nodes & Extraction
+
+The resource-node system consists of:
+
+- `scripts/data/resource_node_definition.gd`: `ResourceNodeDefinition` with `resource_node_id`, `display_name`, `description`, `resource_item: ItemDefinition`, `infinite_resource`, and `starting_amount`.
+- `data/resource_nodes/test_ore_deposit.tres`: Test Ore Deposit data, configured infinite by default.
+- `scenes/resource_nodes/TestOreDeposit.tscn`: selectable deposit mesh, Layer 2 collision body, and `ResourceNodeRuntime`.
+- `scripts/components/resource_node_runtime.gd`: per-deposit `remaining_amount` and `extract(amount: int) -> int`.
+- `scripts/components/extractor_component.gd`: per-building resource detection, interval timing, and inventory delivery.
+
+`ResourceNodeRuntime.extract()` returns the requested valid amount for infinite deposits without depletion; for finite deposits it returns at most the available quantity and subtracts it from remaining supply. Invalid/nonpositive requests return zero. Both modes were runtime-tested.
+
+`ExtractorComponent` finds its sibling `InventoryComponent` and tracks a nearby deposit using `ExtractionArea` overlap signals plus a deferred initial scan. The Test Extractor has a radius-2.5 detection sphere and defaults to one ore per one-second extraction cycle. Only the actual returned amount enters inventory; an out-of-range or depleted node does not generate ore.
+
+```text
+TestOreDeposit
+    ├── ResourceNodeDefinition (Test Ore, infinite/finite supply)
+    └── ResourceNodeRuntime.extract(amount)
+                      │ actual extracted amount
+                      ↓
+TestExtractor.ExtractorComponent
+                      ↓
+TestExtractor.InventoryComponent.add_item(item, amount)
+```
+
+Placement validation and runtime extraction are separate: `WorldInteraction` queries whether an extractor *can reach* a resource at a proposed location; the placed `ExtractorComponent` later performs timed extraction.
 
 ---
 
