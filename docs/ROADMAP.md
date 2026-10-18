@@ -98,21 +98,42 @@ Planned major systems:
 
 **Status: Complete**
 
-### 1C — Next Factory Gameplay Milestones
+> Historical note: Chat 03 validated autonomous ore generation. Chat 04 replaced the small building's free-output recipe with a source-dependent Test Extractor; the reusable producer/recipe code remains for later machines.
 
-Recommended next targets:
+### 1C — Resource Nodes & Extraction Foundation (Chat 04)
 
-- [ ] Add world resource-node definition and prototype resource node
-- [ ] Restrict extractor production to a valid resource source
-- [ ] Add recipe input checking and input consumption
-- [ ] Add simple storage capacity
-- [ ] Add a basic storage building
-- [ ] Add simple transfer/logistics behavior
-- [ ] Prototype conveyors
-- [ ] Add basic machine/power state
-- [ ] Replace or evolve temporary production debug UI as needed
+- [x] Define reusable `ResourceNodeDefinition` data
+- [x] Create Test Ore Deposit definition and selectable world scene
+- [x] Add `ResourceNodeRuntime` and `extract(amount)`
+- [x] Support and test infinite versus finite resource availability
+- [x] Add reusable `ExtractorComponent` with nearby-deposit detection
+- [x] Transfer extracted resources into individual building inventories
+- [x] Require Test Extractor placement within resource range
+- [x] Preserve normal placement for non-extractor buildings
+- [x] Separate extraction detection shapes from physical placement blockers
+- [x] Extend debug HUD for deposits, extraction status, and stored ore
+- [x] Rename small prototype to Test Extractor
+- [x] Retire the obsolete Prototype Extraction recipe asset
+- [x] Complete final camera/build/selection/extraction/demolition regression tests
 
-### 1D — Enemy & Defense Prototype
+**Status: Complete**
+
+### 1D — Basic Storage & Logistics (Next / Chat 05)
+
+- [ ] Define simple inventory capacity or storage limits
+- [ ] Create a dedicated storage building
+- [ ] Implement controlled transfer of items between inventories
+- [ ] Validate transfer amounts, source availability, and destination capacity
+- [ ] Display useful storage/transfer state in the debug HUD
+- [ ] Test multiple buildings, independence, and item conservation
+- [ ] Prototype a first conveyor or other simple automated logistics link
+- [ ] Add recipe input checking and consumption for production machines
+- [ ] Explore basic machine-operation/power constraints
+- [ ] Regression-test extraction and existing interaction systems
+
+**Status: Not Started**
+
+### 1E — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
 - [ ] Add navigation toward player structures
@@ -186,5 +207,6 @@ Completed:
 - Phase 0 foundation
 - Phase 1A camera/player interaction foundation
 - Phase 1B factory/production foundation
+- Phase 1C resource nodes, deposit-aware extraction, and placement validation
 
-Current development should continue inside Phase 1 with resource extraction, production inputs, storage/logistics, and then the first enemy/defense prototype.
+**Next:** Phase 1D — basic storage and item transfer/logistics (planned Chat 05). Production input consumption, conveyor experimentation, and machine constraints follow as the prototype matures. Phase 1E then introduces the first zombie/defense systems.
