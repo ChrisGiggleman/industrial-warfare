@@ -563,3 +563,95 @@ Intentionally deferred:
 **Chat 03 — Factory Building & Production Foundation: Complete**
 
 The project now has its first autonomous, data-driven production building.
+
+---
+
+## 2026-10-18 — Chat 04: Resource Nodes & Extraction Foundation
+
+Chat 04 replaced the small building's temporary free-output recipe with real, location-dependent resource extraction. Earlier Chat 03 producer tests remain recorded above as history; the current Test Extractor uses an `ExtractorComponent`, not the original autonomous extraction recipe.
+
+### Resource-Node Data and World Scene
+
+Created:
+
+- `res://scripts/data/resource_node_definition.gd` — `ResourceNodeDefinition` data schema.
+- `res://data/resource_nodes/test_ore_deposit.tres` — Test Ore Deposit definition, linked to `Test Ore`.
+- `res://scripts/components/resource_node_runtime.gd` — `ResourceNodeRuntime` instance state and extraction API.
+- `res://scenes/resource_nodes/TestOreDeposit.tscn` — selectable test deposit with mesh, collision, and runtime component.
+
+Definitions contain an ID, display name, description, `ItemDefinition`, `infinite_resource` flag, and `starting_amount`. Runtime nodes track `remaining_amount` and provide `extract(amount) -> int` so callers receive only the quantity actually available.
+
+Tested **infinite deposits** (no depletion) and **finite deposits** (supply decreases and production stops at zero). The prototype Test Ore Deposit is configured for infinite supply by default; the starting amount is retained for finite-mode testing.
+
+### Extractor Component and Inventory
+
+Created `res://scripts/components/extractor_component.gd`.
+
+The small test building now has:
+
+- `BuildingRuntime` and its own `InventoryComponent`.
+- `ExtractorComponent` with configurable extraction amount and interval (prototype defaults: 1 unit / 1 second).
+- `ExtractionArea` (`Area3D`) using a 2.5-unit-radius detection shape and Layer 2 collision mask.
+
+The component identifies nearby deposits through their `ResourceNodeRuntime`, requests resources from `extract()`, and adds the returned amount to the building's inventory. Without an in-range deposit, the extractor does not produce resources. Different placed extractors continue to hold independent inventories.
+
+### Extractor-Specific Placement Rule
+
+Updated `res://scripts/world_interaction.gd` so physical occupancy and resource access are separate checks:
+
+- Physical building collision shapes are tested against placement blockers (Layer 3).
+- A placement ghost with `ExtractorComponent` additionally queries its extraction shape against resource-node colliders (Layer 2).
+- Extractor placement is red/invalid without a reachable resource deposit and green/valid when one is in range.
+- Buildings without `ExtractorComponent`, including Test Building Large, remain placeable without ore.
+
+The placement ghost still has gameplay processing disabled so previews do not run extraction.
+
+### Debug HUD and Selection
+
+Extended `res://scripts/production_debug_hud.gd`:
+
+- Selected deposits show resource name and infinite supply or finite remaining/starting supply.
+- Selected extractors show building name, extractor type, status, resource name, and live inventory quantity.
+- Status differentiates **No Resource In Range**, **Extracting**, and **Resource Depleted** where applicable.
+- Existing non-extractor building and empty-selection behavior remains available.
+
+The resource deposit retains normal selectable-object highlighting.
+
+### Prototype Naming and Asset Cleanup
+
+Renamed the small prototype into a named extractor:
+
+- `scenes/buildings/test_building.tscn` → `scenes/buildings/test_extractor.tscn`
+- `data/buildings/test_building.tres` → `data/buildings/test_extractor.tres`
+- Scene root `TestBuilding` → `TestExtractor`
+- Building ID `test_extractor`, display name **Test Extractor**, category **Extraction**
+
+Removed the obsolete `res://data/recipes/prototype_extraction.tres` asset after reference checks and a successful gameplay test. Kept the reusable `ProducerComponent`, `ProductionRecipe`, and `ItemAmount` framework for future manufacturing machines.
+
+### Troubleshooting and Fixes
+
+- **Unexpectedly large no-build area:** The placement ghost originally treated the extractor's spherical `ExtractionArea` collision as a physical building footprint. Changed footprint tracking to include only `CollisionShape3D` nodes belonging directly to `PhysicsBody3D`; detection-area shapes are not placement blockers.
+- **Missing placement validator during editing:** Restored `_is_placement_clear()` after an intermediate script edit removed it.
+- **GDScript indentation errors:** Corrected mixed/incorrect indentation around the extractor rule and ghost-color branches; retained tabs throughout the script.
+
+Detailed fixes belong in `TROUBLESHOOTING.md`.
+
+### Final Regression Test — Passed
+
+Verified together:
+
+- WASD panning and mouse-wheel zoom.
+- Normal selection, highlight, and HUD updates.
+- Build Mode, building-slot switching, rotation, valid/invalid ghost feedback, and placement.
+- Extractor blocked away from ore and placeable near a deposit.
+- Extraction transfers real resources to the placed extractor inventory.
+- Infinite supply information and finite-depletion behavior.
+- Large Test Building remains usable without nearby deposits.
+- Demolition and protection of non-player-built objects.
+- No new Godot debugger errors in the final gameplay check.
+
+### Milestone Status
+
+**Chat 04 — Resource Nodes & Extraction Foundation: Complete.**
+
+Next planned work: basic inventory storage and simple item transfer/logistics, followed by recipe inputs, further factory systems, and the first zombie/defense prototype.
