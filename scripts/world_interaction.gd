@@ -10,6 +10,7 @@ extends Node
 # Layer 3 = Placement blockers
 
 const GROUND_COLLISION_MASK: int = 1
+const RESOURCE_NODE_COLLISION_MASK: int = 2
 const PLACEMENT_BLOCKER_COLLISION_MASK: int = 4
 
 # Placement preview settings that currently do not need Inspector adjustment.
@@ -617,23 +618,32 @@ func _update_placement_preview() -> void:
 		if placement_ghost != null:
 			placement_ghost.global_position = current_placement_position
 
-		placement_is_valid = _is_placement_clear()
+			placement_is_valid = _is_placement_clear()
 
-		if ghost_material != null:
-			if placement_is_valid:
+		if placement_is_valid and placement_ghost != null:
+			var extractor_component: ExtractorComponent = (
+				placement_ghost.get_node_or_null("ExtractorComponent")
+				as ExtractorComponent
+			)
+
+			if extractor_component != null:
+				placement_is_valid = _extractor_has_resource_node()
+
+	if ghost_material != null:
+		if placement_is_valid:
 				ghost_material.albedo_color = Color(
 					valid_placement_color.r,
 					valid_placement_color.g,
 					valid_placement_color.b,
 					PLACEMENT_GHOST_ALPHA
-				)
-			else:
-				ghost_material.albedo_color = Color(
-					invalid_placement_color.r,
-					invalid_placement_color.g,
-					invalid_placement_color.b,
-					PLACEMENT_GHOST_ALPHA
-				)
+			)
+		else:
+			ghost_material.albedo_color = Color(
+				invalid_placement_color.r,
+				invalid_placement_color.g,
+				invalid_placement_color.b,
+				PLACEMENT_GHOST_ALPHA
+			)
 
 	else:
 		placement_is_valid = false
@@ -642,8 +652,9 @@ func _update_placement_preview() -> void:
 # =============================================================================
 # PLACEMENT VALIDITY CHECK
 # =============================================================================
-# Checks the placement ghost's actual CollisionShape3D nodes against objects
-# on Collision Layer 3.
+
+# Checks the placement ghost's physical building collision shapes against
+# objects on Collision Layer 3.
 #
 # Because each query uses the ghost collision shape's global transform,
 # the validity test automatically respects:
@@ -675,7 +686,78 @@ func _is_placement_clear() -> bool:
 		if not results.is_empty():
 			return false
 
-	return true
+	return true 
+
+
+# =============================================================================
+# EXTRACTOR RESOURCE CHECK
+# =============================================================================
+
+# Returns true when the current extractor placement ghost can reach
+# at least one valid resource node through its ExtractionArea.
+
+func _extractor_has_resource_node() -> bool:
+	if placement_ghost == null:
+		return false
+
+	var extractor_component: ExtractorComponent = (
+		placement_ghost.get_node_or_null("ExtractorComponent")
+		as ExtractorComponent
+	)
+
+	if extractor_component == null:
+		return false
+
+	if extractor_component.extraction_area == null:
+		return false
+
+	for child in extractor_component.extraction_area.find_children(
+		"*",
+		"CollisionShape3D",
+		true,
+		false
+	):
+		if not child is CollisionShape3D:
+			continue
+
+		var collision_shape: CollisionShape3D = child as CollisionShape3D
+
+		if collision_shape.shape == null:
+			continue
+
+		var query := PhysicsShapeQueryParameters3D.new()
+
+		query.shape = collision_shape.shape
+		query.transform = collision_shape.global_transform
+		query.collision_mask = RESOURCE_NODE_COLLISION_MASK
+
+		var results: Array[Dictionary] = (
+			get_viewport().world_3d.direct_space_state.intersect_shape(
+				query,
+				32
+			)
+		)
+
+		for result in results:
+			var collider: Node = result["collider"] as Node
+
+			if collider == null:
+				continue
+
+			var current_node: Node = collider
+
+			while current_node != null:
+				var resource_runtime: ResourceNodeRuntime = (
+					current_node.get_node_or_null("ResourceNodeRuntime")
+					as ResourceNodeRuntime
+				)
+
+				if resource_runtime != null:
+					return true
+
+				current_node = current_node.get_parent()
+
+	return false
 
 
 # =============================================================================
@@ -759,7 +841,9 @@ func _create_placement_ghost() -> void:
 
 	placement_ghost_collisions.clear()
 
-	# Record and disable the ghost's real collision shapes.
+# Record physical building collision shapes for placement checks.
+# Detection Area3D shapes are disabled on the ghost but are not part of
+# the building's placement-blocking footprint.
 	for child in placement_ghost.find_children(
 		"*",
 		"CollisionShape3D",
@@ -768,7 +852,9 @@ func _create_placement_ghost() -> void:
 	):
 		if child is CollisionShape3D:
 			child.disabled = true
-			placement_ghost_collisions.append(child)
+
+			if child.get_parent() is PhysicsBody3D:
+				placement_ghost_collisions.append(child)
 
 	# Create the translucent placement-preview material.
 	ghost_material = StandardMaterial3D.new()

@@ -4,10 +4,11 @@
 [ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_44pk5"]
 [ext_resource type="Script" uid="uid://c3sckria1ahv7" path="res://scripts/camera_controller.gd" id="1_fgbdc"]
 [ext_resource type="Script" uid="uid://dcv31fgeqtpub" path="res://scripts/world_interaction.gd" id="2_i4cec"]
-[ext_resource type="Resource" uid="uid://dqdqus3owmjqn" path="res://data/buildings/test_building.tres" id="5_jpx65"]
+[ext_resource type="Resource" uid="uid://dqdqus3owmjqn" path="res://data/buildings/test_extractor.tres" id="5_jpx65"]
 [ext_resource type="Resource" uid="uid://dhg1mmhl7hwe6" path="res://data/buildings/test_building_large.tres" id="6_fu2j5"]
 [ext_resource type="PackedScene" uid="uid://bc4bw8kjtmn7g" path="res://scenes/ui/build_hud.tscn" id="6_jvmw0"]
 [ext_resource type="PackedScene" uid="uid://dcdrdn55bn320" path="res://scenes/ui/production_debug_hud.tscn" id="8_phv0v"]
+[ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
 size = Vector2(20, 20)
@@ -86,5 +87,8 @@ mesh = SubResource("BoxMesh_2dmjg")
 [node name="BuildHUD" parent="." unique_id=1882342599 instance=ExtResource("6_jvmw0")]
 
 [node name="ProductionDebugHUD" parent="." unique_id=60506702 instance=ExtResource("8_phv0v")]
+
+[node name="TestOreDeposit" parent="." unique_id=191589997 instance=ExtResource("9_jpx65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.004758, 0.53535223, 5.01169)
 
 [editable path="BuildHUD"]

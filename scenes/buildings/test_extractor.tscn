@@ -3,8 +3,7 @@
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_01ywg"]
 [ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_5ceut"]
 [ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_4ie2m"]
-[ext_resource type="Script" uid="uid://p7ccxof4p50l" path="res://scripts/components/producer_component.gd" id="4_s7j7y"]
-[ext_resource type="Resource" uid="uid://0q7yhp8pqtv2" path="res://data/recipes/prototype_extraction.tres" id="5_nnmqk"]
+[ext_resource type="Script" uid="uid://tclvudgfgeia" path="res://scripts/components/extractor_component.gd" id="6_nnmqk"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 1.8)
@@ -12,7 +11,10 @@ size = Vector3(0.8, 1, 1.8)
 [sub_resource type="BoxMesh" id="BoxMesh_xycqu"]
 size = Vector3(0.8, 1, 1.8)
 
-[node name="TestBuilding" type="Node3D" unique_id=1418987496 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+[sub_resource type="SphereShape3D" id="SphereShape3D_nnmqk"]
+radius = 2.5
+
+[node name="TestExtractor" type="Node3D" unique_id=1418987496 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
 script = ExtResource("1_01ywg")
 selection_mesh = NodePath("BuildingMesh")
 
@@ -33,6 +35,13 @@ script = ExtResource("2_5ceut")
 [node name="InventoryComponent" type="Node" parent="." unique_id=153902443]
 script = ExtResource("3_4ie2m")
 
-[node name="ProducerComponent" type="Node" parent="." unique_id=1780402671]
-script = ExtResource("4_s7j7y")
-recipe = ExtResource("5_nnmqk")
+[node name="ExtractorComponent" type="Node" parent="." unique_id=248671540 node_paths=PackedStringArray("extraction_area")]
+script = ExtResource("6_nnmqk")
+extraction_area = NodePath("../ExtractionArea")
+
+[node name="ExtractionArea" type="Area3D" parent="." unique_id=2080750460]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExtractionArea" unique_id=1110088504]
+shape = SubResource("SphereShape3D_nnmqk")
