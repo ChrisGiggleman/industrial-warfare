@@ -524,93 +524,39 @@ Each placed building has its own component instance, so inventories remain indep
 
 ---
 
-## Production Recipe Architecture
+## Production Recipe & Producer Framework
 
-Production data is represented by:
+The reusable Chat 03 framework remains in the codebase:
 
-`ProductionRecipe`
+- `scripts/data/production_recipe.gd` — `ProductionRecipe` with `recipe_id`, `display_name`, `production_time`, and input/output arrays of `ItemAmount`.
+- `scripts/components/producer_component.gd` — `ProducerComponent`, which times a recipe and adds its outputs to an `InventoryComponent`.
 
-Current fields:
+The original `data/recipes/prototype_extraction.tres` was a **historical Chat 03 test asset**, deleted in Chat 04 after the small building switched to world-node extraction. No current Test Extractor scene has a `ProducerComponent`; the reusable recipe/producer classes are retained for future manufacturing buildings.
 
-- `recipe_id`
-- `display_name`
-- `production_time`
-- `inputs: Array[ItemAmount]`
-- `outputs: Array[ItemAmount]`
-
-Prototype recipe:
-
-- `res://data/recipes/prototype_extraction.tres`
-
-Current prototype:
-
-```text
-Prototype Extraction
-Production Time: 2 seconds
-Inputs: none
-Outputs: 1 Test Ore
-```
-
-The recipe schema already supports input definitions, but **input checking and input consumption are not implemented yet**.
-
----
-
-## Producer Architecture
-
-`ProducerComponent` is responsible for timed autonomous production.
-
-Current flow:
-
-```text
-ProducerComponent
-        ↓
-ProductionRecipe
-        ↓
-accumulate production_progress
-        ↓
-production_time reached
-        ↓
-iterate recipe outputs
-        ↓
-InventoryComponent.add_item()
-```
-
-The current prototype producer:
-
-- runs `Prototype Extraction`
-- completes one cycle every 2 seconds
-- adds 1 Test Ore per cycle
-- stores output in its own `InventoryComponent`
-
-Only the small `TestBuilding` currently has a `ProducerComponent`.
-
-`TestBuildingLarge` intentionally acts as a non-producing control building.
+Recipe input availability and consumption are not implemented yet.
 
 ---
 
 ## Current Factory Data Flow
 
 ```text
-BuildingDefinition
-        ↓
-Building Scene
-        ↓
-BuildingRuntime
-
-ProductionRecipe
-        ↓
-ProducerComponent
-        ↓
-ItemAmount
-        ↓
-ItemDefinition
-        ↓
-InventoryComponent
+BuildingDefinition (test_extractor.tres)
+        ↓ references
+TestExtractor Scene (test_extractor.tscn)
+        ├── BuildingRuntime
+        ├── InventoryComponent
+        └── ExtractorComponent
+                 │ detects / extracts
+                 ↓
+TestOreDeposit Scene
+        └── ResourceNodeRuntime
+                 └── ResourceNodeDefinition → ItemDefinition
+                 │
+                 ↓ actual extracted quantity
+TestExtractor InventoryComponent
 ```
 
-This is the first reusable factory-production foundation.
-
-Conveyors, power, resource nodes, machine inputs, capacity rules, and upgrades can later connect to this architecture without requiring `WorldInteraction` to own those systems.
+The recipe/producer framework remains separate from extraction. Item transfer and manufacturing chains will connect these components in later milestones.
 
 ---
 
@@ -634,47 +580,31 @@ The current Build HUD is a prototype and may later evolve into an icon-based qui
 
 ## Production Debug HUD
 
-`production_debug_hud.gd` provides temporary visibility into selected building state.
+`production_debug_hud.gd` provides temporary feedback for selected world objects.
 
-Current behavior:
+- **Resource deposit:** shows resource node name, item, and `Supply: Infinite` or `Remaining: current / starting`.
+- **Extractor:** shows building name, `Type: Extractor`, status (`No Resource In Range`, `Extracting`, or `Resource Depleted`), resource type, and live stored amount.
+- **Non-extractor building:** shows its name plus recipe information if a `ProducerComponent` is present, otherwise `Recipe: None`.
+- **Other/no selection:** shows an appropriate diagnostic message.
 
-- selected producer:
-  - building name
-  - recipe name
-  - live stored output quantity
-- selected non-producer building:
-  - building name
-  - `Recipe: None`
-- selected non-building object:
-  - reports that no building data exists
-- no selection:
-  - reports that no building is selected
-
-The HUD refreshes while a building is selected so inventory values update as production continues.
-
-This is a debugging/prototype interface, not the final factory UI.
+The HUD refreshes while a world object is selected. It is a debug interface, not final player-facing UI.
 
 ---
 
 ## Current Architectural Boundaries
 
-The following systems are intentionally **not** part of the current production foundation:
+**Implemented in Chat 04:** selectable resource deposits, finite/infinite extraction, extractor-specific proximity validation, inventory accumulation, and resource/extractor debug feedback.
 
-- resource nodes in the world
-- mining depletion
-- recipe input consumption
-- storage capacity
-- conveyors
-- inserters
-- logistics routing
-- power networks
-- build costs
-- research/unlocks
-- machine upgrades
-- save/load
-- polished production UI
+**Not yet implemented:**
 
-These should be added as separate milestones rather than folded into the current prototype components prematurely.
+- production recipe input checks and consumption
+- inventory limits and dedicated storage buildings
+- item transfer, conveyors, inserters, and logistics routing
+- power networks and operating costs
+- build costs, unlocks/research, and machine upgrades
+- save/load and polished factory UI
+
+These systems belong in later, separately tested milestones.
 
 ---
 
