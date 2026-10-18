@@ -344,6 +344,95 @@ Check the base class before attaching a script to a scene node.
 
 ---
 
+## 2026-10-17 — Extraction Sensor Caused an Oversized No-Build Radius
+
+### Problem
+
+After adding the Test Extractor's 2.5-unit spherical `ExtractionArea`, placement checks treated a much larger region around the building as occupied.
+
+### Cause
+
+The placement ghost collected every descendant `CollisionShape3D` as a physical footprint, including the sensor shape belonging to an `Area3D`. The sensor indicates mining reach, not building size.
+
+### Solution
+
+During ghost creation, disable child collision shapes for ghost physics but include a shape in `placement_ghost_collisions` **only** when its direct parent is a `PhysicsBody3D`.
+
+```gdscript
+placement_ghost_collisions.clear()
+for child in placement_ghost.find_children("*", "CollisionShape3D", true, false):
+    if child is CollisionShape3D:
+        child.disabled = true
+        if child.get_parent() is PhysicsBody3D:
+            placement_ghost_collisions.append(child)
+```
+
+This keeps the physical footprint separate from the extraction range. The extractor's `ExtractionArea` remains available as a shape resource for the separate manual range query.
+
+### Result
+
+The large false no-build zone disappeared, while existing building collision blocking continued to work.
+
+### Lesson Learned
+
+Distinguish **physical occupancy** (`PhysicsBody3D` shapes, Layer 3 blocker queries) from **sensing/interaction reach** (`Area3D` shapes, Layer 2 detection).
+
+---
+
+## 2026-10-17 — Placement Helper Accidentally Removed During Script Editing
+
+### Problem
+
+While adding extractor-specific placement validation, `world_interaction.gd` temporarily lost the existing `_is_placement_clear()` method.
+
+### Cause
+
+A replacement edit in a long script overwrote an adjacent helper section.
+
+### Solution
+
+Restored `_is_placement_clear()` under the physical placement validation section. It tests only the recorded physical ghost collision shapes against the placement blocker collision mask. Kept `_extractor_has_resource_node()` as a **separate** helper so non-extractor buildings do not require ore.
+
+### Result
+
+The project parsed again, and both generic footprint blocking and extractor range restrictions passed runtime tests.
+
+### Lesson Learned
+
+Use large section headers to find replacement boundaries, prefer small surgical edits, and verify neighboring function definitions after modifying long scripts.
+
+---
+
+## 2026-10-17 — GDScript Indentation Error in Extractor Placement Preview
+
+### Problem
+
+After linking resource-range checks to placement-preview colors, Godot reported an indentation/unindent error around the ghost-material color block.
+
+### Cause
+
+The inserted code did not preserve the correct tab-based nesting of `if result`, placement validation, and material updates.
+
+### Solution
+
+Reindented the entire affected conditional block using tabs, preserving the intended sequence:
+
+1. Raycast to ground and snap ghost position.
+2. Check physical footprint with `_is_placement_clear()`.
+3. If the ghost contains `ExtractorComponent`, also call `_extractor_has_resource_node()`.
+4. Apply valid/invalid ghost color.
+5. Set placement invalid when there is no ground hit.
+
+### Result
+
+The script compiled without errors. User-tested behavior confirmed blocked far-away extractor placement, permitted near-deposit placement, and normal placement for the large test building.
+
+### Lesson Learned
+
+GDScript indentation is executable structure, not presentation. Match the parent block's indentation before adding nested conditions.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
@@ -354,4 +443,6 @@ When a new error appears:
 4. Compare script node paths to exact scene-tree names.
 5. Check indentation and tabs.
 6. Verify custom `Resource` scripts are not attached to Node types.
-7. Re-run the smallest relevant gameplay test before changing additional systems.
+7. Confirm physical collision shapes and detection-only Area3D shapes are handled separately.
+8. Check that helper functions were not overwritten when editing long scripts.
+9. Re-run the smallest relevant gameplay test before changing additional systems.
