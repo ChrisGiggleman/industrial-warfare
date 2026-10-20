@@ -433,6 +433,70 @@ GDScript indentation is executable structure, not presentation. Match the parent
 
 ---
 
+## 2026-10-20 — Chat 05: Duplicate Discovery Logic After Function Replacement
+
+### Problem
+
+While updating `LogisticsTransferComponent._process()` to activate timed transfers, the previous discovery-only statements remained after the new transfer-debug print block. This left a **second** `var nearby_storage` (and `var current_storage_id`) declaration inside the same function.
+
+### Cause
+
+Only part of the old `STORAGE DISCOVERY UPDATE` section was replaced, instead of replacing the entire previous `_process()` body.
+
+### Solution / Result
+
+Removed the leftover discovery-only block after the new `TRANSFER DEBUG OUTPUT` section. Retained the separate `_find_nearby_storage()` helper, one `_process(delta)` function, and one declaration of each local variable. Godot launched and automatic transfers passed gameplay tests.
+
+### Lesson
+
+When replacing an entire long function, use the **large section header** as the start and the following function/section boundary as the end; check for duplicated variable declarations and duplicated control-flow exits.
+
+---
+
+## 2026-10-20 — Chat 05: Storage Group Creation vs Assignment
+
+### Problem
+
+The `logistics_storage` group appeared in the Test Storage scene's Groups tab, but its checkbox was initially unchecked.
+
+### Solution / Result
+
+Enabled the group on the **TestStorage root** while retaining `selectable` and `player_built`. Nearby detection later reported valid storage and automatic transfers worked.
+
+### Lesson
+
+Creating a Godot scene group does not automatically assign it to the selected node. Confirm the checkbox, save the scene, and test the instance in the main world.
+
+---
+
+## 2026-10-20 — Chat 05: Last Transfer Shows Zero When Storage Is Full
+
+### Symptom
+
+The logistics Output log showed successful transfers, but the HUD later displayed `Last Transfer: 0` and `Status: No Eligible Storage`.
+
+### Explanation
+
+The debug field `last_transfer_amount` tracks the **latest transfer attempt**, not the last successful one. When storage became full or unavailable, the logistics code intentionally reset it to zero. `No Eligible Storage` currently includes both full destinations and destinations outside range.
+
+### Solution / Result
+
+Kept the attempt counter and added `last_successful_transfer_amount`, which only updates after a positive transfer. The HUD now shows both counters and verified that the last successful amount persists after transfers stop.
+
+### Lesson
+
+Distinguish a current operating/attempt state from historical successful throughput. Do not interpret `No Eligible Storage` alone as a range failure.
+
+---
+
+## 2026-10-20 — Chat 05: Committed Test Scene Filename Typo (Non-blocking Cleanup)
+
+The isolated transfer test currently lives at `tests/inventory_trasnfer_test.tscn` and references `scripts/components/test_inventory_transfer.gd`. These paths differ from the original intended `tests/test_inventory_transfer.tscn` / `tests/test_inventory_transfer.gd`.
+
+The committed scene references the existing script path and the user-tested isolated transfer cases passed. **Do not rename only one file**; when tidying this later, move both to consistent test paths and update the scene's script resource reference in Godot, then re-run F6.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
