@@ -129,6 +129,7 @@ Current examples include:
 - `rotate_placement`
 - `select_building_1`
 - `select_building_2`
+- `select_building_3`
 - `demolish_selected`
 
 The current prototype bindings include:
@@ -139,7 +140,7 @@ The current prototype bindings include:
 - RMB — secondary/cancel interaction
 - `B` — Build Mode
 - `R` — rotate building
-- `1` / `2` — prototype building selection
+- `1` / `2` / `3` — Test Extractor / Large Building / Test Storage
 - `Delete` — toggle Demolition Tool while in Build Mode
 
 ---
@@ -188,7 +189,7 @@ Entered with `B`.
 - Green indicates valid placement.
 - Red indicates blocked placement.
 - `R` rotates in 90-degree increments.
-- `1` and `2` select prototype building definitions.
+- `1`, `2`, and `3` select prototype building definitions, including Test Storage.
 - LMB places a valid building.
 - RMB exits Build Mode.
 
@@ -242,6 +243,10 @@ A building may be both:
 
 `ReferenceCube` is selectable but intentionally not player-built.
 
+### `logistics_storage`
+
+Identifies real storage building roots eligible for proximity-based automatic item delivery. The logistics component filters out disabled placement ghosts, pending-deletion instances, missing inventories, full destinations, and out-of-range buildings.
+
 ---
 
 ## Selectable Object Visual State
@@ -278,6 +283,7 @@ Prototype assets:
 
 - `res://data/buildings/test_extractor.tres`
 - `res://data/buildings/test_building_large.tres`
+- `res://data/buildings/test_storage.tres`
 
 The separation is:
 
@@ -373,11 +379,24 @@ TestExtractor [selectable, player_built]
 ├── BuildingRuntime
 ├── InventoryComponent
 ├── ExtractorComponent
+├── LogisticsTransferComponent
 └── ExtractionArea (Area3D, Layer 2 detection)
     └── CollisionShape3D (radius 2.5)
 ```
 
 The building root owns selectable-object behavior. The large test building remains a non-extractor and requires no nearby ore.
+
+Current storage scene (`res://scenes/buildings/test_storage.tscn`):
+
+```text
+TestStorage [selectable, player_built, logistics_storage]
+├── BuildingBody (StaticBody3D) + CollisionShape3D
+├── BuildingMesh (1 × 1 × 2.8)
+├── BuildingRuntime
+└── InventoryComponent (max_capacity = 200)
+```
+
+The Test Extractor's inventory capacity is 50. Its `LogisticsTransferComponent` and `ExtractorComponent` share the same root but remain independent components.
 
 ### `BuildingRuntime`
 
@@ -414,6 +433,7 @@ Extractor
 ├── BuildingRuntime
 ├── InventoryComponent
 ├── ExtractorComponent
+├── LogisticsTransferComponent
 └── ExtractionArea
 
 Future Powered Machine
@@ -430,14 +450,14 @@ Future Powered Machine
 The resource-node system consists of:
 
 - `scripts/data/resource_node_definition.gd`: `ResourceNodeDefinition` with `resource_node_id`, `display_name`, `description`, `resource_item: ItemDefinition`, `infinite_resource`, and `starting_amount`.
-- `data/resource_nodes/test_ore_deposit.tres`: Test Ore Deposit data, configured infinite by default.
+- `data/resource_nodes/test_ore_deposit.tres`: Test Ore Deposit data, currently configured for a **finite 500-unit regression test** (infinite mode remains supported).
 - `scenes/resource_nodes/TestOreDeposit.tscn`: selectable deposit mesh, Layer 2 collision body, and `ResourceNodeRuntime`.
 - `scripts/components/resource_node_runtime.gd`: per-deposit `remaining_amount` and `extract(amount: int) -> int`.
 - `scripts/components/extractor_component.gd`: per-building resource detection, interval timing, and inventory delivery.
 
 `ResourceNodeRuntime.extract()` returns the requested valid amount for infinite deposits without depletion; for finite deposits it returns at most the available quantity and subtracts it from remaining supply. Invalid/nonpositive requests return zero. Both modes were runtime-tested.
 
-`ExtractorComponent` finds its sibling `InventoryComponent` and tracks a nearby deposit using `ExtractionArea` overlap signals plus a deferred initial scan. The Test Extractor has a radius-2.5 detection sphere and defaults to one ore per one-second extraction cycle. Only the actual returned amount enters inventory; an out-of-range or depleted node does not generate ore.
+`ExtractorComponent` finds its sibling `InventoryComponent` and tracks a nearby deposit using `ExtractionArea` overlap signals plus a deferred initial scan. The Test Extractor has a radius-2.5 detection sphere and defaults to one ore per one-second extraction cycle. Extraction first checks the inventory's available space and requests at most that amount from the deposit, so full inventories do not deplete finite resources. Only the actual extracted amount enters inventory; an out-of-range or depleted node does not generate ore.
 
 ```text
 TestOreDeposit
@@ -495,32 +515,59 @@ This resource can also be reused later for systems such as building costs if tha
 
 ## Inventory Architecture
 
-`InventoryComponent` is a reusable Node component.
+`InventoryComponent` stores a per-building `Dictionary` of `ItemDefinition -> integer quantity`. Capacity is **shared across item types**, not a separate limit per item. Inventories remain independent until a transfer occurs.
 
-Current storage model:
+- `max_capacity`: maximum total units; **0 means unlimited**.
+- `get_total_amount()`: current total across all types.
+- `get_available_space()`: free units, or **-1 for unlimited**.
+- `is_full()`: whether a limited inventory has reached capacity.
+- `add_item(item, amount) -> int`: partial acceptance, returning the number successfully added.
+- `remove_item(item, amount) -> bool`: full requested removal or rejection.
+- `get_amount(item)` and `has_amount(item, amount)`: quantity queries.
+- `transfer_to(destination, item, amount) -> int`: move up to the source's quantity and destination's free capacity, rejecting self-transfers, missing destinations, and invalid amounts. Any unaccepted units are returned to the source.
+
+Current scene values: **Test Extractor 50 units**, **Test Storage 200 units**. Item slots, stack sizes, item filters, persistence, and a final user-facing inventory UI are not implemented.
+
+---
+
+## Storage & Automatic Logistics (Chat 05)
+
+`data/buildings/test_storage.tres` references `scenes/buildings/test_storage.tscn`. The storage root belongs to `logistics_storage`, `selectable`, and `player_built`.
+
+`scripts/components/logistics_transfer_component.gd` is a reusable `LogisticsTransferComponent`. The current Test Extractor uses:
+
+- `transfer_item = test_ore.tres` (explicit `ItemDefinition`)
+- `transfer_amount = 5` units per cycle
+- `transfer_interval = 1.0` second
+- `transfer_range = 5.0` world units between building origins
+
+At every transfer interval, this component scans the `logistics_storage` group, skips disabled preview ghosts and invalid/full destinations, selects the **nearest eligible** storage in range, and calls `InventoryComponent.transfer_to()`. It reports `logistics_status`, `last_transfer_amount` (most recent attempt), and `last_successful_transfer_amount` (persists when movement stops).
+
+`No Eligible Storage` currently combines full, absent, and out-of-range destinations. `Transferring` means the previous cycle moved something; `Waiting for Resources` indicates a destination exists but the source had nothing to move. The configured transfer amount / interval is a **maximum rate**, not measured throughput.
+
+This is a **direct, proximity-limited logistics prototype**. Physical conveyors, inserters, ports, routing networks, and automated multi-machine production chains have not been implemented.
+
+### Resource Flow
 
 ```text
-Dictionary
-Key   = ItemDefinition
-Value = integer quantity
+Test Ore Deposit (finite / infinite)
+    ↓ ResourceNodeRuntime.extract() [limited by free extractor space]
+Test Extractor
+    ├── InventoryComponent (50)
+    ├── ExtractorComponent
+    └── LogisticsTransferComponent
+           ↓ transfer_to() [up to 5 units / second; range 5]
+Test Storage
+    └── InventoryComponent (200)
 ```
 
-Current API:
+**Final regression:** finite starting amount 500 = **250 remaining + 50 in extractor + 200 in storage**, with no lost or duplicated resources observed.
 
-- `add_item(item, amount)`
-- `remove_item(item, amount)`
-- `get_amount(item)`
-- `has_amount(item, amount)`
+### Test Assets
 
-Current limitations:
+The committed test scene is `res://tests/inventory_trasnfer_test.tscn` and references `res://scripts/components/test_inventory_transfer.gd`. These are the current file paths (including the `trasnfer` filename typo). The test covers partial/full/empty/invalid transfers and item conservation. A later tidy-up can rename/move the test files and update resource references.
 
-- no capacity limit
-- no slot system
-- no stack-size rules
-- no logistics connections
-- no inventory UI intended for final gameplay
 
-Each placed building has its own component instance, so inventories remain independent between buildings.
 
 ---
 
@@ -539,24 +586,7 @@ Recipe input availability and consumption are not implemented yet.
 
 ## Current Factory Data Flow
 
-```text
-BuildingDefinition (test_extractor.tres)
-        ↓ references
-TestExtractor Scene (test_extractor.tscn)
-        ├── BuildingRuntime
-        ├── InventoryComponent
-        └── ExtractorComponent
-                 │ detects / extracts
-                 ↓
-TestOreDeposit Scene
-        └── ResourceNodeRuntime
-                 └── ResourceNodeDefinition → ItemDefinition
-                 │
-                 ↓ actual extracted quantity
-TestExtractor InventoryComponent
-```
-
-The recipe/producer framework remains separate from extraction. Item transfer and manufacturing chains will connect these components in later milestones.
+Production and extraction remain separate architectures: the actual gameplay path is **Test Ore Deposit → Test Extractor inventory → range-limited Test Storage inventory**. The reusable `ProductionRecipe` and `ProducerComponent` remain available for later manufacturing but do not yet consume inputs or participate in a conveyor network.
 
 ---
 
@@ -580,31 +610,23 @@ The current Build HUD is a prototype and may later evolve into an icon-based qui
 
 ## Production Debug HUD
 
-`production_debug_hud.gd` provides temporary feedback for selected world objects.
+`production_debug_hud.gd` refreshes diagnostics for the selected object:
 
-- **Resource deposit:** shows resource node name, item, and `Supply: Infinite` or `Remaining: current / starting`.
-- **Extractor:** shows building name, `Type: Extractor`, status (`No Resource In Range`, `Extracting`, or `Resource Depleted`), resource type, and live stored amount.
-- **Non-extractor building:** shows its name plus recipe information if a `ProducerComponent` is present, otherwise `Recipe: None`.
-- **Other/no selection:** shows an appropriate diagnostic message.
+- **Resource node:** deposit name, item, and remaining/starting amount or infinite supply.
+- **Extractor:** detected resource, status, stored quantity, inventory capacity/full flag, and logistics status, configured maximum transfer rate, latest transfer amount, and latest successful transfer amount.
+- **Storage:** total stored item count, capacity used, and quantities per `ItemDefinition`.
+- **Other producer/non-extractor:** recipe or `Recipe: None`, where appropriate.
+- **No selection:** neutral diagnostic message.
 
-The HUD refreshes while a world object is selected. It is a debug interface, not final player-facing UI.
+This HUD is a prototype, not player-facing final UI. Current `Status: Extracting` means a usable deposit exists, even if extraction is stopped by inventory capacity. Full and unreachable storage both currently produce `No Eligible Storage`.
 
 ---
 
 ## Current Architectural Boundaries
 
-**Implemented in Chat 04:** selectable resource deposits, finite/infinite extraction, extractor-specific proximity validation, inventory accumulation, and resource/extractor debug feedback.
+**Implemented through Chat 05:** camera, selection, placement, demolition, data-driven buildings, resource extraction, capacity-limited inventories, partial item transfers, dedicated storage, automatic nearby delivery, inventory HUD, and basic logistics debug telemetry.
 
-**Not yet implemented:**
-
-- production recipe input checks and consumption
-- inventory limits and dedicated storage buildings
-- item transfer, conveyors, inserters, and logistics routing
-- power networks and operating costs
-- build costs, unlocks/research, and machine upgrades
-- save/load and polished factory UI
-
-These systems belong in later, separately tested milestones.
+**Planned:** recipe input checking/consumption, actual conveyors and logistics routing/ports, explicit full-vs-unreachable status, power networks, machine constraints, construction costs, research/unlocks, save/load, and polished UI.
 
 ---
 
