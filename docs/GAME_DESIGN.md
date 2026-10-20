@@ -130,7 +130,7 @@ The factory should grow through understandable stages.
 
 **Current design direction:** Infinite deposits are the default for the early factory-and-defense loop so players can focus on building and defending production. Finite deposits are supported for later balance experiments, special resources, or scarcity-oriented scenarios. This is a direction, not a finalized economy balance.
 
-Current prototype limitations: one test resource type, no transport between inventories, no inventory capacity rules, and no player-facing mining UI.
+Current prototype limitations: one test resource type, no physical conveyors or distribution networks, and no final player-facing mining UI. Chat 05 added capacity-limited inventories and short-range automatic transfers. The committed test deposit is currently finite with 500 starting units, rather than infinite; this is a test configuration.
 
 ### Production
 
@@ -142,24 +142,21 @@ A production recipe can conceptually define:
 - produced outputs
 - production time
 
-Chat 03 proved a standalone autonomous output recipe. In Chat 04, the Test Extractor switched to actual world-node extraction; the original temporary recipe asset was retired. The separate `ProductionRecipe` / `ProducerComponent` framework remains for future processing and manufacturing machines. Recipe input checking/consumption, logistics, power, and capacity are not implemented yet.
+Chat 03 proved a standalone autonomous output recipe. In Chat 04, the Test Extractor switched to actual world-node extraction; the original temporary recipe asset was retired. The separate `ProductionRecipe` / `ProducerComponent` framework remains for future processing and manufacturing machines. Recipe input checking/consumption and machine power are not implemented yet. Chat 05 added inventory capacities and direct proximity-based logistics; these have not yet been integrated with manufacturing input consumption.
 
 ### Storage
 
-Buildings should be able to hold resource quantities independently.
+**Implemented as a prototype in Chat 05.** Test Storage is a placeable, selectable, rotatable, demolishable building with a shared **200-unit** inventory. The Test Extractor has **50 units** of internal inventory. Shared capacity counts all resource types together; inventories accept only the amount that fits, and a full extractor does not waste ore from finite deposits.
 
-Dedicated storage structures can later add:
-
-- capacity
-- item restrictions
-- logistics connections
-- transfer rules
+The Storage debug view reports total items, total capacity, and individual item quantities. Item filters, dedicated slot sizes, networks, storage tiers, persistence, and final artwork/UI remain future design work.
 
 ### Logistics
 
-Conveyors and other transport systems should connect otherwise independent inventories and production machines.
+**Implemented at prototype level in Chat 05:** A Test Extractor can automatically move Test Ore into the nearest eligible Test Storage within **5 world units**, at **up to 5 items every 1 second**. The transfer preserves item counts, respects storage capacity, and stops when no eligible destination is available. The `logistics_storage` group identifies receivers and the logistics component ignores disabled placement previews.
 
-Logistics should be introduced after production and inventory behavior are stable.
+The initial connection is deliberately **abstract and proximity-based**, not a visible conveyor belt or network. Future conveyors, connection ports, inserters, input/output routing, prioritization, and multi-machine chains should reuse the existing inventory accounting instead of reimplementing it.
+
+The Debug HUD displays whether logistics is transferring, waiting for resources, or unable to find eligible storage, along with the configured maximum transfer rate, latest attempted quantity, and persistent last-successful quantity. More specific full/unreachable statuses are a future UX improvement.
 
 ### Power
 
@@ -253,18 +250,22 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 
 ## Current Prototype Priorities
 
-The current prototype has completed reliable placement, data-driven building definitions, reusable item/inventory data, the first timed producer framework, and deposit-based resource extraction.
+Completed to date:
 
-Upcoming priorities:
+1. Core placement, camera, selection, rotation, and demolition systems.
+2. Data-driven buildings, items, production recipes, and a reusable producer framework.
+3. Finite/infinite deposit-based extraction with capacity-aware mining.
+4. Dedicated storage, shared inventory capacity, safe partial transfers, and automatic short-range logistics.
+5. Storage/extractor inventory diagnostics and recent transfer activity.
 
-1. basic storage capacity and a dedicated storage building
-2. controlled inventory-to-inventory item transfer
-3. first automated logistics or conveyor experiment
-4. recipe input checks and consumption for manufacturing machines
-5. basic machine/power constraints
-6. hostile enemies, building health, and defensive structures
+Next priorities:
 
-This sequence is intended to establish a small functioning factory loop before adding combat pressure.
+1. Implement actual manufacturing input validation and consumption to establish an ore-to-product production chain.
+2. Prototype visible conveyors, ports, and routing rules that build on `InventoryComponent.transfer_to()`.
+3. Explore machine operation/power constraints.
+4. Add the first zombie enemy, structure health/damage, and basic defense to advance the First Night vertical slice.
+
+The 500-unit finite-deposit regression (250 remaining + 50 extractor + 200 storage) demonstrates resource conservation, not finalized game economy values.
 
 ---
 
