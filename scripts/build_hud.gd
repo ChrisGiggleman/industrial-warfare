@@ -21,6 +21,10 @@ extends CanvasLayer
 	$BuildPanel/PanelMargin/BuildInfo/Building2Label
 )
 
+@onready var building_3_label: Label = (
+	$BuildPanel/PanelMargin/BuildInfo/Building3Label
+)
+
 @onready var controls_label: Label = (
 	$BuildPanel/PanelMargin/BuildInfo/ControlsLabel
 )
@@ -49,35 +53,59 @@ extends CanvasLayer
 @export var demolition_color: Color = Color(1.0, 0.25, 0.25)
 
 
+
 # =============================================================================
 # BUILDING SELECTION DISPLAY
 # =============================================================================
-# Updates the building-slot labels.
+
+# Updates the building selection labels whenever the player
+# changes the currently selected building.
 #
-# The selected building:
-#   - turns gold
-#   - receives a ">" marker
+# Selected building:
+# - Highlighted in gold.
+# - Receives the ">" selection marker.
 #
-# Array indexes:
-#   0 = Small Building
-#   1 = Large Building
+# Building indexes match the WorldInteraction buildable_definitions array.
+#
+# Index 0 = Test Extractor (key 1)
+# Index 1 = Large Building (key 2)
+# Index 2 = Test Storage (key 3)
 
 func set_selected_building(index: int) -> void:
-	# Reset both building slots to their normal appearance.
+
+	# =============================================================================
+	# RESET BUILDING LABELS
+	# =============================================================================
+
+	# Restore all three labels to their normal colors.
 	building_1_label.modulate = normal_color
 	building_2_label.modulate = normal_color
+	building_3_label.modulate = normal_color
 
-	building_1_label.text = "  [1] Small Building"
+	# Remove selection markers before applying the active selection.
+	building_1_label.text = "  [1] Test Extractor"
 	building_2_label.text = "  [2] Large Building"
+	building_3_label.text = "  [3] Test Storage"
 
-	# Apply selection feedback to the active building slot.
+	# =============================================================================
+	# APPLY BUILDING SELECTION
+	# =============================================================================
+
+	# Building slot 1.
 	if index == 0:
 		building_1_label.modulate = selected_color
-		building_1_label.text = "> [1] Small Building"
+		building_1_label.text = "> [1] Test Extractor"
 
+	# Building slot 2.
 	elif index == 1:
 		building_2_label.modulate = selected_color
 		building_2_label.text = "> [2] Large Building"
+
+	# Building slot 3: Test Storage.
+	elif index == 2:
+		building_3_label.modulate = selected_color
+		building_3_label.text = "> [3] Test Storage"
+
 
 
 # =============================================================================

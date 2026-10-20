@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3 uid="uid://iqyp8norj0qi"]
+
+[ext_resource type="PackedScene" uid="uid://bbltw2h4ep1fk" path="res://scenes/buildings/test_storage.tscn" id="1_8dtnx"]
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="2_yxl25"]
+
+[resource]
+script = ExtResource("2_yxl25")
+building_id = &"test_storage"
+display_name = "Test Storage"
+description = "Prototype storage building for factory resources"
+category = &"Storage"
+building_scene = ExtResource("1_8dtnx")
+metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

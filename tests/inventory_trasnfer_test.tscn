@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dvdqf60ailr2s"]
+
+[ext_resource type="Script" uid="uid://blu5dbuhs23jf" path="res://scripts/components/test_inventory_transfer.gd" id="1_gkhx2"]
+
+[node name="InventoryTrasnferTest" type="Node" unique_id=251757576]
+script = ExtResource("1_gkhx2")

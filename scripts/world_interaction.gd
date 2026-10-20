@@ -156,6 +156,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_building(1)
 			return
 
+		if event.is_action_pressed("select_building_3"):
+			_select_building(2)
+			return
+	
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
 			return

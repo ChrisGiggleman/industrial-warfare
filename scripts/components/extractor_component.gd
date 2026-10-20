@@ -83,12 +83,18 @@ func _process(delta: float) -> void:
 	_extract_resource()
 
 
+
 # =============================================================================
 # RESOURCE EXTRACTION
 # =============================================================================
 
-# Requests resource from the detected node and stores the amount actually
-# provided in this building's inventory.
+# Extracts resources from the detected resource node.
+#
+# Before extraction, checks the inventory's available capacity.
+# Only requests the amount that can actually fit.
+#
+# This prevents resources from being permanently removed from
+# finite deposits when the extractor's inventory is full.
 
 func _extract_resource() -> void:
 	if resource_node == null:
@@ -97,23 +103,63 @@ func _extract_resource() -> void:
 	if resource_node.definition == null:
 		return
 
+	if inventory_component == null:
+		return
+
 	var resource_item: ItemDefinition = resource_node.definition.resource_item
 
 	if resource_item == null:
 		return
 
-	var extracted_amount: int = resource_node.extract(extraction_amount)
+	# =============================================================================
+	# CHECK INVENTORY CAPACITY
+	# =============================================================================
+
+	# -1 means the inventory has unlimited capacity.
+	var available_space: int = inventory_component.get_available_space()
+
+	# Begin with the extractor's configured extraction amount.
+	var requested_amount: int = extraction_amount
+
+	# Limit the requested amount when capacity is restricted.
+	if available_space >= 0:
+		requested_amount = mini(requested_amount, available_space)
+
+	# Stop mining if the inventory cannot accept any more items.
+	if requested_amount <= 0:
+		return
+
+	# =============================================================================
+	# EXTRACT RESOURCE
+	# =============================================================================
+
+	# Only request the quantity that can fit in the inventory.
+	# The resource node handles finite and infinite deposits.
+	var extracted_amount: int = resource_node.extract(requested_amount)
 
 	if extracted_amount <= 0:
 		return
 
-	inventory_component.add_item(
+	# =============================================================================
+	# STORE EXTRACTED RESOURCE
+	# =============================================================================
+
+	# Store the extracted amount in the building's inventory.
+	# add_item() returns the number of units successfully accepted.
+	var stored_amount: int = inventory_component.add_item(
 		resource_item,
 		extracted_amount
 	)
 
+	# Report unexpected storage discrepancies during development.
+	if stored_amount != extracted_amount:
+		push_warning(
+			"Extractor inventory accepted fewer items than extracted."
+		)
+
+
 	
-	# =============================================================================
+# =============================================================================
 # RESOURCE NODE DETECTION
 # =============================================================================
 

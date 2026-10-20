@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_01ywg"]
 [ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_5ceut"]
 [ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_4ie2m"]
+[ext_resource type="Script" uid="uid://da8xy5dqls5m5" path="res://scripts/components/logistics_transfer_component.gd" id="5_fr4l3"]
+[ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="6_hyyae"]
 [ext_resource type="Script" uid="uid://tclvudgfgeia" path="res://scripts/components/extractor_component.gd" id="6_nnmqk"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
@@ -34,6 +36,7 @@ script = ExtResource("2_5ceut")
 
 [node name="InventoryComponent" type="Node" parent="." unique_id=153902443]
 script = ExtResource("3_4ie2m")
+max_capacity = 50
 
 [node name="ExtractorComponent" type="Node" parent="." unique_id=248671540 node_paths=PackedStringArray("extraction_area")]
 script = ExtResource("6_nnmqk")
@@ -45,3 +48,7 @@ collision_mask = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ExtractionArea" unique_id=1110088504]
 shape = SubResource("SphereShape3D_nnmqk")
+
+[node name="LogisticsTransferComponent" type="Node" parent="." unique_id=701923578]
+script = ExtResource("5_fr4l3")
+transfer_item = ExtResource("6_hyyae")

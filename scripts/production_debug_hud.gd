@@ -177,6 +177,25 @@ func _refresh_building_display(
 		)
 		return
 
+	# =============================================================================
+	# STORAGE BUILDING DISPLAY CHECK
+	# =============================================================================
+
+	# Storage buildings have a dedicated inventory display.
+	#
+	# The logistics_storage group identifies buildings that can
+	# receive resources from our logistics system.
+	#
+	# Handle storage before checking production recipes so storage
+	# buildings no longer display the generic "Recipe: None" message.
+
+	if selected_building.is_in_group("logistics_storage"):
+		_refresh_storage_display(
+			building_runtime,
+			inventory_component
+		)
+		return
+
 	var producer_component: ProducerComponent = (
 		selected_building.get_node_or_null("ProducerComponent")
 		as ProducerComponent
@@ -287,6 +306,252 @@ func _refresh_extractor_display(
 		+ ": "
 		+ str(stored_amount)
 	)
+
+	# =============================================================================
+	# EXTRACTOR INVENTORY CAPACITY DISPLAY
+	# =============================================================================
+
+	# Displays how much inventory space the extractor is using.
+	#
+	# This uses the same InventoryComponent methods as our
+	# Test Storage building.
+	#
+	# Capacity 0 represents an unlimited inventory.
+
+	if inventory_component != null:
+
+		var total_stored: int = inventory_component.get_total_amount()
+		var max_capacity: int = inventory_component.max_capacity
+
+		if max_capacity == 0:
+			display_text += (
+				"\nInventory Capacity: Unlimited"
+			)
+		else:
+			display_text += (
+				"\nInventory Capacity: "
+				+ str(total_stored)
+				+ " / "
+				+ str(max_capacity)
+			)
+
+			# Show a clear status when the extractor is full.
+			if inventory_component.is_full():
+				display_text += "\nInventory Status: FULL"
+
+	else:
+		display_text += "\nInventory: Missing"
+
+	# =============================================================================
+	# EXTRACTOR LOGISTICS STATUS DISPLAY
+	# =============================================================================
+
+	# Locate the logistics component belonging to the selected extractor.
+	#
+	# The component stores the latest transfer status and quantity.
+	# We only read these values; the HUD never moves resources.
+
+	var logistics_component: LogisticsTransferComponent = (
+		selected_building.get_node_or_null("LogisticsTransferComponent")
+		as LogisticsTransferComponent
+	)
+
+	# =============================================================================
+	# VALIDATE LOGISTICS COMPONENT
+	# =============================================================================
+
+	# Not every extractor or future production building will
+	# necessarily have a logistics component.
+
+	if logistics_component != null:
+
+		# Add a separate section for logistics information.
+		display_text += "\n\nLOGISTICS STATUS"
+
+		# =============================================================================
+		# CURRENT LOGISTICS STATUS
+		# =============================================================================
+
+		# Display the current operating condition.
+		# Examples:
+		# - Transferring
+		# - Waiting for Resources
+		# - No Eligible Storage
+
+		display_text += (
+			"\nStatus: "
+			+ logistics_component.logistics_status
+		)
+
+		# =============================================================================
+		# CONFIGURED TRANSFER RATE
+		# =============================================================================
+
+		# Show the maximum configured throughput.
+		#
+		# This is the theoretical transfer rate, not the actual
+		# number of resources moved during the last second.
+
+		var transfer_rate: float = (
+			float(logistics_component.transfer_amount)
+			/ logistics_component.transfer_interval
+		)
+
+		display_text += (
+			"\nTransfer Rate: Up to "
+			+ str(transfer_rate)
+			+ " units/sec"
+		)
+
+		# =============================================================================
+		# LAST TRANSFER AMOUNT
+		# =============================================================================
+
+		# Show how many items were successfully moved
+		# during the most recent transfer attempt.
+
+		display_text += (
+			"\nLast Transfer: "
+			+ str(logistics_component.last_transfer_amount)
+			+ " units"
+		)
+
+		# =============================================================================
+		# LAST SUCCESSFUL TRANSFER DISPLAY
+		# =============================================================================
+
+		# Displays the quantity moved during the most recent
+		# successful inventory transfer.
+		#
+		# Unlike Last Transfer, this value is preserved when:
+		# - The destination storage becomes full.
+		# - No eligible storage building is available.
+		# - The source inventory has no resources to transfer.
+		#
+		# This helps distinguish a stopped logistics connection
+		# from one that has never transferred resources.
+
+		display_text += (
+			"\nLast Successful Transfer: "
+			+ str(logistics_component.last_successful_transfer_amount)
+			+ " units"
+		)
+
+	else:
+		display_text += "\n\nLogistics: Not Installed"
+
+	info_label.text = display_text
+
+
+# =============================================================================
+# STORAGE BUILDING DISPLAY
+# =============================================================================
+
+# Displays inventory usage for a selected storage building.
+#
+# This function reads the existing InventoryComponent directly.
+# It does not modify resources or interfere with logistics.
+#
+# Storage capacity and inventory totals update automatically
+# because the Production Debug HUD refreshes every frame.
+
+func _refresh_storage_display(
+	building_runtime: BuildingRuntime,
+	inventory_component: InventoryComponent
+) -> void:
+
+	var display_text: String = (
+		"PRODUCTION DEBUG\n\n"
+		+ "Building: "
+		+ building_runtime.building_definition.display_name
+		+ "\nType: Storage"
+	)
+
+	# =============================================================================
+	# VALIDATE INVENTORY
+	# =============================================================================
+
+	# Storage buildings should have an InventoryComponent.
+	# Report missing components rather than triggering an error.
+
+	if inventory_component == null:
+		display_text += "\nInventory: Missing"
+		info_label.text = display_text
+		return
+
+	# =============================================================================
+	# INVENTORY CAPACITY DISPLAY
+	# =============================================================================
+
+	# Calculate how many total item units are currently stored.
+	var stored_amount: int = inventory_component.get_total_amount()
+
+	# Read the configured inventory capacity.
+	var max_capacity: int = inventory_component.max_capacity
+
+	# Unlimited inventories use capacity 0.
+	if max_capacity == 0:
+		display_text += (
+			"\nStored Items: "
+			+ str(stored_amount)
+			+ "\nCapacity: Unlimited"
+		)
+	else:
+		display_text += (
+			"\nStored Items: "
+			+ str(stored_amount)
+			+ "\nCapacity: "
+			+ str(stored_amount)
+			+ " / "
+			+ str(max_capacity)
+		)
+
+	# =============================================================================
+	# STORAGE INVENTORY CONTENTS
+	# =============================================================================
+
+	# Displays each resource currently stored in this inventory.
+	#
+	# InventoryComponent stores items in a Dictionary:
+	# Key   = ItemDefinition
+	# Value = Stored quantity
+	#
+	# This allows us to support any future resource type without
+	# having to hardcode Test Ore or other specific resources.
+
+	display_text += "\n\nINVENTORY CONTENTS"
+
+	# Check whether the inventory contains any items.
+	if inventory_component.items.is_empty():
+		display_text += "\nEmpty"
+
+	else:
+		# Loop through every stored item definition.
+		for item in inventory_component.items.keys():
+
+			# Ignore invalid item references.
+			if not item is ItemDefinition:
+				continue
+
+			var item_definition: ItemDefinition = item as ItemDefinition
+
+			# Retrieve the stored amount using our existing
+			# InventoryComponent helper function.
+			var item_amount: int = inventory_component.get_amount(
+				item_definition
+			)
+
+			# Display the resource name and current quantity.
+			display_text += (
+				"\n"
+				+ item_definition.display_name
+				+ ": "
+				+ str(item_amount)
+			)
+
+	# =============================================================================
+	# UPDATE HUD
+	# =============================================================================
 
 	info_label.text = display_text
 
