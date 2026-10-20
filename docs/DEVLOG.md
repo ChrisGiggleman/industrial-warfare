@@ -655,3 +655,54 @@ Verified together:
 **Chat 04 — Resource Nodes & Extraction Foundation: Complete.**
 
 Next planned work: basic inventory storage and simple item transfer/logistics, followed by recipe inputs, further factory systems, and the first zombie/defense prototype.
+
+---
+
+## 2026-10-20 — Chat 05: Storage & Basic Factory Logistics
+
+**Milestone status: Complete.** Gameplay implementation and final manual regression tests passed in Godot 4.6.2 Stable.
+
+### Inventory Capacity & Safe Item Accounting
+
+- Extended `InventoryComponent` with a shared item-count `max_capacity` (0 = unlimited), `get_total_amount()`, `get_available_space()`, and `is_full()`.
+- `add_item(item, amount) -> int` accepts only the quantity that fits and returns the actual amount stored.
+- Made `ExtractorComponent` check free inventory capacity *before* extracting from finite deposits; full inventories no longer consume ore.
+- Implemented `InventoryComponent.transfer_to(destination, item, amount) -> int` with source availability checks, destination capacity limits, partial transfers, self-transfer rejection, and rejected-item restoration.
+
+### Dedicated Storage Building
+
+- Added `scenes/buildings/test_storage.tscn` and `data/buildings/test_storage.tres`.
+- Reused `BuildingRuntime`, `InventoryComponent`, selectable-object highlighting, placement collision, rotation, and demolition.
+- The storage prototype has a rectangular 1.0 × 1.0 × 2.8 mesh/collision footprint and default capacity **200**.
+- Added `logistics_storage` to the actual storage building root; retained `selectable` and `player_built`.
+- Registered storage in `WorldInteraction.buildable_definitions`; key **3** selects storage, alongside key **1** Test Extractor and key **2** Large Building.
+- Updated the Build HUD to show and highlight all three options.
+
+### Automatic Logistics
+
+- Added `scripts/components/logistics_transfer_component.gd` to Test Extractor as a sibling of its inventory/extractor components.
+- Configured `transfer_item` (Test Ore), `transfer_amount = 5` per cycle, `transfer_interval = 1.0` second, and `transfer_range = 5.0` world units.
+- The component selects the nearest eligible `logistics_storage` group member by **building-origin distance**, ignoring full destinations, missing inventories, queued-for-deletion nodes, and disabled placement ghosts.
+- Nearby inventories receive up to the configured amount each cycle using `transfer_to()`; actual throughput depends on ore availability.
+- Status tracking reports `Initializing`, `Transferring`, `Waiting for Resources`, or `No Eligible Storage`, with last attempt and last successful transfer quantities. `No Eligible Storage` currently covers both out-of-range and full storage.
+
+### Production Debug HUD
+
+- Added storage totals, capacity used, and an `INVENTORY CONTENTS` listing by `ItemDefinition`.
+- Added extractor inventory capacity/full status and a `LOGISTICS STATUS` section with configured maximum transfer rate, latest attempt amount, and last successful amount.
+- Preserved resource-node remaining/starting amounts and existing selection behavior.
+- The `Status: Extracting` line currently indicates a valid ore source, not necessarily active mining when inventory is full; this wording is a future refinement.
+
+### Tests and Observed Results
+
+- An isolated Godot inventory test passed partial transfer, full destination, empty source, and invalid/self/zero-quantity transfer cases.
+- Gameplay checks passed extraction, proximity-limited storage discovery, timed transfers, HUD updates, blocked transfers at storage capacity, extractor accumulation when storage is full, and existing placement/rotation/selection/demolition behavior.
+- **Final finite-resource conservation test:** starting deposit **500**, remaining deposit **250**, extractor inventory **50/50**, storage inventory **200/200**. Total: **250 + 50 + 200 = 500**.
+- The committed `data/resource_nodes/test_ore_deposit.tres` is currently set to a **finite 500-unit** test deposit; this is a testing configuration, not a finalized economy choice.
+- Storage capacity was restored to **200** after short capacity-limit tests.
+
+### Scope and Follow-Ups
+
+This is a proximity-based, direct inventory transfer prototype—not a visible conveyor network. Conveyor belts, routing/ports, multi-machine flow, power, production input consumption, and refined logistics statuses remain future work.
+
+The tested source/scenes were committed and pushed to `main` before this documentation update.
