@@ -118,20 +118,24 @@ Planned major systems:
 
 **Status: Complete**
 
-### 1D — Basic Storage & Logistics (Next / Chat 05)
+### 1D — Basic Storage & Logistics (Chat 05)
 
-- [ ] Define simple inventory capacity or storage limits
-- [ ] Create a dedicated storage building
-- [ ] Implement controlled transfer of items between inventories
-- [ ] Validate transfer amounts, source availability, and destination capacity
-- [ ] Display useful storage/transfer state in the debug HUD
-- [ ] Test multiple buildings, independence, and item conservation
-- [ ] Prototype a first conveyor or other simple automated logistics link
-- [ ] Add recipe input checking and consumption for production machines
-- [ ] Explore basic machine-operation/power constraints
-- [ ] Regression-test extraction and existing interaction systems
+- [x] Define shared item-count inventory capacity and unlimited-capacity fallback
+- [x] Implement partial acceptance and capacity-aware finite-deposit extraction
+- [x] Create dedicated Test Storage scene and BuildingDefinition (200 capacity)
+- [x] Add Test Storage to building selection (key 3), rotation, selection, and demolition
+- [x] Implement safe `InventoryComponent.transfer_to()` item movement
+- [x] Validate partial transfers, full destinations, empty sources, invalid/self transfers, and conservation
+- [x] Add `LogisticsTransferComponent` and nearest-eligible storage discovery within a configurable radius
+- [x] Transfer Test Ore automatically on a timed interval, ignoring disabled placement ghosts
+- [x] Display inventory contents/capacity, transfer status, and last successful transfer in the debug HUD
+- [x] Regression-test existing camera, building, extraction, selection, and demolition systems
+- [x] Complete finite-resource conservation regression: 250 deposit + 50 extractor + 200 storage = 500
+- [ ] Build physical conveyors, ports, inserters, and more complex routing (follow-up milestone)
+- [ ] Add production recipe input availability, consumption, and outputs from actual inputs (follow-up)
+- [ ] Explore machine-operation/power constraints (follow-up)
 
-**Status: Not Started**
+**Chat 05 Status: Complete — Direct proximity-based logistics working; physical conveyors remain planned.**
 
 ### 1E — Enemy & Defense Prototype
 
@@ -208,5 +212,6 @@ Completed:
 - Phase 1A camera/player interaction foundation
 - Phase 1B factory/production foundation
 - Phase 1C resource nodes, deposit-aware extraction, and placement validation
+- Phase 1D (Chat 05) capacity-aware inventories, dedicated storage, direct automatic transfers, and storage/logistics debugging
 
-**Next:** Phase 1D — basic storage and item transfer/logistics (planned Chat 05). Production input consumption, conveyor experimentation, and machine constraints follow as the prototype matures. Phase 1E then introduces the first zombie/defense systems.
+**Next:** Advance toward a real production chain (recipe input checks and consumption), physical conveyor/port logistics, and basic machine-operation constraints. Then tackle Phase 1E's first zombie/defense prototype.
