@@ -497,6 +497,164 @@ The committed scene references the existing script path and the user-tested isol
 
 ---
 
+## 2026-10-20–21 — Chat 06: Smelter Selected but Selection/Demolition Highlight Missing
+
+### Problem
+
+The newly placed Test Smelter could be selected and displayed in the Production Debug HUD, but it did not become gold on normal selection or red on demolition hover.
+
+### Cause
+
+The root `TestSmelter` had the existing `selectable_object.gd` script and correct `selectable` / `player_built` groups, but its exported **Selection Mesh** reference was empty. The script could not apply the temporary highlight material without a specific `MeshInstance3D`.
+
+### Solution / Result
+
+In `scenes/buildings/test_smelter.tscn`, selected the root node and assigned **Selection Mesh → BuildingMesh** in the Inspector. Both normal selection highlighting and demolition-hover highlighting then worked. No new GDScript code was needed.
+
+### Lesson
+
+A working raycast and HUD selection do not prove visual feedback is wired. When reusing a component with exported node references, configure every required Inspector reference on each new scene.
+
+---
+
+## 2026-10-20–21 — Chat 06: Ingot Counter Stayed at Zero Despite Active Manufacturing
+
+### Problem
+
+Automatic extractor-to-storage and storage-to-smelter transfers ran, and the smelter repeatedly received ore, but the Production Debug HUD displayed `Stored Test Ingot: 0`. This initially appeared to be a manufacturing failure.
+
+### Cause
+
+The historical HUD assumed a building had one child named `InventoryComponent`. The smelter intentionally has two separate nodes: `InputInventory` for Test Ore and `OutputInventory` for finished Test Ingots. The HUD was reading the missing/old inventory reference instead of the producer's output buffer.
+
+### Solution / Result
+
+Updated `_refresh_building_display()` in `scripts/production_debug_hud.gd` to resolve the manufacturer's `OutputInventory` (and, later, to show `ProducerComponent.input_inventory` and both capacities). Live Test Ingot counts became visible; screenshots showed accumulated ingots and separate 50-unit input / 100-unit output capacities.
+
+### Lesson
+
+Differentiate **incorrect instrumentation** from a broken gameplay pipeline. Inspect the correct inventory instance before changing resource-transfer or manufacturing logic.
+
+---
+
+## 2026-10-20–21 — Chat 06: Fourth Building Input Worked but Construction HUD Did Not Update
+
+### Problem
+
+The `select_building_4` Input Map action was configured and `WorldInteraction` handled index `3`, but the Test Smelter did not appear in the Build HUD. After adding a text label, it still did not highlight.
+
+### Cause
+
+Registering a key action is only one part of a data-driven construction option. The `WorldInteraction.buildable_definitions` array initially contained only three definitions. The HUD scene/script also had only three building labels and three corresponding reset/highlight branches.
+
+### Solution / Result
+
+- Added `data/buildings/test_smelter.tres` as index `3` (fourth entry) of `buildable_definitions` in `main.tscn`.
+- Duplicated and renamed the HUD label to `Building4Label`, with text `[4] Test Smelter`.
+- Extended `build_hud.gd` to reset and highlight the fourth option using the same gold selected state.
+
+The `4` key then selected a valid smelter placement ghost and correctly highlighted the build option. Existing slots 1–3 continued working.
+
+### Lesson
+
+Treat key mapping, building definition registration, HUD label creation, and HUD selection logic as separate integration points; a missing one can resemble a controller bug.
+
+---
+
+## 2026-10-20–21 — Chat 06: Extractor Said "Extracting" When Inventory Was Full
+
+### Problem
+
+A Test Extractor displayed `Status: Extracting` and `Inventory Capacity: 50 / 50` simultaneously. This was misleading because the capacity-aware extraction logic could not remove additional ore.
+
+### Cause
+
+The original HUD inferred the status from whether a viable resource deposit existed; it was not reporting whether `ExtractorComponent` could currently work. Older hardcoded status strings also risked duplicated status text once component-owned statuses were introduced.
+
+### Solution / Result
+
+- Added `ExtractorComponent.extraction_status` and guarded progress timing for missing/depleted resources, missing inventories, full capacity, and invalid intervals.
+- Made `_refresh_extractor_display()` read `extractor_component.extraction_status` as the single status source.
+- Removed older fixed `Status:` append lines and reused the shared `ActivityProgressBar` for real extraction timing.
+
+Tested the extractor filling to `50/50`; the HUD correctly showed `Inventory Full` and 0% progress. Active extraction and smelting continued displaying live progress.
+
+### Lesson
+
+Operational UI should read state from the responsible gameplay component instead of guessing from a few conditions inside the HUD.
+
+---
+
+## 2026-10-20–21 — Chat 06: Smelter Output Cap Reached and Manufacturing Stopped
+
+### Observation / Verification
+
+To verify that no ore was consumed after reaching the finished-product limit, the Test Smelter's `OutputInventory.max_capacity` was temporarily reduced from 100 to **2**.
+
+Once two ingots had been produced, the HUD showed:
+
+- `Production Status: Output Blocked`
+- `InputInventory: 10 / 50` Test Ore
+- `OutputInventory: 2 / 2` Test Ingots
+- Production progress: `0%`
+
+The blocked quantities remained stable during the waiting period. Restored the capacity to **100** afterward.
+
+### Lesson
+
+Testing a short-term capacity override is faster and safer than waiting for a large prototype inventory to fill. Remember to restore and save the normal scene configuration after the test.
+
+---
+
+## 2026-10-20–21 — Chat 06: Git Diff Whitespace and Accidental Untracked File
+
+### Problem
+
+Before committing the Chat 06 changes, `git diff --check` found trailing whitespace in `scripts/production_debug_hud.gd` and `scripts/world_interaction.gd`. After a successful push, `git status` listed an unexpected untracked file with an unusual name containing `automated manufacturing chain`.
+
+### Cause
+
+The first issue was trailing whitespace at the ends of script lines. Inspection of the 2,132-byte untracked file revealed that it contained Git's staged `--stat` summary, not gameplay code; it appears to have been created accidentally during terminal use.
+
+### Solution / Result
+
+Used VS Code **Trim Trailing Whitespace**, then validated the staged changes. Committed and pushed the intended gameplay changes to `main`. Inspected the unexpected file's size and first lines with PowerShell `Get-ChildItem` and `Get-Content -LiteralPath` before deleting **only that inspected file** with `Remove-Item -LiteralPath`. A subsequent `git status` was clean.
+
+### Lesson
+
+Review new/untracked files before `git add .`, check staged diffs, and **inspect unknown files before deleting them**. If Git uses the `less` pager and shows `(END)`, press `Q` to return to PowerShell.
+
+---
+
+## 2026-10-20–21 — Chat 06: Resource Conservation Across Manufacturing
+
+### Verification
+
+Because the smelting recipe transforms **2 ore into 1 ingot**, conservation must be expressed in ore equivalents rather than total item count:
+
+```text
+Deposit ore
++ Extractor ore
++ Storage ore
++ Smelter input ore
++ (Smelter ingots × 2)
+= Initial ore supply
+```
+
+Verified sample from a single finite-500-ore test:
+
+```text
+236 deposit + 50 extractor + 200 storage + 10 input + (2 × 2) = 500
+```
+
+During review, a screenshot's deposit quantity was initially read as 326 rather than 236, creating an apparent 90-unit discrepancy. Correcting the reading reconciled the total without gameplay code changes. A later final conservation run was also reported successful.
+
+### Lesson
+
+Verify that all displayed quantities come from the same run and that processed items are converted back into their input-equivalent counts before diagnosing duplication. Recheck readings before editing gameplay code.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
