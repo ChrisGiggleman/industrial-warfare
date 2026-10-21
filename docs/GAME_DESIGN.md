@@ -130,33 +130,57 @@ The factory should grow through understandable stages.
 
 **Current design direction:** Infinite deposits are the default for the early factory-and-defense loop so players can focus on building and defending production. Finite deposits are supported for later balance experiments, special resources, or scarcity-oriented scenarios. This is a direction, not a finalized economy balance.
 
-Current prototype limitations: one test resource type, no physical conveyors or distribution networks, and no final player-facing mining UI. Chat 05 added capacity-limited inventories and short-range automatic transfers. The committed test deposit is currently finite with 500 starting units, rather than infinite; this is a test configuration.
+Current prototype limitations: Test Ore is the only mineable world resource; physical conveyors, advanced routing, and a finalized player-facing mining UI remain unimplemented. Chat 05 added capacity-limited inventories and short-range extractor-to-storage delivery; Chat 06 added storage-to-smelter input delivery and real ore-to-ingot manufacturing. The committed test deposit is currently finite with 500 starting units, rather than infinite; this is a test configuration.
 
 ### Production
 
-Machines should use data-defined recipes.
+**Implemented in Chat 06 as the first actual manufacturing chain.** Machines use data-defined recipes with required inputs, outputs, and a production cycle duration.
 
-A production recipe can conceptually define:
+The first permanent recipe is:
 
-- required inputs
-- produced outputs
-- production time
+```text
+2 Test Ore  --2 seconds-->  1 Test Ingot
+```
 
-Chat 03 proved a standalone autonomous output recipe. In Chat 04, the Test Extractor switched to actual world-node extraction; the original temporary recipe asset was retired. The separate `ProductionRecipe` / `ProducerComponent` framework remains for future processing and manufacturing machines. Recipe input checking/consumption and machine power are not implemented yet. Chat 05 added inventory capacities and direct proximity-based logistics; these have not yet been integrated with manufacturing input consumption.
+- `test_ingot.tres` is the first manufactured item; `test_smelting.tres` describes its conversion recipe.
+- The placeable **Test Smelter** is building option **4** and has **two independent inventories**: 50-unit input storage for raw material and 100-unit output storage for finished products.
+- Production begins only when every recipe ingredient is available and all outputs have room; the cycle completes with input consumption and finished-item creation.
+- When ingredients are missing or output storage is full, production stops, resets progress, and reports its operating status. A verified capacity-limit test stopped at **2/2 ingots** without consuming more ore.
+- Recipe validation and synchronous transaction/rollback logic are implemented in the reusable `ProducerComponent`, rather than hardcoded per building.
+- The player can inspect live input quantities, required materials, output quantities, inventory capacities, machine status, and a progress bar in the **Production Debug HUD**.
+
+For player feedback, processing and extraction share a reusable progress indicator tied to their actual cycle timers. It moves only while work can proceed; blocked machines show **0%** and an explicit reason. Storage and resource deposits do not display a processing bar.
+
+**Not yet implemented:** smelter finished-product export, downstream manufacturing steps, machine power/fuel consumption, recipe selection UI, research/recipe unlocks, and final machine art/animations.
 
 ### Storage
 
-**Implemented as a prototype in Chat 05.** Test Storage is a placeable, selectable, rotatable, demolishable building with a shared **200-unit** inventory. The Test Extractor has **50 units** of internal inventory. Shared capacity counts all resource types together; inventories accept only the amount that fits, and a full extractor does not waste ore from finite deposits.
+**Implemented and extended in Chats 05–06.** Test Storage is a placeable, selectable, rotatable, demolishable building with a shared **200-unit** inventory. Test Extractor has **50 units** of internal inventory. Each individual inventory counts all its own item types toward its capacity and accepts only what fits.
 
-The Storage debug view reports total items, total capacity, and individual item quantities. Item filters, dedicated slot sizes, networks, storage tiers, persistence, and final artwork/UI remain future design work.
+The Test Smelter reuses the same inventory component class twice for **separate** raw-material and product capacities. Its input inventory holds up to **50 units** (logistics normally targets a 10-ore buffer); the independent output inventory holds **100 finished units**. Ore in the input inventory does **not** consume ingot output capacity.
+
+The debug view reports storage inventory totals and item quantities, while manufacturing buildings report each buffer separately. Dedicated item filters, slot sizes, permanent inventory networks, storage tiers, persistence, and final artwork/UI remain future work.
 
 ### Logistics
 
-**Implemented at prototype level in Chat 05:** A Test Extractor can automatically move Test Ore into the nearest eligible Test Storage within **5 world units**, at **up to 5 items every 1 second**. The transfer preserves item counts, respects storage capacity, and stops when no eligible destination is available. The `logistics_storage` group identifies receivers and the logistics component ignores disabled placement previews.
+**Implemented as an automatic short-range chain across Chats 05–06:**
 
-The initial connection is deliberately **abstract and proximity-based**, not a visible conveyor belt or network. Future conveyors, connection ports, inserters, input/output routing, prioritization, and multi-machine chains should reuse the existing inventory accounting instead of reimplementing it.
+- **Extractor → Storage:** `LogisticsTransferComponent` transfers Test Ore into the nearest eligible Test Storage in a 5-world-unit radius, requesting up to 5 units every 1 second. Transfers respect source availability, destination capacity, and conservation.
+- **Storage → Smelter:** `LogisticsInputComponent` on the smelter finds eligible stocked storage within 5 world units and uses the same `InventoryComponent.transfer_to()` primitive. It requests up to 5 Test Ore every 1 second, normally refilling the smelter's input inventory toward **10** ore, rather than filling all 50 slots.
 
-The Debug HUD displays whether logistics is transferring, waiting for resources, or unable to find eligible storage, along with the configured maximum transfer rate, latest attempted quantity, and persistent last-successful quantity. More specific full/unreachable statuses are a future UX improvement.
+The completed prototype production route is:
+
+**Test Ore Deposit → Test Extractor → Test Storage → Test Smelter → Test Ingots**
+
+Transfers are still deliberately **abstract and proximity-based**. There are no visible belts, inserters, ports, or routed conveyor networks. Finished ingots currently remain inside the smelter's output inventory until future output logistics are implemented.
+
+Extractor logistics reports its status, most recent attempt, and most recent successful transfer. Smelter input logistics also exposes transfer state and the latest quantity moved. Configured transfer rates are upper bounds, not guaranteed throughput.
+
+### Production Feedback
+
+**Implemented in Chat 06:** An extractor or manufacturer has a clear state such as `Extracting`, `Inventory Full`, `Producing`, `Waiting for Inputs`, or `Output Blocked`, as appropriate. Selecting a machine displays one shared HUD `ActivityProgressBar` reflecting its active interval (e.g., 1-second extraction or 2-second smelting).
+
+This is a functional early **debug/player-information interface**. More polished per-building information panels, small world-space progress indicators, machine animations, and status icons remain potential future enhancements.
 
 ### Power
 
@@ -252,20 +276,22 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 
 Completed to date:
 
-1. Core placement, camera, selection, rotation, and demolition systems.
-2. Data-driven buildings, items, production recipes, and a reusable producer framework.
-3. Finite/infinite deposit-based extraction with capacity-aware mining.
-4. Dedicated storage, shared inventory capacity, safe partial transfers, and automatic short-range logistics.
-5. Storage/extractor inventory diagnostics and recent transfer activity.
+1. RTS camera, selection, construction, rotation, and demolition systems.
+2. Data-driven building/item/recipe definitions and reusable runtime components.
+3. Finite/infinite deposit extraction with source-dependent placement and capacity-aware mining.
+4. Dedicated storage, safe partial inventory transfers, and automatic short-range extractor-to-storage logistics.
+5. Actual manufacturing with validated input consumption and output capacity protection; a Test Smelter with separate 50-input/100-output inventories and a 2-ore-to-1-ingot recipe.
+6. Automatic storage-to-smelter input logistics (up to 5 ore per second; target buffer of 10).
+7. Live input/output inventory HUD, machine status, and shared extraction/manufacturing progress indicator.
+8. Chat 06's **36/36** standalone manufacturing assertions and successful end-to-end resource conservation checks.
 
-Next priorities:
+Potential next milestones, to prioritize before starting the next development chat:
 
-1. Implement actual manufacturing input validation and consumption to establish an ore-to-product production chain.
-2. Prototype visible conveyors, ports, and routing rules that build on `InventoryComponent.transfer_to()`.
-3. Explore machine operation/power constraints.
-4. Add the first zombie enemy, structure health/damage, and basic defense to advance the First Night vertical slice.
+1. Transfer finished ingots out of smelters and introduce a downstream use or recipient, or prototype conveyor/inserter/port routing on top of `InventoryComponent.transfer_to()`.
+2. Explore machine-operation constraints (power/fuel), output logistics, and multi-machine scalability.
+3. Begin the first zombie enemy, structure damage/health, and basic defense to advance the First Night vertical slice.
 
-The 500-unit finite-deposit regression (250 remaining + 50 extractor + 200 storage) demonstrates resource conservation, not finalized game economy values.
+The finite-500-ore test is a **regression fixture**, not a finalized resource economy. Historical Chat 05 conservation was 250 deposit + 50 extractor + 200 storage = 500. Chat 06 accounted for **236 deposit + 50 extractor + 200 storage + 10 smelter ore + (2 ingots × 2 ore)** = **500** ore equivalents.
 
 ---
 
