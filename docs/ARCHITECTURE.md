@@ -24,6 +24,7 @@ res://
 ├── data/
 │   ├── buildings/
 │   ├── items/
+│   ├── recipes/
 │   └── resource_nodes/
 ├── docs/
 │   └── screenshots/
@@ -130,6 +131,7 @@ Current examples include:
 - `select_building_1`
 - `select_building_2`
 - `select_building_3`
+- `select_building_4`
 - `demolish_selected`
 
 The current prototype bindings include:
@@ -140,7 +142,7 @@ The current prototype bindings include:
 - RMB — secondary/cancel interaction
 - `B` — Build Mode
 - `R` — rotate building
-- `1` / `2` / `3` — Test Extractor / Large Building / Test Storage
+- `1` / `2` / `3` / `4` — Test Extractor / Large Building / Test Storage / Test Smelter
 - `Delete` — toggle Demolition Tool while in Build Mode
 
 ---
@@ -189,7 +191,7 @@ Entered with `B`.
 - Green indicates valid placement.
 - Red indicates blocked placement.
 - `R` rotates in 90-degree increments.
-- `1`, `2`, and `3` select prototype building definitions, including Test Storage.
+- `1`, `2`, `3`, and `4` select Test Extractor, Large Building, Test Storage, and Test Smelter respectively.
 - LMB places a valid building.
 - RMB exits Build Mode.
 
@@ -284,6 +286,7 @@ Prototype assets:
 - `res://data/buildings/test_extractor.tres`
 - `res://data/buildings/test_building_large.tres`
 - `res://data/buildings/test_storage.tres`
+- `res://data/buildings/test_smelter.tres`
 
 The separation is:
 
@@ -398,6 +401,22 @@ TestStorage [selectable, player_built, logistics_storage]
 
 The Test Extractor's inventory capacity is 50. Its `LogisticsTransferComponent` and `ExtractorComponent` share the same root but remain independent components.
 
+Current smelter scene (`res://scenes/buildings/test_smelter.tscn`):
+
+```text
+TestSmelter [selectable, player_built]
+├── BuildingBody (StaticBody3D)
+│   └── CollisionShape3D
+├── BuildingMesh
+├── BuildingRuntime
+├── InputInventory (InventoryComponent, max_capacity = 50)
+├── OutputInventory (InventoryComponent, max_capacity = 100)
+├── ProducerComponent
+└── LogisticsInputComponent
+```
+
+The smelter references `res://data/recipes/test_smelting.tres` and reuses the same inventory component class in two **distinct instances**. Incoming ore and finished ingots never compete for the same inventory capacity. Its `selection_mesh` export references `BuildingMesh` so normal selection and demolition-hover materials work.
+
 ### `BuildingRuntime`
 
 `building_runtime.gd` stores the `BuildingDefinition` associated with the placed building instance.
@@ -438,9 +457,10 @@ Extractor
 
 Future Powered Machine
 ├── BuildingRuntime
-├── InventoryComponent
+├── InputInventory
+├── OutputInventory
 ├── ProducerComponent
-└── PowerConsumerComponent
+└── PowerConsumerComponent (planned)
 ```
 
 ---
@@ -457,7 +477,7 @@ The resource-node system consists of:
 
 `ResourceNodeRuntime.extract()` returns the requested valid amount for infinite deposits without depletion; for finite deposits it returns at most the available quantity and subtracts it from remaining supply. Invalid/nonpositive requests return zero. Both modes were runtime-tested.
 
-`ExtractorComponent` finds its sibling `InventoryComponent` and tracks a nearby deposit using `ExtractionArea` overlap signals plus a deferred initial scan. The Test Extractor has a radius-2.5 detection sphere and defaults to one ore per one-second extraction cycle. Extraction first checks the inventory's available space and requests at most that amount from the deposit, so full inventories do not deplete finite resources. Only the actual extracted amount enters inventory; an out-of-range or depleted node does not generate ore.
+`ExtractorComponent` finds its sibling `InventoryComponent` and tracks a nearby deposit using `ExtractionArea` overlap signals plus a deferred initial scan. The Test Extractor has a radius-2.5 detection sphere and defaults to one ore per one-second extraction cycle. Extraction first checks the inventory's available space and requests at most that amount from the deposit, so full inventories do not deplete finite resources. Only the actual extracted amount enters inventory; an out-of-range or depleted node does not generate ore. `ExtractorComponent.extraction_status` reports `Extracting`, `Inventory Full`, `No Resource In Range`, `Resource Depleted`, or a configuration issue, and the extraction timer resets when the component cannot operate.
 
 ```text
 TestOreDeposit
@@ -488,7 +508,8 @@ Current fields:
 
 Prototype item:
 
-- `res://data/items/test_ore.tres`
+- `res://data/items/test_ore.tres` — raw material
+- `res://data/items/test_ingot.tres` — processed material from the smelting recipe
 
 The inventory and recipe systems use `ItemDefinition` resources rather than scattering item-name strings throughout gameplay code.
 
@@ -526,7 +547,7 @@ This resource can also be reused later for systems such as building costs if tha
 - `get_amount(item)` and `has_amount(item, amount)`: quantity queries.
 - `transfer_to(destination, item, amount) -> int`: move up to the source's quantity and destination's free capacity, rejecting self-transfers, missing destinations, and invalid amounts. Any unaccepted units are returned to the source.
 
-Current scene values: **Test Extractor 50 units**, **Test Storage 200 units**. Item slots, stack sizes, item filters, persistence, and a final user-facing inventory UI are not implemented.
+Current scene values: **Test Extractor 50 units**, **Test Storage 200 units**, **Test Smelter input 50 units**, and **Test Smelter output 100 units**. Capacity applies to each separate inventory instance. Item slots, stack sizes, item filters, persistence, and a final user-facing inventory UI are not implemented.
 
 ---
 
@@ -545,7 +566,7 @@ At every transfer interval, this component scans the `logistics_storage` group, 
 
 `No Eligible Storage` currently combines full, absent, and out-of-range destinations. `Transferring` means the previous cycle moved something; `Waiting for Resources` indicates a destination exists but the source had nothing to move. The configured transfer amount / interval is a **maximum rate**, not measured throughput.
 
-This is a **direct, proximity-limited logistics prototype**. Physical conveyors, inserters, ports, routing networks, and automated multi-machine production chains have not been implemented.
+This is a **direct, proximity-limited logistics prototype**. The extractor-to-storage-to-smelter processing chain now works automatically, but physical conveyors, inserters, ports, network routing, and finished-ingot export have not been implemented.
 
 ### Resource Flow
 
@@ -556,12 +577,19 @@ Test Extractor
     ├── InventoryComponent (50)
     ├── ExtractorComponent
     └── LogisticsTransferComponent
-           ↓ transfer_to() [up to 5 units / second; range 5]
+           ↓ transfer_to() [up to 5 units per second; range 5]
 Test Storage
     └── InventoryComponent (200)
+           ↓ LogisticsInputComponent finds stocked storage and uses transfer_to()
+Test Smelter
+    ├── InputInventory (50; ore buffer target 10)
+    ├── ProducerComponent [2 ore -> 1 ingot every 2 seconds]
+    └── OutputInventory (100; stores ingots)
 ```
 
-**Final regression:** finite starting amount 500 = **250 remaining + 50 in extractor + 200 in storage**, with no lost or duplicated resources observed.
+**Chat 05 historical regression:** 500 starting ore = **250 deposit + 50 extractor + 200 storage**.
+
+**Chat 06 complete-chain regression:** 500 starting ore equivalents = **236 deposit + 50 extractor + 200 storage + 10 smelter input + (2 ingots × 2 ore)**. Production, transfers, and blocking were also regression-tested independently. Neither test observed resource loss or duplication.
 
 ### Test Assets
 
@@ -571,22 +599,58 @@ The committed test scene is `res://tests/inventory_trasnfer_test.tscn` and refer
 
 ---
 
-## Production Recipe & Producer Framework
+## Production Recipes & Safe Producer Transactions (Chat 06)
 
-The reusable Chat 03 framework remains in the codebase:
+The former Chat 03 output-only producer has been replaced with a real input-consuming manufacturing component. The retired `data/recipes/prototype_extraction.tres` is historical, not active.
 
-- `scripts/data/production_recipe.gd` — `ProductionRecipe` with `recipe_id`, `display_name`, `production_time`, and input/output arrays of `ItemAmount`.
-- `scripts/components/producer_component.gd` — `ProducerComponent`, which times a recipe and adds its outputs to an `InventoryComponent`.
+- `scripts/data/production_recipe.gd`: `ProductionRecipe` defines a recipe ID, name, positive cycle time, and arrays of `ItemAmount` for required inputs and produced outputs.
+- `scripts/data/item_amount.gd`: each `ItemAmount` pairs an `ItemDefinition` reference with an integer quantity.
+- `data/recipes/test_smelting.tres`: **2 Test Ore → 1 Test Ingot, 2 seconds**. The recipe uses the same `test_ore.tres` reference as extraction and logistics.
+- `scripts/components/producer_component.gd`: `ProducerComponent` receives explicitly assigned, distinct `input_inventory` and `output_inventory` references.
 
-The original `data/recipes/prototype_extraction.tres` was a **historical Chat 03 test asset**, deleted in Chat 04 after the small building switched to world-node extraction. No current Test Extractor scene has a `ProducerComponent`; the reusable recipe/producer classes are retained for future manufacturing buildings.
+### Production Preconditions and Transaction
 
-Recipe input availability and consumption are not implemented yet.
+1. `has_required_inputs()` rejects missing inventories/recipes and invalid input entries, aggregates repeated ingredient requirements, and confirms every required quantity is present.
+2. `can_store_recipe_outputs()` validates every output entry and verifies enough free space for the **sum** of output quantities in the separate output inventory; it recognizes unlimited capacity.
+3. `_process(delta)` only advances `production_progress` while inputs and output space are available. Invalid, missing-input, or output-full states reset progress and set `production_status`.
+4. At cycle completion, `try_complete_recipe_cycle()` repeats the checks, removes the required inputs, adds finished outputs, and returns success only after all requested outputs are stored.
+5. `_rollback_recipe_cycle()` attempts to remove any partial outputs and restore consumed ingredients if a synchronous operation fails unexpectedly.
+
+These safeguards prevent free-output generation, ordinary partial production, and normal capacity-related item loss. Exceptional rollback failures are reported by the component and need stronger fault-injection tests if the simulation later allows interleaved inventory mutations.
+
+**Blocked states:** The prototype resets the cycle rather than preserving partial progress when ingredients or output space are unavailable. For output-full smelting, the HUD shows `Output Blocked` and 0% progress while retained ore and ingots stay unchanged.
+
+### Storage-to-Smelter Input Logistics (Chat 06)
+
+`scripts/components/logistics_input_component.gd` attaches to the smelter and requests ore from the nearest eligible, stocked `logistics_storage` node within **5 world units**. It uses `InventoryComponent.transfer_to()` and does not create or destroy items.
+
+Current Inspector configuration:
+
+- `input_inventory`: smelter `InputInventory` node (not `OutputInventory`)
+- `transfer_item`: `data/items/test_ore.tres`
+- `transfer_amount`: up to **5** ore per attempt
+- `transfer_interval`: **1.0** second
+- `transfer_range`: **5.0** world units
+- `target_buffer_amount`: **10** ore (a logistics refill target, not the physical 50-unit capacity)
+
+It validates nearby candidate storage and requested buffer/capacity limits, then transfers at most what is available and required. It exposes `logistics_status` and `last_transfer_amount` for debug use. Existing extractor-to-storage `LogisticsTransferComponent` remains separate.
+
+### Manufacturing and Timing Test Assets
+
+- `tests/recipe_input_availability_test.tscn` — **8 passed**
+- `tests/recipe_output_capacity_test.tscn` — **11 passed**
+- `tests/manufacturing_transaction_test.tscn` — **9 passed**
+- `tests/timed_manufacturing_test.tscn` — **8 passed**
+
+**Chat 06 total: 36/36 passed**, plus the existing Chat 05 inventory transfer test groups.
 
 ---
 
 ## Current Factory Data Flow
 
-Production and extraction remain separate architectures: the actual gameplay path is **Test Ore Deposit → Test Extractor inventory → range-limited Test Storage inventory**. The reusable `ProductionRecipe` and `ProducerComponent` remain available for later manufacturing but do not yet consume inputs or participate in a conveyor network.
+**Implemented:** one finite or infinite resource deposit can feed a Test Extractor; extracted ore moves to nearby Test Storage, and nearby Test Smelters pull ore into their independent input inventories. After each valid 2-second cycle, the smelter consumes 2 ore and deposits 1 ingot into its output inventory.
+
+The working prototype uses direct proximity transfers rather than physical conveyance. There is currently **no automatic finished-ingot output from the smelter to downstream storage or other machines**, and the prototype does not yet implement power, fuel, or conveyor routing.
 
 ---
 
@@ -610,23 +674,28 @@ The current Build HUD is a prototype and may later evolve into an icon-based qui
 
 ## Production Debug HUD
 
-`production_debug_hud.gd` refreshes diagnostics for the selected object:
+`production_debug_hud.gd` reads diagnostics from the selected object's components and refreshes them while selected:
 
-- **Resource node:** deposit name, item, and remaining/starting amount or infinite supply.
-- **Extractor:** detected resource, status, stored quantity, inventory capacity/full flag, and logistics status, configured maximum transfer rate, latest transfer amount, and latest successful transfer amount.
-- **Storage:** total stored item count, capacity used, and quantities per `ItemDefinition`.
-- **Other producer/non-extractor:** recipe or `Recipe: None`, where appropriate.
-- **No selection:** neutral diagnostic message.
+- **Resource node:** deposit name, item, remaining/starting supply or infinite supply.
+- **Extractor:** component-owned `extraction_status`, detected resource, stored ore, 50-unit inventory/capacity, extraction logistics status and transfer telemetry.
+- **Storage:** 200-unit capacity, total stored quantities, and per-item contents.
+- **Smelter:** recipe name, `production_status`, required input amounts and quantities, separate input (50) and output (100) inventory totals, and finished ingot quantities.
+- **Other/non-producing objects:** neutral recipe or default selection information.
 
-This HUD is a prototype, not player-facing final UI. Current `Status: Extracting` means a usable deposit exists, even if extraction is stopped by inventory capacity. Full and unreachable storage both currently produce `No Eligible Storage`.
+The shared `ActivityProgressBar` is a `ProgressBar` under `ProductionDebugHUD/InfoPanel/PanelMargin/InfoContent`, alongside `InfoLabel`. It displays:
+
+- `ProducerComponent.production_progress / recipe.production_time × 100` for manufacturing;
+- `ExtractorComponent.extraction_timer / extraction_interval × 100` for extraction.
+
+The bar reads gameplay-owned timers and statuses; the HUD **never moves resources**. Blocked machines show 0% and an explanatory status; storage, deposits, and cleared selections hide the bar. This is still a debug/player-information prototype, not a finalized machine management screen.
 
 ---
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 05:** camera, selection, placement, demolition, data-driven buildings, resource extraction, capacity-limited inventories, partial item transfers, dedicated storage, automatic nearby delivery, inventory HUD, and basic logistics debug telemetry.
+**Implemented through Chat 06:** RTS camera, selection and demolition, data-driven buildings, deposit-constrained extraction, capacity-aware separate inventories, safe partial inventory transfers, nearby storage and input logistics, a real 2-ore-to-1-ingot smelting chain, production/blocked statuses, and reusable extraction/manufacturing progress.
 
-**Planned:** recipe input checking/consumption, actual conveyors and logistics routing/ports, explicit full-vs-unreachable status, power networks, machine constraints, construction costs, research/unlocks, save/load, and polished UI.
+**Planned:** finished-product export and downstream consumers, conveyors/inserters/ports and advanced routing, power/fuel requirements, production upgrades, recipe selection, construction costs, research/unlocks, save/load, zombies/defense, and polished player-facing UI.
 
 ---
 
