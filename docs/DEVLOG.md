@@ -706,3 +706,106 @@ Next planned work: basic inventory storage and simple item transfer/logistics, f
 This is a proximity-based, direct inventory transfer prototype—not a visible conveyor network. Conveyor belts, routing/ports, multi-machine flow, power, production input consumption, and refined logistics statuses remain future work.
 
 The tested source/scenes were committed and pushed to `main` before this documentation update.
+
+---
+
+## 2026-10-20–21 — Chat 06: Production Inputs & First Manufacturing Chain
+
+**Milestone status: Complete.** First automated ore-to-ingot manufacturing chain implemented and tested in Godot 4.6.2 Stable. Gameplay changes were committed and pushed to `main` before this documentation entry.
+
+### Architecture Review and Decisions
+
+- Preserved the existing data-driven `BuildingDefinition`, `BuildingRuntime`, `ItemDefinition`, `ItemAmount`, `ProductionRecipe`, and `InventoryComponent` architecture rather than introducing a parallel manufacturing system.
+- Chose **separate input and output inventories** for manufacturing machines before implementation, preventing raw materials and finished products from competing for the same capacity.
+- Configured the Test Smelter with `InputInventory` capacity **50** and `OutputInventory` capacity **100**, both using independent instances of the existing `InventoryComponent`.
+- Agreed that all machines that extract or manufacture items should expose understandable operating statuses and a reusable, live activity progress indicator. Pure storage buildings have no processing progress bar.
+
+### Safe Recipe-Based Manufacturing
+
+Extended `scripts/components/producer_component.gd` with:
+
+- `input_inventory` and `output_inventory` references for independent material buffers.
+- `has_required_inputs()` to validate nonempty recipes, required quantities, and duplicate ingredient entries without consuming items.
+- `can_store_recipe_outputs()` to reject missing/invalid outputs and ensure **all** output units fit within output inventory capacity.
+- `try_complete_recipe_cycle()` to check inputs and output space, consume recipe ingredients, create finished products, and report success only for a complete cycle.
+- `_rollback_recipe_cycle()` to attempt recovery if a synchronous removal or output addition unexpectedly fails; normal and blocked paths passed tests. Exceptional rollback-failure scenarios remain a future hardening area.
+- A guarded timed production loop that advances only when inputs and output space are available; otherwise it resets progress and exposes statuses such as `Waiting for Inputs` or `Output Blocked`.
+- Removal of the obsolete output-only production method that could generate items without consuming inputs.
+
+For the first recipe, `data/recipes/test_smelting.tres` transforms **2 Test Ore → 1 Test Ingot** in a **2-second** production cycle. The new permanent output item is `data/items/test_ingot.tres`.
+
+### Test Smelter Building
+
+Added:
+
+- `scenes/buildings/test_smelter.tscn`
+- `data/buildings/test_smelter.tres`
+
+The Test Smelter uses reusable selection, collision, rotation, placement, and demolition behavior, plus these child components:
+
+- `BuildingRuntime`
+- `InputInventory` (50)
+- `OutputInventory` (100)
+- `ProducerComponent`, with references to the smelting recipe and both inventories
+- `LogisticsInputComponent`
+
+Registered the smelter as construction option **4** by adding `select_building_4` to `project.godot`, adding the definition to `WorldInteraction.buildable_definitions`, and extending the Build HUD to render and highlight `[4] Test Smelter`. Existing slots 1–3 continue to work.
+
+### Storage-to-Smelter Input Logistics
+
+Implemented `scripts/components/logistics_input_component.gd` as a separate reusable component so the existing extractor-to-storage transfer logic remains intact.
+
+- Searches the `logistics_storage` group for the nearest eligible stocked storage building using building-origin distance.
+- Ignores out-of-range candidates, invalid inventories, deletion-queued objects, and disabled placement ghosts.
+- Requests the configured `ItemDefinition` from nearby storage via the established `InventoryComponent.transfer_to()` method; it does not create items.
+- Uses default configuration: Test Ore, **up to 5 units per attempt**, **1-second interval**, **5-world-unit range**, and a **10-ore input buffer target** (independent of the physical 50-unit input capacity).
+- Reports transfer status and recent quantity for debugging.
+
+**Working automated flow:** finite Test Ore Deposit → Test Extractor → Test Storage → Test Smelter input → timed smelting → Test Smelter output (Test Ingots). This is proximity-based, direct inventory movement, not a visual conveyor system.
+
+### Production and Extraction HUD
+
+Enhanced `scripts/production_debug_hud.gd` and `scenes/ui/production_debug_hud.tscn`:
+
+- Selected smelters show recipe, live `production_status`, input ingredient quantities and requirements, input capacity, output item quantities, and output capacity.
+- Corrected the original producer HUD assumption that all buildings store items in a child named `InventoryComponent`; smelter results now come from `OutputInventory`.
+- Added `InfoContent` and one shared `ActivityProgressBar` under the HUD panel.
+- Manufacturing progress reads `ProducerComponent.production_progress / recipe.production_time`.
+- Extraction progress reads `ExtractorComponent.extraction_timer / extraction_interval`.
+- The indicator resets to 0% when blocked and is hidden for storage, resource deposits, and no selection.
+
+Updated `scripts/components/extractor_component.gd` with an explicit `extraction_status` and timer gating for no deposit, depletion, full inventory, missing data, and invalid intervals. The extractor HUD now displays the component's true status instead of claiming `Extracting` while its inventory is full.
+
+### Tests and Verified Results
+
+Added standalone Godot regression suites:
+
+| Test scene | Result |
+| --- | --- |
+| `tests/recipe_input_availability_test.tscn` | **8/8 passed** |
+| `tests/recipe_output_capacity_test.tscn` | **11/11 passed** |
+| `tests/manufacturing_transaction_test.tscn` | **9/9 passed** |
+| `tests/timed_manufacturing_test.tscn` | **8/8 passed** |
+
+**Total: 36/36 Chat 06 assertions passed.** Existing Chat 05 inventory-transfer tests (four test groups) also passed during final regression testing.
+
+Gameplay verification also covered key 4 selection, placement, rotation, overlap blocking, selection highlight, demolition highlight/removal, automatic resource transfers, ingot accumulation, and the shared activity progress bar for both extractor and smelter.
+
+**Output-full safeguard:** temporarily set the smelter output capacity to **2**. The HUD showed `Output Blocked`, **2/2** ingots, **10/50** input ore, and **0%** progress. Inputs and outputs remained unchanged while blocked. The output capacity was subsequently restored to **100** and saved.
+
+**Resource conservation:** in a verified single-deposit, finite-500-ore test, **236 remaining in deposit + 50 in extractor + 200 in storage + 10 in smelter input + 2 ingots × 2 ore each = 500 ore equivalents**. A later final end-to-end test was reported successful, though its exact terminal inventory counts were not recorded in chat. No loss or duplication was observed in these tests.
+
+### Troubleshooting and Lessons
+
+- **Placed smelter selected but did not turn gold/red:** `selectable_object.gd` was attached, but the exported `Selection Mesh` reference was unset. Assigning the `BuildingMesh` child resolved normal selection and demolition-hover highlighting.
+- **HUD continually reported 0 ingots despite active smelting:** its original lookup used `InventoryComponent`, whereas the smelter stores finished products in `OutputInventory`. Updating the HUD inventory lookup exposed the real count.
+- **Build HUD lacked option 4 / did not highlight selection:** registering the input action alone was insufficient; the Main scene definition array and `Building4Label` selection handling also needed updates.
+- **Extractor displayed `Extracting` at 50/50:** replaced duplicated, inferred HUD status strings with the component-owned `extraction_status`.
+- **Commit hygiene:** removed trailing whitespace before staging and excluded an accidentally created untracked file containing a Git diff summary. The tested gameplay commit was pushed successfully; local Git status was then confirmed clean.
+
+### Scope and Follow-Ups
+
+**Implemented:** first real automated manufacturing recipe, independent machine input/output buffers, buffer-limited input logistics, reusable manufacturing/extraction progress, and end-to-end conservation testing.
+
+**Not implemented yet:** finished-product export from the smelter, dedicated conveyors/inserters/ports, advanced multi-input routing, energy and fuel costs, production upgrades, a finalized player-facing machine panel, or defense/horde mechanics. These remain subsequent development milestones.
+
