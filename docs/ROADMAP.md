@@ -132,12 +132,44 @@ Planned major systems:
 - [x] Regression-test existing camera, building, extraction, selection, and demolition systems
 - [x] Complete finite-resource conservation regression: 250 deposit + 50 extractor + 200 storage = 500
 - [ ] Build physical conveyors, ports, inserters, and more complex routing (follow-up milestone)
-- [ ] Add production recipe input availability, consumption, and outputs from actual inputs (follow-up)
+- [x] Add production recipe input availability, consumption, and outputs from actual inputs (**completed in Chat 06**)
 - [ ] Explore machine-operation/power constraints (follow-up)
 
 **Chat 05 Status: Complete — Direct proximity-based logistics working; physical conveyors remain planned.**
 
-### 1E — Enemy & Defense Prototype
+### 1E — Production Inputs & First Manufacturing Chain (Chat 06)
+
+- [x] Review and preserve existing `ProductionRecipe`, `ItemAmount`, `ProducerComponent`, and `InventoryComponent` architecture
+- [x] Choose independent manufacturing input/output inventories to prevent capacity conflicts
+- [x] Add recipe input validation and duplicate-input aggregation
+- [x] Validate total output-space requirements before manufacturing
+- [x] Implement guarded, synchronous input consumption and full-cycle output creation with rollback attempt on unexpected failure
+- [x] Connect safe transactions to the timed `ProducerComponent`; report waiting/blocked statuses
+- [x] Create permanent `Test Ingot` and `Test Ore Smelting` resources (**2 ore → 1 ingot, 2 seconds**)
+- [x] Create Test Smelter scene and BuildingDefinition (**50 input / 100 output**)
+- [x] Register smelter with Build Mode as **key 4**; support selection, rotation, overlap blocking, demolition, and Build HUD highlighting
+- [x] Implement `LogisticsInputComponent` to pull ore from stocked nearby Test Storage using safe transfers
+- [x] Configure input logistics (**up to 5 ore per second**, range **5**, target buffer **10**)
+- [x] Expose separate machine input/output quantities and capacity through the Production Debug HUD
+- [x] Add shared live production and extraction activity progress bar, with stopped/blocked statuses
+- [x] Correct extractor status when inventory is full or deposit depleted
+- [x] Verify smelter output-full blocking, retention of ingredients, and 0% progress
+- [x] Pass **36/36** Chat 06 manufacturing test assertions and re-run Chat 05 inventory transfer regression
+- [x] Verify finite-500 resource conservation with deposit, extractor, storage, smelter input, and manufactured ingots
+- [x] Commit and push tested Chat 06 gameplay changes to `main`
+- [x] Document gameplay milestone and troubleshooting
+
+**Chat 06 Status: Complete — First automatically supplied Test Smelter produces Test Ingots with separated inventories and live progress.**
+
+#### Future Logistics and Manufacturing Follow-Ups
+
+- [ ] Automate finished-ingot transfer out of the smelter and support downstream destinations
+- [ ] Prototype physical conveyor/inserter/port routing beyond proximity transfers
+- [ ] Add more production recipes, machine tiers, and configurable downstream processing
+- [ ] Introduce power/fuel/machine-operation constraints where they improve gameplay
+- [ ] Improve the prototype production debug display into a final player-facing machine interface
+
+### 1F — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
 - [ ] Add navigation toward player structures
@@ -213,5 +245,6 @@ Completed:
 - Phase 1B factory/production foundation
 - Phase 1C resource nodes, deposit-aware extraction, and placement validation
 - Phase 1D (Chat 05) capacity-aware inventories, dedicated storage, direct automatic transfers, and storage/logistics debugging
+- Phase 1E (Chat 06) guarded recipe-based manufacturing, two-inventory Test Smelter, stocked-storage input logistics, progress/status feedback, and successful conservation/regression testing
 
-**Next:** Advance toward a real production chain (recipe input checks and consumption), physical conveyor/port logistics, and basic machine-operation constraints. Then tackle Phase 1E's first zombie/defense prototype.
+**Next milestone is not yet selected.** Options include smelter output logistics and physical conveyor/port routing, machine-operation constraints, or beginning Phase 1F's first zombie/defense prototype. The core ore-to-ingot chain is implemented and should be extended rather than rebuilt.
