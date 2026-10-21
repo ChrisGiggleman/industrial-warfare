@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ProductionRecipe" format=3 uid="uid://m30fkbg1d5jw"]
+
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="1_wqod4"]
+[ext_resource type="Script" uid="uid://rns1sccxg4hf" path="res://scripts/data/production_recipe.gd" id="2_60pm4"]
+[ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="2_h3ite"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="3_be3jk"]
+
+[sub_resource type="Resource" id="Resource_7gbu6"]
+script = ExtResource("1_wqod4")
+item = ExtResource("2_h3ite")
+amount = 2
+metadata/_custom_type_script = "uid://y7paeaof0wen"
+
+[sub_resource type="Resource" id="Resource_1ix5k"]
+script = ExtResource("1_wqod4")
+item = ExtResource("3_be3jk")
+metadata/_custom_type_script = "uid://y7paeaof0wen"
+
+[resource]
+script = ExtResource("2_60pm4")
+recipe_id = &"test_smelting"
+display_name = "Test Ore Smelting"
+production_time = 2.0
+inputs = Array[ExtResource("1_wqod4")]([SubResource("Resource_7gbu6")])
+outputs = Array[ExtResource("1_wqod4")]([SubResource("Resource_1ix5k")])
+metadata/_custom_type_script = "uid://rns1sccxg4hf"

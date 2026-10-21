@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://blrcdbgyh8l8c"]
+
+[ext_resource type="Script" uid="uid://ykcmwjekruul" path="res://tests/timed_manufacturing_test.gd" id="1_riw13"]
+
+[node name="TimedManufacturingTest" type="Node" unique_id=2021658204]
+script = ExtResource("1_riw13")

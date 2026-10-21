@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3 uid="uid://dk5s6rt0h1u0n"]
+
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_ma1lw"]
+[ext_resource type="PackedScene" uid="uid://cigrewh2uv258" path="res://scenes/buildings/test_smelter.tscn" id="1_xi8yq"]
+
+[resource]
+script = ExtResource("1_ma1lw")
+building_id = &"test_smelter"
+display_name = "Test Smelter"
+description = "Prototype manufacturing building that converts Test Ore into Test Ingots using separate input and output inventories."
+category = &"Production"
+building_scene = ExtResource("1_xi8yq")
+metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

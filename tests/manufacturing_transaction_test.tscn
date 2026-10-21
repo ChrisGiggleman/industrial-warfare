@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://j7xpqekdqkap"]
+
+[ext_resource type="Script" uid="uid://hbb7rrkf15xq" path="res://tests/manufacturing_transaction_test.gd" id="1_pfvi1"]
+
+[node name="ManufacturingTransactionTest" type="Node" unique_id=1990143684]
+script = ExtResource("1_pfvi1")

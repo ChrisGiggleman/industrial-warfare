@@ -26,6 +26,26 @@ var resource_node: ResourceNodeRuntime = null
 # Time accumulated toward the next extraction cycle.
 var extraction_timer: float = 0.0
 
+# =============================================================================
+# EXTRACTION OPERATING STATUS
+# =============================================================================
+
+# Tracks the extractor's current operating condition.
+#
+# This will be read by our shared Production Debug HUD.
+#
+# Possible states:
+# - Initializing
+# - Extracting
+# - No Resource In Range
+# - Resource Depleted
+# - Inventory Full
+# - Inventory Missing
+# - Resource Data Unavailable
+# - Resource Item Unavailable
+# - Invalid Extraction Interval
+
+var extraction_status: String = "Initializing"
 # Inventory that receives successfully extracted resources.
 var inventory_component: InventoryComponent = null
 
@@ -52,37 +72,118 @@ func _ready() -> void:
 	call_deferred("_scan_for_resource_node")
 
 
+
 # =============================================================================
 # EXTRACTION UPDATE
 # =============================================================================
 
-# Advances extraction only while a valid resource node and inventory exist.
+# Advances extraction only while the machine can actively mine.
+#
+# The extraction timer must stop when:
+# - No resource deposit is available.
+# - The resource deposit is depleted.
+# - Inventory capacity is full.
+# - Required resource data is missing.
+#
+# This allows our shared activity progress bar to accurately
+# represent real extraction work.
 
 func _process(delta: float) -> void:
-	if resource_node == null:
-		extraction_timer = 0.0
-		return
+
+	# =============================================================================
+	# VALIDATE RESOURCE NODE
+	# =============================================================================
 
 	if not is_instance_valid(resource_node):
 		resource_node = null
-		extraction_timer = 0.0
+		_stop_extraction("No Resource In Range")
 		return
 
-	if inventory_component == null:
+	if resource_node.definition == null:
+		_stop_extraction("Resource Data Unavailable")
 		return
+
+	if resource_node.definition.resource_item == null:
+		_stop_extraction("Resource Item Unavailable")
+		return
+
+	# =============================================================================
+	# CHECK RESOURCE DEPLETION
+	# =============================================================================
+
+	# Infinite deposits never run out of material.
+	# Finite deposits must have resources remaining.
+
+	if (
+		not resource_node.definition.infinite_resource
+		and resource_node.remaining_amount <= 0
+	):
+		_stop_extraction("Resource Depleted")
+		return
+
+	# =============================================================================
+	# VALIDATE INVENTORY
+	# =============================================================================
+
+	if not is_instance_valid(inventory_component):
+		_stop_extraction("Inventory Missing")
+		return
+
+	# Do not continue extracting while inventory is full.
+	if inventory_component.is_full():
+		_stop_extraction("Inventory Full")
+		return
+
+	# =============================================================================
+	# VALIDATE EXTRACTION INTERVAL
+	# =============================================================================
 
 	if extraction_interval <= 0.0:
+		_stop_extraction("Invalid Extraction Interval")
 		return
+
+	# =============================================================================
+	# ADVANCE EXTRACTION PROGRESS
+	# =============================================================================
+
+	# All extraction requirements are satisfied.
+	extraction_status = "Extracting"
 
 	extraction_timer += delta
 
 	if extraction_timer < extraction_interval:
 		return
 
+	# Preserve additional elapsed time.
 	extraction_timer -= extraction_interval
+
+	# =============================================================================
+	# COMPLETE EXTRACTION CYCLE
+	# =============================================================================
+
+	# The existing extraction function performs capacity-aware
+	# resource extraction and stores the accepted materials.
+	#
+	# No changes to resource accounting are required here.
+
 	_extract_resource()
 
 
+# =============================================================================
+# STOP EXTRACTION
+# =============================================================================
+
+# Resets extraction progress when the machine cannot mine.
+#
+# This ensures the future progress bar displays 0% when
+# extraction is blocked or no resource is available.
+#
+# No inventory or resource quantities are changed here.
+
+func _stop_extraction(reason: String) -> void:
+
+	extraction_timer = 0.0
+	extraction_status = reason
 
 # =============================================================================
 # RESOURCE EXTRACTION

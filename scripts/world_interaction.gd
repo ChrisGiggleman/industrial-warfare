@@ -159,7 +159,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed("select_building_3"):
 			_select_building(2)
 			return
-	
+
+		if event.is_action_pressed("select_building_4"):
+			_select_building(3)
+			return
+
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
 			return
@@ -690,7 +694,7 @@ func _is_placement_clear() -> bool:
 		if not results.is_empty():
 			return false
 
-	return true 
+	return true
 
 
 # =============================================================================

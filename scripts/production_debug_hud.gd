@@ -9,6 +9,21 @@ class_name ProductionDebugHUD
 # Label used to display information about the currently selected building.
 @export var info_label: Label
 
+# =============================================================================
+# ACTIVITY PROGRESS BAR REFERENCE
+# =============================================================================
+
+# Displays the progress of the selected building's
+# extraction or manufacturing cycle.
+#
+# For Chat 06, we first connect manufacturing progress.
+# Extractor progress will use this same UI component later.
+#
+# The progress bar remains hidden when the selected
+# object does not have a supported production component.
+
+@export var activity_progress_bar: ProgressBar
+
 
 # =============================================================================
 # RUNTIME STATE
@@ -36,7 +51,7 @@ func _process(_delta: float) -> void:
 		return
 
 	_refresh_display()
-
+	_refresh_activity_progress()
 
 # =============================================================================
 # BUILDING SELECTION
@@ -201,6 +216,30 @@ func _refresh_building_display(
 		as ProducerComponent
 	)
 
+	# =============================================================================
+	# MANUFACTURING OUTPUT INVENTORY LOOKUP
+	# =============================================================================
+
+	# Manufacturing buildings use separate input and output
+	# inventories instead of one shared InventoryComponent.
+	#
+	# The Production Debug HUD must read finished products
+	# from OutputInventory, not the old inventory node.
+	#
+	# Existing extractor and storage inventory displays
+	# remain unchanged.
+
+	if producer_component != null:
+
+		var manufacturing_output_inventory: InventoryComponent = (
+			selected_building.get_node_or_null("OutputInventory")
+			as InventoryComponent
+		)
+
+		# Use the dedicated output inventory when available.
+		if manufacturing_output_inventory != null:
+			inventory_component = manufacturing_output_inventory
+
 	var display_text: String = (
 		"PRODUCTION DEBUG\n\n"
 		+ "Building: "
@@ -216,6 +255,111 @@ func _refresh_building_display(
 		"\nRecipe: "
 		+ producer_component.recipe.display_name
 	)
+
+	# =============================================================================
+	# MANUFACTURING STATUS DISPLAY
+	# =============================================================================
+
+	# Displays the machine's operating condition.
+	#
+	# Examples:
+	# - Producing
+	# - Waiting for Inputs
+	# - Output Blocked
+	# - Invalid Recipe
+
+	display_text += (
+		"\nProduction Status: "
+		+ producer_component.production_status
+	)
+
+	# =============================================================================
+	# MANUFACTURING INPUT INVENTORY DISPLAY
+	# =============================================================================
+
+	# Display raw materials stored in the manufacturing
+	# building's dedicated input inventory.
+	#
+	# Read the inventory reference directly from ProducerComponent.
+	# This supports future manufacturing machines without
+	# hardcoding Test Ore or individual building names.
+
+	var manufacturing_input: InventoryComponent = (
+		producer_component.input_inventory
+	)
+
+	display_text += "\n\nINPUT MATERIALS"
+
+	if is_instance_valid(manufacturing_input):
+
+		# Display input inventory capacity.
+		var input_total: int = manufacturing_input.get_total_amount()
+
+		if manufacturing_input.max_capacity == 0:
+			display_text += "\nCapacity: Unlimited"
+		else:
+			display_text += (
+				"\nCapacity: "
+				+ str(input_total)
+				+ " / "
+				+ str(manufacturing_input.max_capacity)
+			)
+
+		# Display each required recipe ingredient.
+		for input_entry in producer_component.recipe.inputs:
+
+			if input_entry == null:
+				continue
+
+			if input_entry.item == null:
+				continue
+
+			var stored_input: int = manufacturing_input.get_amount(
+				input_entry.item
+			)
+
+			display_text += (
+				"\n"
+				+ input_entry.item.display_name
+				+ ": "
+				+ str(stored_input)
+				+ " stored"
+				+ " | Requires: "
+				+ str(input_entry.amount)
+			)
+
+	else:
+		display_text += "\nInput Inventory Missing"
+
+
+	# =============================================================================
+	# MANUFACTURING OUTPUT INVENTORY DISPLAY
+	# =============================================================================
+
+	# The existing inventory_component variable now references
+	# OutputInventory following our previous HUD correction.
+	#
+	# Display total output storage capacity before listing
+	# the finished products.
+
+	display_text += "\n\nOUTPUT MATERIALS"
+
+	if is_instance_valid(inventory_component):
+
+		var output_total: int = inventory_component.get_total_amount()
+
+		if inventory_component.max_capacity == 0:
+			display_text += "\nCapacity: Unlimited"
+		else:
+			display_text += (
+				"\nCapacity: "
+				+ str(output_total)
+				+ " / "
+				+ str(inventory_component.max_capacity)
+			)
+
+	else:
+		display_text += "\nOutput Inventory Missing"
 
 	for output in producer_component.recipe.outputs:
 		if output == null:
@@ -248,7 +392,8 @@ func _refresh_extractor_display(
 	building_runtime: BuildingRuntime,
 	inventory_component: InventoryComponent,
 	extractor_component: ExtractorComponent
-) -> void:
+	) -> void:
+
 	var display_text: String = (
 		"PRODUCTION DEBUG\n\n"
 		+ "Building: "
@@ -256,13 +401,27 @@ func _refresh_extractor_display(
 		+ "\nType: Extractor"
 	)
 
+	# =============================================================================
+	# ACTUAL EXTRACTION OPERATING STATUS
+	# =============================================================================
+
+	# Read the extraction component's real operating state.
+	#
+	# This prevents the HUD from displaying "Extracting"
+	# when the inventory is full or the deposit is depleted.
+	#
+	# The status is maintained by ExtractorComponent._process().
+
+	display_text += (
+		"\nStatus: "
+		+ extractor_component.extraction_status
+	)
+
 	if extractor_component.resource_node == null:
-		display_text += "\nStatus: No Resource In Range"
 		info_label.text = display_text
 		return
 
 	if not is_instance_valid(extractor_component.resource_node):
-		display_text += "\nStatus: No Resource In Range"
 		info_label.text = display_text
 		return
 
@@ -271,24 +430,14 @@ func _refresh_extractor_display(
 	)
 
 	if resource_definition == null:
-		display_text += "\nStatus: Resource Data Unavailable"
 		info_label.text = display_text
 		return
 
 	var resource_item: ItemDefinition = resource_definition.resource_item
 
 	if resource_item == null:
-		display_text += "\nStatus: Resource Item Unavailable"
 		info_label.text = display_text
 		return
-
-	if (
-		not resource_definition.infinite_resource
-		and extractor_component.resource_node.remaining_amount <= 0
-	):
-		display_text += "\nStatus: Resource Depleted"
-	else:
-		display_text += "\nStatus: Extracting"
 
 	display_text += (
 		"\nResource: "
@@ -555,14 +704,229 @@ func _refresh_storage_display(
 
 	info_label.text = display_text
 
+
 # =============================================================================
 # DEFAULT DISPLAY
 # =============================================================================
 
 # Displays the idle state when no world object is selected.
+#
+# Also resets and hides the activity progress bar so
+# previous building progress does not remain visible
+# after the player deselects an object.
 
 func _show_no_selection() -> void:
+
+	# =============================================================================
+	# RESET ACTIVITY PROGRESS BAR
+	# =============================================================================
+
+	if activity_progress_bar != null:
+		activity_progress_bar.visible = false
+		activity_progress_bar.value = 0.0
+
+	# =============================================================================
+	# RESET DEBUG TEXT
+	# =============================================================================
+
 	if info_label == null:
 		return
 
 	info_label.text = "PRODUCTION DEBUG\n\nNo object selected."
+
+
+
+# =============================================================================
+# BUILDING ACTIVITY PROGRESS DISPLAY
+# =============================================================================
+
+# Updates the shared progress bar using the selected
+# building's actual manufacturing progress.
+#
+# The bar:
+# - Is hidden for unsupported objects.
+# - Displays 0% to 100% for valid production recipes.
+# - Uses the producer's actual cycle timer.
+# - Resets visually when manufacturing is blocked.
+#
+# Future extraction components can use this same bar.
+
+func _refresh_activity_progress() -> void:
+
+	# =============================================================================
+	# VALIDATE PROGRESS BAR
+	# =============================================================================
+
+	if activity_progress_bar == null:
+		return
+
+	# Hide the progress bar by default.
+	activity_progress_bar.visible = false
+	activity_progress_bar.value = 0.0
+
+	# =============================================================================
+	# VALIDATE SELECTED BUILDING
+	# =============================================================================
+
+	if not is_instance_valid(selected_building):
+		return
+
+
+	# =============================================================================
+	# EXTRACTOR ACTIVITY PROGRESS
+	# =============================================================================
+
+	# Check whether the selected building contains an
+	# ExtractorComponent.
+	#
+	# Extractors and manufacturing buildings share the same
+	# ActivityProgressBar in the Production Debug HUD.
+	#
+	# This allows future extraction buildings to display
+	# their progress without creating separate UI controls.
+
+	var extractor_component: ExtractorComponent = (
+		selected_building.get_node_or_null("ExtractorComponent")
+		as ExtractorComponent
+	)
+
+	# =============================================================================
+	# HANDLE EXTRACTOR BUILDINGS
+	# =============================================================================
+
+	if extractor_component != null:
+
+		# The progress bar should be visible whenever an
+		# extractor is selected, including when it is blocked.
+		activity_progress_bar.visible = true
+
+		# =============================================================================
+		# VALIDATE EXTRACTION INTERVAL
+		# =============================================================================
+
+		# Prevent division by zero if the extractor has
+		# an invalid extraction interval.
+
+		if extractor_component.extraction_interval <= 0.0:
+			activity_progress_bar.value = 0.0
+			activity_progress_bar.tooltip_text = (
+				"Extraction: "
+				+ extractor_component.extraction_status
+			)
+			return
+
+		# =============================================================================
+		# CALCULATE EXTRACTION PROGRESS
+		# =============================================================================
+
+		# The extractor tracks elapsed time in extraction_timer.
+		#
+		# Example:
+		# extraction_timer: 0.5 seconds
+		# extraction_interval: 1.0 second
+		# Result: 50% progress
+
+		var extraction_percentage: float = 0.0
+
+		# Only display advancing progress when extraction
+		# is actively taking place.
+		#
+		# When the extractor is full, depleted, or otherwise
+		# blocked, display an empty progress bar.
+
+		if extractor_component.extraction_status == "Extracting":
+
+			extraction_percentage = (
+				extractor_component.extraction_timer
+				/ extractor_component.extraction_interval
+			) * 100.0
+
+		# Keep progress within the expected percentage range.
+		extraction_percentage = clampf(
+			extraction_percentage,
+			0.0,
+			100.0
+		)
+
+		# =============================================================================
+		# UPDATE EXTRACTOR PROGRESS BAR
+		# =============================================================================
+
+		activity_progress_bar.value = extraction_percentage
+
+		# Display the operating condition when the player
+		# hovers over the progress bar.
+
+		activity_progress_bar.tooltip_text = (
+			"Extraction: "
+			+ extractor_component.extraction_status
+		)
+
+		# Extraction progress has been handled.
+		#
+		# Return to prevent falling through into the
+		# manufacturing ProducerComponent logic below.
+
+		return
+
+	# =============================================================================
+	# LOCATE PRODUCER COMPONENT
+	# =============================================================================
+
+	# Not every building manufactures items.
+	# Storage and resource deposits do not use this
+	# manufacturing progress calculation.
+
+	var producer_component: ProducerComponent = (
+		selected_building.get_node_or_null("ProducerComponent")
+		as ProducerComponent
+	)
+
+	if producer_component == null:
+		return
+
+	# =============================================================================
+	# VALIDATE PRODUCTION RECIPE
+	# =============================================================================
+
+	if producer_component.recipe == null:
+		return
+
+	if producer_component.recipe.production_time <= 0.0:
+		return
+
+	# =============================================================================
+	# CALCULATE PRODUCTION PERCENTAGE
+	# =============================================================================
+
+	# Convert elapsed cycle time into a percentage.
+	#
+	# Example:
+	# Progress: 1.0 second
+	# Cycle time: 2.0 seconds
+	# Result: 50%
+
+	var progress_percentage: float = (
+		producer_component.production_progress
+		/ producer_component.recipe.production_time
+	) * 100.0
+
+	# Prevent values outside the valid progress range.
+	progress_percentage = clampf(
+		progress_percentage,
+		0.0,
+		100.0
+	)
+
+	# =============================================================================
+	# UPDATE PROGRESS BAR
+	# =============================================================================
+
+	activity_progress_bar.visible = true
+	activity_progress_bar.value = progress_percentage
+
+	# Show the current operating condition when the
+	# player hovers over the progress bar.
+	activity_progress_bar.tooltip_text = (
+		"Production: " + producer_component.production_status
+	)

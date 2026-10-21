@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://cigrewh2uv258"]
+
+[ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_r27uo"]
+[ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_wugof"]
+[ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_blcu8"]
+[ext_resource type="Script" uid="uid://p7ccxof4p50l" path="res://scripts/components/producer_component.gd" id="4_0hcx8"]
+[ext_resource type="Resource" uid="uid://m30fkbg1d5jw" path="res://data/recipes/test_smelting.tres" id="5_t8y3u"]
+[ext_resource type="Script" uid="uid://btwjf2nmmk7j4" path="res://scripts/components/logistics_input_component.gd" id="6_pej7w"]
+[ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="7_vi7jt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8araf"]
+size = Vector3(1.5, 1, 1.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wugof"]
+size = Vector3(1.5, 1, 1.5)
+
+[node name="TestSmelter" type="Node3D" unique_id=832498239 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+script = ExtResource("1_r27uo")
+selection_mesh = NodePath("BuildingMesh")
+
+[node name="BuildingBody" type="StaticBody3D" parent="." unique_id=1698913512]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildingBody" unique_id=1178009669]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_8araf")
+
+[node name="BuildingMesh" type="MeshInstance3D" parent="." unique_id=1909232151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_wugof")
+
+[node name="BuildingRuntime" type="Node" parent="." unique_id=1727936843]
+script = ExtResource("2_wugof")
+
+[node name="InputInventory" type="Node" parent="." unique_id=1870243942]
+script = ExtResource("3_blcu8")
+max_capacity = 50
+
+[node name="OutputInventory" type="Node" parent="." unique_id=1393475540]
+script = ExtResource("3_blcu8")
+max_capacity = 100
+
+[node name="ProducerComponent" type="Node" parent="." unique_id=1399883820 node_paths=PackedStringArray("input_inventory", "output_inventory")]
+script = ExtResource("4_0hcx8")
+recipe = ExtResource("5_t8y3u")
+input_inventory = NodePath("../InputInventory")
+output_inventory = NodePath("../OutputInventory")
+
+[node name="LogisticsInputComponent" type="Node" parent="." unique_id=108508367 node_paths=PackedStringArray("input_inventory")]
+script = ExtResource("6_pej7w")
+input_inventory = NodePath("../InputInventory")
+transfer_item = ExtResource("7_vi7jt")

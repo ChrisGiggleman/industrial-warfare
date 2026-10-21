@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://q4jtfuadb2ly"]
+
+[ext_resource type="Script" uid="uid://cgy04jqmnjmwq" path="res://tests/recipe_input_availability_test.gd" id="1_2oq0u"]
+
+[node name="RecipeInputAvailabilityTest" type="Node" unique_id=2127645910]
+script = ExtResource("1_2oq0u")

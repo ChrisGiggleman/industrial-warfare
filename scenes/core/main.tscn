@@ -8,6 +8,7 @@
 [ext_resource type="Resource" uid="uid://dhg1mmhl7hwe6" path="res://data/buildings/test_building_large.tres" id="6_fu2j5"]
 [ext_resource type="PackedScene" uid="uid://bc4bw8kjtmn7g" path="res://scenes/ui/build_hud.tscn" id="6_jvmw0"]
 [ext_resource type="Resource" uid="uid://iqyp8norj0qi" path="res://data/buildings/test_storage.tres" id="7_fu2j5"]
+[ext_resource type="Resource" uid="uid://dk5s6rt0h1u0n" path="res://data/buildings/test_smelter.tres" id="8_ocd3q"]
 [ext_resource type="PackedScene" uid="uid://dcdrdn55bn320" path="res://scenes/ui/production_debug_hud.tscn" id="8_phv0v"]
 [ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
 
@@ -79,7 +80,7 @@ camera = NodePath("../CameraRig/Camera3D")
 build_hud_panel = NodePath("../BuildHUD/BuildPanel")
 build_hud = NodePath("../BuildHUD")
 production_debug_hud = NodePath("../ProductionDebugHUD")
-buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5")])
+buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5"), ExtResource("8_ocd3q")])
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")

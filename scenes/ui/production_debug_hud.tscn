@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bj0dey7nt23td" path="res://scripts/production_debug_hud.gd" id="1_00wox"]
 
-[node name="ProductionDebugHUD" type="CanvasLayer" unique_id=60506702 node_paths=PackedStringArray("info_label")]
+[node name="ProductionDebugHUD" type="CanvasLayer" unique_id=60506702 node_paths=PackedStringArray("info_label", "activity_progress_bar")]
 script = ExtResource("1_00wox")
-info_label = NodePath("InfoPanel/PanelMargin/InfoLabel")
+info_label = NodePath("InfoPanel/PanelMargin/InfoContent/InfoLabel")
+activity_progress_bar = NodePath("InfoPanel/PanelMargin/InfoContent/ActivityProgressBar")
 
 [node name="InfoPanel" type="PanelContainer" parent="." unique_id=643426401]
 anchors_preset = 1
@@ -23,8 +24,15 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="InfoLabel" type="Label" parent="InfoPanel/PanelMargin" unique_id=1694813052]
+[node name="InfoContent" type="VBoxContainer" parent="InfoPanel/PanelMargin" unique_id=39049625]
+layout_mode = 2
+
+[node name="InfoLabel" type="Label" parent="InfoPanel/PanelMargin/InfoContent" unique_id=1694813052]
 layout_mode = 2
 text = "PRODUCTION DEBUG
 
 No building selected."
+
+[node name="ActivityProgressBar" type="ProgressBar" parent="InfoPanel/PanelMargin/InfoContent" unique_id=235214974]
+layout_mode = 2
+step = 0.1
