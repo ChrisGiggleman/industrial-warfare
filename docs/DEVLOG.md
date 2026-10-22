@@ -809,3 +809,46 @@ Gameplay verification also covered key 4 selection, placement, rotation, overlap
 
 **Not implemented yet:** finished-product export from the smelter, dedicated conveyors/inserters/ports, advanced multi-input routing, energy and fuel costs, production upgrades, a finalized player-facing machine panel, or defense/horde mechanics. These remain subsequent development milestones.
 
+---
+
+## 2026-10-22 — Chat 07: Recipe Selection & Recipe-Aware Input Logistics (First Checkpoint)
+
+### Architectural Direction and Scope
+
+After Chat 06, confirmed the intended gameplay is **physical conveyor-based** factory automation feeding ammunition manufacture and colony defense, rather than proximity-based “magic transfers.” The long-term design in [GAME_VISION.md](GAME_VISION.md) calls for selectable manufacturing recipes that determine allowed inputs; universal small, medium, and large storage with slots/stacks; one automatic-turn conveyor placement tool; and **dedicated placeable splitter and merger buildings**. The first zombie-colony world includes structures and settlements associated with enemy spawning; larger logistics systems and additional planets remain later design work.
+
+This Chat 07 checkpoint deliberately implements **recipe rules first**, preserving the short-range logistics chain until belt transport has tested replacements.
+
+### Gameplay Implementation (Steps 07.2A–07.2D)
+
+- `ProducerComponent.available_recipes`: Inspector-configurable list of recipes supported by a machine; the existing `recipe` field continues to represent the active recipe. The Test Smelter registers `test_smelting.tres` in its available list.
+- `ProducerComponent.select_recipe(new_recipe)`: validates allowlist, non-null selection, positive production time, and nonempty ingredient/output collections; avoids changing an already-selected recipe. A real change is allowed only with an existing **empty** input inventory. It preserves stored finished goods, resets production progress, and records `Recipe Changed`.
+- `ProducerComponent.accepts_input_item(item)`: non-mutating check for a valid, positive-quantity ingredient in the active recipe. Eligibility automatically changes when the recipe changes; this method does not move items or check available space.
+- `LogisticsInputComponent.producer_component`: optional-on-disk but **required for working transfers**; linked in the Test Smelter scene. Delivery stops safely with `Producer Missing` or `Item Not Required by Recipe` when the reference/ingredient is incompatible. The original Test Ore transfer rate, buffer and manufacturing logic were retained.
+- Changes were edited and tested locally in Godot 4.6.2 and pushed successfully by the developer to GitHub `main`.
+
+### Tests and Verification
+
+| Scene / check | Reported result |
+| --- | --- |
+| `tests/recipe_selection_test.tscn` | **10/10 passed** |
+| `tests/recipe_input_acceptance_test.tscn` | **6/6 passed** |
+| `tests/recipe_logistics_acceptance_test.tscn` | **5/5 passed** |
+| Chat 06 recipe input, output capacity, manufacturing transaction, and timing tests | **36/36 passed** |
+| Chat 05 inventory transfer regression | **Passed** (existing groups) |
+| Main game: extraction, storage-to-smelter supply, smelting, HUD, placement and demolition | **Passed** |
+
+**Total of 21 new Chat 07 assertions/groups and 36 earlier manufacturing assertions reported passing.** This checkpoint added no resource-conservation failure or game regression in the user-run tests. Tests were performed in the Godot editor, not in GitHub CI.
+
+### Troubleshooting and Cleanup
+
+- An isolated recipe-aware logistics test initially printed automatic transfer messages *after* its PASS banner. Resolved by disabling both the logistics and producer nodes' frame processing after scene insertion, manually invoking transfer attempts, and queueing temporary buildings for deletion before final results.
+- A subsequent GDScript parser error (`Used space character for indentation instead of tab`, including around line 83) came from space indentation inserted into a tab-indented test script. Replacing affected leading whitespace with one tab inside `_ready()` resolved it; the test reran successfully with **5/5** passes and no trailing transfer messages.
+
+### Current Boundaries / Next Work
+
+- The Test Smelter still has **one configured permanent smelting recipe**; no production selection UI or additional persistent ore/ammunition recipes have been added.
+- Ingredient eligibility is separate from physical insertion. Dynamic or multi-ingredient conveyor admission, stack/slot capacity, and input/output port behavior are still to be designed and tested.
+- Short-range transfers are temporary scaffolding, not final gameplay logistics. Finished ingots remain in the smelter output inventory until belt transport and destinations are implemented.
+- Next focus: review and incrementally design machine input/output ports and admission/hand-off contracts for later conveyors, while retaining current regressions and the First Night ammunition-and-defense objective.
+
