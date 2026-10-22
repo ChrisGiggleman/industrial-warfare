@@ -169,6 +169,31 @@ Planned major systems:
 - [ ] Introduce power/fuel/machine-operation constraints where they improve gameplay
 - [ ] Improve the prototype production debug display into a final player-facing machine interface
 
+### 1E.1 — Recipe Selection & Input Acceptance Foundation (Chat 07, first checkpoint)
+
+- [x] Confirm physical-belt, ammunition-first factory-defense game direction in [GAME_VISION.md](GAME_VISION.md)
+- [x] Add per-machine `available_recipes` list while retaining existing active `recipe`
+- [x] Implement conservative `select_recipe()` changes without deleting input/output inventory items
+- [x] Add read-only `accepts_input_item()` based on the currently selected recipe
+- [x] Gate temporary smelter input logistics using the producer's active-recipe acceptance decision
+- [x] Update Test Smelter scene with recipe list and ProducerComponent reference
+- [x] Pass **10/10** recipe-selection, **6/6** ingredient-acceptance, and **5/5** recipe-aware logistics tests
+- [x] Rerun **36/36** Chat 06 manufacturing checks, existing inventory-transfer tests, and active factory gameplay
+- [x] Commit and push this checkpoint's tested gameplay and isolated test scenes to `main`
+- [x] Document architecture, development log, roadmap, and troubleshooting
+
+**Checkpoint status: Complete.** This is recipe-control infrastructure, not yet a player recipe-selection UI and not yet physical material transport.
+
+#### Next Chat 07 Work — Physical Logistics Preparation
+
+- [ ] Define reusable input/output port contracts (item eligibility, free capacity, connection orientation, item handoff)
+- [ ] Validate that machine ports can safely refuse unsuitable or over-capacity items without item loss
+- [ ] Design slot/stack inventories and universal small/medium/large storage capacities
+- [ ] Implement basic one-tool directional conveyor placements and auto straight/corner geometry
+- [ ] Add separate placeable splitter and merger buildings after simple belts are reliable
+- [ ] Replace temporary proximity transfers incrementally, preserving all existing tests
+- [ ] Extend manufacturing to ammunition and demonstrate a supply-dependent defensive structure for First Night
+
 ### 1F — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
@@ -247,6 +272,6 @@ Completed:
 - Phase 1D (Chat 05) capacity-aware inventories, dedicated storage, direct automatic transfers, and storage/logistics debugging
 - Phase 1E (Chat 06) guarded recipe-based manufacturing, two-inventory Test Smelter, stocked-storage input logistics, progress/status feedback, and successful conservation/regression testing
 
-**Chat 07 design direction agreed (planning; not yet implemented):** Recipe-selectable manufacturing will determine accepted inputs; standard storage will be universal, slot/stack-based, and available in small, medium, and large sizes. Physical, directional conveyor belts will ultimately replace temporary proximity transfers, using one belt placement tool that automatically handles straights and turns. Splitters and mergers will be separate placeable logistics buildings. Ammunition-producing factory chains and zombie spawn buildings/settlements are central to the First Night goal. See [GAME_VISION.md](GAME_VISION.md) for authoritative long-term design decisions and open questions.
+**Chat 07 first checkpoint implemented and tested:** Machine recipe allowlists, safe recipe switching, read-only active-recipe ingredient acceptance, and compatibility checks on the temporary input logistics chain. All **21/21** new recipe tests and **36/36** existing manufacturing checks passed, with inventory and gameplay regressions also reported successful. Details: Phase 1E.1 above and [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Next implementation milestone:** Start with selectable recipes and machine input acceptance on the existing Test Smelter; then plan slot-based storage and machine connections before the conveyor prototype. Preserve the current tested extractor → storage → smelter chain until a physical-belt replacement is working and regression-tested. The first zombie/defense prototype remains essential to the First Night vertical slice.
+**Next milestone:** Design/test machine input/output port contracts and physical item handoffs; afterward establish universal slot-based storage and one-tool directional conveyors. The old extractor → storage → smelter proximity logic remains until its physical replacement is validated. Dedicated splitter/merger buildings, ammunition supply, zombie spawn structures, and the First Night defensive loop remain part of the agreed [GAME_VISION.md](GAME_VISION.md).
