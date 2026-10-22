@@ -1,5 +1,7 @@
 # Industrial Warfare — Game Design
 
+> **Game vision:** Read [GAME_VISION.md](GAME_VISION.md) first for the long-term design pillars, agreed Chat 07 decisions (recipe-controlled inputs, physical conveyors, universal slot-based storage, dedicated splitter/merger buildings), ammunition-focused factory objectives, and structure-based enemy spawns. This document records detailed mechanics and current implementation; early proximity transfers are temporary scaffolding, not final logistics.
+
 ## High-Level Concept
 
 Industrial Warfare is a top-down 3D factory automation and industrial combat game.
