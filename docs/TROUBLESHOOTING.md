@@ -655,6 +655,46 @@ Verify that all displayed quantities come from the same run and that processed i
 
 ---
 
+## 2026-10-22 — Chat 07: Recipe Logistics Test Kept Transferring After PASS Banner
+
+### Symptom
+
+`recipe_logistics_acceptance_test.tscn` printed the expected 5/5 successes, but the test buildings continued automatically transferring ore after the final result banner.
+
+### Cause
+
+The temporary Test Smelter scene includes active `ProducerComponent` and `LogisticsInputComponent` nodes with normal frame processing. The test also invokes `logistics._process(1.1)` manually, creating uncontrolled additional updates after the assertions.
+
+### Solution / Result
+
+After attaching the temporary smelter and storage to the test scene, run `logistics.set_process(false)` and `producer.set_process(false)` on their actual child nodes. Perform transfers only with explicit manual `_process()` calls in the test. After successful assertions, call `smelter.queue_free()` and `storage.queue_free()` before printing the final PASS banner. The rerun showed 5/5 passes with no trailing transfers.
+
+### Lesson
+
+Test isolation requires disabling unrelated automatic processing **after** adding instantiated scenes to the tree, not just calling a process method manually. Clean up temporary nodes before final reporting.
+
+---
+
+## 2026-10-22 — Chat 07: Spaces Versus Tabs Parser Error in GDScript Test
+
+### Symptom
+
+Godot reported `Used space character for indentation instead of tab as used before in the file` (initially near line 83; another affected line appeared around line 97) in `tests/recipe_logistics_acceptance_test.gd`.
+
+### Cause
+
+Newly copied lines used leading spaces while the surrounding code inside `func _ready()` used tabs. GDScript does not accept mixing space and tab indentation within the same block.
+
+### Solution / Result
+
+Replace the affected line prefixes with **one tab** at the first indentation level inside `_ready()`, including `add_child(...)`, `set_process(false)`, and `queue_free()` statements. Save, rerun the isolated test with F6, and confirm all 5/5 PASS messages with no parser errors or extra transfers.
+
+### Lesson
+
+Match existing file indentation exactly when pasting snippets from chat or moving between VS Code and Godot. Keep GDScript files configured for tabs and inspect the **first** parser error rather than following cascading failures.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
