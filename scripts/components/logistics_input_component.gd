@@ -14,6 +14,22 @@ class_name LogisticsInputComponent
 
 @export var input_inventory: InventoryComponent
 
+# =============================================================================
+# MANUFACTURING RECIPE REFERENCE
+# =============================================================================
+
+# References the manufacturing component receiving materials.
+#
+# This lets input logistics check the currently selected recipe
+# before requesting any item from nearby storage.
+#
+# The recipe, rather than the logistics system, determines
+# which materials a manufacturing building accepts.
+#
+# Assign the sibling ProducerComponent in the Godot Inspector.
+
+@export var producer_component: ProducerComponent
+
 
 # Item this component requests from nearby storage.
 #
@@ -240,6 +256,41 @@ func _process(delta: float) -> void:
 
 	if transfer_item == null:
 		logistics_status = "Transfer Item Missing"
+		return
+
+	# =============================================================================
+	# VALIDATE MANUFACTURING RECIPE ACCEPTANCE
+	# =============================================================================
+
+	# Input logistics must have a valid manufacturing component
+	# before it can determine which materials are allowed.
+	#
+	# Fail safely when the reference is missing.
+
+	if not is_instance_valid(producer_component):
+		logistics_status = "Producer Missing"
+		last_transfer_amount = 0
+		return
+
+	# =============================================================================
+	# CHECK SELECTED RECIPE
+	# =============================================================================
+
+	# The active recipe determines whether the requested item
+	# may enter this manufacturing building.
+	#
+	# If the item is not required, stop before:
+	# - Searching nearby storage.
+	# - Calculating transfer quantities.
+	# - Removing resources from storage.
+	# - Adding resources to the input inventory.
+	#
+	# This protects against incorrect transfers when recipes
+	# change and prepares logistics for future conveyor ports.
+
+	if not producer_component.accepts_input_item(transfer_item):
+		logistics_status = "Item Not Required by Recipe"
+		last_transfer_amount = 0
 		return
 
 	# =============================================================================

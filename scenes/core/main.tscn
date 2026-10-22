@@ -91,6 +91,6 @@ mesh = SubResource("BoxMesh_2dmjg")
 [node name="ProductionDebugHUD" parent="." unique_id=60506702 instance=ExtResource("8_phv0v")]
 
 [node name="TestOreDeposit" parent="." unique_id=191589997 instance=ExtResource("9_jpx65")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.004758, 0.53535223, 5.01169)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.2, 5)
 
 [editable path="BuildHUD"]

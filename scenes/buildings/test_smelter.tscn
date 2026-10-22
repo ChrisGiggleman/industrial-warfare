@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://p7ccxof4p50l" path="res://scripts/components/producer_component.gd" id="4_0hcx8"]
 [ext_resource type="Resource" uid="uid://m30fkbg1d5jw" path="res://data/recipes/test_smelting.tres" id="5_t8y3u"]
 [ext_resource type="Script" uid="uid://btwjf2nmmk7j4" path="res://scripts/components/logistics_input_component.gd" id="6_pej7w"]
+[ext_resource type="Script" uid="uid://rns1sccxg4hf" path="res://scripts/data/production_recipe.gd" id="6_vi7jt"]
 [ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="7_vi7jt"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8araf"]
@@ -43,10 +44,12 @@ max_capacity = 100
 [node name="ProducerComponent" type="Node" parent="." unique_id=1399883820 node_paths=PackedStringArray("input_inventory", "output_inventory")]
 script = ExtResource("4_0hcx8")
 recipe = ExtResource("5_t8y3u")
+available_recipes = Array[ExtResource("6_vi7jt")]([ExtResource("5_t8y3u")])
 input_inventory = NodePath("../InputInventory")
 output_inventory = NodePath("../OutputInventory")
 
-[node name="LogisticsInputComponent" type="Node" parent="." unique_id=108508367 node_paths=PackedStringArray("input_inventory")]
+[node name="LogisticsInputComponent" type="Node" parent="." unique_id=108508367 node_paths=PackedStringArray("input_inventory", "producer_component")]
 script = ExtResource("6_pej7w")
 input_inventory = NodePath("../InputInventory")
+producer_component = NodePath("../ProducerComponent")
 transfer_item = ExtResource("7_vi7jt")

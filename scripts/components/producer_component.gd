@@ -10,6 +10,25 @@ class_name ProducerComponent
 @export var recipe: ProductionRecipe
 
 # =============================================================================
+# AVAILABLE MANUFACTURING RECIPES
+# =============================================================================
+
+# Recipes supported by this manufacturing building.
+#
+# Different buildings may support different recipe lists.
+#
+# Examples:
+# - Smelter: Ore -> Ingots
+# - Ammunition Factory: Components -> Ammunition
+# - Assembler: Ingots -> Manufactured Parts
+#
+# The existing "recipe" variable remains the active recipe.
+# This preserves compatibility with our working manufacturing system.
+#
+# The available recipes list controls what a player may select.
+
+@export var available_recipes: Array[ProductionRecipe] = []
+# =============================================================================
 # INPUT INVENTORY REFERENCE
 # =============================================================================
 
@@ -50,6 +69,154 @@ var production_progress: float = 0.0
 # waiting for inputs, or blocked by output capacity.
 
 var production_status: String = "Initializing"
+
+# =============================================================================
+# MANUFACTURING RECIPE SELECTION
+# =============================================================================
+
+# Attempts to change the active manufacturing recipe.
+#
+# Only recipes registered in available_recipes may be selected.
+#
+# Safety rules:
+# - Reject missing recipes.
+# - Reject recipes not supported by this building.
+# - Reject recipes missing basic production requirements.
+# - Do not change recipes while input materials are stored.
+# - Never delete items when changing recipes.
+# - Reset production progress after a successful change.
+#
+# Completed products in OutputInventory may remain stored
+# because they are separate from input materials.
+#
+# Returns:
+# true  = Recipe selection accepted.
+# false = Recipe selection rejected.
+
+func select_recipe(new_recipe: ProductionRecipe) -> bool:
+
+	# =============================================================================
+	# VALIDATE REQUESTED RECIPE
+	# =============================================================================
+
+	if new_recipe == null:
+		return false
+
+	if not available_recipes.has(new_recipe):
+		return false
+
+	if new_recipe.production_time <= 0.0:
+		return false
+
+	if new_recipe.inputs.is_empty() or new_recipe.outputs.is_empty():
+		return false
+
+	# Selecting the already active recipe changes nothing.
+	if recipe == new_recipe:
+		return true
+
+	# =============================================================================
+	# PROTECT EXISTING INPUT MATERIALS
+	# =============================================================================
+
+	# Do not switch while ingredients remain in InputInventory.
+	#
+	# This temporarily uses a strict empty-inventory rule.
+	# A future machine UI may allow the player to safely
+	# remove or return ingredients before switching recipes.
+
+	if not is_instance_valid(input_inventory):
+		return false
+
+	if input_inventory.get_total_amount() > 0:
+		return false
+
+	# =============================================================================
+	# APPLY SELECTED RECIPE
+	# =============================================================================
+
+	# The existing manufacturing functions already read
+	# from the "recipe" variable, so no changes are needed
+	# to input consumption or output creation.
+
+	recipe = new_recipe
+
+	# Reset partial progress from the previous recipe.
+	production_progress = 0.0
+
+	# Record the change for debugging and future UI use.
+	production_status = "Recipe Changed"
+
+	return true
+
+# =============================================================================
+# RECIPE-BASED INPUT ITEM ACCEPTANCE
+# =============================================================================
+
+# Checks whether the requested item is an ingredient
+# required by the currently selected manufacturing recipe.
+#
+# Future conveyor input ports will use this function
+# to identify acceptable materials.
+#
+# Examples:
+# - Iron Smelting accepts Iron Ore.
+# - Copper Smelting accepts Copper Ore.
+# - Ammunition recipes accept their required components.
+#
+# This function:
+# - Does not move or consume items.
+# - Does not modify either inventory.
+# - Does not change production progress.
+# - Does not check available storage capacity.
+#
+# Inventory capacity and actual item insertion will be
+# handled separately by the receiving logistics system.
+#
+# Returns:
+# true  = Item is a valid ingredient for the active recipe.
+# false = Item is not accepted or the recipe is missing.
+
+func accepts_input_item(item: ItemDefinition) -> bool:
+
+	# =============================================================================
+	# VALIDATE RECIPE AND ITEM
+	# =============================================================================
+
+	if item == null:
+		return false
+
+	if recipe == null:
+		return false
+
+	# =============================================================================
+	# CHECK ACTIVE RECIPE INGREDIENTS
+	# =============================================================================
+
+	# Only the active recipe determines input eligibility.
+	# Other recipes in available_recipes do not affect it.
+
+	for input_entry: ItemAmount in recipe.inputs:
+
+		# Ignore missing or incomplete recipe entries.
+		if input_entry == null:
+			continue
+
+		if input_entry.item == null:
+			continue
+
+		if input_entry.amount <= 0:
+			continue
+
+		# ItemDefinition resources identify material types.
+		if input_entry.item == item:
+			return true
+
+	# =============================================================================
+	# ITEM NOT ACCEPTED
+	# =============================================================================
+
+	return false
 
 # =============================================================================
 # RECIPE INPUT AVAILABILITY
