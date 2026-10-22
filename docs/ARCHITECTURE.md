@@ -635,6 +635,28 @@ Current Inspector configuration:
 
 It validates nearby candidate storage and requested buffer/capacity limits, then transfers at most what is available and required. It exposes `logistics_status` and `last_transfer_amount` for debug use. Existing extractor-to-storage `LogisticsTransferComponent` remains separate.
 
+### Recipe Selection and Input Acceptance (Chat 07 — Implemented)
+
+`ProducerComponent` now exposes two separate recipe concepts:
+
+- `@export var recipe: ProductionRecipe` is the **active** recipe used by all manufacturing timing, input consumption, and output creation functions.
+- `@export var available_recipes: Array[ProductionRecipe]` is the **allowlist** of recipes that this particular manufacturing machine may select. The Test Smelter's scene assigns its existing `test_smelting.tres` to both the active recipe and the list (one available recipe for now).
+- `select_recipe(new_recipe) -> bool` accepts only non-null recipes from the allowlist with positive production time and nonempty input/output arrays. Re-selecting the active recipe is a no-op. For an actual change, the input inventory reference must exist and **must be empty**; the method never discards ingredients or completed outputs. A successful selection resets progress to zero and sets `production_status = "Recipe Changed"`. This is a conservative interim recipe-change rule, not a final item-ejection UI.
+- `accepts_input_item(item: ItemDefinition) -> bool` is a read-only ingredient-type predicate against the **active** recipe's positive-quantity input entries. It rejects null or unrelated items, does not check inventory capacity, and never inserts, removes, or consumes items.
+
+`LogisticsInputComponent` now has an exported `producer_component: ProducerComponent` reference (assigned to `../ProducerComponent` in `test_smelter.tscn`). In its timed `_process`, the temporary short-range logistics component **fails closed** before storage discovery/transfer if the producer is missing (`Producer Missing`) or its configured `transfer_item` is not required by the active recipe (`Item Not Required by Recipe`); `last_transfer_amount` is reset to zero. Matching Test Ore continues to transfer normally.
+
+**Boundary / next-step caveat:** `transfer_item` is still statically assigned to Test Ore on the current smelter. Switching to a recipe requiring other ingredients *blocks* unsuitable ore but does **not** cause automatic sourcing of the replacement ingredient or support multiple ingredients in one logistics component. Item type acceptance is **not** the same as insertion capacity; future physical conveyor input ports must combine the recipe predicate with inventory/slot/throughput checks and atomic resource movement. Proximity movement remains temporary compatibility scaffolding, not the intended final transport system.
+
+### Chat 07 Regression Assets
+
+- `tests/recipe_selection_test.tscn` / `.gd`: **10/10** recipe switching, unsupported/invalid recipes, input-buffer safety, output preservation, and manufacturing after switching.
+- `tests/recipe_input_acceptance_test.tscn` / `.gd`: **6/6** active-recipe eligibility, null/invalid ingredients, recipe changes, and read-only behavior.
+- `tests/recipe_logistics_acceptance_test.tscn` / `.gd`: **5/5** reference validation, incompatible transfers rejected, conservation, and normal transfers after restoring the recipe.
+- **21/21 new Chat 07 tests passed**. The user reran **36/36 Chat 06 manufacturing checks**, the Chat 05 inventory-transfer regression groups, and the active factory gameplay successfully. These are locally executed Godot 4.6.2 tests; no automated CI run is claimed.
+
+The isolated logistics test suppresses automatic `_process` on its instantiated producer and logistics components after adding them to the scene, invokes transfer checks manually, and queues the temporary smelter/storage instances for deletion. This prevents residual transfer log messages after assertions finish.
+
 ### Manufacturing and Timing Test Assets
 
 - `tests/recipe_input_availability_test.tscn` — **8 passed**
@@ -693,9 +715,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 06:** RTS camera, selection and demolition, data-driven buildings, deposit-constrained extraction, capacity-aware separate inventories, safe partial inventory transfers, nearby storage and input logistics, a real 2-ore-to-1-ingot smelting chain, production/blocked statuses, and reusable extraction/manufacturing progress.
+**Implemented through Chat 07's first checkpoint:** All prior Chat 06 systems, plus per-machine recipe allowlists, guarded recipe switching, active-recipe input-item eligibility, and recipe-gated temporary storage-to-smelter delivery. All 21 new recipe tests and the earlier 36 manufacturing checks were reported passing, together with inventory-transfer and in-game regressions.
 
-**Planned:** finished-product export and downstream consumers, conveyors/inserters/ports and advanced routing, power/fuel requirements, production upgrades, recipe selection, construction costs, research/unlocks, save/load, zombies/defense, and polished player-facing UI.
+**Planned:** the player-facing recipe selector, dynamic/multi-ingredient material intake, actual input-port admission with capacity limits, universal slot-and-stack small/medium/large storage, physical conveyor segments and ports, dedicated splitter/merger buildings, ammunition production/defense, power/fuel, construction costs, research/unlocks, save/load, zombies/defense, and finalized UI. The temporary proximity-transfer path remains in use until belt-driven logistics are proven.
 
 ---
 
