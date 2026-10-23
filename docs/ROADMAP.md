@@ -184,14 +184,32 @@ Planned major systems:
 
 **Checkpoint status: Complete.** This is recipe-control infrastructure, not yet a player recipe-selection UI and not yet physical material transport.
 
-#### Next Chat 07 Work — Physical Logistics Preparation
+### 1E.2 — Machine Input/Output Ports & Logical Item Handoffs (Chat 07, second checkpoint)
 
-- [ ] Define reusable input/output port contracts (item eligibility, free capacity, connection orientation, item handoff)
-- [ ] Validate that machine ports can safely refuse unsuitable or over-capacity items without item loss
+- [x] Add reusable `ItemPortComponent extends Marker3D` with `INPUT`/`OUTPUT` roles
+- [x] Define recipe-aware and universal-storage admission policies
+- [x] Validate full-request free capacity and full source item availability without modifying inventory
+- [x] Place and orient `InputPort` and `OutputPort` on the Test Smelter, referencing correct inventories and producer
+- [x] Verify port world positions and outward directions after a 90° building rotation
+- [x] Add safe manually invoked port-to-port transfers using existing `InventoryComponent.transfer_to()`
+- [x] Reject invalid source/destination roles, unsupported items, same-inventory transfers and full destinations
+- [x] Validate complete ore → smelter → ingot → storage handoff with blocked export and resource conservation
+- [x] Pass **29/29** port checks; rerun **21/21** Chat 07 recipe checks, **36/36** Chat 06 checks, inventory tests and normal factory
+- [x] Commit and push tested port scripts, scene changes and four new test scenes to `main`
+- [x] Document architecture, dev log, roadmap and port-specific diagnostic expectations
+
+**Checkpoint status: Complete — safe logical handoffs and orientable port markers, not yet an operational physical conveyor network.**
+
+#### Next Chat 07 Work — Connected Physical Logistics
+
+- [ ] Introduce explicit physical adjacency and facing/connection contracts between compatible ports and belt ends
+- [ ] Prevent disconnected/distant ports from transferring items during real gameplay transport
+- [ ] Prototype one directional conveyor segment and basic connected routing before automating any transport
+- [ ] Implement basic one-tool belt placement that forms straights and turns dynamically
+- [ ] Define belt item travel time, capacity/throughput, backpressure, and safe disconnect behavior
 - [ ] Design slot/stack inventories and universal small/medium/large storage capacities
-- [ ] Implement basic one-tool directional conveyor placements and auto straight/corner geometry
 - [ ] Add separate placeable splitter and merger buildings after simple belts are reliable
-- [ ] Replace temporary proximity transfers incrementally, preserving all existing tests
+- [ ] Replace temporary proximity transfers incrementally, preserving resource conservation and existing tests
 - [ ] Extend manufacturing to ammunition and demonstrate a supply-dependent defensive structure for First Night
 
 ### 1F — Enemy & Defense Prototype
@@ -272,6 +290,6 @@ Completed:
 - Phase 1D (Chat 05) capacity-aware inventories, dedicated storage, direct automatic transfers, and storage/logistics debugging
 - Phase 1E (Chat 06) guarded recipe-based manufacturing, two-inventory Test Smelter, stocked-storage input logistics, progress/status feedback, and successful conservation/regression testing
 
-**Chat 07 first checkpoint implemented and tested:** Machine recipe allowlists, safe recipe switching, read-only active-recipe ingredient acceptance, and compatibility checks on the temporary input logistics chain. All **21/21** new recipe tests and **36/36** existing manufacturing checks passed, with inventory and gameplay regressions also reported successful. Details: Phase 1E.1 above and [ARCHITECTURE.md](ARCHITECTURE.md).
+**Chat 07 recipe and port checkpoints completed:** Machine recipe allowlists, safe recipe selection, active-recipe input acceptance and guarded temporary logistics (**21/21** checks), plus orientable `Marker3D` item ports and capacity/recipe-checked manual handoffs (**29/29** checks). Previously implemented manufacturing checks (**36/36**) and the inventory/gameplay regression were reported passing. The developer pushed the tested port gameplay/test milestone to `main`. See Phase 1E.1–1E.2 and [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Next milestone:** Design/test machine input/output port contracts and physical item handoffs; afterward establish universal slot-based storage and one-tool directional conveyors. The old extractor → storage → smelter proximity logic remains until its physical replacement is validated. Dedicated splitter/merger buildings, ammunition supply, zombie spawn structures, and the First Night defensive loop remain part of the agreed [GAME_VISION.md](GAME_VISION.md).
+**Next milestone:** Build and validate physical **connection rules** so no disconnected ports can participate in gameplay transfers. Then develop directional one-tool conveyors with straight/corner handling, throughput and backpressure, and slot/stack storage. The existing extractor → storage → smelter proximity chain remains in place until physical transport is stable. The distinct splitter/merger buildings and ammunition-fed zombie defense loop remain part of [GAME_VISION.md](GAME_VISION.md).
