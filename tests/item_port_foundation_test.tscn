@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cqk5kq7wvinmo"]
+
+[ext_resource type="Script" uid="uid://cijg3fmxv1b5u" path="res://tests/item_port_foundation_test.gd" id="1_n0gut"]
+
+[node name="ItemPortFoundationTest" type="Node" unique_id=1197471834]
+script = ExtResource("1_n0gut")

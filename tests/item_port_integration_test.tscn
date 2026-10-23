@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d0gg75oupim2j"]
+
+[ext_resource type="Script" uid="uid://6bodbm2o6vwu" path="res://tests/item_port_integration_test.gd" id="1_e0hcw"]
+
+[node name="ItemPortIntegrationTest" type="Node" unique_id=181111960]
+script = ExtResource("1_e0hcw")

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cttab5vw22ilu"]
+
+[ext_resource type="Script" uid="uid://delho72mxe207" path="res://tests/item_port_real_smelter_test.gd" id="1_vqal5"]
+
+[node name="ItemPortRealSmelterTest" type="Node" unique_id=964222719]
+script = ExtResource("1_vqal5")
