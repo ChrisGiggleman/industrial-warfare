@@ -852,3 +852,36 @@ This Chat 07 checkpoint deliberately implements **recipe rules first**, preservi
 - Short-range transfers are temporary scaffolding, not final gameplay logistics. Finished ingots remain in the smelter output inventory until belt transport and destinations are implemented.
 - Next focus: review and incrementally design machine input/output ports and admission/hand-off contracts for later conveyors, while retaining current regressions and the First Night ammunition-and-defense objective.
 
+---
+
+## 2026-10-22 — Chat 07: Physical Port Foundation & Logical Handoffs (Second Checkpoint)
+
+### Implementation (Steps 07.3A–07.3E)
+
+- Created reusable `scripts/components/item_port_component.gd` (`ItemPortComponent extends Marker3D`) with `INPUT`/`OUTPUT` directions, recipe-specific vs universal item acceptance, and explicit inventory and optional producer references.
+- Implemented **read-only** `can_accept_item()` (recipe eligibility, full-request available capacity, input role and correct inventory) and `can_provide_item()` (output role, item availability and output-inventory identity).
+- Attached sibling `InputPort` and `OutputPort` `Marker3D` nodes to `scenes/buildings/test_smelter.tscn`, positioned on opposite X faces at local `(-0.85, 0.5, 0)` and `(0.85, 0.5, 0)`; oriented Y `+90°` and `-90°`. Bound InputPort to `InputInventory` and OutputPort to `OutputInventory`, each referencing `ProducerComponent`.
+- Added `try_transfer_to_port()` to guard destination role, self-transfer, ingredient acceptance, source availability, requested capacity, then delegate accounting to `InventoryComponent.transfer_to()`. Failed prechecks return zero without changing inventories.
+- Proved the complete *manual* workflow on a real Test Smelter: initial six ore in source, two ore supplied per cycle, two smelting cycles produce two ingots; one goes to capacity-1 storage and a second remains in the output buffer when storage is full; source retains two ore. Total **6 ore equivalents** conserved.
+
+### Validation and Regression Checkpoint
+
+| Test scene or coverage | Developer-reported result |
+| --- | --- |
+| `item_port_foundation_test.tscn` | **7/7 passed** |
+| `item_port_integration_test.tscn` | **8/8 passed** |
+| `item_port_transfer_test.tscn` | **7/7 passed** |
+| `item_port_real_smelter_test.tscn` | **7/7 passed** |
+| Earlier Chat 07 recipe selection / acceptance / logistics | **21/21 passed** |
+| Earlier Chat 06 manufacturing suite | **36/36 passed** |
+| Inventory transfer regression | **Passed** |
+| Main extractor → storage → smelter production, interactions and HUD | **Passed** |
+
+**29/29 new port tests**, **21/21 earlier Chat 07 recipe tests**, and **36/36 previous manufacturing checks**: **86 checks** across those named groups, in addition to inventory-transfer and gameplay regressions. These are reported local Godot 4.6.2 test runs, not GitHub Actions results. The developer confirmed the port milestone gameplay/test files were pushed successfully to GitHub `main`.
+
+### Architecture Decision and Boundaries
+
+The port component currently exposes a safe **logical transfer**, not a physically connected network. There are no placed conveyors, connection/adjacency validation, route selection, belt throughput timing, storage slot/stack layout, or automatic ingot export from the smelter. Existing proximity transfers were intentionally retained in the playable prototype.
+
+The next incremental development priority is **connection validation between oriented ports and future directional belt segments**, followed by test-first belt placement/connection and item movement. Dedicated splitters and mergers remain distinct planned placeable buildings. Ammunition manufacture feeding defensive structures and a zombie colony First Night remains the primary game loop objective.
+
