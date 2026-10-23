@@ -668,11 +668,52 @@ The isolated logistics test suppresses automatic `_process` on its instantiated 
 
 ---
 
+## Reusable Item Ports & Safe Logical Handoffs (Chat 07 — Steps 07.3A–07.3E)
+
+`scripts/components/item_port_component.gd` defines `ItemPortComponent extends Marker3D`, a reusable 3D machine/storage connection point. Markers provide local position/orientation without visible gameplay geometry. **They are not connected conveyor belts yet.**
+
+### Port Configuration and Rules
+
+- `PortDirection.INPUT` receives items; `PortDirection.OUTPUT` supplies items. Source and destination directions must agree with their roles.
+- `InputPolicy.RECIPE_INPUTS` admits only valid items in `ProducerComponent.recipe` via the existing `accepts_input_item()`; the input port verifies that its `inventory` is exactly the producer's `input_inventory`.
+- `InputPolicy.ANY_ITEM` is intended for universal storage. It admits any non-null item *subject to capacity*, without a `ProducerComponent`.
+- `can_accept_item(item, amount = 1) -> bool` requires an input port, non-null item, positive amount, valid inventory, a passing policy, and enough available space for the **entire** amount. `InventoryComponent.get_available_space() == -1` signifies unlimited storage. It is read-only.
+- `can_provide_item(item, amount = 1) -> bool` requires an output port and a valid inventory containing the full quantity; if a producer is assigned, the port inventory must match `producer.output_inventory`. It is read-only.
+- `try_transfer_to_port(destination_port, item, amount = 1) -> int` validates distinct and compatible ports/inventories, full source availability, and full destination acceptance before calling the already-tested `InventoryComponent.transfer_to()`. It returns the actual quantity transferred or zero on validation failure. Current port handoffs are **all-or-nothing at the port precheck**; no requested partial fill if destination has insufficient space.
+
+### Test Smelter Scene Composition
+
+`scenes/buildings/test_smelter.tscn` has two new **direct child** `Marker3D` nodes using `ItemPortComponent`:
+
+| Port | Local position | Local Y rotation | Inventory | Producer |
+| --- | --- | --- | --- | --- |
+| `InputPort` | `(-0.85, 0.5, 0)` | `+90°` | `../InputInventory` | `../ProducerComponent` |
+| `OutputPort` | `(0.85, 0.5, 0)` | `-90°` | `../OutputInventory` | `../ProducerComponent` |
+
+The input uses `RECIPE_INPUTS`, and the output uses direction `OUTPUT`. With `Marker3D` children, the ports' world positions and outward-facing `-Z` axes follow the building rotation; the 07.3C test validates the 90° case. These local positions are provisional until connection-grid rules are established.
+
+### Chat 07 Port Test Assets
+
+| Isolated test scene | Reported checks |
+| --- | --- |
+| `tests/item_port_foundation_test.tscn` | **7/7** — basic acceptance, policy, capacities and nonmutation |
+| `tests/item_port_integration_test.tscn` | **8/8** — scene references, directions, positions, building rotation, safe queries |
+| `tests/item_port_transfer_test.tscn` | **7/7** — invalid direction/quantity, recipe blocking, full-request capacity, self-transfer, universal storage conservation |
+| `tests/item_port_real_smelter_test.tscn` | **7/7** — six Test Ore supplied, two complete smelting cycles, two ingots handled through real smelter ports, full storage rejection, **six ore-equivalents conserved** |
+
+The developer reported **29/29** port tests passing, plus a final regression of **21/21** previous Chat 07 recipe checks, **36/36** earlier manufacturing checks, existing inventory-transfer regression tests, and the normal factory in Godot 4.6.2. The test scenes run locally in the editor; this does **not** claim a CI run.
+
+### Current Transport Boundary
+
+Port checks and `try_transfer_to_port()` are **logical, manually invoked item handoffs**. There are no conveyor segments, adjacency/connectivity checks, world-space alignment validation, transfer rate, autonomous output export, or route discovery. A caller can currently use the method on distant ports: **gameplay code must not treat it as a physical connection check**. Plan connection validation and belt traversal before automating item movement. The existing nearby extractor/storage/smelter transfers continue unchanged until an end-to-end physical conveyor alternative has passed conservation and gameplay regressions. Universal slot/stack storage, small/medium/large variants, dedicated splitter/merger buildings, ammunition supply, and defense remain planned.
+
+---
+
 ## Current Factory Data Flow
 
 **Implemented:** one finite or infinite resource deposit can feed a Test Extractor; extracted ore moves to nearby Test Storage, and nearby Test Smelters pull ore into their independent input inventories. After each valid 2-second cycle, the smelter consumes 2 ore and deposits 1 ingot into its output inventory.
 
-The working prototype uses direct proximity transfers rather than physical conveyance. There is currently **no automatic finished-ingot output from the smelter to downstream storage or other machines**, and the prototype does not yet implement power, fuel, or conveyor routing.
+The running factory still uses direct proximity transfers, not physical conveyance. The new `OutputPort` can **manually** hand finished ingots to a suitable receiving port, as demonstrated in isolated tests, but there is **no automatic finished-ingot export in normal gameplay** and no conveyor routing, power, or fuel simulation.
 
 ---
 
@@ -715,9 +756,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 07's first checkpoint:** All prior Chat 06 systems, plus per-machine recipe allowlists, guarded recipe switching, active-recipe input-item eligibility, and recipe-gated temporary storage-to-smelter delivery. All 21 new recipe tests and the earlier 36 manufacturing checks were reported passing, together with inventory-transfer and in-game regressions.
+**Implemented through Chat 07's port checkpoint:** All Chat 06 systems; per-machine recipe allowlists, guarded selection, recipe-dependent item acceptance, and recipe-gated temporary input logistics; plus reusable oriented `Marker3D` input/output ports, capacity-aware item queries, and safe manually invoked port-to-port transfers backed by `InventoryComponent.transfer_to()`. The developer reported **21/21** recipe tests, **29/29** port tests, and **36/36** original manufacturing checks passing, along with inventory and gameplay regressions.
 
-**Planned:** the player-facing recipe selector, dynamic/multi-ingredient material intake, actual input-port admission with capacity limits, universal slot-and-stack small/medium/large storage, physical conveyor segments and ports, dedicated splitter/merger buildings, ammunition production/defense, power/fuel, construction costs, research/unlocks, save/load, zombies/defense, and finalized UI. The temporary proximity-transfer path remains in use until belt-driven logistics are proven.
+**Planned:** physically validated connections between ports and conveyors, directional belt routing and throughput, automatic source/destination scheduling, universal slot-and-stack small/medium/large storage, separately placeable splitter/merger buildings, machine recipe UI, multi-ingredient logistics, ammunition production and defense, power/fuel, research/unlocks, save/load, zombies and finalized UI. Manual port handoffs do **not** yet constitute physical conveyor logistics; temporary proximity transfers are still active.
 
 ---
 
