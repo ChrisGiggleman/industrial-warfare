@@ -695,6 +695,37 @@ Match existing file indentation exactly when pasting snippets from chat or movin
 
 ---
 
+## 2026-10-22 — Chat 07: Port Handoff Diagnostic Notes (No New Reported Defect)
+
+### What Was Verified
+
+Port foundation, Test Smelter integration, manual safe-transfer, and real-smelter handoff test scenes passed **7 + 8 + 7 + 7 = 29** checks without new Godot parser/runtime errors. Recipe tests (21), manufacturing tests (36), inventory transfer, and normal factory also passed in the developer's final regression. This section records likely checks for future integration issues; **it does not describe a defect observed in this milestone**.
+
+### If a Port Refuses a Valid-Looking Item
+
+1. Check that the source has `direction = OUTPUT` and the receiver has `direction = INPUT`; ports cannot serve both roles in one handoff.
+2. Check that both ports have valid `InventoryComponent` references and do **not** point to the same inventory.
+3. For recipe-controlled input ports, ensure `InputPolicy.RECIPE_INPUTS`, a valid `producer_component`, and `inventory == producer_component.input_inventory`. Check the **active** recipe inputs, not merely `available_recipes`.
+4. For general-purpose storage, select `InputPolicy.ANY_ITEM`; item eligibility is unrestricted but available inventory space still matters.
+5. Ensure the source has the **entire** requested item quantity and the destination can hold the **entire** request. Port `try_transfer_to_port()` deliberately rejects oversized requests instead of partially filling the destination.
+6. A producer-controlled output port must reference its producer's `OutputInventory`, not `InputInventory`.
+
+### If Port Positions Do Not Rotate as Expected
+
+- Confirm that `InputPort` and `OutputPort` are direct `Marker3D` children of `TestSmelter`.
+- Confirm input local position `(-0.85, 0.5, 0)` and Y rotation `+90°`; output local position `(0.85, 0.5, 0)` and Y rotation `-90°`.
+- Godot treats local `-Z` as forward. Verify *world* positions and forward vectors **after** rotating the parent 90°, as in `item_port_integration_test.tscn`.
+
+### Important Transport Boundary
+
+`try_transfer_to_port()` checks valid **logical** transfers only; it currently does **not** check physical adjacency, belt connections, distance or rate. A test manually calling this on distant ports can succeed by design. Do not diagnose that behavior as broken belt routing — **belt routing has not been implemented**. Physical-connectivity validation must be added before invoking port transfers from autonomous gameplay logic.
+
+### Safe Isolation During Port Tests
+
+For tests instantiating `test_smelter.tscn`, call `producer.set_process(false)` and `logistics.set_process(false)` after `add_child(smelter)`, then trigger manufacturing and transfers explicitly. Queue the temporary smelter for deletion before the PASS banner. Follow the existing tab-indentation convention in all GDScript files.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
