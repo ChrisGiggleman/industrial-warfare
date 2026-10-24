@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ds53fjhxskmor"]
+
+[ext_resource type="Script" uid="uid://btfror6fdf4qi" path="res://tests/logistics_connection_geometry_test.gd" id="1_28fhv"]
+
+[node name="LogisticsConnectionGeometryTest" type="Node" unique_id=1894538417]
+script = ExtResource("1_28fhv")

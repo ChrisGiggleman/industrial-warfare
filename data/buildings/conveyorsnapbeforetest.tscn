@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bx764spa8ryad"]
+
+[ext_resource type="Script" uid="uid://bb33inn02tpfb" path="res://tests/conveyor_snap_before_test.gd" id="1_8hkn6"]
+
+[node name="Node" type="Node" unique_id=1548430458]
+script = ExtResource("1_8hkn6")

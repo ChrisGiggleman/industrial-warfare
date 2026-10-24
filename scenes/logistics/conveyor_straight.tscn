@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://ct3cwtjt1ql6c"]
+
+[ext_resource type="Script" uid="uid://dyimk1k0kc2u5" path="res://scripts/components/conveyor_segment.gd" id="1_a0hc6"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tgi11"]
+albedo_color = Color(0.39215687, 0.46666667, 0.5137255, 1)
+metallic = 0.2
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_tgi11"]
+material = SubResource("StandardMaterial3D_tgi11")
+size = Vector3(0.8, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a0hc6"]
+size = Vector3(0.78, 0.18, 0.9)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_j1hak"]
+
+[node name="ConveyorStraight" type="Node3D" unique_id=95767738 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+script = ExtResource("1_a0hc6")
+selection_mesh = NodePath("BeltMesh")
+
+[node name="BeltMesh" type="MeshInstance3D" parent="." unique_id=2071834021]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("BoxMesh_tgi11")
+
+[node name="InputEndpoint" type="Marker3D" parent="." unique_id=628946105]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0.5, 0.5)
+
+[node name="OutputEndpoint" type="Marker3D" parent="." unique_id=685269306]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.5)
+
+[node name="ConveyorBody" type="StaticBody3D" parent="." unique_id=151850175]
+collision_layer = 4
+
+[node name="ConveyorBody" type="CollisionShape3D" parent="ConveyorBody" unique_id=1216759836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+shape = SubResource("BoxShape3D_a0hc6")
+
+[node name="InteractionHitbox" type="Area3D" parent="." unique_id=2014104089]
+collision_layer = 2
+collision_mask = 0
+
+[node name="InteractionHitbox" type="CollisionShape3D" parent="InteractionHitbox" unique_id=906461124]
+transform = Transform3D(0.9999756, 0, 0.00698126, 0, 1, 0, -0.00698126, 0, 0.9999756, 0, 0.3, 0)
+shape = SubResource("BoxShape3D_j1hak")

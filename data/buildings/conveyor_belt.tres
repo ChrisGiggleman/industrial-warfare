@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3 uid="uid://rw6ixvl0u5qp"]
+
+[ext_resource type="PackedScene" uid="uid://ct3cwtjt1ql6c" path="res://scenes/logistics/conveyor_straight.tscn" id="1_6sg68"]
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_iejqf"]
+
+[resource]
+script = ExtResource("1_iejqf")
+building_id = &"conveyor_belt"
+display_name = "Conveyor Belt"
+description = "Directional conveyor segment for physical factory logistics."
+category = &"Logistics"
+building_scene = ExtResource("1_6sg68")
+metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

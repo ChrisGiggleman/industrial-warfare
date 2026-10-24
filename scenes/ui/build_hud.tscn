@@ -45,6 +45,10 @@ text = "[3] Test Storage"
 layout_mode = 2
 text = "[4] Test Smelter"
 
+[node name="Building5Label" type="Label" parent="BuildPanel/PanelMargin/BuildInfo" unique_id=77691376]
+layout_mode = 2
+text = "[5] Conveyor Belt"
+
 [node name="ControlsLabel" type="Label" parent="BuildPanel/PanelMargin/BuildInfo" unique_id=1895815257]
 layout_mode = 2
 text = " R - Rotate"

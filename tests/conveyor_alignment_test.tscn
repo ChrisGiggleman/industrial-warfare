@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dxfmcttbu7oqr"]
+
+[ext_resource type="Script" uid="uid://deulxki2qrenu" path="res://tests/conveyor_alignment_test.gd" id="1_egprk"]
+
+[node name="ConveyorAlignmentTest" type="Node" unique_id=47753425]
+script = ExtResource("1_egprk")

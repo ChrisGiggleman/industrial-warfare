@@ -19,6 +19,14 @@ const ROTATION_STEP_DEGREES: float = 90.0
 const FULL_ROTATION_DEGREES: float = 360.0
 const PLACEMENT_GHOST_ALPHA: float = 0.4
 
+# =============================================================================
+# MOUSE INTERACTION COLLISION MASK
+# =============================================================================
+
+# Layer 2 is used by selectable and demolishable objects.
+# Layer 1 ground and Layer 3 placement blockers are excluded.
+
+const SELECTION_COLLISION_MASK: int = 2
 
 # =============================================================================
 # EXPORTED SETTINGS
@@ -66,6 +74,29 @@ var placement_rotation_degrees: float = 0.0
 var placement_ghost: Node3D = null
 var ghost_material: StandardMaterial3D
 var placement_ghost_collisions: Array[CollisionShape3D] = []
+
+# =============================================================================
+# CONVEYOR SNAP PREVIEW STATE
+# =============================================================================
+
+# Stores the placed conveyor currently providing a
+# possible snap location for our placement ghost.
+#
+# This is preview state only.
+# No permanent connections are established here.
+
+var conveyor_snap_source: ConveyorSegment = null
+# True when the new belt should connect into an existing input.
+# False when the new belt should connect after an existing output.
+#
+# The next step will use this to establish the correct
+# permanent connection when the player clicks.
+
+var conveyor_snap_before: bool = false
+# How close the mouse's grid position must be to a
+# valid snapped conveyor position.
+
+const CONVEYOR_SNAP_SEARCH_RADIUS: float = 1.25
 
 # Demolition Tool state.
 var demolition_mode_active: bool = false
@@ -164,6 +195,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_building(3)
 			return
 
+		if event.is_action_pressed("select_building_5"):
+			_select_building(4)
+			return
+			
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
 			return
@@ -370,6 +405,16 @@ func _update_demolition_hover() -> void:
 		ray_end
 	)
 
+	# =============================================================================
+	# INTERACTIVE OBJECT RAYCAST SETTINGS
+	# =============================================================================
+
+	# Detect selectable objects on physics Layer 2.
+	# Include both StaticBody3D and Area3D hitboxes.
+
+	query.collision_mask = SELECTION_COLLISION_MASK
+	query.collide_with_areas = true
+
 	var result: Dictionary = (
 		get_viewport().world_3d.direct_space_state.intersect_ray(query)
 	)
@@ -451,6 +496,16 @@ func _try_demolish_under_mouse() -> void:
 		ray_end
 	)
 
+	# =============================================================================
+	# INTERACTIVE OBJECT RAYCAST SETTINGS
+	# =============================================================================
+
+	# Detect selectable objects on physics Layer 2.
+	# Include both StaticBody3D and Area3D hitboxes.
+
+	query.collision_mask = SELECTION_COLLISION_MASK
+	query.collide_with_areas = true
+
 	var result: Dictionary = (
 		get_viewport().world_3d.direct_space_state.intersect_ray(query)
 	)
@@ -522,6 +577,16 @@ func _select_under_mouse() -> void:
 		ray_origin,
 		ray_end
 	)
+
+	# =============================================================================
+	# INTERACTIVE OBJECT RAYCAST SETTINGS
+	# =============================================================================
+
+	# Detect selectable objects on physics Layer 2.
+	# Include both StaticBody3D and Area3D hitboxes.
+
+	query.collision_mask = SELECTION_COLLISION_MASK
+	query.collide_with_areas = true
 
 	var result: Dictionary = (
 		get_viewport().world_3d.direct_space_state.intersect_ray(query)
@@ -623,10 +688,69 @@ func _update_placement_preview() -> void:
 			snappedf(hit_position.z, grid_size)
 		)
 
+		
 		if placement_ghost != null:
-			placement_ghost.global_position = current_placement_position
+
+			# =============================================================================
+			# RESET NORMAL GRID PREVIEW
+			# =============================================================================
+
+			# Start each frame with the ordinary grid position.
+			# This prevents the ghost from remaining snapped
+			# after the mouse moves away.
+
+			conveyor_snap_source = null
+			conveyor_snap_before = false
+			placement_ghost.global_position = (
+				current_placement_position
+			)
+
+			placement_ghost.rotation_degrees.y = (
+				placement_rotation_degrees
+			)
+
+			# =============================================================================
+			# CHECK CONVEYOR SNAP PREVIEW
+			# =============================================================================
+
+			if placement_ghost is ConveyorSegment:
+
+				var snap_result: Dictionary = (
+					_find_conveyor_snap_preview(
+						current_placement_position
+					)
+				)
+
+				if not snap_result.is_empty():
+
+					# Move the ghost only.
+					# Do not connect the real conveyors.
+
+					placement_ghost.global_transform = (
+						snap_result["transform"]
+					)
+
+					conveyor_snap_source = (
+						snap_result["source"]
+					)
+
+					# Remember which side of the existing conveyor
+					# the new segment would connect to.
+
+					conveyor_snap_before = bool(
+						snap_result["before"]
+					)
+
+					current_placement_position = (
+						placement_ghost.global_position
+					)
+
+			# =============================================================================
+			# EXISTING PLACEMENT COLLISION VALIDATION
+			# =============================================================================
 
 			placement_is_valid = _is_placement_clear()
+
 
 		if placement_is_valid and placement_ghost != null:
 			var extractor_component: ExtractorComponent = (
@@ -655,6 +779,127 @@ func _update_placement_preview() -> void:
 
 	else:
 		placement_is_valid = false
+
+
+# =============================================================================
+# FIND NEARBY CONVEYOR SNAP PREVIEW
+# =============================================================================
+
+# Searches for available conveyor inputs AND outputs.
+#
+# Supports:
+# - Placing a conveyor AFTER an existing output.
+# - Placing a conveyor BEFORE an existing input.
+#
+# Chooses the nearest valid position to the mouse.
+#
+# This function only calculates preview transforms.
+# It never establishes permanent connections.
+
+func _find_conveyor_snap_preview(
+	grid_position: Vector3
+) -> Dictionary:
+
+	if not placement_ghost is ConveyorSegment:
+		return {}
+
+	var ghost_belt: ConveyorSegment = (
+		placement_ghost as ConveyorSegment
+	)
+
+	var best_preview: Dictionary = {}
+	var best_distance: float = CONVEYOR_SNAP_SEARCH_RADIUS
+
+	# =============================================================================
+	# SEARCH EXISTING CONVEYORS
+	# =============================================================================
+
+	for node: Node in get_tree().get_nodes_in_group(
+		"player_built"
+	):
+
+		if node == placement_ghost:
+			continue
+
+		if not node is ConveyorSegment:
+			continue
+
+		var source: ConveyorSegment = node as ConveyorSegment
+
+		if source.is_queued_for_deletion():
+			continue
+
+		# =============================================================================
+		# OPTION A — SNAP AFTER AN EXISTING CONVEYOR
+		# =============================================================================
+
+		var after_preview: Dictionary = (
+			ghost_belt.get_snap_preview_transform_after(source)
+		)
+
+		if not after_preview.is_empty():
+
+			var after_transform: Transform3D = (
+				after_preview["transform"]
+			)
+
+			var after_position: Vector3 = (
+				after_transform.origin
+			)
+
+			var after_distance: float = Vector2(
+				grid_position.x - after_position.x,
+				grid_position.z - after_position.z
+			).length()
+
+			if after_distance < best_distance:
+
+				best_distance = after_distance
+
+				best_preview = {
+					"source": source,
+					"transform": after_transform,
+					"before": false
+				}
+
+		# =============================================================================
+		# OPTION B — SNAP BEFORE AN EXISTING CONVEYOR
+		# =============================================================================
+
+		var before_preview: Dictionary = (
+			ghost_belt.get_snap_preview_transform_before(source)
+		)
+
+		if not before_preview.is_empty():
+
+			var before_transform: Transform3D = (
+				before_preview["transform"]
+			)
+
+			var before_position: Vector3 = (
+				before_transform.origin
+			)
+
+			var before_distance: float = Vector2(
+				grid_position.x - before_position.x,
+				grid_position.z - before_position.z
+			).length()
+
+			if before_distance < best_distance:
+
+				best_distance = before_distance
+
+				best_preview = {
+					"source": source,
+					"transform": before_transform,
+					"before": true
+				}
+
+	# =============================================================================
+	# RETURN NEAREST VALID SNAP CANDIDATE
+	# =============================================================================
+
+	return best_preview
 
 
 # =============================================================================
@@ -778,7 +1023,13 @@ func _extractor_has_resource_node() -> bool:
 #   - the current footprint is blocked
 #   - no valid buildable scene is selected
 
+
 func _try_place_object() -> void:
+
+	# =============================================================================
+	# VALIDATE PLACEMENT
+	# =============================================================================
+
 	if not placement_is_valid:
 		print("Placement blocked")
 		return
@@ -789,24 +1040,138 @@ func _try_place_object() -> void:
 		print("No buildable scene selected")
 		return
 
+	# =============================================================================
+	# PERMANENT CONVEYOR SNAP PLACEMENT
+	# =============================================================================
+
+	# Handle snapped conveyors BEFORE normal building placement.
+	#
+	# This prevents creating two objects during one click.
+	#
+	# A successful snap creates one conveyor and connects it
+	# to an existing conveyor.
+
+	if is_instance_valid(conveyor_snap_source):
+
+		# =============================================================================
+		# VALIDATE CONVEYOR PREVIEW
+		# =============================================================================
+
+		if not placement_ghost is ConveyorSegment:
+			print("Conveyor placement failed: Invalid preview.")
+			return
+
+		# =============================================================================
+		# CREATE NEW CONVEYOR
+		# =============================================================================
+
+		var new_instance: Node = selected_scene.instantiate()
+
+		if not new_instance is ConveyorSegment:
+			new_instance.free()
+			print("Conveyor placement failed: Invalid scene.")
+			return
+
+		var new_belt: ConveyorSegment = (
+			new_instance as ConveyorSegment
+		)
+
+		get_tree().current_scene.add_child(new_belt)
+
+		# Apply the exact snapped preview transform.
+		# This preserves both position and rotation.
+
+		new_belt.global_transform = (
+			placement_ghost.global_transform
+		)
+
+		# =============================================================================
+		# ESTABLISH CONVEYOR CONNECTION
+		# =============================================================================
+
+		var connection_successful: bool = false
+
+		if conveyor_snap_before:
+
+			# New conveyor feeds an existing conveyor.
+
+			connection_successful = (
+				new_belt.try_connect_to(conveyor_snap_source)
+			)
+
+		else:
+
+			# Existing conveyor feeds the new conveyor.
+
+			connection_successful = (
+				conveyor_snap_source.try_connect_to(new_belt)
+			)
+
+		# =============================================================================
+		# FAILED CONNECTION — REMOVE TEMPORARY BELT
+		# =============================================================================
+
+		if not connection_successful:
+			new_belt.queue_free()
+			print("Conveyor placement failed: Connection rejected.")
+			return
+
+		# =============================================================================
+		# SUCCESSFUL CONVEYOR PLACEMENT
+		# =============================================================================
+
+		print(
+			"Conveyor connected successfully | Before: ",
+			conveyor_snap_before,
+			" | Position: ",
+			new_belt.global_position
+		)
+
+		# Important: stop here.
+		# Normal building placement must not run afterward.
+
+		return
+
+	# =============================================================================
+	# NORMAL BUILDING PLACEMENT
+	# =============================================================================
+
+	# This section handles regular buildings and standalone
+	# conveyors that are not snapped to another belt.
+	#
+	# Keep existing BuildingDefinition functionality.
+
 	var new_object: Node = selected_scene.instantiate()
 
 	get_tree().current_scene.add_child(new_object)
+
+	# =============================================================================
+	# INITIALIZE BUILDING DEFINITION
+	# =============================================================================
 
 	var selected_definition: BuildingDefinition = (
 		_get_selected_building_definition()
 	)
 
 	var building_runtime: BuildingRuntime = (
-		new_object.get_node_or_null("BuildingRuntime") as BuildingRuntime
+		new_object.get_node_or_null("BuildingRuntime")
+		as BuildingRuntime
 	)
 
 	if building_runtime != null and selected_definition != null:
 		building_runtime.initialize(selected_definition)
 
+	# =============================================================================
+	# APPLY PLACEMENT TRANSFORM
+	# =============================================================================
+
 	if new_object is Node3D:
 		new_object.global_position = current_placement_position
 		new_object.rotation_degrees.y = placement_rotation_degrees
+
+	# =============================================================================
+	# PLACEMENT CONFIRMATION
+	# =============================================================================
 
 	print(
 		"Placed object at ",
@@ -815,7 +1180,6 @@ func _try_place_object() -> void:
 		placement_rotation_degrees,
 		" degrees"
 	)
-
 
 # =============================================================================
 # PLACEMENT GHOST CREATION
@@ -900,10 +1264,37 @@ func _create_placement_ghost() -> void:
 #   - the selected building type changes
 #   - a fresh placement ghost is created
 
+
+
 func _destroy_placement_ghost() -> void:
 	if placement_ghost != null and is_instance_valid(placement_ghost):
 		placement_ghost.queue_free()
 
+	# =============================================================================
+	# RESET PLACEMENT GHOST STATE
+	# =============================================================================
+
 	placement_ghost = null
 	ghost_material = null
 	placement_ghost_collisions.clear()
+
+	# =============================================================================
+	# RESET CONVEYOR SNAP PREVIEW STATE
+	# =============================================================================
+
+	# Clear both references when leaving Build Mode
+	# or recreating the placement ghost.
+
+	conveyor_snap_source = null
+	conveyor_snap_before = false
+
+
+	# =============================================================================
+	# RESET CONVEYOR SNAP PREVIEW
+	# =============================================================================
+
+	# Clear the reference when the placement ghost is removed.
+	# This prevents a stale conveyor connection candidate
+	# from remaining after leaving Build Mode.
+
+	conveyor_snap_source = null
