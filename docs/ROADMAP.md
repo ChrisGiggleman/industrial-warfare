@@ -200,17 +200,35 @@ Planned major systems:
 
 **Checkpoint status: Complete — safe logical handoffs and orientable port markers, not yet an operational physical conveyor network.**
 
-#### Next Chat 07 Work — Connected Physical Logistics
+### 1E.3 — Straight Conveyors, Snapping and Build Placement (Chat 07.4)
 
-- [ ] Introduce explicit physical adjacency and facing/connection contracts between compatible ports and belt ends
-- [ ] Prevent disconnected/distant ports from transferring items during real gameplay transport
-- [ ] Prototype one directional conveyor segment and basic connected routing before automating any transport
-- [ ] Implement basic one-tool belt placement that forms straights and turns dynamically
-- [ ] Define belt item travel time, capacity/throughput, backpressure, and safe disconnect behavior
-- [ ] Design slot/stack inventories and universal small/medium/large storage capacities
-- [ ] Add separate placeable splitter and merger buildings after simple belts are reliable
-- [ ] Replace temporary proximity transfers incrementally, preserving resource conservation and existing tests
-- [ ] Extend manufacturing to ammunition and demonstrate a supply-dependent defensive structure for First Night
+- [x] Add world-space endpoint geometry and strict connection tolerances
+- [x] Create ConveyorStraight scene with visible mesh, directional markers and footprint
+- [x] Track at most one previous and one next belt; clean up reciprocal links on deletion
+- [x] Implement straight snap-after, read-only snap previews, and snap-before with rotation support
+- [x] Register Conveyor Belt as slot **5**, preserving the four original shortcuts
+- [x] Make Build Mode ghost snap to the nearest compatible open input/output
+- [x] Commit exactly one new conveyor per snapped click, or roll back on a rejected connection
+- [x] Provide reliable selection/demolition and distinct Layer 2 / Layer 3 hitbox responsibilities
+- [x] Pass **40/40** conveyor regression checks and verify main factory gameplay
+- [x] Commit and push the tested conveyor milestone to main
+- [x] Document the milestone and remaining work
+
+**Status: Complete — connected straight conveyor geometry and placement, but no inventory transport over belts.**
+
+#### Next Chat 07 Work — Corners and Operational Transport
+
+- [ ] Create a directional 90° corner geometry and verify endpoint facing and rotation
+- [ ] Use the **same Conveyor Belt construction tool** for straight and turning segments; no extra build-menu entry
+- [ ] Test safe L-shaped placement, snapping, overlapping footprints, link cleanup and demolition
+- [ ] Confirm/correct the InteractionHitbox size and slight rotation; remove duplicate snap-source reset during script cleanup
+- [ ] Connect machine and storage input/output ports to conveyor endpoints
+- [ ] Prevent distant or disconnected manual port handoffs from being used by gameplay logistics
+- [ ] Implement actual item movement, timing, capacity, throughput and backpressure with resource conservation
+- [ ] Design universal small/medium/large slot-and-stack storage
+- [ ] Add separate placeable splitters and mergers after straight/turn routing works
+- [ ] Replace proximity logistics only after physical belts pass manufacturing regression checks
+- [ ] Build ammunition supply and supply-dependent defense for the First Night slice
 
 ### 1F — Enemy & Defense Prototype
 
@@ -290,6 +308,6 @@ Completed:
 - Phase 1D (Chat 05) capacity-aware inventories, dedicated storage, direct automatic transfers, and storage/logistics debugging
 - Phase 1E (Chat 06) guarded recipe-based manufacturing, two-inventory Test Smelter, stocked-storage input logistics, progress/status feedback, and successful conservation/regression testing
 
-**Chat 07 recipe and port checkpoints completed:** Machine recipe allowlists, safe recipe selection, active-recipe input acceptance and guarded temporary logistics (**21/21** checks), plus orientable `Marker3D` item ports and capacity/recipe-checked manual handoffs (**29/29** checks). Previously implemented manufacturing checks (**36/36**) and the inventory/gameplay regression were reported passing. The developer pushed the tested port gameplay/test milestone to `main`. See Phase 1E.1–1E.2 and [ARCHITECTURE.md](ARCHITECTURE.md).
+**Chat 07 recipe, machine-port and straight-conveyor checkpoints completed:** Recipe controls (**21/21** checks), safe manual machine-port handoffs (**29/29**) and buildable, snapped straight conveyor links (**40/40**) have developer-reported passing regression tests, alongside earlier manufacturing (**36/36**) and inventory/gameplay tests. Tested conveyor code was pushed to main. Details: Phase 1E.1–1E.3 and [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Next milestone:** Build and validate physical **connection rules** so no disconnected ports can participate in gameplay transfers. Then develop directional one-tool conveyors with straight/corner handling, throughput and backpressure, and slot/stack storage. The existing extractor → storage → smelter proximity chain remains in place until physical transport is stable. The distinct splitter/merger buildings and ammunition-fed zombie defense loop remain part of [GAME_VISION.md](GAME_VISION.md).
+**Next milestone:** Implement and validate real 90° conveyor corners using the **same Conveyor Belt tool**. Then connect belt endpoints to machine/storage ports and implement item movement, throughput/backpressure and resource conservation. Temporary proximity transfers remain in operation until physical transport is proven. Universal slot/stack storage, separate splitter/merger buildings and ammunition-fed defenses remain part of [GAME_VISION.md](GAME_VISION.md).
