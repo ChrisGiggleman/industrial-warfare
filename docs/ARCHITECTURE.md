@@ -705,7 +705,41 @@ The developer reported **29/29** port tests passing, plus a final regression of 
 
 ### Current Transport Boundary
 
-Port checks and `try_transfer_to_port()` are **logical, manually invoked item handoffs**. There are no conveyor segments, adjacency/connectivity checks, world-space alignment validation, transfer rate, autonomous output export, or route discovery. A caller can currently use the method on distant ports: **gameplay code must not treat it as a physical connection check**. Plan connection validation and belt traversal before automating item movement. The existing nearby extractor/storage/smelter transfers continue unchanged until an end-to-end physical conveyor alternative has passed conservation and gameplay regressions. Universal slot/stack storage, small/medium/large variants, dedicated splitter/merger buildings, ammunition supply, and defense remain planned.
+Port checks and `try_transfer_to_port()` remain **logical, manually invoked item handoffs**. Chat 07.4 now adds physical **belt-to-belt** marker alignment and durable directed links, but those conveyor connections are separate from machine ports and do not move items. No machine-to-belt connection validation, belt travel/throughput, automated export, or route discovery exists yet. A manually invoked port transfer can still succeed between distant ports and must not be treated as conveyor transport. The existing nearby extractor/storage/smelter transfers remain active. Universal slot/stack storage, splitter/merger buildings, ammunition supply, and defense remain planned.
+
+---
+
+## Straight Conveyor Construction and Connections — Chat 07.4 (Implemented)
+
+### Geometry and Scene
+
+- **LogisticsConnectionGeometry** (scripts/components/logistics_connection_geometry.gd) checks world-space proximity, opposite-facing endpoints and forward alignment. The default discovery gap is 0.75 world units, while committed belt links use a stricter 0.05 gap.
+- **ConveyorStraight** (scenes/logistics/conveyor_straight.tscn) has a steel-gray BeltMesh (0.8 × 0.2 × 1.0, centered at local Y 0.3), InputEndpoint at (0, 0.5, +0.5) facing +Z, and OutputEndpoint at (0, 0.5, -0.5) facing -Z. Directional flow is local +Z to -Z.
+- A separate ConveyorBody StaticBody3D on **collision Layer 3** provides the construction footprint. InteractionHitbox Area3D on **Layer 2** supports mouse selection and demolition. The root is in **player_built** and **selectable**, retains its ConveyorSegment script and uses BeltMesh for gold/red selection/demolition highlights.
+- **Nonblocking follow-up:** The committed InteractionHitbox BoxShape3D does not explicitly specify its size (Godot default is 1 × 1 × 1) and the node has a slight Y rotation. Selection and demolition passed in gameplay; normalize these scene properties when working on corner collision/precision. Do not treat this observation as a failed test.
+
+### Directed Connections and Snapping
+
+- **ConveyorSegment** (scripts/components/conveyor_segment.gd) stores previous_segment and next_segment, limiting each straight segment to one incoming and one outgoing neighbor. try_connect_to() validates both scene-tree nodes, available endpoints and opposing world-space markers before storing reciprocal links. disconnect_next(), disconnect_previous(), disconnect_all() and _exit_tree() clear both sides safely when disconnected or demolished.
+- snap_after() computes and commits straight-to-straight placement. get_snap_preview_transform_after() and get_snap_preview_transform_before() calculate **read-only world transforms**, without moving or connecting real belts.
+- **WorldInteraction** searches available output and input endpoints of placed ConveyorSegment nodes within a 1.25-unit horizontal snap search radius, choosing the nearest valid candidate. A temporary ghost previews the resulting world transform, while conveyor_snap_source and conveyor_snap_before track the candidate and connection direction.
+- On click, the snapped-conveyor branch executes **before normal building instantiation**: one conveyor is created, the ghost transform applied, and one directed link committed (new → existing when snap-before, existing → new when snap-after). A rejected link queues the newly created instance for deletion. Normal unsnapped buildings and free conveyor placement retain their existing path.
+- Conveyor Belt is **BuildingDefinition slot 5 (key 5)** via data/buildings/conveyor_belt.tres, scenes/core/main.tscn, the project Input Map and BuildHUD. Slots 1–4 are unchanged.
+
+### Verified Conveyor Regression Suite
+
+| Isolated test scene | Developer-reported result |
+| --- | --- |
+| logistics_connection_geometry_test.tscn | **8/8** |
+| conveyor_alignment_test.tscn | **9/9** |
+| conveyor_connection_state_test.tscn | **8/8** |
+| conveyor_snapping_test.tscn | **5/5** |
+| conveyor_snap_preview_test.tscn | **5/5** |
+| conveyor_snap_before_test.tscn | **5/5** |
+
+**40/40** conveyor checks passed in local Godot 4.6.2 tests. Additional reported checks confirmed bidirectional snapped placement, orientation after rotating, selection/demolition, and unchanged extractor → storage → smelter behavior. No CI run is claimed.
+
+**Transport boundary:** This is a functioning straight-belt **placement and connection** system, not a functioning material conveyor. No 90° corner geometry, belt-to-machine port hookup, conveyor-based item motion, speed/backpressure, rerouting, or recipe-driven transport yet. Perpendicular-looking belts may touch visually without an actual directed link. The old proximity resource transfers and manually invoked machine-port transfers remain separate. Links are geometry-validated on creation, not continuously revalidated after arbitrary manual repositioning.
 
 ---
 
@@ -756,9 +790,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 07's port checkpoint:** All Chat 06 systems; per-machine recipe allowlists, guarded selection, recipe-dependent item acceptance, and recipe-gated temporary input logistics; plus reusable oriented `Marker3D` input/output ports, capacity-aware item queries, and safe manually invoked port-to-port transfers backed by `InventoryComponent.transfer_to()`. The developer reported **21/21** recipe tests, **29/29** port tests, and **36/36** original manufacturing checks passing, along with inventory and gameplay regressions.
+**Implemented through Chat 07.4:** All Chat 06 manufacturing systems; recipe allowlists, safe selection and ingredient admission; reusable recipe-aware machine input/output ports with manually invoked safe transfers; and now straight conveyors with world-space connection checks, persistent links, snap-before/after ghost previews, Build Mode slot 5, actual snapped placement and demolition cleanup. Developer-reported tests: **21/21** recipe checks, **29/29** machine-port checks, **40/40** conveyor checks, and **36/36** earlier manufacturing checks, with inventory and main-game regressions also reported passing.
 
-**Planned:** physically validated connections between ports and conveyors, directional belt routing and throughput, automatic source/destination scheduling, universal slot-and-stack small/medium/large storage, separately placeable splitter/merger buildings, machine recipe UI, multi-ingredient logistics, ammunition production and defense, power/fuel, research/unlocks, save/load, zombies and finalized UI. Manual port handoffs do **not** yet constitute physical conveyor logistics; temporary proximity transfers are still active.
+**Planned:** true 90° conveyor corners through the same belt build tool, machine/storage port-to-belt connections, item movement and throughput/backpressure, universal slot-and-stack storage variants, dedicated splitter/merger buildings, machine recipe UI, ammunition/defense, power/fuel, and save/load. Physical belt placement is implemented, but belt-based material transport is **not**; temporary proximity transfers remain active.
 
 ---
 
