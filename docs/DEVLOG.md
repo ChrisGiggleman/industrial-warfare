@@ -885,3 +885,44 @@ The port component currently exposes a safe **logical transfer**, not a physical
 
 The next incremental development priority is **connection validation between oriented ports and future directional belt segments**, followed by test-first belt placement/connection and item movement. Dedicated splitters and mergers remain distinct planned placeable buildings. Ammunition manufacture feeding defensive structures and a zombie colony First Night remains the primary game loop objective.
 
+---
+
+## 2026-10-24 — Chat 07: Straight Conveyor Geometry, Snapping and Placement (Third Checkpoint)
+
+### Implemented Features
+
+- Built LogisticsConnectionGeometry for independent world-space distance, facing and forward alignment tests.
+- Added ConveyorStraight scene with BeltMesh and input/output Marker3D endpoints; item flow will be local +Z → -Z, but item movement is NOT implemented.
+- Added ConveyorSegment previous/next links, strict 0.05-unit connect tolerance, and safe disconnect/scene exit cleanup.
+- Implemented automatic snap-after and snap-before calculations, including nonmutating ghost preview transforms and occupied-endpoint guards.
+- Added Conveyor Belt building definition, key 5 and HUD slot while preserving the original four buildings.
+- Integrated nearest-compatible-endpoint search in WorldInteraction and permanent snapped placement that creates exactly one belt before returning to regular building logic.
+- Added steel-gray placeholder material, selection and demolition visual methods, and separate Layer 2 Area3D input hitbox and Layer 3 placement-blocking body.
+
+### Testing
+
+| Scene | Developer-reported checks |
+| --- | --- |
+| logistics_connection_geometry_test.tscn | **8/8** |
+| conveyor_alignment_test.tscn | **9/9** |
+| conveyor_connection_state_test.tscn | **8/8** |
+| conveyor_snapping_test.tscn | **5/5** |
+| conveyor_snap_preview_test.tscn | **5/5** |
+| conveyor_snap_before_test.tscn | **5/5** |
+
+**40/40 conveyor checks passed.** The developer also confirmed successful real-game snap-before and snap-after placement, rotation, selection, demolition and unchanged factory manufacturing. The local milestone was pushed to GitHub main. These are Godot 4.6.2 editor tests, not a CI run.
+
+### Bugs Resolved and Lessons
+
+- An early failed ConveyorSegment cast assertion was caused by attaching the wrong script to the conveyor scene root. Attaching conveyor_segment.gd to ConveyorStraight resolved it.
+- The conveyor mesh initially appeared dark; an explicit material fixed the appearance.
+- Mouse selection/demolition was initially inaccurate due to collision shapes offset from the visible mesh. Values meant for Shape Size had been entered as node Transform Position. Correcting parent/child positions and using a separate interaction Area3D produced correct gold and red highlights and reliable deletion.
+- A temporary placement guard intentionally printed "Conveyor snap preview only — placement not enabled yet" until connecting on click was implemented. The permanent snapped-placement branch must execute **before** the normal building instantiation to avoid duplicate objects. Final logs showed success for Before: false and Before: true.
+- Perpendicular belts can look like a corner but do not yet provide a functional turn; visual touch is not a connection.
+
+### Remaining Work
+
+True corner scenes/automatic turn geometry, direct machine-port connections, item motion/throughput/backpressure, universal slot-based storage, and ammunition/defense remain planned. Proximity logistics is still the active resource-delivery mechanism.
+
+**Nonblocking code-review cleanup:** The committed InteractionHitbox BoxShape3D lacks an explicit size override (so Godot uses its default cube), and its CollisionShape3D has slight Y rotation. The gameplay test passed, but normalize these when designing exact corners. A redundant conveyor_snap_source reset near the end of world_interaction.gd can also be removed during a later cleanup.
+
