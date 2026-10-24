@@ -726,6 +726,40 @@ For tests instantiating `test_smelter.tscn`, call `producer.set_process(false)` 
 
 ---
 
+## 2026-10-24 — Chat 07: Conveyor Interaction and Placement Diagnostics
+
+### ConveyorSegment Cast Assertion Failed
+
+**Observed:** The conveyor connection-state test failed to cast an instantiated scene root to ConveyorSegment. **Cause:** The wrong script was attached to the ConveyorStraight root. Keep conveyor_segment.gd on that root, not on a child or endpoint; after correction the connection-state test passed **8/8**.
+
+### Mouse Hover Targets Neighboring Conveyor Rather Than Intended One
+
+**Observed:** The cursor above the middle belt highlighted another belt, and deletion was unreliable. The original CollisionShape3D node had mistaken transform offsets: values intended for BoxShape3D **Size** were entered as node **Transform Position**, putting a hitbox beside the visible BeltMesh.
+
+**Fix:** Center both collision shapes on the belt mesh (local X/Z zero, near local Y 0.3). Use the ConveyorBody StaticBody3D on collision **Layer 3** for placement blocking, a separate InteractionHitbox Area3D on **Layer 2** for selection and demolition, and matching selection/demolition raycasts (Layer 2, areas enabled). Ensure ConveyorStraight has both selectable and player_built groups, plus the ConveyorSegment root script and a selection_mesh reference to BeltMesh.
+
+**Result:** User confirmed correct selection highlights and demolition.
+
+**Nonblocking scene cleanup:** The committed InteractionHitbox BoxShape3D does not explicitly store its size (the Godot default is 1 × 1 × 1), and its collision-shape node has a small Y rotation. User tests succeeded, but standardize these values before exact corner hitbox design. Do not grow the physical placement footprint just to improve mouse targeting.
+
+### Snapping Preview Works But Can't Place, or Adds a Duplicate
+
+**Observed:** The Output panel printed "Conveyor snap preview only — placement not enabled yet." That message came from an intentional temporary placement guard during visual-only preview testing, not a snapping math error.
+
+**Fix:** Once the permanent snapping branch exists, remove the temporary guard. In WorldInteraction._try_place_object(), perform the special snapped-conveyor placement **before** generic new_object instantiation. Create only one new conveyor, apply the ghost transform, connect to the selected source in the right direction (snap-before means new → source; snap-after means source → new), return early on success and remove the provisional new belt on failure.
+
+**Reported result:** Godot logs showed successful Before: false and Before: true placements, including orientation after rotating the original source.
+
+### Snapping Only Works on One Belt End
+
+**Cause:** Initial search evaluated only get_snap_preview_transform_after(). Add get_snap_preview_transform_before() and compare the nearest valid candidates. Keep their source, transform and before boolean in the result. Clear both conveyor_snap_source and conveyor_snap_before when the ghost is removed. The committed world_interaction.gd still has a redundant second source reset; removing it during a later edit is safe cleanup.
+
+### Scope Reminder
+
+The current ConveyorStraight item flow direction is local **+Z to -Z**. Visually perpendicular belts do **not** form a working 90° turn. There is no autonomous item travel or machine-to-belt connection yet; proximity logistics remains active. Six isolated conveyor test scenes passed **40/40** checks.
+
+---
+
 ## Diagnostic Checklist
 
 When a new error appears:
