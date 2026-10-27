@@ -756,7 +756,39 @@ For tests instantiating `test_smelter.tscn`, call `producer.set_process(false)` 
 
 ### Scope Reminder
 
-The current ConveyorStraight item flow direction is local **+Z to -Z**. Visually perpendicular belts do **not** form a working 90° turn. There is no autonomous item travel or machine-to-belt connection yet; proximity logistics remains active. Six isolated conveyor test scenes passed **40/40** checks.
+**Historical Chat 07.4 status:** ConveyorStraight item flow direction is local **+Z to -Z**; at that checkpoint, perpendicular belts were not connected automatically. **Chat 07.5 later added working in-place right/left corner conversion and direction arrows.** There is still no autonomous item travel or machine-to-belt connection, and proximity logistics remains active. The earlier six straight-conveyor test scenes passed **40/40** checks.
+
+---
+
+## 2026-10-27 — Chat 07.5: Corner Rotation, Visual Clarity and Loop Diagnosis
+
+### Perpendicular Belt Looks Connected But Does Not Become a Corner
+
+**Symptom:** An adjacent straight appears to touch a preceding belt, but `AUTO CORNER SUCCESS` is absent. Tests appear to work only for one of the four Y rotations.
+
+**Key lesson:** Before changing snap distances or collision shapes, **look at the direction of travel**. The prototype originally had symmetric gray belts with no visible input/output cue. A perpendicular belt can face *back toward* the source and should be rejected by the directed-connection rules. For a source at 0° (travel world -Z), the next belt to its local right (+X) must face **270°**; the next belt to its local left (-X) must face **90°**. This relationship rotates with the source (0°, 90°, 180°, 270°).
+
+**Resolution:** Added `OutputEndpoint/DirectionArrow` under the straight conveyor scene, with a bright unshaded arrow that remains visible in green ghosts and follows the OutputEndpoint after automatic corner conversion. User screenshots confirmed arrows following both clockwise/counterclockwise-looking layouts. `R` rotates the preview, but don't infer transport direction from a symmetric rectangle; follow the arrow.
+
+**Diagnostic sequence:** Check existing output availability; check new belt cell and arrow direction; verify expected source-local left/right offset and `ConveyorTurnIntent`; then inspect `AUTO CORNER SUCCESS | Turn: RIGHT/LEFT`, `Source found`, `Before`, and `Placement valid` in Output. If the incoming or outgoing link is already occupied, another connection must not be forced. A splitter is a separate future building.
+
+### Next Straight Belt Snaps in the Wrong Direction After a Turn
+
+**Cause:** Early `get_snap_preview_transform_after()` inherited the entire source conveyor root basis; a corner's OutputEndpoint points perpendicular to that root. The receiver then previews in the source's old straight direction instead of the corner's output direction.
+
+**Fix:** Use `source_output.global_transform.basis.orthonormalized()` for the new snapped preview basis, with existing endpoint-position calculation and geometrical validations unchanged. Keep the direction-preserving snap candidate guards in `WorldInteraction`. Godot local -Z is travel-forward. Reported in-game tests demonstrated additional straight segments after converted turns.
+
+### L-Shaped Surface Has Seams or Collision Boxes Extend Beyond Bend
+
+**Cause / current state:** `ConveyorCornerVisualMesh` in the GitHub checkpoint merges two gray rectangular arms (width 0.8, height 0.2). This provides a usable L-shaped placeholder but may show a stepped edge or redundant overlap. The converter duplicates prototype corner scene `ConveyorBody` and `InteractionHitbox` shapes. Debug boxes can enclose empty space outside the exact L surface.
+
+**Result / next refinement:** Screenshots and user gameplay inspection confirmed arrow visibility, placement, selection and demolition even with the prototype collider envelopes. Do **not** treat that gameplay pass as proof of exact mesh/collider alignment. Future refinement can use a single polygon surface and tailored corner-shaped physics/selection geometry without changing endpoints or link semantics.
+
+### Visually Closed Conveyor Ring Does Not Prove a Directed Loop
+
+**Reason:** Our belt nodes currently store one `previous_segment` and one `next_segment`. Adding a belt onto an occupied grid cell is correctly blocked; physically adjoining two pre-existing free endpoints requires an explicit final link. A rectangular visual arrangement with arrows is insufficient evidence that the final last-to-first `try_connect_to()` succeeded.
+
+**Next work:** Implement safe explicit loop closure, verify each reciprocal link and no occupied ports, then separately test eventual item circulation/backpressure. Do not disable placement collision checks to force overlapping belts.
 
 ---
 
