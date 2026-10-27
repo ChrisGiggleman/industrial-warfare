@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bvuijx1ivtqv4"]
+
+[ext_resource type="Script" uid="uid://cuns47le3onwq" path="res://tests/conveyor_turn_intent_test.gd" id="1_eglfm"]
+
+[node name="ConveyorTurnIntentTest" type="Node" unique_id=418963747]
+script = ExtResource("1_eglfm")

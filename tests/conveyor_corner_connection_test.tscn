@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d3kldtmffpf7d"]
+
+[ext_resource type="Script" uid="uid://cp4qid12frv6a" path="res://tests/conveyor_corner_connection_test.gd" id="1_41w12"]
+
+[node name="ConveyorCornerConnectionTest" type="Node" unique_id=1370107414]
+script = ExtResource("1_41w12")

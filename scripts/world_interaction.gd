@@ -93,6 +93,22 @@ var conveyor_snap_source: ConveyorSegment = null
 # permanent connection when the player clicks.
 
 var conveyor_snap_before: bool = false
+
+# =============================================================================
+# ACTIVE CONVEYOR PREVIEW SCENE
+# =============================================================================
+
+# Tracks which conveyor scene the current ghost uses.
+#
+# Later, Build Mode will switch between:
+# - Straight conveyor
+# - Right 90-degree corner
+# - Left 90-degree corner
+#
+# Null means there is no active conveyor preview.
+
+var conveyor_preview_scene: PackedScene = null
+
 # How close the mouse's grid position must be to a
 # valid snapped conveyor position.
 
@@ -651,6 +667,102 @@ func _select_object(object: Node) -> void:
 
 
 # =============================================================================
+# SELECT CONVEYOR PREVIEW SHAPE FROM MOUSE
+# =============================================================================
+
+# Finds the nearest placed conveyor with a free output.
+#
+# The mouse position determines whether to preview:
+# - A straight conveyor
+# - A right-turn corner
+# - A left-turn corner
+#
+# This only selects a PackedScene.
+# It never creates or connects a real conveyor.
+#
+# The 2-unit search radius is temporary and can be
+# adjusted after we test the interaction in gameplay.
+
+func _get_conveyor_preview_scene_for_mouse(
+	mouse_world_position: Vector3
+) -> PackedScene:
+
+	var chosen_scene: PackedScene = (
+		ConveyorPieceSelector.STRAIGHT_SCENE
+	)
+
+	var closest_distance_squared: float = 4.0
+
+	# =============================================================================
+	# SEARCH AVAILABLE CONVEYOR OUTPUTS
+	# =============================================================================
+
+	for node: Node in get_tree().get_nodes_in_group(
+		"player_built"
+	):
+
+		if not node is ConveyorSegment:
+			continue
+
+		var source: ConveyorSegment = node as ConveyorSegment
+
+		if source.is_queued_for_deletion():
+			continue
+
+		# A completed connection cannot accept another
+		# conveyor at the same output.
+
+		if is_instance_valid(source.next_segment):
+			continue
+
+		var output: Marker3D = (
+			source.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		if not is_instance_valid(output):
+			continue
+
+		# =============================================================================
+		# MEASURE HORIZONTAL MOUSE DISTANCE
+		# =============================================================================
+
+		var offset: Vector3 = (
+			mouse_world_position - output.global_position
+		)
+
+		var distance_squared: float = (
+			offset.x * offset.x
+			+ offset.z * offset.z
+		)
+
+		if distance_squared >= closest_distance_squared:
+			continue
+
+		# =============================================================================
+		# CLASSIFY CONSTRUCTION DIRECTION
+		# =============================================================================
+
+		var candidate_scene: PackedScene = (
+			ConveyorPieceSelector.get_scene_for_mouse(
+				source,
+				mouse_world_position
+			)
+		)
+
+		if candidate_scene == null:
+			continue
+
+		closest_distance_squared = distance_squared
+		chosen_scene = candidate_scene
+
+	# =============================================================================
+	# RETURN SELECTED SHAPE
+	# =============================================================================
+
+	return chosen_scene
+
+# =============================================================================
 # PLACEMENT PREVIEW
 # =============================================================================
 # Projects the mouse onto Collision Layer 1 and snaps the resulting world
@@ -687,8 +799,26 @@ func _update_placement_preview() -> void:
 			hit_position.y,
 			snappedf(hit_position.z, grid_size)
 		)
-
 		
+		# =============================================================================
+		# CONVEYOR PLACEMENT — STRAIGHT GHOST
+		# =============================================================================
+
+		# The player always previews a straight conveyor.
+		#
+		# A previously placed straight conveyor may later
+		# convert into a corner when the player places a
+		# new perpendicular straight conveyor beside it.
+		#
+		# The conversion happens during permanent placement,
+		# not during ghost preview selection.
+
+
+
+		# =============================================================================
+		# EXISTING PLACEMENT GHOST POSITIONING
+		# =============================================================================
+
 		if placement_ghost != null:
 
 			# =============================================================================
@@ -807,6 +937,18 @@ func _find_conveyor_snap_preview(
 		placement_ghost as ConveyorSegment
 	)
 
+	# =============================================================================
+	# PRESERVE PLAYER-SELECTED CONVEYOR DIRECTION
+	# =============================================================================
+
+	# Record the actual direction selected with R.
+	# Snapping must not silently override this rotation.
+
+	var requested_forward: Vector3 = (
+		ghost_belt.global_transform.basis
+		* Vector3.FORWARD
+	).normalized()
+
 	var best_preview: Dictionary = {}
 	var best_distance: float = CONVEYOR_SNAP_SEARCH_RADIUS
 
@@ -836,6 +978,23 @@ func _find_conveyor_snap_preview(
 		var after_preview: Dictionary = (
 			ghost_belt.get_snap_preview_transform_after(source)
 		)
+
+		# =============================================================================
+		# REJECT SNAP THAT OVERRIDES SELECTED ROTATION
+		# =============================================================================
+
+		if not after_preview.is_empty():
+
+			var proposed_after: Transform3D = (
+				after_preview["transform"]
+			)
+
+			var after_forward: Vector3 = (
+				proposed_after.basis * Vector3.FORWARD
+			).normalized()
+
+			if requested_forward.dot(after_forward) < 0.98:
+				after_preview.clear()
 
 		if not after_preview.is_empty():
 
@@ -869,6 +1028,23 @@ func _find_conveyor_snap_preview(
 		var before_preview: Dictionary = (
 			ghost_belt.get_snap_preview_transform_before(source)
 		)
+
+		# =============================================================================
+		# PRESERVE SELECTED ROTATION FOR SNAP-BEFORE
+		# =============================================================================
+
+		if not before_preview.is_empty():
+
+			var proposed_before: Transform3D = (
+				before_preview["transform"]
+			)
+
+			var before_forward: Vector3 = (
+				proposed_before.basis * Vector3.FORWARD
+			).normalized()
+
+			if requested_forward.dot(before_forward) < 0.98:
+				before_preview.clear()
 
 		if not before_preview.is_empty():
 
@@ -915,11 +1091,93 @@ func _find_conveyor_snap_preview(
 #   - building footprint
 #   - placement rotation
 
+
 func _is_placement_clear() -> bool:
+
+	# =============================================================================
+	# VALIDATE PLACEMENT FOOTPRINT
+	# =============================================================================
+
 	if placement_ghost_collisions.is_empty():
 		return false
 
-	for collision_shape in placement_ghost_collisions:
+	# =============================================================================
+	# VALIDATE INTENDED CONVEYOR CONNECTION
+	# =============================================================================
+
+	# A conveyor being snapped may register a collision
+	# with its intended neighbor due to contact tolerances.
+	#
+	# We may exclude that ONE neighbor from the placement
+	# query, but only when the endpoints align correctly.
+	#
+	# Other buildings and conveyors must still block placement.
+
+	var snap_exclusions: Array[RID] = []
+
+	if (
+		placement_ghost is ConveyorSegment
+		and is_instance_valid(conveyor_snap_source)
+	):
+
+		var outgoing: Marker3D = null
+		var incoming: Marker3D = null
+
+		# Determine the directed connection.
+
+		if conveyor_snap_before:
+
+			# New belt output -> Existing belt input.
+
+			outgoing = (
+				placement_ghost.get_node_or_null("OutputEndpoint")
+				as Marker3D
+			)
+
+			incoming = (
+				conveyor_snap_source.get_node_or_null("InputEndpoint")
+				as Marker3D
+			)
+
+		else:
+
+			# Existing belt output -> New belt input.
+
+			outgoing = (
+				conveyor_snap_source.get_node_or_null("OutputEndpoint")
+				as Marker3D
+			)
+
+			incoming = (
+				placement_ghost.get_node_or_null("InputEndpoint")
+				as Marker3D
+			)
+
+		# Only allow an exclusion if connection geometry
+		# meets our strict established-link tolerance.
+
+		if LogisticsConnectionGeometry.are_endpoints_aligned(
+			outgoing,
+			incoming,
+			ConveyorSegment.CONNECTION_GAP
+		):
+
+			var neighbor_body: PhysicsBody3D = (
+				conveyor_snap_source.get_node_or_null("ConveyorBody")
+				as PhysicsBody3D
+			)
+
+			if is_instance_valid(neighbor_body):
+				snap_exclusions.append(
+					neighbor_body.get_rid()
+				)
+
+	# =============================================================================
+	# CHECK PLACEMENT COLLISIONS
+	# =============================================================================
+
+	for collision_shape: CollisionShape3D in placement_ghost_collisions:
+
 		if collision_shape.shape == null:
 			continue
 
@@ -928,6 +1186,11 @@ func _is_placement_clear() -> bool:
 		query.shape = collision_shape.shape
 		query.transform = collision_shape.global_transform
 		query.collision_mask = PLACEMENT_BLOCKER_COLLISION_MASK
+
+		# Ignore only a confirmed connection neighbor.
+		# All unrelated obstacles remain detectable.
+
+		query.exclude = snap_exclusions
 
 		var results: Array[Dictionary] = (
 			get_viewport().world_3d.direct_space_state.intersect_shape(
@@ -938,6 +1201,10 @@ func _is_placement_clear() -> bool:
 
 		if not results.is_empty():
 			return false
+
+	# =============================================================================
+	# PLACEMENT IS CLEAR
+	# =============================================================================
 
 	return true
 
@@ -1012,6 +1279,152 @@ func _extractor_has_resource_node() -> bool:
 
 	return false
 
+# =============================================================================
+# FIND PERPENDICULAR CONVEYOR TURN CANDIDATE
+# =============================================================================
+
+# Finds an existing straight conveyor whose free output
+# can turn into a newly placed perpendicular straight.
+#
+# Requirements:
+# - Both conveyors occupy neighboring grid cells.
+# - The new conveyor faces right or left relative to source.
+# - The existing conveyor has no outgoing connection.
+# - The existing conveyor has not already become a corner.
+#
+# This function does not modify or connect anything.
+# It returns an empty Dictionary when no match exists.
+
+func _find_perpendicular_corner_candidate(
+	placed_straight: ConveyorSegment
+) -> Dictionary:
+
+	if not is_instance_valid(placed_straight):
+		return {}
+
+	var receiver_output: Marker3D = (
+		placed_straight.get_node_or_null("OutputEndpoint")
+		as Marker3D
+	)
+
+	if receiver_output == null:
+		return {}
+
+	# The new piece must be an ordinary straight belt.
+
+	if not receiver_output.position.is_equal_approx(
+		Vector3(0.0, 0.5, -0.5)
+	):
+		return {}
+
+	# =============================================================================
+	# SEARCH EXISTING PLAYER CONVEYORS
+	# =============================================================================
+
+	for node: Node in get_tree().get_nodes_in_group(
+		"player_built"
+	):
+
+		if not node is ConveyorSegment:
+			continue
+
+		if node == placed_straight or node == placement_ghost:
+			continue
+
+		var source: ConveyorSegment = node as ConveyorSegment
+
+		if source.is_queued_for_deletion():
+			continue
+
+		if is_instance_valid(source.next_segment):
+			continue
+
+		var source_output: Marker3D = (
+			source.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		if source_output == null:
+			continue
+
+		# Only an existing straight may be converted.
+
+		if not source_output.position.is_equal_approx(
+			Vector3(0.0, 0.5, -0.5)
+		):
+			continue
+
+		# =============================================================================
+		# CHECK NEIGHBORING GRID POSITION
+		# =============================================================================
+
+		# Convert the new belt's world position into
+		# the existing belt's local coordinate system.
+		#
+		# This makes the check work with rotated factories.
+
+		var local_offset: Vector3 = (
+			source.global_transform.affine_inverse()
+			* placed_straight.global_position
+		)
+
+		# Both pieces must occupy the same ground level
+		# and the same local Z row.
+
+		if absf(local_offset.y) > 0.1:
+			continue
+
+		if absf(local_offset.z) > 0.1:
+			continue
+
+		# =============================================================================
+		# DETERMINE LEFT OR RIGHT TURN
+		# =============================================================================
+
+		var turn: int = -1
+		var expected_direction: Vector3 = Vector3.ZERO
+
+		var source_right: Vector3 = (
+			source.global_transform.basis.x.normalized()
+		)
+
+		if absf(local_offset.x - 1.0) < 0.1:
+			turn = ConveyorTurnIntent.Turn.RIGHT
+			expected_direction = source_right
+
+		elif absf(local_offset.x + 1.0) < 0.1:
+			turn = ConveyorTurnIntent.Turn.LEFT
+			expected_direction = -source_right
+
+		else:
+			continue
+
+		# =============================================================================
+		# VERIFY NEW BELT FACING
+		# =============================================================================
+
+		# A neighboring belt is not automatically a turn.
+		# The player must rotate it to face away from
+		# the preceding conveyor in the correct direction.
+
+		var receiver_forward: Vector3 = (
+			-receiver_output.global_transform.basis.z
+		).normalized()
+
+		if receiver_forward.dot(expected_direction) < 0.98:
+			continue
+
+		# =============================================================================
+		# VALID CORNER CANDIDATE
+		# =============================================================================
+
+		return {
+			"source": source,
+			"turn": turn
+		}
+
+	return {}
+
 
 # =============================================================================
 # OBJECT PLACEMENT
@@ -1027,6 +1440,75 @@ func _extractor_has_resource_node() -> bool:
 func _try_place_object() -> void:
 
 	# =============================================================================
+	# TEMPORARY SNAP DEBUG
+	# =============================================================================
+
+	var placed_belts: int = 0
+
+	for node: Node in get_tree().get_nodes_in_group(
+		"player_built"
+	):
+		if node is ConveyorSegment and node != placement_ghost:
+			placed_belts += 1
+
+	print(
+		"SNAP DEBUG | Slot: ", selected_building_index,
+		" | Belts: ", placed_belts,
+		" | Ghost conveyor: ", placement_ghost is ConveyorSegment,
+		" | Source found: ", is_instance_valid(conveyor_snap_source),
+		" | Before: ", conveyor_snap_before,
+		" | Placement valid: ", placement_is_valid
+	)
+
+	# =============================================================================
+	# CORNER SELECTION DEBUG — PRINT ONLY ON CLICK
+	# =============================================================================
+
+	if selected_building_index == 4:
+
+		var preview_path: String = "None"
+
+		if conveyor_preview_scene != null:
+			preview_path = conveyor_preview_scene.resource_path
+
+		print(
+			"CORNER CLICK | Preview: ", preview_path,
+			" | Source found: ",
+			is_instance_valid(conveyor_snap_source),
+			" | Before: ", conveyor_snap_before,
+			" | Valid: ", placement_is_valid,
+			" | Mouse grid: ", current_placement_position
+		)
+
+	# =============================================================================
+	# CORNER PLACEMENT SAFETY CHECK
+	# =============================================================================
+
+	# A conveyor corner must connect to the available
+	# output of an existing conveyor.
+	#
+	# Straight conveyors retain their normal placement rules.
+
+	if (
+		selected_building_index == 4
+		and conveyor_preview_scene != null
+		and conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
+	):
+
+		# Corners cannot be placed freely or connected
+		# before an existing conveyor during this step.
+
+		if (
+			not is_instance_valid(conveyor_snap_source)
+			or conveyor_snap_before
+		):
+			print(
+				"Corner placement blocked: "
+				+ "A free conveyor output is required."
+			)
+			return
+
+	# =============================================================================
 	# VALIDATE PLACEMENT
 	# =============================================================================
 
@@ -1039,6 +1521,28 @@ func _try_place_object() -> void:
 	if selected_scene == null:
 		print("No buildable scene selected")
 		return
+
+	# =============================================================================
+	# USE ACTIVE CONVEYOR SHAPE FOR PLACEMENT
+	# =============================================================================
+
+	# The placement ghost has already selected the
+	# appropriate conveyor shape:
+	#
+	# - Straight
+	# - Right 90-degree corner
+	# - Left 90-degree corner
+	#
+	# Use the same scene for the permanent object.
+	#
+	# Other building types retain their normal scene.
+
+	if (
+		selected_building_index == 4
+		and placement_ghost is ConveyorSegment
+		and conveyor_preview_scene != null
+	):
+		selected_scene = conveyor_preview_scene
 
 	# =============================================================================
 	# PERMANENT CONVEYOR SNAP PLACEMENT
@@ -1127,6 +1631,15 @@ func _try_place_object() -> void:
 			new_belt.global_position
 		)
 
+		# =============================================================================
+		# CONFIRM PERMANENT CONVEYOR SCENE
+		# =============================================================================
+
+		# Print the original scene path rather than the automatically
+		# generated node name.
+
+		print("CONVEYOR PLACED | Scene: ", selected_scene.resource_path)
+
 		# Important: stop here.
 		# Normal building placement must not run afterward.
 
@@ -1170,6 +1683,85 @@ func _try_place_object() -> void:
 		new_object.rotation_degrees.y = placement_rotation_degrees
 
 	# =============================================================================
+	# AUTOMATIC CONVEYOR CORNER CONVERSION
+	# =============================================================================
+
+	# After the new straight conveyor has been placed,
+	# check whether it creates a valid perpendicular turn.
+	#
+	# The preceding conveyor becomes the corner.
+	# The newly placed conveyor remains straight.
+	#
+	# Other building types are unaffected.
+
+	if selected_building_index == 4 and new_object is ConveyorSegment:
+
+		var placed_straight: ConveyorSegment = (
+			new_object as ConveyorSegment
+		)
+
+		var corner_candidate: Dictionary = (
+			_find_perpendicular_corner_candidate(
+				placed_straight
+			)
+		)
+
+		if not corner_candidate.is_empty():
+
+			var source_belt: ConveyorSegment = (
+				corner_candidate["source"] as ConveyorSegment
+			)
+
+			var turn_direction: int = int(
+				corner_candidate["turn"]
+			)
+
+			# =============================================================================
+			# COMMIT THE CORNER CONNECTION
+			# =============================================================================
+
+			var conversion_successful: bool = (
+				ConveyorCornerConversion.try_convert_and_connect(
+					source_belt,
+					placed_straight,
+					turn_direction
+				)
+			)
+
+			if not conversion_successful:
+
+				# Do not leave an invalid newly placed belt.
+				# The conversion component restores the
+				# previous belt when connection fails.
+
+				placed_straight.queue_free()
+
+				print(
+					"Automatic corner failed: "
+					+ "Connection rejected."
+				)
+
+				return
+
+			# =============================================================================
+			# CONFIRM AUTOMATIC CORNER
+			# =============================================================================
+
+			var turn_name: String = "RIGHT"
+
+			if turn_direction == ConveyorTurnIntent.Turn.LEFT:
+				turn_name = "LEFT"
+
+			print(
+				"AUTO CORNER SUCCESS | Turn: ",
+				turn_name,
+				" | Corner position: ",
+				source_belt.global_position,
+				" | New straight: ",
+				placed_straight.global_position
+			)
+
+	# =============================================================================
 	# PLACEMENT CONFIRMATION
 	# =============================================================================
 
@@ -1192,13 +1784,47 @@ func _try_place_object() -> void:
 #   - uses a translucent material
 #   - inherits the current placement rotation
 
-func _create_placement_ghost() -> void:
+
+func _create_placement_ghost(
+	scene_override: PackedScene = null
+) -> void:
+
 	_destroy_placement_ghost()
 
-	var selected_scene: PackedScene = _get_selected_building_scene()
+	# =============================================================================
+	# SELECT NORMAL BUILDING SCENE
+	# =============================================================================
+
+	var selected_scene: PackedScene = (
+		_get_selected_building_scene()
+	)
+
+	# =============================================================================
+	# OPTIONAL CONVEYOR SCENE OVERRIDE
+	# =============================================================================
+
+	# Only the Conveyor Belt tool (index 4 / key 5)
+	# may replace its default scene with an alternate
+	# conveyor shape.
+	#
+	# Other building types continue using their
+	# normal BuildingDefinition scenes.
+
+	if (
+		selected_building_index == 4
+		and scene_override != null
+	):
+
+		if scene_override in [
+			ConveyorPieceSelector.STRAIGHT_SCENE,
+			ConveyorPieceSelector.RIGHT_CORNER_SCENE,
+			ConveyorPieceSelector.LEFT_CORNER_SCENE
+		]:
+			selected_scene = scene_override
 
 	if selected_scene == null:
 		return
+
 
 	var ghost_instance: Node = selected_scene.instantiate()
 
@@ -1206,6 +1832,16 @@ func _create_placement_ghost() -> void:
 		return
 
 	placement_ghost = ghost_instance as Node3D
+	
+	# =============================================================================
+	# RECORD CONVEYOR PREVIEW TYPE
+	# =============================================================================
+
+	conveyor_preview_scene = null
+
+	if placement_ghost is ConveyorSegment:
+		conveyor_preview_scene = selected_scene
+
 	# Placement ghosts are visual previews only.
 	# Disable gameplay processing for the ghost and its child components.
 	placement_ghost.process_mode = Node.PROCESS_MODE_DISABLED
@@ -1274,27 +1910,9 @@ func _destroy_placement_ghost() -> void:
 	# RESET PLACEMENT GHOST STATE
 	# =============================================================================
 
+	conveyor_snap_source = null
+	conveyor_snap_before = false
+	conveyor_preview_scene = null
 	placement_ghost = null
 	ghost_material = null
 	placement_ghost_collisions.clear()
-
-	# =============================================================================
-	# RESET CONVEYOR SNAP PREVIEW STATE
-	# =============================================================================
-
-	# Clear both references when leaving Build Mode
-	# or recreating the placement ghost.
-
-	conveyor_snap_source = null
-	conveyor_snap_before = false
-
-
-	# =============================================================================
-	# RESET CONVEYOR SNAP PREVIEW
-	# =============================================================================
-
-	# Clear the reference when the placement ghost is removed.
-	# This prevents a stale conveyor connection candidate
-	# from remaining after leaving Build Mode.
-
-	conveyor_snap_source = null

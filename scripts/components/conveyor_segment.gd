@@ -190,9 +190,25 @@ func get_snap_preview_transform_after(
 	# Straight conveyors inherit the source orientation.
 	# This prototype assumes unscaled belt geometry.
 
+	
+	# =============================================================================
+	# ALIGN NEW CONVEYOR WITH SOURCE OUTPUT DIRECTION
+	# =============================================================================
+
+	# A straight conveyor's output faces in its root
+	# forward direction.
+	#
+	# A corner's output faces 90 degrees away from
+	# its root forward direction.
+	#
+	# Use the actual OutputEndpoint orientation so
+	# snapping works after straight and corner belts,
+	# regardless of world rotation.
+
 	var preview_basis: Basis = (
-		source.global_transform.basis.orthonormalized()
+		source_output.global_transform.basis.orthonormalized()
 	)
+
 
 	var preview_position: Vector3 = (
 		source_output.global_position

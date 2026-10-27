@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bgtkep82ww431"]
+
+[ext_resource type="Script" uid="uid://rremhistt736" path="res://tests/conveyor_corner_snap_preview_test.gd" id="1_8eo63"]
+
+[node name="ConveyorCornerSnapPreviewTest" type="Node" unique_id=1606786944]
+script = ExtResource("1_8eo63")
