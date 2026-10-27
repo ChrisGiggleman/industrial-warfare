@@ -232,19 +232,38 @@ Planned major systems:
 
 **Status: Core 90° construction and directional cues working.** Reported individual local passes include 8/8 corner connection, 8/8 left-corner, 6/6 corner-preview, 8/8 turn-intent, 8/8 piece-selection, 8/8 in-place conversion, 8/8 full-chain, and 8/8 visual-geometry checks, in addition to successful main-game construction and demolition. These were observed at different checkpoints; a final single-run total is **not** claimed. Closed-loop final connections and item transportation remain unimplemented/unverified.
 
-#### Next Chat 07 Work — Operational Transport
+#### Remaining Logistics Follow-Ups After Chat 07
 
 - [ ] Verify and implement explicit closure of already placed conveyor loops, without creating an overlapping new belt; guard endpoint availability.
 - [ ] Normalize `InteractionHitbox` size/slight rotation and refine corner-shaped collision/selection footprints.
 - [ ] Simplify legacy corner ghost selection and remove redundant debug/reset paths when safe.
 - [ ] Connect machine and storage input/output ports to conveyor endpoints.
 - [ ] Prevent distant or disconnected manual port handoffs from being used by gameplay logistics.
-- [ ] Implement actual item movement, timing, capacity, throughput and backpressure with resource conservation.
+- [x] Implement one-item, generic, connection-validated timed belt-to-belt transport and backpressure with tested conservation (Chat 08 foundation).
+- [ ] Finalize throughput tuning, visible travel, machine/belt interface rates and broader end-to-end capacity behavior.
 - [ ] Design universal small/medium/large slot-and-stack storage.
 - [ ] Add separate placeable splitters and mergers after straight/turn routing works.
 - [ ] Replace proximity logistics only after physical belts pass manufacturing regression checks.
 - [ ] Build ammunition supply and supply-dependent defense for the First Night slice.
 
+### 1E.5 — Generic Physical Conveyor Transport Foundation (Chat 08, 2026-10-27)
+
+- [x] Add one-item `CargoInventory` and reusable `ConveyorTransportComponent` to `ConveyorStraight`.
+- [x] Preserve item definitions generically; no ore-, ingot-, metal- or ammo-specific belt logic.
+- [x] Require reciprocal directed segment links and aligned endpoints for belt-to-belt handoffs.
+- [x] Add automatic timer, blockage preservation, and resumed transfers.
+- [x] Verify right/left corner conversion retains cargo and progress.
+- [x] Verify a six-segment chain carries three distinct item definitions without overtaking or loss.
+- [x] Block **player-tool demolition** of occupied or invalidly configured belts.
+- [x] Pass **44/44** assertions across six separately executed Godot test scenes; rerun integration and gameplay checks.
+- [x] Push tested gameplay changes to GitHub `main`.
+- [ ] Display item-specific placeholder models moving along straight and corner paths.
+- [ ] Add physical machine/storage ports and snapping, plus guarded belt loading/unloading.
+- [ ] Test full Extractor → Belt → Storage → Belt → Smelter → Belt → Storage flow and replace temporary proximity logistics only when safe.
+- [ ] Decide a safe item recovery/drop policy for non-player belt destruction and persistence.
+- [ ] Refine loop closure, speed/capacity balancing, exact corner collision shapes, and comprehensive test orchestration.
+
+**Status:** Belt-to-belt cargo transport foundation validated. The main factory does **not** yet transport items between buildings using belts; proximity-based transfers remain enabled.
 ### 1F — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
@@ -325,4 +344,6 @@ Completed:
 
 **Chat 07 recipe, machine-port and straight-conveyor checkpoints completed:** Recipe controls (**21/21** checks), safe manual machine-port handoffs (**29/29**) and buildable, snapped straight conveyor links (**40/40**) have developer-reported passing regression tests, alongside earlier manufacturing (**36/36**) and inventory/gameplay tests. Tested conveyor code was pushed to main. Details: Phase 1E.1–1E.3 and [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Latest milestone (Chat 07.5):** In-place automatic left/right corner conversion, directional yellow arrows, visual L-shaped placeholders, and connected-chain/demolition tests are now present on GitHub main. Individual Godot tests and gameplay demos passed; final consolidated regression totals are not claimed. Next: polish corner colliders/mesh seams, support intentional closed-loop connections, connect belts to machine/storage ports, and implement safe item travel, throughput/backpressure and conservation. Temporary proximity transfers remain active. Universal slot/stack storage, dedicated splitters/mergers and ammunition-fed defenses remain part of [GAME_VISION.md](GAME_VISION.md).
+**Chat 07.5 checkpoint:** In-place left/right corner conversion, yellow arrows, visual L-shaped placeholders and tested connection/demolition behavior remain working.
+
+**Latest milestone (Chat 08):** One-unit generic cargo buffers, connection-validated timed belt-to-belt movement, safe backpressure, cargo-preserving corner conversion and player-tool demolition protection are committed on GitHub `main`. Local tests report **44/44 across six separate suites** plus gameplay regression checks; not a combined CI result. **Next:** visible generic cargo and physical machine/storage ports and snapping. The normal factory continues to use proximity transfers until a validated physical route replaces them. Universal slotted storage, splitters/mergers and ammunition-fed defense remain future goals in [GAME_VISION.md](GAME_VISION.md).
