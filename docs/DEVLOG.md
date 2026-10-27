@@ -926,3 +926,42 @@ True corner scenes/automatic turn geometry, direct machine-port connections, ite
 
 **Nonblocking code-review cleanup:** The committed InteractionHitbox BoxShape3D lacks an explicit size override (so Godot uses its default cube), and its CollisionShape3D has slight Y rotation. The gameplay test passed, but normalize these when designing exact corners. A redundant conveyor_snap_source reset near the end of world_interaction.gd can also be removed during a later cleanup.
 
+---
+
+## 2026-10-27 — Chat 07.5: Automatic Conveyor Turns, L-Shaped Visuals and Direction Indicators (Fourth Checkpoint)
+
+### Construction and Connection Changes
+
+- Added `scenes/logistics/conveyor_corner.tscn` and `conveyor_corner_left.tscn` with oriented endpoints; developed safe right/left corner chains and rotation/connection tests.
+- Added `ConveyorTurnIntent` and `ConveyorPieceSelector` as helpers for turn classification and shape references. The settled build interaction is **not** a mouse-selected corner ghost: it uses a normal straight preview through the single Conveyor Belt tool (key 5).
+- Added `ConveyorCornerConversion.try_convert_and_connect()`: when a new perpendicular straight belt is correctly oriented next to an eligible straight belt's free output, the **existing belt** changes into a corner in place. Its identity and incoming connection remain intact; occupied outputs, invalid turns and misaligned endpoints fail without consuming an existing link.
+- `WorldInteraction` integrates the perpendicular neighbor detector with normal placement, alongside the existing straight snap-before/after route. Successful turns report `AUTO CORNER SUCCESS | Turn: RIGHT/LEFT`.
+- Added `ConveyorCornerVisualMesh` to provide gray L-shaped placeholder geometry. The version committed at this checkpoint merges **two rectangular arms** with SurfaceTool and uses width 0.8, height 0.2, arm length 0.6 and offset 0.2. Screenshots show usable filled-looking bends; a truly unified polygonal top and exact seam/collider matching remain refinements.
+- Added `DirectionArrow` beneath `ConveyorStraight/OutputEndpoint`. Its unshaded yellow arrow follows each segment's actual output marker: straight belts, green construction ghosts, and corners converted in place show flow direction even before item motion is implemented.
+
+### Validation Evidence (Local Godot Editor)
+
+| Test or manual check | Reported/observed outcome |
+| --- | --- |
+| Right-corner scene connection and demolition | 8/8 |
+| Left-corner scene connection and demolition | 8/8 |
+| Corner snap-preview geometry | 6/6 |
+| Conveyor turn intent | 8/8 |
+| Conveyor piece selector | 8/8 |
+| In-place corner conversion | 8/8 |
+| Connected conveyor full-chain regression | 8/8 |
+| L-shaped corner visual mesh regression | 8/8 |
+| Main game: right/left auto-corners, extended straight chains, rotated layouts | Successful screenshots/output |
+| Green preview direction arrow, selection, demolition, collision overlay | Successful user inspection |
+
+The individual test outcomes were shared over several steps; **no claim is made that every old and new test was rerun together**. No GitHub CI run is claimed. The developer subsequently showed `main` synchronized to `origin/main` with a clean working tree; the new source files and tests were verified in the remote repository.
+
+### Problems, Decisions and Remaining Scope
+
+- Multiple apparently incorrect 90° placements were caused primarily by **ambiguous visual direction**: a plain rectangular belt looks identical at 90° and 270°, even though their outputs face opposite world directions. Visible arrows clarified valid orientation. Positive Y rotations in Godot do not necessarily match a player's intuitive notion of rotating right; retain endpoint-facing checks rather than accepting opposite-facing connections.
+- Snapping after a converted corner must use its **OutputEndpoint world basis**, not only the segment root basis, because a corner's output is rotated relative to its root.
+- A visual ring of belts is not proof of a closed directed graph. The final already-existing endpoint-to-endpoint loop connection needs separate gameplay integration and validation.
+- The initial corner had narrow or missing-looking bend regions. The revised arm widths improve continuity, but the committed mesh still uses two joined boxes; exact continuous visual surfaces, collision/hitbox shape cleanup, and edge seams can be refined without changing established logistics links.
+- **Not implemented:** item movement along conveyors, throughput, backpressure, belt-to-machine/storage port hookup, autonomous finished-product export, or dedicated splitter/merger buildings. The extractor → storage → smelter still runs on temporary proximity-based logistics.
+
+**Next milestone:** validate final construction/connection regressions, improve precise hitboxes and corner surfaces, implement safe existing-belt loop closure, then introduce machine/storage port-to-belt links and conservation-tested conveyor item flow.
