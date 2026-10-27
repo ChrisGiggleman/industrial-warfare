@@ -739,7 +739,38 @@ Port checks and `try_transfer_to_port()` remain **logical, manually invoked item
 
 **40/40** conveyor checks passed in local Godot 4.6.2 tests. Additional reported checks confirmed bidirectional snapped placement, orientation after rotating, selection/demolition, and unchanged extractor → storage → smelter behavior. No CI run is claimed.
 
-**Transport boundary:** This is a functioning straight-belt **placement and connection** system, not a functioning material conveyor. No 90° corner geometry, belt-to-machine port hookup, conveyor-based item motion, speed/backpressure, rerouting, or recipe-driven transport yet. Perpendicular-looking belts may touch visually without an actual directed link. The old proximity resource transfers and manually invoked machine-port transfers remain separate. Links are geometry-validated on creation, not continuously revalidated after arbitrary manual repositioning.
+**Historical Chat 07.4 boundary:** This checkpoint implemented straight-belt placement and connections only. **Chat 07.5 subsequently added in-place left/right turns and direction indicators**, as described below. The original proximity transfers and manually invoked machine-port transfers remain separate from physical belts, and links are geometry-validated when created.
+
+---
+
+
+## Automatic In-Place 90° Corners and Direction Indicators — Chat 07.5 (Implemented)
+
+### Construction Decision
+
+The sole player-facing Conveyor Belt build option (key **5**) places a **straight** belt ghost. The project deliberately no longer requires the user to aim at a separate left- or right-corner ghost. When the player places and rotates a new straight one grid cell to the local right or left of an existing **straight** conveyor's free output, `WorldInteraction._find_perpendicular_corner_candidate()` identifies the eligible earlier belt by transforming the new position into source-local coordinates and checking new-belt facing against the expected world-space direction. This works across rotated source orientations provided the new belt actually points **away** from the old belt. It is not a branch/splitter and never silently overrides occupied outputs.
+
+`WorldInteraction._try_place_object()` retains normal placement/snap-before/after branches and calls `ConveyorCornerConversion.try_convert_and_connect(source, receiver, turn)` for eligible new adjacent straight pieces. The previous conveyor **changes in place**; the new piece stays straight. The conversion helper uses `ConveyorPieceSelector` to access right/left scene templates and validates `ConveyorTurnIntent.Turn.RIGHT/LEFT`, available endpoints, and straight-source shape. It temporarily changes the source OutputEndpoint transform, invokes the preexisting geometry-validated `try_connect_to()`, and restores the original output on a failed connection. Only a successful connection commits new mesh and duplicated body/interaction shapes. The segment retains its node identity, previous link and reciprocal references; `_exit_tree()` continues to clean up when demolished.
+
+### Scene Geometry and Visuals
+
+- `scenes/logistics/conveyor_corner.tscn` and `conveyor_corner_left.tscn` provide right/left endpoint orientations and prototype collision transforms. OutputEndpoint is **local +X** for right and **local -X** for left; standard straight flow is from local +Z input toward local -Z output.
+- `scripts/components/conveyor_corner_visual_mesh.gd` generates a placeholder `ArrayMesh` using SurfaceTool and **two combined box arms**, each 0.8 wide and 0.2 high. A visually filled bend and directional arrows were demonstrated. The committed implementation is **not** yet a mathematically unified outline/polygon surface; slight stepped seams and precise corner-shaped colliders remain refinements.
+- `scripts/components/conveyor_direction_arrow.gd` is attached to `ConveyorStraight/OutputEndpoint/DirectionArrow`. Its unshaded yellow arrow uses local -Z forward, offset above/inward from the output marker. It follows each conveyor's real output direction in the green build ghost and on placed straight and converted corner belts. No item movement or animation is implied.
+- The straight scene's `ConveyorBody` remains the physical placement-blocking StaticBody3D on **layer 3**, and `InteractionHitbox` remains a selection/demolition Area3D on **layer 2**. The corner converter swaps template shapes and transforms on successful turns, but those prototype boxes do not perfectly outline the visible L; a manual Visible Collision Shapes inspection, selection and demolition were reported successful. The default/rotated hitbox cleanup remains pending.
+
+### Endpoint Snapping and Rotation
+
+- `ConveyorSegment.get_snap_preview_transform_after()` now computes its preview basis from **`source_output.global_transform.basis`**, not the source root's basis. This is necessary because converted corner outputs do not point along the root's local -Z.
+- `LogisticsConnectionGeometry.are_endpoints_aligned()` still requires opposing endpoint-facing directions, spatial coincidence (within the connection tolerance) and a valid forward direction for any permitted residual gap. Arbitrary 90°/180° facing cannot connect merely because meshes overlap.
+- The `R` control currently cycles Godot **Y rotations 0 → 90 → 180 → 270 → 0**. With a 0° straight pointing world -Z, 90° points -X, 180° +Z, and 270° +X. Arrow indicators remove the prior visual ambiguity: a belt rotated to point back toward the preceding belt is correctly rejected, not a corner-snap defect.
+- `ConveyorTurnIntent` and `ConveyorPieceSelector` and their tests remain useful utilities; runtime Build Mode uses the **existing-straight conversion** workflow rather than continuous mouse-position ghost shape-switching. Some old helper/debug code remains to clean up later.
+
+### Test Coverage and Boundaries
+
+Individually reported local Godot suites include corner connection **8/8**, left corner **8/8**, corner snap preview **6/6**, turn intent **8/8**, piece selector **8/8**, in-place conversion **8/8**, full-chain link/rotation/demolition **8/8**, and corner visual mesh **8/8**. Main-game screenshots show right/left turns, arrows following different rotations, green preview arrows and successful selection/demolition; a single consolidated final test-run total was not independently reported. These are **developer-executed Godot tests, not automated CI**.
+
+**Still out of scope:** closing an already-placed belt loop as an explicit final directed link; belt item travel, throughput/backpressure; machine/storage input/output port hookup; automatic smelter export; universal slotted storage; separate splitter/merger buildings. Physical conveyor construction is not yet physical material transport. Current extractor → storage → smelter transfers still use temporary proximity logic.
 
 ---
 
@@ -790,9 +821,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 07.4:** All Chat 06 manufacturing systems; recipe allowlists, safe selection and ingredient admission; reusable recipe-aware machine input/output ports with manually invoked safe transfers; and now straight conveyors with world-space connection checks, persistent links, snap-before/after ghost previews, Build Mode slot 5, actual snapped placement and demolition cleanup. Developer-reported tests: **21/21** recipe checks, **29/29** machine-port checks, **40/40** conveyor checks, and **36/36** earlier manufacturing checks, with inventory and main-game regressions also reported passing.
+**Implemented through Chat 07.5:** All Chat 06 manufacturing; Chat 07.2 recipe allowlists/input filtering; Chat 07.3 manually invoked machine port transfers; Chat 07.4 straight belt placement with geometric directed connections; and Chat 07.5 in-place automatic right/left corner conversion, L-shaped placeholders and output-aligned yellow direction arrows. Reported local tests include **21/21** recipe, **29/29** port, **40/40** earlier straight conveyor, **36/36** prior manufacturing and multiple separately passed 07.5 corner suites. The main-game build, ghost, selection/demolition and proximity factory were checked, but no new full-suite aggregate or CI run is asserted.
 
-**Planned:** true 90° conveyor corners through the same belt build tool, machine/storage port-to-belt connections, item movement and throughput/backpressure, universal slot-and-stack storage variants, dedicated splitter/merger buildings, machine recipe UI, ammunition/defense, power/fuel, and save/load. Physical belt placement is implemented, but belt-based material transport is **not**; temporary proximity transfers remain active.
+**Planned:** reliable explicit loop closure, exact corner geometry/collision polishing, machine/storage port-to-belt connections, item movement and throughput/backpressure, universal slot-and-stack storage, separate splitters/mergers, recipe UI, ammunition/defense, power/fuel, and save/load. **Belt-based material transport is not implemented**; temporary proximity transfers remain active.
 
 ---
 
