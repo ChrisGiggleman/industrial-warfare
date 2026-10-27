@@ -540,6 +540,57 @@ func disconnect_all() -> void:
 	disconnect_next()
 	disconnect_previous()
 
+# =============================================================================
+# SAFE CONVEYOR DEMOLITION CHECK
+# =============================================================================
+
+# Prevents the player from demolishing a conveyor
+# while it contains transported resources.
+#
+# This check is independent of the item type.
+# Ore, ingots, ammunition, and future resources
+# receive the same protection.
+#
+# Missing or misconfigured cargo inventories fail safely.
+#
+# This does not remove cargo or modify connections.
+
+func can_demolish_safely() -> bool:
+
+	# =============================================================================
+	# VALIDATE CONVEYOR STATE
+	# =============================================================================
+
+	if is_queued_for_deletion():
+		return false
+
+	# =============================================================================
+	# FIND CARGO INVENTORY
+	# =============================================================================
+
+	var cargo_inventory: InventoryComponent = (
+		get_node_or_null("CargoInventory")
+		as InventoryComponent
+	)
+
+	if not is_instance_valid(cargo_inventory):
+		return false
+
+	# Our current conveyors carry one unit each.
+	# Reject unexpected cargo configurations.
+
+	if cargo_inventory.max_capacity != 1:
+		return false
+
+	# =============================================================================
+	# CHECK FOR STORED ITEMS
+	# =============================================================================
+
+	# Empty belts are safe to remove.
+	# Occupied belts must retain their cargo.
+
+	return cargo_inventory.get_total_amount() == 0
+
 
 # =============================================================================
 # SCENE TREE EXIT

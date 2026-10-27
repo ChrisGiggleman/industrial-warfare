@@ -533,8 +533,39 @@ func _try_demolish_under_mouse() -> void:
 	var collider: Node = result["collider"]
 	var current_node: Node = collider
 
+	
 	while current_node != null:
 		if current_node.is_in_group("player_built"):
+
+			# =============================================================================
+			# PROTECT CONVEYOR CARGO BEFORE DEMOLITION
+			# =============================================================================
+
+			# Prevent player demolition from destroying
+			# resources currently stored on a conveyor.
+			#
+			# Other existing building demolition behavior
+			# remains unchanged.
+
+			if current_node is ConveyorSegment:
+
+				var conveyor: ConveyorSegment = (
+					current_node as ConveyorSegment
+				)
+
+				if not conveyor.can_demolish_safely():
+
+					print(
+						"Demolition blocked: Conveyor contains "
+						+ "cargo or has an invalid cargo buffer."
+					)
+
+					return
+
+			# =============================================================================
+			# EXECUTE EXISTING DEMOLITION
+			# =============================================================================
+
 			print("Demolished ", current_node.name)
 
 			if current_node == demolition_hover_target:
@@ -546,7 +577,6 @@ func _try_demolish_under_mouse() -> void:
 		current_node = current_node.get_parent()
 
 	print("Target cannot be demolished")
-
 
 # =============================================================================
 # PLACEMENT ROTATION

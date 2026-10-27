@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dyimk1k0kc2u5" path="res://scripts/components/conveyor_segment.gd" id="1_a0hc6"]
 [ext_resource type="Script" uid="uid://bcu7wamfjwjff" path="res://scripts/components/conveyor_direction_arrow.gd" id="2_j1hak"]
+[ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_l8fw3"]
+[ext_resource type="Script" uid="uid://bi0iaeax20nje" path="res://scripts/components/conveyor_transport_component.gd" id="4_yn77f"]
+[ext_resource type="Script" uid="uid://b848eeek7sxio" path="res://scripts/components/conveyor_transport_timer.gd" id="5_7h0dl"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tgi11"]
 albedo_color = Color(0.39215687, 0.46666667, 0.5137255, 1)
@@ -48,3 +51,14 @@ collision_mask = 0
 [node name="InteractionHitbox" type="CollisionShape3D" parent="InteractionHitbox" unique_id=906461124]
 transform = Transform3D(0.9999756, 0, 0.00698126, 0, 1, 0, -0.00698126, 0, 0.9999756, 0, 0.3, 0)
 shape = SubResource("BoxShape3D_j1hak")
+
+[node name="CargoInventory" type="Node" parent="." unique_id=1909112333]
+script = ExtResource("3_l8fw3")
+max_capacity = 1
+
+[node name="ConveyorTransportComponent" type="Node" parent="." unique_id=1638958365 node_paths=PackedStringArray("cargo_inventory")]
+script = ExtResource("4_yn77f")
+cargo_inventory = NodePath("../CargoInventory")
+
+[node name="ConveyorTransportTimer" type="Node" parent="." unique_id=1153068972]
+script = ExtResource("5_7h0dl")
