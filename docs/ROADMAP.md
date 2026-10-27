@@ -216,19 +216,34 @@ Planned major systems:
 
 **Status: Complete — connected straight conveyor geometry and placement, but no inventory transport over belts.**
 
-#### Next Chat 07 Work — Corners and Operational Transport
+### 1E.4 — Automatic Corner Conversion and Directional Conveyor Visuals (Chat 07.5, 2026-10-27)
 
-- [ ] Create a directional 90° corner geometry and verify endpoint facing and rotation
-- [ ] Use the **same Conveyor Belt construction tool** for straight and turning segments; no extra build-menu entry
-- [ ] Test safe L-shaped placement, snapping, overlapping footprints, link cleanup and demolition
-- [ ] Confirm/correct the InteractionHitbox size and slight rotation; remove duplicate snap-source reset during script cleanup
-- [ ] Connect machine and storage input/output ports to conveyor endpoints
-- [ ] Prevent distant or disconnected manual port handoffs from being used by gameplay logistics
-- [ ] Implement actual item movement, timing, capacity, throughput and backpressure with resource conservation
-- [ ] Design universal small/medium/large slot-and-stack storage
-- [ ] Add separate placeable splitters and mergers after straight/turn routing works
-- [ ] Replace proximity logistics only after physical belts pass manufacturing regression checks
-- [ ] Build ammunition supply and supply-dependent defense for the First Night slice
+- [x] Add tested right- and left-turn conveyor scene endpoints and world-space alignment.
+- [x] Keep **one Conveyor Belt construction tool (key 5)**, with a straight placement ghost; no separate corner build-menu entries.
+- [x] Convert an existing straight conveyor **in place** when a new perpendicular, correctly oriented straight is placed adjacent to its available output; retain incoming links and node identity.
+- [x] Guard occupied outputs and invalid geometry; roll back unsuccessful conversions without altering the existing line.
+- [x] Verify left/right conversion, rotation of connected assemblies and reciprocal-link cleanup on demolition.
+- [x] Add visible steel-gray L-shaped placeholder corner meshes, widened to match straight-belt width.
+- [x] Add bright directional arrows under `OutputEndpoint` for placed straight belts, converted corners, and placement ghosts.
+- [x] Verify actual Build Mode turns and different travel directions, plus selection/demolition and an inspected collision overlay.
+- [x] Push corner scripts, scenes and local test assets to GitHub `main`.
+- [ ] Replace the committed overlapping-box corner mesh implementation with exact continuous single-surface geometry, if desired; clean up stepped seams and make physics/interaction footprints precise.
+- [ ] Complete a single consolidated regression run of all prior and new test scenes, then record its aggregate result.
+
+**Status: Core 90° construction and directional cues working.** Reported individual local passes include 8/8 corner connection, 8/8 left-corner, 6/6 corner-preview, 8/8 turn-intent, 8/8 piece-selection, 8/8 in-place conversion, 8/8 full-chain, and 8/8 visual-geometry checks, in addition to successful main-game construction and demolition. These were observed at different checkpoints; a final single-run total is **not** claimed. Closed-loop final connections and item transportation remain unimplemented/unverified.
+
+#### Next Chat 07 Work — Operational Transport
+
+- [ ] Verify and implement explicit closure of already placed conveyor loops, without creating an overlapping new belt; guard endpoint availability.
+- [ ] Normalize `InteractionHitbox` size/slight rotation and refine corner-shaped collision/selection footprints.
+- [ ] Simplify legacy corner ghost selection and remove redundant debug/reset paths when safe.
+- [ ] Connect machine and storage input/output ports to conveyor endpoints.
+- [ ] Prevent distant or disconnected manual port handoffs from being used by gameplay logistics.
+- [ ] Implement actual item movement, timing, capacity, throughput and backpressure with resource conservation.
+- [ ] Design universal small/medium/large slot-and-stack storage.
+- [ ] Add separate placeable splitters and mergers after straight/turn routing works.
+- [ ] Replace proximity logistics only after physical belts pass manufacturing regression checks.
+- [ ] Build ammunition supply and supply-dependent defense for the First Night slice.
 
 ### 1F — Enemy & Defense Prototype
 
@@ -310,4 +325,4 @@ Completed:
 
 **Chat 07 recipe, machine-port and straight-conveyor checkpoints completed:** Recipe controls (**21/21** checks), safe manual machine-port handoffs (**29/29**) and buildable, snapped straight conveyor links (**40/40**) have developer-reported passing regression tests, alongside earlier manufacturing (**36/36**) and inventory/gameplay tests. Tested conveyor code was pushed to main. Details: Phase 1E.1–1E.3 and [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Next milestone:** Implement and validate real 90° conveyor corners using the **same Conveyor Belt tool**. Then connect belt endpoints to machine/storage ports and implement item movement, throughput/backpressure and resource conservation. Temporary proximity transfers remain in operation until physical transport is proven. Universal slot/stack storage, separate splitter/merger buildings and ammunition-fed defenses remain part of [GAME_VISION.md](GAME_VISION.md).
+**Latest milestone (Chat 07.5):** In-place automatic left/right corner conversion, directional yellow arrows, visual L-shaped placeholders, and connected-chain/demolition tests are now present on GitHub main. Individual Godot tests and gameplay demos passed; final consolidated regression totals are not claimed. Next: polish corner colliders/mesh seams, support intentional closed-loop connections, connect belts to machine/storage ports, and implement safe item travel, throughput/backpressure and conservation. Temporary proximity transfers remain active. Universal slot/stack storage, dedicated splitters/mergers and ammunition-fed defenses remain part of [GAME_VISION.md](GAME_VISION.md).
