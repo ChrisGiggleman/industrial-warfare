@@ -705,7 +705,7 @@ The developer reported **29/29** port tests passing, plus a final regression of 
 
 ### Current Transport Boundary
 
-Port checks and `try_transfer_to_port()` remain **logical, manually invoked item handoffs**. Chat 07.4 now adds physical **belt-to-belt** marker alignment and durable directed links, but those conveyor connections are separate from machine ports and do not move items. No machine-to-belt connection validation, belt travel/throughput, automated export, or route discovery exists yet. A manually invoked port transfer can still succeed between distant ports and must not be treated as conveyor transport. The existing nearby extractor/storage/smelter transfers remain active. Universal slot/stack storage, splitter/merger buildings, ammunition supply, and defense remain planned.
+**Historical Chat 07 port boundary:** Port checks and `try_transfer_to_port()` are logical, manually invoked handoffs, not physically routed transfers. At that checkpoint, belt connections had geometry but no cargo handling. **Chat 08 update:** Timed, directed belt-to-belt transportation is now implemented and tested independently, but machine/storage ports are **not yet connected** to conveyors. Manual port handoffs still do not require physical adjacency. The existing nearby extractor/storage/smelter transfers remain active; universal slot/stack storage, splitter/mergers, ammunition supply and defense are future work.
 
 ---
 
@@ -774,11 +774,47 @@ Individually reported local Godot suites include corner connection **8/8**, left
 
 ---
 
+## Physical Conveyor Cargo & Timed Item Transportation — Chat 08 (Foundation Implemented)
+
+### Real Conveyor Scene Composition
+
+`scenes/logistics/conveyor_straight.tscn` now contains three additional direct child nodes:
+
+- `CargoInventory` (`InventoryComponent`, `max_capacity = 1`) stores one item **unit** per belt for the initial prototype.
+- `ConveyorTransportComponent` references that inventory and exposes read-only held-item lookup, guarded inventory loading and low-level buffer-to-buffer transfer. Its functions accept **any valid `ItemDefinition`**; no Test Ore, copper, iron or ammunition identifiers are hardcoded.
+- `ConveyorTransportTimer` supplies a configurable per-segment `travel_interval` (currently **1.0 second**), `elapsed_seconds`, `transport_status` and `successful_transfers`. `_process(delta)` calls `advance_transport(delta)`. Empty belts reset elapsed progress, occupied belts advance their timers, and a blocked output retains its cargo and completed progress.
+
+`ConveyorTransportLink.try_transfer_forward(source)` is the **connection-aware** handoff layer. It checks scene-tree validity, a real `next_segment`/`previous_segment` reciprocal link, aligned output/input markers (using `ConveyorSegment.CONNECTION_GAP`), and both cargo components. It then delegates to the existing capacity- and conservation-aware inventory transfer. Direct lower-level cargo helpers do **not** enforce physical routing by themselves and must not be called as independent automatic gameplay logistics.
+
+Right/left automatic corner conversion changes the existing belt **in place**, so the new inventory and timer nodes survive with the same object identity. Dedicated `conveyor_corner*.tscn` templates remain geometry templates; in normal Build Mode, the `ConveyorStraight` instance is converted when a compatible perpendicular belt is placed.
+
+### Cargo-Safe Player Demolition
+
+`ConveyorSegment.can_demolish_safely()` returns true only when its expected one-unit `CargoInventory` exists and is empty. `WorldInteraction._try_demolish_under_mouse()` consults this method before queueing a **player-selected** conveyor for deletion. Occupied or misconfigured belts are rejected; normal building demolition is unchanged. This does **not** guard arbitrary direct `queue_free()`, world teardown, or future combat destruction; those lifecycle cases require an explicit item recovery/drop policy before implementation.
+
+### Local Godot Validation (Chat 08)
+
+| Test scene | Reported assertions |
+| --- | --- |
+| `conveyor_transport_buffer_test.tscn` | 7/7 — one-item generic buffer and conservation |
+| `conveyor_connected_transport_test.tscn` | 7/7 — directed physical links, misalignment, reverse blocking |
+| `conveyor_timed_transport_test.tscn` | 8/8 — timed updates, blockage recovery and distinct item definitions |
+| `conveyor_corner_cargo_test.tscn` | 8/8 — in-place left/right conversion preserves cargo/timers |
+| `conveyor_full_transport_test.tscn` | 8/8 — six-segment straight/corner chain, item ordering, end-of-line backpressure |
+| `conveyor_cargo_demolition_test.tscn` | 6/6 — occupied cargo protection and generic item handling |
+
+**44/44 assertions across six separately reported suites**, plus rerun connected/timed/full-chain regressions and developer-confirmed main-game construction, corners, demolition and existing factory behavior. These are **local Godot test runs**, not one consolidated CI execution.
+
+### Operational Boundary
+
+Transport **between existing connected belts** is implemented. Player-placed belts are not yet supplied by machine output ports or discharged into machine/storage input ports. No visible item meshes, player-facing belt loading/unloading, finalized transfer-rate balancing, explicit already-placed loop closure, or cargo recovery on direct node destruction exists yet. Smelter ingots remain in output inventory during ordinary gameplay; extractor → storage → smelter still uses temporary proximity logistics.
+
+---
 ## Current Factory Data Flow
 
 **Implemented:** one finite or infinite resource deposit can feed a Test Extractor; extracted ore moves to nearby Test Storage, and nearby Test Smelters pull ore into their independent input inventories. After each valid 2-second cycle, the smelter consumes 2 ore and deposits 1 ingot into its output inventory.
 
-The running factory still uses direct proximity transfers, not physical conveyance. The new `OutputPort` can **manually** hand finished ingots to a suitable receiving port, as demonstrated in isolated tests, but there is **no automatic finished-ingot export in normal gameplay** and no conveyor routing, power, or fuel simulation.
+The running factory still uses direct proximity transfers, not physical conveyance. The new `OutputPort` can **manually** hand finished ingots to a suitable receiving port, as demonstrated in isolated tests, but there is **no automatic finished-ingot export in normal gameplay** or machine-to-belt routing; the new belt-to-belt transport foundation is separately implemented and tested. Power and fuel simulation remain unimplemented.
 
 ---
 
@@ -821,9 +857,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 07.5:** All Chat 06 manufacturing; Chat 07.2 recipe allowlists/input filtering; Chat 07.3 manually invoked machine port transfers; Chat 07.4 straight belt placement with geometric directed connections; and Chat 07.5 in-place automatic right/left corner conversion, L-shaped placeholders and output-aligned yellow direction arrows. Reported local tests include **21/21** recipe, **29/29** port, **40/40** earlier straight conveyor, **36/36** prior manufacturing and multiple separately passed 07.5 corner suites. The main-game build, ghost, selection/demolition and proximity factory were checked, but no new full-suite aggregate or CI run is asserted.
+**Implemented through Chat 08:** All previously validated Chat 06 production and Chat 07 recipe/port/conveyor construction work, plus one-item generic cargo buffers, reciprocal-connection-validated belt-to-belt transfers, per-segment timing, backpressure, corner cargo preservation and player-tool protection against demolishing occupied belts. Chat 08 reports **44/44** checks in six local test suites and successful normal gameplay/regression validation; this is not a consolidated CI run.
 
-**Planned:** reliable explicit loop closure, exact corner geometry/collision polishing, machine/storage port-to-belt connections, item movement and throughput/backpressure, universal slot-and-stack storage, separate splitters/mergers, recipe UI, ammunition/defense, power/fuel, and save/load. **Belt-based material transport is not implemented**; temporary proximity transfers remain active.
+**Planned:** visible traveling items, machine/storage port-to-belt hookups and snapping, controlled loading/unloading and throughput balancing, safeguards for non-player destruction, deliberate loop closure, refined corner geometry/collisions, slot-and-stack storage, splitters/mergers, ammunition/defense, power/fuel and save/load. **The running factory still relies on temporary proximity-based logistics** until end-to-end physical connections pass regression tests.
 
 ---
 
