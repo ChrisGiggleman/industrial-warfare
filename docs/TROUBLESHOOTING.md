@@ -792,6 +792,35 @@ For tests instantiating `test_smelter.tscn`, call `producer.set_process(false)` 
 
 ---
 
+## 2026-10-27 — Chat 08: Conveyor Transport Integration & Cargo Safety Notes
+
+No unresolved failure was reported during this milestone; the notes below document important diagnostic boundaries from **44/44** separately run transport checks and successful main-game regression.
+
+### A Belt Exists but Its Item Does Not Move
+
+1. Inspect the belt root for **CargoInventory** (`InventoryComponent.max_capacity = 1`), **ConveyorTransportComponent** (`cargo_inventory` referencing that child), and **ConveyorTransportTimer** (automatic processing enabled in real gameplay). The three children are already installed on `ConveyorStraight.tscn`.
+2. Confirm a real `next_segment` whose `previous_segment` points back to the source. A visually touching belt or visually closed ring is insufficient.
+3. Confirm `OutputEndpoint` and `InputEndpoint` still pass `LogisticsConnectionGeometry.are_endpoints_aligned()` using the strict connection gap; rotated corners point away from their root basis.
+4. Inspect `transport_status`: `Empty`, `Moving`, `Blocked`, or `Transferred`. An occupied next buffer, missing connection, or unaligned output correctly leaves the item upstream.
+5. Do not test input loading through the normal smelter/extractor factory yet: **building-to-conveyor port connections are not implemented**. The current factory still uses proximity transfers.
+
+### A Test Creates Duplicate Cargo Components
+
+The older connected/timed regression tests originally added cargo and timers dynamically. After the scene gained built-in children, the test helpers were revised to **reuse existing** `ConveyorTransportComponent` and `ConveyorTransportTimer` nodes before creating any fallback nodes. Keep that pattern in future tests.
+
+### A Converted Corner Seems to Lose Cargo or Progress
+
+`ConveyorCornerConversion.try_convert_and_connect()` changes the existing straight belt's output transform and mesh/hitboxes **in place**, preserving its root identity and transport children. Use `tests/conveyor_corner_cargo_test.tscn` (8/8 reported checks) to verify both turn directions and timer preservation. Do not replace the entire belt node on conversion.
+
+### Demolition Is Rejected for a Conveyor
+
+`ConveyorSegment.can_demolish_safely()` requires a valid one-unit CargoInventory with **zero** stored items. `WorldInteraction` blocks player-tool deletion otherwise; unloading the item makes removal eligible. This safeguard applies to **player demolition only**: direct `queue_free()`, deleting a parent/world scene, and future enemy destruction have no cargo recovery policy and must not be assumed resource-safe.
+
+### Generic Item Compatibility
+
+Transport methods use `ItemDefinition` and do not discriminate between Test Ore, Test Ingot, ammunition or future item types. The timed test, converted-corner test and six-belt chain each included newly constructed item definitions. Item eligibility at a **receiving building** will be the responsibility of `ItemPortComponent` and the active production recipe, not the belt.
+
+---
 ## Diagnostic Checklist
 
 When a new error appears:
