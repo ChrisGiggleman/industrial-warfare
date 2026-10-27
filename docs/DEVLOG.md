@@ -965,3 +965,40 @@ The individual test outcomes were shared over several steps; **no claim is made 
 - **Not implemented:** item movement along conveyors, throughput, backpressure, belt-to-machine/storage port hookup, autonomous finished-product export, or dedicated splitter/merger buildings. The extractor → storage → smelter still runs on temporary proximity-based logistics.
 
 **Next milestone:** validate final construction/connection regressions, improve precise hitboxes and corner surfaces, implement safe existing-belt loop closure, then introduce machine/storage port-to-belt links and conservation-tested conveyor item flow.
+
+---
+
+## 2026-10-27 — Chat 08: Generic Belt-to-Belt Transport Foundation (First Milestone)
+
+### Implemented
+
+- Created `ConveyorTransportComponent` with a strict one-unit `CargoInventory` buffer. All item operations use `ItemDefinition` and existing `InventoryComponent.transfer_to()`; no resource-specific belt behavior is hardcoded.
+- Created `ConveyorTransportLink.try_transfer_forward()` to require reciprocal directed belt links and current endpoint alignment before handing off cargo.
+- Created `ConveyorTransportTimer` with a configurable 1.0-second prototype travel interval and frame-driven update. A full/disconnected downstream belt blocks the current item without duplication or loss; movement resumes once there is space.
+- Added `CargoInventory`, `ConveyorTransportComponent`, and `ConveyorTransportTimer` as direct children of the live `ConveyorStraight` scene, leaving existing snapping, arrows and corner-conversion geometry untouched.
+- Verified that converting a straight belt into either automatic corner preserves the node, the held item, and the timer's partial progress.
+- Added `ConveyorSegment.can_demolish_safely()` and a guard in `WorldInteraction` so **player demolition** rejects occupied or invalidly configured conveyor cargo buffers.
+
+### Reported Local Godot Results
+
+| Test | Checks |
+| --- | --- |
+| Cargo buffer | 7/7 |
+| Connected directed transfer | 7/7 |
+| Timed generic transport | 8/8 |
+| Corner cargo preservation | 8/8 |
+| Six-segment full chain | 8/8 |
+| Player demolition safety policy | 6/6 |
+| **Total across six separate suites** | **44/44** |
+
+The updated connected (7/7), timed (8/8) and original full-chain construction (8/8) regressions were rerun after scene integration. The developer also confirmed normal game placement, rotation, yellow arrows, right/left corners, empty-belt demolition, and the original extractor → storage → smelter chain still worked. These are developer-run editor validations, **not a single combined CI report**.
+
+### Important Design Decisions and Remaining Work
+
+- **Universal cargo:** belts accept any valid `ItemDefinition`; receiving manufacturing ports will filter using the active recipe, while general storage accepts ordinary items subject to capacity.
+- **Strict physical links:** automatic belt handoffs must use directed, geometry-valid next/previous connections; the low-level inventory helper alone is not an authorization to transfer.
+- **Prototype throughput:** each segment currently carries one item unit and uses a 1-second interval; final belt occupancy, speed, visible travel interpolation and throughput balance remain open.
+- **Safety scope:** only demolition through `WorldInteraction` is cargo-blocked. Direct `queue_free()`, scene teardown and eventual enemy destruction need a cargo recovery/dropping policy.
+- **Not yet a physical factory:** no building-to-belt snap/load/unload path, visible cargo models, separate splitter/merger, intentional closed-loop closure or automated ingot export. Temporary proximity logistics remains active.
+
+The user committed and pushed the tested gameplay milestone to GitHub `main` before this documentation update. **Next milestone:** visible generic cargo on belts, then machine/storage port connections and full ore-to-ingot physical routing, with regression checks at each step.
