@@ -2533,6 +2533,11 @@ func _create_placement_ghost(
 		conveyor_preview_scene = selected_scene
 
 	# Placement ghosts are visual previews only.
+	# Mark them explicitly for snap discovery before they enter the tree.
+	# A real building can also have processing disabled, so discovery
+	# must not identify ghosts from process_mode alone.
+	placement_ghost.add_to_group("construction_preview")
+
 	# Disable gameplay processing for the ghost and its child components.
 	placement_ghost.process_mode = Node.PROCESS_MODE_DISABLED
 	placement_ghost.rotation_degrees.y = placement_rotation_degrees
