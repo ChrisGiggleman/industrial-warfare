@@ -17,7 +17,6 @@ size = Vector3(1.5, 1, 1.5)
 size = Vector3(1.5, 1, 1.5)
 
 [node name="TestSmelter" type="Node3D" unique_id=832498239 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
-process_mode = 4
 script = ExtResource("1_r27uo")
 selection_mesh = NodePath("BuildingMesh")
 
@@ -51,6 +50,7 @@ input_inventory = NodePath("../InputInventory")
 output_inventory = NodePath("../OutputInventory")
 
 [node name="LogisticsInputComponent" type="Node" parent="." unique_id=108508367 node_paths=PackedStringArray("input_inventory", "producer_component")]
+process_mode = 4
 script = ExtResource("6_pej7w")
 input_inventory = NodePath("../InputInventory")
 producer_component = NodePath("../ProducerComponent")

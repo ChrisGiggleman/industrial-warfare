@@ -960,7 +960,10 @@ func _update_placement_preview() -> void:
 			# position for the next discovery pass. All connections
 			# are still committed only during permanent placement.
 
-			if placement_ghost is ConveyorSegment:
+			if (
+				placement_ghost is ConveyorSegment
+				and not Input.is_physical_key_pressed(KEY_SHIFT)
+			):
 
 				var ghost_belt: ConveyorSegment = (
 					placement_ghost as ConveyorSegment
@@ -1941,6 +1944,20 @@ func _find_perpendicular_corner_candidate(
 
 
 func _try_place_object() -> void:
+	
+	# =============================================================================
+	# MANUAL CONVEYOR PLACEMENT — SHIFT OVERRIDE
+	# =============================================================================
+
+	# Refresh snap state before the click is processed.
+	# This prevents a previous automatic snap from
+	# being committed after Shift is pressed.
+
+	if (
+		selected_building_index == 4
+		and Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+		_update_placement_preview()
 
 	# =============================================================================
 	# SNAP TARGET — CLICK DIAGNOSTIC
@@ -2759,7 +2776,13 @@ func _try_place_object() -> void:
 	#
 	# Other building types are unaffected.
 
-	if selected_building_index == 4 and new_object is ConveyorSegment:
+	
+	if (
+		selected_building_index == 4
+		and new_object is ConveyorSegment
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+
 
 		var placed_straight: ConveyorSegment = (
 			new_object as ConveyorSegment

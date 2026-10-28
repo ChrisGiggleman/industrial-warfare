@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dpnhjmqxeejox"]
+
+[ext_resource type="Script" uid="uid://bad3qmm2hd0uk" path="res://tests/factory_grid_alignment_test.gd" id="1_p5icl"]
+
+[node name="FactoryGridAlignmentTest" type="Node" unique_id=852404111]
+script = ExtResource("1_p5icl")
