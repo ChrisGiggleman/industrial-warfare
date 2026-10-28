@@ -802,7 +802,7 @@ No unresolved failure was reported during this milestone; the notes below docume
 2. Confirm a real `next_segment` whose `previous_segment` points back to the source. A visually touching belt or visually closed ring is insufficient.
 3. Confirm `OutputEndpoint` and `InputEndpoint` still pass `LogisticsConnectionGeometry.are_endpoints_aligned()` using the strict connection gap; rotated corners point away from their root basis.
 4. Inspect `transport_status`: `Empty`, `Moving`, `Blocked`, or `Transferred`. An occupied next buffer, missing connection, or unaligned output correctly leaves the item upstream.
-5. Do not test input loading through the normal smelter/extractor factory yet: **building-to-conveyor port connections are not implemented**. The current factory still uses proximity transfers.
+5. **Chat 08 update:** Building-port connections and automatic loading/unloading now work in isolated, code-connected tests. However, `WorldInteraction` Build Mode still does **not** create machine-to-belt connections during ordinary placement; the running factory still uses proximity logistics. Check `input_building_port` / `output_building_port` and reciprocal `ItemPortComponent.connected_conveyor` in integration tests.
 
 ### A Test Creates Duplicate Cargo Components
 
@@ -819,6 +819,42 @@ The older connected/timed regression tests originally added cargo and timers dyn
 ### Generic Item Compatibility
 
 Transport methods use `ItemDefinition` and do not discriminate between Test Ore, Test Ingot, ammunition or future item types. The timed test, converted-corner test and six-belt chain each included newly constructed item definitions. Item eligibility at a **receiving building** will be the responsibility of `ItemPortComponent` and the active production recipe, not the belt.
+
+---
+## 2026-10-27 — Chat 08: Visual Cargo, Machine Port & Physical Factory Diagnostics
+
+### Stack Overflow When Running the Cargo Visual Test
+
+**Observed:** Godot reported `Stack overflow (stack size: 1024)` with a stack frame in `conveyor_direction_arrow.gd` during `conveyor_cargo_visual_test.tscn` execution.
+
+**Root cause identified from the Inspector screenshot:** The live `ConveyorStraight/CargoVisual` `MeshInstance3D` had `conveyor_cargo_visual_test.gd` attached instead of the intended `scripts/components/conveyor_cargo_visual.gd`. An executable test scene script must never be attached to a runtime visual child. Correct the CargoVisual script property (mesh can remain empty because `_ready()` builds it). The developer reran the straight and corner visual suites successfully.
+
+### Duplicate Script Declarations When Adding Unloading
+
+**Observed:** An illustrative file outline from the instructions was pasted after the actual loading function, adding duplicate `extends RefCounted`, `class_name ConveyorBuildingTransfer` and stub functions.
+
+**Fix:** Retain the original file header and complete `try_load_into_belt()` only once; delete the illustrative pasted outline and append the full `static func try_unload_from_belt()` at column zero. Preserve existing indenting within each method. The developer corrected the script and reported successful unloading tests.
+
+### Test Scene Is Missing From Godot
+
+Adding `try_unload_from_belt()` does not create `tests/conveyor_building_unloading_test.gd` or `.tscn`. Create a regular root `Node` test scene, attach the existing test script (not the runtime transfer helper), save at `res://tests/conveyor_building_unloading_test.tscn`, then run via F6. The developer subsequently reported **10/10** unloading checks.
+
+### Building Snaps Visually But Items Do Not Transfer
+
+- `ConveyorBuildingSnap.get_preview_transform()` returns **only a suggested transform**. A preview by itself makes no persistent connection or inventory movement; player-facing `WorldInteraction` integration is still pending.
+- Verify the exact opposing `ItemPortComponent` roles and current `LogisticsConnectionGeometry.are_endpoints_aligned()` at `ConveyorSegment.CONNECTION_GAP = 0.05`. Check port and belt inputs/outputs are unoccupied; one building port may serve one belt.
+- Establish and inspect reciprocal state via `ConveyorSegment.try_connect_building_port()`, `ItemPortComponent.connected_conveyor`, `ConveyorSegment.input_building_port` and `output_building_port`. Removing either endpoint should clear references.
+- Loading checks `can_provide_item()` on the source and the one-unit belt capacity. Unloading checks `can_accept_item()`: active recipe, correct producer input reference and free input space; unsupported items and full inventories are expected to block without item loss.
+- The transport timer automatically loads an **empty** belt; it must finish its `travel_interval` before trying to deliver to an attached building input. A finished-but-blocked item keeps its progress and retries when capacity is available.
+- Keep the old `LogisticsTransferComponent` / `LogisticsInputComponent` **disabled in isolated physical-routing tests** so proximity transfers cannot mask or interfere with conveyor accounting. Ordinary player gameplay still uses them until migration is validated.
+
+### Reproducing the Physical Factory Check
+
+Run `res://tests/conveyor_physical_factory_test.tscn` in Godot 4.6.2. It seeds two ore in the actual Test Extractor inventory, connects three belts to the Test Smelter in code, manually advances belt transport timers and the ProducerComponent, and asserts one finished ingot and conservation (**9/9 reported**). This does **not** simulate mining, Build Mode placement, real-time steady throughput or an operational route through Storage. The isolated Extractor may print `Extractor has no resource node` because there is no deposit in the test.
+
+### Scope to Keep Separate
+
+Chat 08 added **86** newer separately run checks after the prior 44-check foundation, for **130/130** locally reported checks across individually executed suites. Repeated regressions are not included twice in this total. No combined CI report is claimed. Remaining issues: direct cargo destruction policy, actual Build Mode port snapping, Storage ports, multiple concurrent items, loop closing, unique item art, and safe disabling of proximity transport.
 
 ---
 ## Diagnostic Checklist
