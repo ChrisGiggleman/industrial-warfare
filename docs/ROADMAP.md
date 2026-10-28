@@ -257,13 +257,32 @@ Planned major systems:
 - [x] Block **player-tool demolition** of occupied or invalidly configured belts.
 - [x] Pass **44/44** assertions across six separately executed Godot test scenes; rerun integration and gameplay checks.
 - [x] Push tested gameplay changes to GitHub `main`.
-- [ ] Display item-specific placeholder models moving along straight and corner paths.
-- [ ] Add physical machine/storage ports and snapping, plus guarded belt loading/unloading.
-- [ ] Test full Extractor → Belt → Storage → Belt → Smelter → Belt → Storage flow and replace temporary proximity logistics only when safe.
+- [x] Add a generic visible box for occupied straight and in-place left/right corner belts, synchronized with travel progress.
+- [ ] Add **distinct item-specific** meshes/materials/models based on `ItemDefinition` (the current box is shared).
+- [x] Add Test Extractor OutputPort and reuse Test Smelter input/output ports; implement read-only port-to-belt snap transforms, reciprocal physical connections, guarded loading/unloading and automatic timer-driven transfers.
+- [ ] Integrate building-port snapping and connection commits into **player-facing Build Mode**; include placement obstruction checks and occupied-port previews.
+- [ ] Add universal physical input/output ports to Test Storage.
+- [x] Pass isolated Extractor → three belts → Smelter → Test Ingot production route (seeded ore, manually advanced timers, without storage).
+- [ ] Test full Extractor → Belt → Storage → Belt → Smelter → Belt → Storage in actual gameplay; replace proximity logistics only when safe.
 - [ ] Decide a safe item recovery/drop policy for non-player belt destruction and persistence.
 - [ ] Refine loop closure, speed/capacity balancing, exact corner collision shapes, and comprehensive test orchestration.
 
 **Status:** Belt-to-belt cargo transport foundation validated. The main factory does **not** yet transport items between buildings using belts; proximity-based transfers remain enabled.
+### 1E.6 — Building Port Integration & Isolated Production Route (Chat 08, 2026-10-27)
+
+- [x] Add conveyor cargo visuals for straight and left/right corners; preserve generic `ItemDefinition` behavior.
+- [x] Add Extractor OutputPort and validate 90-degree building rotation.
+- [x] Implement read-only building-port preview transforms and exclusive, persistent belt-to-port connections.
+- [x] Enforce reciprocal links, current physical marker alignment, valid producer output ownership and recipe-controlled input acceptance.
+- [x] Implement guarded loading and unloading for any valid item type, plus timer-driven building input/output handoffs and full-destination backpressure.
+- [x] Pass **86/86** newer checks across ten separate Godot test scenes (total Chat 08 **130/130** across sixteen separate reported suites).
+- [x] Validate isolated Extractor → three connected belts → Smelter: two seeded ore produce one ingot with correct accounting.
+- [x] Commit and push this code and regression suite to `main`.
+- [ ] Support normal in-game placement/snap discovery and hookup from player-built belts to buildings via `WorldInteraction`.
+- [ ] Add Test Storage physical ports and a complete physical production chain via storage.
+- [ ] Test deposit-fed extraction, simultaneous item traffic, steady throughput and removal of proximity transfers without breaking the original factory.
+
+**Status:** Building-port logistics and a complete seeded-ore production route work in isolated tests; **normal gameplay still uses proximity logistics** and the in-game Build Mode does not yet link buildings to belts. Distinct item visuals and reliable direct cargo-destruction recovery are still future work.
 ### 1F — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
@@ -346,4 +365,4 @@ Completed:
 
 **Chat 07.5 checkpoint:** In-place left/right corner conversion, yellow arrows, visual L-shaped placeholders and tested connection/demolition behavior remain working.
 
-**Latest milestone (Chat 08):** One-unit generic cargo buffers, connection-validated timed belt-to-belt movement, safe backpressure, cargo-preserving corner conversion and player-tool demolition protection are committed on GitHub `main`. Local tests report **44/44 across six separate suites** plus gameplay regression checks; not a combined CI result. **Next:** visible generic cargo and physical machine/storage ports and snapping. The normal factory continues to use proximity transfers until a validated physical route replaces them. Universal slotted storage, splitters/mergers and ammunition-fed defense remain future goals in [GAME_VISION.md](GAME_VISION.md).
+**Latest milestone (Chat 08.3F-1):** One-unit generic transport, visible straight/corner cargo, physically linked building ports, automatic loading/unloading and an isolated Extractor → three belts → Smelter manufacturing route are committed on GitHub `main`. Godot results total **130/130 across separate suites**, not a combined CI run. **Next:** wire machine-port snapping into normal Build Mode, introduce universal Storage input/output ports, then validate deposit-driven and multi-item physical factory gameplay before disabling proximity logistics. Distinct item art, universal slotted storage, splitters/mergers and ammunition-fed defense remain planned in [GAME_VISION.md](GAME_VISION.md).
