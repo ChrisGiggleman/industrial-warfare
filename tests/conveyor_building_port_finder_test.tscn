@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c07yn0faltbfi"]
+
+[ext_resource type="Script" uid="uid://be615o8gd84g4" path="res://tests/conveyor_building_port_finder_test.gd" id="1_k0tgq"]
+
+[node name="ConveyorBuildingPortFinderTest" type="Node" unique_id=722622512]
+script = ExtResource("1_k0tgq")

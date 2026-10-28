@@ -79,6 +79,21 @@ var placement_ghost_collisions: Array[CollisionShape3D] = []
 # CONVEYOR SNAP PREVIEW STATE
 # =============================================================================
 
+# =============================================================================
+# BUILDING-OFFSET CORNER SNAP STATE
+# =============================================================================
+
+# Used when an existing conveyor sits off the normal
+# grid because it is aligned to a building port.
+#
+# Preview only. Permanent connections are handled later.
+
+var conveyor_corner_snap_source: ConveyorSegment = null
+
+var conveyor_corner_snap_turn: int = (
+	ConveyorTurnIntent.Turn.STRAIGHT
+)
+
 # Stores the placed conveyor currently providing a
 # possible snap location for our placement ghost.
 #
@@ -93,6 +108,33 @@ var conveyor_snap_source: ConveyorSegment = null
 # permanent connection when the player clicks.
 
 var conveyor_snap_before: bool = false
+
+# =============================================================================
+# BUILDING PORT SNAP PREVIEW STATE
+# =============================================================================
+
+# Stores the building port currently offering a
+# valid physical connection to the placement ghost.
+#
+# This is temporary preview state only.
+# No permanent connection exists until placement
+# is explicitly committed in a later step.
+
+var conveyor_building_snap_port: ItemPortComponent = null
+
+# =============================================================================
+# BUILDING-TO-CONVEYOR PLACEMENT SNAP STATE
+# =============================================================================
+
+# Stores the existing conveyor and building port
+# selected for a potential building placement.
+#
+# This is preview state only.
+# No physical connection is established yet.
+
+var building_placement_snap_belt: ConveyorSegment = null
+
+var building_placement_snap_port: ItemPortComponent = null
 
 # =============================================================================
 # ACTIVE CONVEYOR PREVIEW SCENE
@@ -829,7 +871,19 @@ func _update_placement_preview() -> void:
 			hit_position.y,
 			snappedf(hit_position.z, grid_size)
 		)
-		
+				# =============================================================================
+		# PRESERVE ORIGINAL MOUSE GRID POSITION
+		# =============================================================================
+
+		# Conveyor snapping may change the current
+		# placement position during this frame.
+		#
+		# Compare competing snap targets against
+		# the original cursor position instead.
+
+		var mouse_grid_position: Vector3 = (
+			current_placement_position
+		)
 		# =============================================================================
 		# CONVEYOR PLACEMENT — STRAIGHT GHOST
 		# =============================================================================
@@ -861,6 +915,11 @@ func _update_placement_preview() -> void:
 
 			conveyor_snap_source = null
 			conveyor_snap_before = false
+			conveyor_building_snap_port = null
+			building_placement_snap_belt = null
+			building_placement_snap_port = null
+			conveyor_corner_snap_source = null
+			conveyor_corner_snap_turn = ConveyorTurnIntent.Turn.STRAIGHT
 			placement_ghost.global_position = (
 				current_placement_position
 			)
@@ -870,16 +929,72 @@ func _update_placement_preview() -> void:
 			)
 
 			# =============================================================================
-			# CHECK CONVEYOR SNAP PREVIEW
+			# PRIORITIZE AVAILABLE BUILDING PORTS
 			# =============================================================================
+
+			# Check for a compatible building connection
+			# before selecting other conveyor endpoints.
+			#
+			# This prevents an existing belt snap from
+			# overriding a nearby machine input/output.
+			#
+			# The finder respects player rotation and
+			# rejects occupied building ports.
 
 			if placement_ghost is ConveyorSegment:
 
-				var snap_result: Dictionary = (
-					_find_conveyor_snap_preview(
-						current_placement_position
+				var port_preview: Dictionary = (
+					ConveyorBuildingPortFinder.find_nearest_preview(
+						placement_ghost as ConveyorSegment,
+						mouse_grid_position,
+						1.5
 					)
 				)
+
+				if not port_preview.is_empty():
+
+					var selected_port: ItemPortComponent = (
+						port_preview["port"]
+						as ItemPortComponent
+					)
+
+					if is_instance_valid(selected_port):
+
+						placement_ghost.global_transform = (
+							port_preview["transform"]
+						)
+
+						conveyor_building_snap_port = (
+							selected_port
+						)
+
+						current_placement_position = (
+							placement_ghost.global_position
+						)
+
+			# =============================================================================
+			# CHECK CONVEYOR SNAP PREVIEW
+			# =============================================================================
+
+			
+			if placement_ghost is ConveyorSegment:
+
+				# =============================================================================
+				# DISCOVER EXISTING CONVEYOR ONLY WHEN NO BUILDING PORT WON
+				# =============================================================================
+
+				var snap_result: Dictionary = {}
+
+				if not is_instance_valid(
+					conveyor_building_snap_port
+				):
+
+					snap_result = (
+						_find_conveyor_snap_preview(
+							mouse_grid_position
+						)
+					)
+
 
 				if not snap_result.is_empty():
 
@@ -904,6 +1019,198 @@ func _update_placement_preview() -> void:
 					current_placement_position = (
 						placement_ghost.global_position
 					)
+
+				# =============================================================================
+				# CHECK OFF-GRID CORNER SNAP PREVIEW
+				# =============================================================================
+
+				# Existing straight conveyor snaps take priority.
+				# When no straight snap exists, try a left or
+				# right corner from an off-grid conveyor.
+
+				if (
+					snap_result.is_empty()
+					and not is_instance_valid(
+						conveyor_building_snap_port
+					)
+				):
+
+					var corner_preview: Dictionary = (
+						_find_offset_corner_snap_preview(
+							current_placement_position
+						)
+					)
+
+					if not corner_preview.is_empty():
+
+						placement_ghost.global_transform = (
+							corner_preview["transform"]
+						)
+
+						conveyor_corner_snap_source = (
+							corner_preview["source"]
+						)
+
+						conveyor_corner_snap_turn = int(
+							corner_preview["turn"]
+						)
+
+						current_placement_position = (
+							placement_ghost.global_position
+						)
+
+				
+				# =============================================================================
+				# CHECK BUILDING PORT SNAP PREVIEW
+				# =============================================================================
+
+				# Evaluate building ports even when an
+				# existing conveyor snap is available.
+				#
+				# Prefer whichever candidate is closer
+				# to the player's original mouse position.
+				#
+				# Do not override an active corner preview.
+
+				
+				if (
+					not is_instance_valid(
+						conveyor_corner_snap_source
+					)
+					and not is_instance_valid(
+						conveyor_building_snap_port
+					)
+				):
+
+
+					var building_preview: Dictionary = (
+						ConveyorBuildingPortFinder.find_nearest_preview(
+							placement_ghost as ConveyorSegment,
+							mouse_grid_position,
+							1.75
+						)
+					)
+
+					if not building_preview.is_empty():
+
+						# =============================================================================
+						# MEASURE EXISTING CONVEYOR SNAP DISTANCE
+						# =============================================================================
+
+						var belt_distance_squared: float = INF
+
+						if not snap_result.is_empty():
+
+							var belt_transform: Transform3D = (
+								snap_result["transform"]
+							)
+
+							var belt_offset := Vector2(
+								mouse_grid_position.x
+								- belt_transform.origin.x,
+								mouse_grid_position.z
+								- belt_transform.origin.z
+							)
+
+							belt_distance_squared = (
+								belt_offset.length_squared()
+							)
+
+						# =============================================================================
+						# COMPARE BUILDING AND CONVEYOR TARGETS
+						# =============================================================================
+
+						var building_distance_squared: float = (
+							float(building_preview["distance_squared"])
+						)
+
+						if (
+							building_distance_squared
+							< belt_distance_squared
+						):
+
+							var target_port: ItemPortComponent = (
+								building_preview["port"]
+								as ItemPortComponent
+							)
+
+							if is_instance_valid(target_port):
+
+								# =============================================================================
+								# SELECT BUILDING PORT SNAP
+								# =============================================================================
+
+								placement_ghost.global_transform = (
+									building_preview["transform"]
+								)
+
+								conveyor_building_snap_port = (
+									target_port
+								)
+
+								# Cancel the competing belt snap.
+								# Only one target controls placement.
+
+								conveyor_snap_source = null
+								conveyor_snap_before = false
+
+								current_placement_position = (
+									placement_ghost.global_position
+								)
+
+			# =============================================================================
+			# BUILDING PLACEMENT SNAP TO EXISTING CONVEYOR
+			# =============================================================================
+
+			# Only regular building ghosts use this path.
+			#
+			# Conveyor ghosts continue using their existing
+			# conveyor-to-conveyor and building-port snapping.
+			#
+			# The existing helper discovers compatible ports,
+			# checks occupied endpoints, and preserves the
+			# player's selected building rotation.
+
+			if not placement_ghost is ConveyorSegment:
+
+				var building_preview: Dictionary = (
+					ConveyorBuildingPlacementSnap.find_nearest_preview(
+						placement_ghost,
+						current_placement_position,
+						1.5
+					)
+				)
+
+				if not building_preview.is_empty():
+
+					var target_belt: ConveyorSegment = (
+						building_preview["belt"]
+						as ConveyorSegment
+					)
+
+					var target_port: ItemPortComponent = (
+						building_preview["port"]
+						as ItemPortComponent
+					)
+
+					if (
+						is_instance_valid(target_belt)
+						and is_instance_valid(target_port)
+					):
+
+						# Apply the exact preview transform.
+						# This also supports fractional positions.
+
+						placement_ghost.global_transform = (
+							building_preview["transform"]
+						)
+
+						building_placement_snap_belt = target_belt
+						building_placement_snap_port = target_port
+
+						current_placement_position = (
+							placement_ghost.global_position
+						)
 
 			# =============================================================================
 			# EXISTING PLACEMENT COLLISION VALIDATION
@@ -1310,6 +1617,145 @@ func _extractor_has_resource_node() -> bool:
 	return false
 
 # =============================================================================
+# FIND BUILDING-OFFSET CONVEYOR CORNER SNAP
+# =============================================================================
+
+# Searches for a conveyor with a free output that is
+# positioned off-grid because of building-port snapping.
+#
+# The receiver is our current placement ghost.
+#
+# Only calculates positions. Does not change connections.
+
+
+func _find_offset_corner_snap_preview(
+	mouse_grid_position: Vector3
+) -> Dictionary:
+
+	# =============================================================================
+	# VALIDATE CONVEYOR GHOST
+	# =============================================================================
+
+	if not placement_ghost is ConveyorSegment:
+		return {}
+
+	var receiver: ConveyorSegment = (
+		placement_ghost as ConveyorSegment
+	)
+
+	var best_preview: Dictionary = {}
+
+	var closest_distance_squared: float = (
+		CONVEYOR_SNAP_SEARCH_RADIUS
+		* CONVEYOR_SNAP_SEARCH_RADIUS
+	)
+
+	# =============================================================================
+	# SEARCH EXISTING CONVEYORS
+	# =============================================================================
+
+	for node: Node in get_tree().get_nodes_in_group(
+		"player_built"
+	):
+
+		if not node is ConveyorSegment:
+			continue
+
+		if node == placement_ghost:
+			continue
+
+		var source: ConveyorSegment = (
+			node as ConveyorSegment
+		)
+
+		if source.is_queued_for_deletion():
+			continue
+
+		# An occupied output cannot create another route.
+
+		if is_instance_valid(source.next_segment):
+			continue
+
+		if is_instance_valid(source.output_building_port):
+			continue
+
+		# =============================================================================
+		# RESTRICT TO OFF-GRID CONVEYORS
+		# =============================================================================
+
+		# Normal grid-aligned conveyors already have
+		# working corner placement logic.
+		#
+		# Preserve that behavior unchanged.
+
+		var off_grid_x: bool = absf(
+			source.global_position.x
+			- snappedf(source.global_position.x, grid_size)
+		) > 0.05
+
+		var off_grid_z: bool = absf(
+			source.global_position.z
+			- snappedf(source.global_position.z, grid_size)
+		) > 0.05
+
+		if not off_grid_x and not off_grid_z:
+			continue
+
+		# =============================================================================
+		# CHECK BOTH TURN DIRECTIONS
+		# =============================================================================
+
+		for turn_type: int in [
+			ConveyorTurnIntent.Turn.RIGHT,
+			ConveyorTurnIntent.Turn.LEFT
+		]:
+
+			var preview: Dictionary = (
+				ConveyorCornerPlacementSnap.get_preview_transform(
+					source,
+					receiver,
+					turn_type
+				)
+			)
+
+			if preview.is_empty():
+				continue
+
+			var proposed: Transform3D = (
+				preview["transform"]
+			)
+
+			# =============================================================================
+			# MEASURE DISTANCE TO MOUSE
+			# =============================================================================
+
+			var offset := Vector2(
+				mouse_grid_position.x - proposed.origin.x,
+				mouse_grid_position.z - proposed.origin.z
+			)
+
+			var distance_squared: float = (
+				offset.length_squared()
+			)
+
+			if distance_squared >= closest_distance_squared:
+				continue
+
+			# =============================================================================
+			# STORE NEAREST VALID CORNER
+			# =============================================================================
+
+			closest_distance_squared = distance_squared
+
+			best_preview = {
+				"source": source,
+				"turn": turn_type,
+				"transform": proposed
+			}
+
+	return best_preview
+
+# =============================================================================
 # FIND PERPENDICULAR CONVEYOR TURN CANDIDATE
 # =============================================================================
 
@@ -1511,6 +1957,98 @@ func _try_place_object() -> void:
 		)
 
 	# =============================================================================
+	# TEMPORARY BUILDING PORT SNAP DIAGNOSTIC
+	# =============================================================================
+
+	# Runs only when the player clicks with the
+	# Conveyor Belt tool selected.
+	#
+	# Does not modify placement or connections.
+
+	if selected_building_index == 4 and placement_ghost is ConveyorSegment:
+
+		var nearby_port_count: int = 0
+
+		var requested_forward: Vector3 = (
+			Basis(
+				Vector3.UP,
+				deg_to_rad(placement_rotation_degrees)
+			) * Vector3.FORWARD
+		).normalized()
+
+		for building: Node in get_tree().get_nodes_in_group(
+			"player_built"
+		):
+
+			if not building is Node3D:
+				continue
+
+			if building is ConveyorSegment:
+				continue
+
+			for child: Node in building.get_children():
+
+				if not child is ItemPortComponent:
+					continue
+
+				var port: ItemPortComponent = child as ItemPortComponent
+
+				if port.global_position.distance_to(
+					current_placement_position
+				) > 3.0:
+					continue
+
+				nearby_port_count += 1
+
+				var preview: Dictionary = (
+					ConveyorBuildingSnap.get_preview_transform(
+						port,
+						placement_ghost as ConveyorSegment
+					)
+				)
+
+				if preview.is_empty():
+
+					print(
+						"PORT DEBUG | ", building.name,
+						" / ", port.name,
+						" | Preview unavailable",
+						" | Occupied: ",
+						is_instance_valid(port.connected_conveyor),
+						" | Inventory valid: ",
+						is_instance_valid(port.inventory)
+					)
+
+					continue
+
+				var proposed: Transform3D = preview["transform"]
+
+				var distance: float = Vector2(
+					current_placement_position.x - proposed.origin.x,
+					current_placement_position.z - proposed.origin.z
+				).length()
+
+				var facing_match: float = requested_forward.dot(
+					(proposed.basis * Vector3.FORWARD).normalized()
+				)
+
+				print(
+					"PORT DEBUG | ", building.name,
+					" / ", port.name,
+					" | Distance: ", distance,
+					" | Within radius: ",
+					distance < CONVEYOR_SNAP_SEARCH_RADIUS,
+					" | Direction match: ", facing_match,
+					" | Selected: ",
+					conveyor_building_snap_port == port
+				)
+
+		print(
+			"PORT DEBUG | Nearby ports found: ",
+			nearby_port_count
+		)
+
+	# =============================================================================
 	# CORNER PLACEMENT SAFETY CHECK
 	# =============================================================================
 
@@ -1552,6 +2090,206 @@ func _try_place_object() -> void:
 		print("No buildable scene selected")
 		return
 
+	
+	# =============================================================================
+	# PERMANENT BUILDING-TO-CONVEYOR PLACEMENT
+	# =============================================================================
+
+	# Places a building directly against an existing
+	# conveyor's available physical endpoint.
+	#
+	# Supports:
+	# - Conveyor OUTPUT -> Building INPUT
+	# - Building OUTPUT -> Conveyor INPUT
+	# - Rotated buildings
+	# - Fractional world positions
+	# - Recipe-controlled and universal inventories
+	#
+	# The normal placement collision check has
+	# already completed before reaching this section.
+
+	if (
+		is_instance_valid(building_placement_snap_belt)
+		and is_instance_valid(building_placement_snap_port)
+	):
+
+		# =============================================================================
+		# VALIDATE EXISTING CONVEYOR AND BUILDING GHOST
+		# =============================================================================
+
+		if not is_instance_valid(placement_ghost):
+			print("Building placement failed: Missing ghost.")
+			return
+
+		if placement_ghost is ConveyorSegment:
+			print("Building placement failed: Invalid building.")
+			return
+
+		if (
+			not building_placement_snap_belt.is_inside_tree()
+			or building_placement_snap_belt.is_queued_for_deletion()
+		):
+			print("Building placement failed: Conveyor unavailable.")
+			return
+
+		# =============================================================================
+		# IDENTIFY PREVIEW PORT
+		# =============================================================================
+
+		# The selected port belongs to the ghost.
+		# The permanent building must use its own port,
+		# never the temporary ghost component.
+
+		if not placement_ghost.is_ancestor_of(
+			building_placement_snap_port
+		):
+			print("Building placement failed: Invalid port.")
+			return
+
+		var port_path: NodePath = (
+			placement_ghost.get_path_to(
+				building_placement_snap_port
+			)
+		)
+
+		# =============================================================================
+		# CREATE PERMANENT BUILDING
+		# =============================================================================
+
+		var building_instance: Node = (
+			selected_scene.instantiate()
+		)
+
+		if not building_instance is Node3D:
+
+			if is_instance_valid(building_instance):
+				building_instance.free()
+
+			print("Building placement failed: Invalid scene.")
+			return
+
+		var placed_building: Node3D = (
+			building_instance as Node3D
+		)
+
+		get_tree().current_scene.add_child(
+			placed_building
+		)
+
+		# =============================================================================
+		# APPLY EXACT PREVIEW TRANSFORM
+		# =============================================================================
+
+		# Do not round to the integer grid.
+		# Preserve the port alignment and rotation.
+
+		placed_building.global_transform = (
+			placement_ghost.global_transform
+		)
+
+		# =============================================================================
+		# INITIALIZE BUILDING DEFINITION
+		# =============================================================================
+
+		var definition: BuildingDefinition = (
+			_get_selected_building_definition()
+		)
+
+		var runtime: BuildingRuntime = (
+			placed_building.get_node_or_null(
+				"BuildingRuntime"
+			) as BuildingRuntime
+		)
+
+		if runtime != null and definition != null:
+			runtime.initialize(definition)
+
+		# =============================================================================
+		# FIND ACTUAL BUILDING PORT
+		# =============================================================================
+
+		var actual_port: ItemPortComponent = (
+			placed_building.get_node_or_null(
+				port_path
+			) as ItemPortComponent
+		)
+
+		if not is_instance_valid(actual_port):
+
+			placed_building.queue_free()
+
+			print(
+				"Building placement failed: "
+				+ "Permanent port not found."
+			)
+
+			return
+
+		# =============================================================================
+		# ESTABLISH PHYSICAL CONNECTION
+		# =============================================================================
+
+		# The existing connection method validates:
+		# - Correct input/output direction
+		# - Free conveyor endpoint
+		# - Free building port
+		# - Physical endpoint alignment
+		# - Compatible inventory configuration
+
+		var connected: bool = (
+			building_placement_snap_belt.try_connect_building_port(
+				actual_port
+			)
+		)
+
+		# =============================================================================
+		# HANDLE CONNECTION FAILURE
+		# =============================================================================
+
+		if not connected:
+
+			# Never leave a building that appears
+			# connected but has no physical connection.
+
+			placed_building.queue_free()
+
+			print(
+				"Building placement failed: "
+				+ "Physical connection rejected."
+			)
+
+			return
+
+		# =============================================================================
+		# CONFIRM CONNECTION
+		# =============================================================================
+
+		print(
+			"BUILDING CONNECTED SUCCESSFULLY | Building: ",
+			placed_building.name,
+			" | Port: ",
+			actual_port.name,
+			" | Conveyor: ",
+			building_placement_snap_belt.name,
+			" | Position: ",
+			placed_building.global_position
+		)
+
+		# =============================================================================
+		# PREVENT DUPLICATE PLACEMENT
+		# =============================================================================
+
+		# The building and its physical connection
+		# have both been created successfully.
+		#
+		# Do not execute normal placement afterward.
+
+		building_placement_snap_belt = null
+		building_placement_snap_port = null
+
+		return
+
+
 	# =============================================================================
 	# USE ACTIVE CONVEYOR SHAPE FOR PLACEMENT
 	# =============================================================================
@@ -1573,6 +2311,133 @@ func _try_place_object() -> void:
 		and conveyor_preview_scene != null
 	):
 		selected_scene = conveyor_preview_scene
+
+	
+	# =============================================================================
+	# PERMANENT BUILDING-TO-CONVEYOR SNAP PLACEMENT
+	# =============================================================================
+
+	# Create a physical conveyor connection when the
+	# placement ghost is snapped to a valid building port.
+	#
+	# Supports:
+	# - Extractor OUTPUT -> Conveyor INPUT
+	# - Conveyor OUTPUT -> Smelter INPUT
+	# - Rotated buildings
+	# - Generic item transportation
+	#
+	# Existing collision validation happens earlier
+	# in _try_place_object().
+	#
+	# Do not create duplicate conveyors or bypass
+	# the existing belt-to-belt snapping system.
+
+	if is_instance_valid(conveyor_building_snap_port):
+
+		# =============================================================================
+		# VALIDATE BUILDING SNAP PREVIEW
+		# =============================================================================
+
+		if not placement_ghost is ConveyorSegment:
+			print("Building connection failed: Invalid ghost.")
+			return
+
+		if (
+			not conveyor_building_snap_port.is_inside_tree()
+			or conveyor_building_snap_port.is_queued_for_deletion()
+		):
+			print("Building connection failed: Port unavailable.")
+			return
+
+		# =============================================================================
+		# CREATE PERMANENT CONVEYOR
+		# =============================================================================
+
+		var building_snap_instance: Node = (
+			selected_scene.instantiate()
+		)
+
+		if not building_snap_instance is ConveyorSegment:
+
+			if is_instance_valid(building_snap_instance):
+				building_snap_instance.free()
+
+			print("Building connection failed: Invalid scene.")
+			return
+
+		var building_snap_belt: ConveyorSegment = (
+			building_snap_instance as ConveyorSegment
+		)
+
+		get_tree().current_scene.add_child(
+			building_snap_belt
+		)
+
+		# =============================================================================
+		# APPLY EXACT PREVIEW TRANSFORM
+		# =============================================================================
+
+		# Use the placement ghost's world transform.
+		# This preserves its rotation and port alignment.
+
+		building_snap_belt.global_transform = (
+			placement_ghost.global_transform
+		)
+
+		# =============================================================================
+		# ESTABLISH PHYSICAL BUILDING CONNECTION
+		# =============================================================================
+
+		# The existing connection component validates:
+		# - Port direction
+		# - Port availability
+		# - Reciprocal connection state
+		# - Endpoint geometry
+		# - Inventory configuration
+
+		var building_connected: bool = (
+			building_snap_belt.try_connect_building_port(
+				conveyor_building_snap_port
+			)
+		)
+
+		# =============================================================================
+		# HANDLE FAILED CONNECTION
+		# =============================================================================
+
+		if not building_connected:
+
+			# Remove the new conveyor if the physical
+			# connection cannot be established.
+
+			building_snap_belt.queue_free()
+
+			print(
+				"Building connection failed: "
+				+ "Physical connection rejected."
+			)
+
+			return
+
+		# =============================================================================
+		# CONFIRM SUCCESSFUL CONNECTION
+		# =============================================================================
+
+		print(
+			"BUILDING PORT CONNECTED | Port: ",
+			conveyor_building_snap_port.name,
+			" | Conveyor: ",
+			building_snap_belt.name,
+			" | Position: ",
+			building_snap_belt.global_position
+		)
+
+		# The connection is complete.
+		# Do not run normal building placement,
+		# which would create a second conveyor.
+
+		return
+
 
 	# =============================================================================
 	# PERMANENT CONVEYOR SNAP PLACEMENT
@@ -1942,6 +2807,9 @@ func _destroy_placement_ghost() -> void:
 
 	conveyor_snap_source = null
 	conveyor_snap_before = false
+	conveyor_building_snap_port = null
+	building_placement_snap_belt = null
+	building_placement_snap_port = null
 	conveyor_preview_scene = null
 	placement_ghost = null
 	ghost_material = null

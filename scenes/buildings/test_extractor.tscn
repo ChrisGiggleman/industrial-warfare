@@ -51,6 +51,7 @@ collision_mask = 2
 shape = SubResource("SphereShape3D_nnmqk")
 
 [node name="LogisticsTransferComponent" type="Node" parent="." unique_id=701923578]
+process_mode = 4
 script = ExtResource("5_fr4l3")
 transfer_item = ExtResource("6_hyyae")
 

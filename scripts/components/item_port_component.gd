@@ -72,6 +72,82 @@ enum InputPolicy {
 
 var connected_conveyor: ConveyorSegment = null
 
+# =============================================================================
+# TEMPORARY BUILDING PORT VISUAL INDICATORS
+# =============================================================================
+
+# Displays IN or OUT above physical building ports.
+#
+# These are temporary development placeholders.
+# They help identify connection points while our
+# factory buildings still use simple box meshes.
+#
+# Can be disabled later when final 3D models
+# have clearly identifiable input/output geometry.
+
+@export var show_port_label: bool = true
+
+
+# =============================================================================
+# CREATE PORT LABEL
+# =============================================================================
+
+func _ready() -> void:
+
+	if not show_port_label:
+		return
+
+	# Avoid creating duplicate visual labels.
+
+	if has_node("PortDebugLabel"):
+		return
+
+	var port_label := Label3D.new()
+
+	port_label.name = "PortDebugLabel"
+
+	# =============================================================================
+	# IDENTIFY PORT DIRECTION
+	# =============================================================================
+
+	if direction == PortDirection.INPUT:
+
+		port_label.text = "IN"
+		port_label.modulate = Color(0.2, 0.75, 1.0)
+
+	else:
+
+		port_label.text = "OUT"
+		port_label.modulate = Color(1.0, 0.65, 0.15)
+
+	# =============================================================================
+	# CONFIGURE LABEL APPEARANCE
+	# =============================================================================
+
+	port_label.font_size = 32
+	port_label.pixel_size = 0.012
+	port_label.outline_size = 6
+
+	# Always face the game camera.
+
+	port_label.billboard = (
+		BaseMaterial3D.BILLBOARD_ENABLED
+	)
+
+	# Position above the connection marker.
+
+	port_label.position = Vector3(
+		0.0,
+		0.45,
+		0.0
+	)
+
+	# No physics collision is added.
+	# The label cannot interfere with conveyor
+	# snapping, placement, or item transportation.
+
+	add_child(port_label)
+
 
 # =============================================================================
 # INPUT PORT ACCEPTANCE CHECK

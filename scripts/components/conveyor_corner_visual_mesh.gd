@@ -4,56 +4,35 @@ class_name ConveyorCornerVisualMesh
 
 
 # =============================================================================
-# CONVEYOR CORNER VISUAL GEOMETRY
+# INDUSTRIAL WARFARE — FILLED CONVEYOR CORNER MESH
 # =============================================================================
 
-# Builds one combined ArrayMesh for either turn direction.
+# Creates a single continuous mesh for right and left turns.
 #
-# The visual shape contains:
-# - An incoming straight section along Z
-# - An outgoing section along +X or -X
+# Unlike the previous version, this mesh does not use
+# overlapping BoxMesh objects.
 #
-# The geometry fits inside one conveyor grid cell.
+# Input reaches local Z +0.5.
+# Right output reaches local X +0.5.
+# Left output reaches local X -0.5.
 #
-# This class changes visual geometry only.
-# It does not modify physical connections or collisions.
-
+# Connection markers and physics are unchanged.
 
 
 # =============================================================================
 # CORNER GEOMETRY SETTINGS
 # =============================================================================
 
-# Match the existing straight conveyor width.
-# This prevents the visible narrowing at connections.
-
 const BELT_WIDTH: float = 0.8
-
-# Match the straight conveyor's mesh height.
-
 const BELT_HEIGHT: float = 0.2
-
-# Each arm extends to the appropriate grid-cell edge.
-#
-# ARM_LENGTH / 2 + ARM_OFFSET = 0.5
-#
-# This keeps the corner inside its intended cell
-# while allowing it to meet neighboring straight belts.
-
-const ARM_LENGTH: float = 0.6
-const ARM_OFFSET: float = 0.2
-
+const HALF_CELL: float = 0.5
 
 
 # =============================================================================
-# CREATE A SINGLE L-SHAPED MESH
+# CREATE CORNER MESH
 # =============================================================================
 
 static func build(turn: int) -> ArrayMesh:
-
-	# =============================================================================
-	# VALIDATE TURN DIRECTION
-	# =============================================================================
 
 	var side: float = 0.0
 
@@ -67,89 +46,201 @@ static func build(turn: int) -> ArrayMesh:
 		return null
 
 	# =============================================================================
-	# CREATE INCOMING BELT ARM
+	# CREATE FILLED CORNER OUTLINE
 	# =============================================================================
 
-	# This section reaches the input at local Z +0.5.
+	# The outline forms one continuous turning platform.
+	#
+	# Its input and output edges match the 0.8m width
+	# of our straight conveyor.
+	#
+	# The central bend is filled rather than assembled
+	# from overlapping rectangles.
 
-	var incoming_box := BoxMesh.new()
+	var half_width: float = BELT_WIDTH * 0.5
 
-	incoming_box.size = Vector3(
-		BELT_WIDTH,
-		BELT_HEIGHT,
-		ARM_LENGTH
+	var outline := PackedVector2Array([
+		Vector2(-half_width * side, HALF_CELL),
+		Vector2(half_width * side, HALF_CELL),
+		Vector2(half_width * side, half_width),
+		Vector2(HALF_CELL * side, half_width),
+		Vector2(HALF_CELL * side, -half_width),
+		Vector2(-half_width * side, -half_width)
+	])
+
+	# =============================================================================
+	# TRIANGULATE CORNER SURFACE
+	# =============================================================================
+
+	var triangles: PackedInt32Array = (
+		Geometry2D.triangulate_polygon(outline)
 	)
 
-	# =============================================================================
-	# CREATE OUTGOING BELT ARM
-	# =============================================================================
-
-	# This section reaches local X +0.5 for RIGHT
-	# or X -0.5 for LEFT.
-
-	var outgoing_box := BoxMesh.new()
-
-	outgoing_box.size = Vector3(
-		ARM_LENGTH,
-		BELT_HEIGHT,
-		BELT_WIDTH
-	)
+	if triangles.is_empty():
+		return null
 
 	# =============================================================================
-	# PREPARE SURFACE TOOL
+	# CREATE MATERIAL
 	# =============================================================================
 
-	var surface_tool := SurfaceTool.new()
-	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var material := StandardMaterial3D.new()
 
-	# =============================================================================
-	# FACTORY BELT PLACEHOLDER MATERIAL
-	# =============================================================================
-
-	var belt_material := StandardMaterial3D.new()
-
-	belt_material.albedo_color = Color(
+	material.albedo_color = Color(
 		0.392,
 		0.467,
 		0.514
 	)
 
-	belt_material.metallic = 0.2
-	belt_material.roughness = 0.8
-
-	surface_tool.set_material(belt_material)
+	material.metallic = 0.2
+	material.roughness = 0.8
 
 	# =============================================================================
-	# COMBINE THE TWO BELT ARMS
+	# INITIALIZE MESH
 	# =============================================================================
 
-	# Both boxes use coordinates relative to BeltMesh.
-	#
-	# BeltMesh itself remains at Y = 0.3,
-	# as in our existing conveyor scenes.
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface.set_material(material)
 
-	surface_tool.append_from(
-		incoming_box,
-		0,
-		Transform3D(
-			Basis.IDENTITY,
-			Vector3(0.0, 0.0, ARM_OFFSET)
+	var half_height: float = BELT_HEIGHT * 0.5
+
+	# =============================================================================
+	# GENERATE TOP AND BOTTOM SURFACES
+	# =============================================================================
+
+	# Godot triangulates the 2D polygon counterclockwise.
+	# Reverse the vertex order for the upward-facing top.
+
+	for i in range(0, triangles.size(), 3):
+
+		var a: Vector2 = outline[triangles[i]]
+		var b: Vector2 = outline[triangles[i + 1]]
+		var c: Vector2 = outline[triangles[i + 2]]
+
+		var top_a := Vector3(a.x, half_height, a.y)
+		var top_b := Vector3(b.x, half_height, b.y)
+		var top_c := Vector3(c.x, half_height, c.y)
+
+		_add_triangle(
+			surface,
+			top_a,
+			top_c,
+			top_b,
+			Vector3.UP
 		)
-	)
 
-	surface_tool.append_from(
-		outgoing_box,
-		0,
-		Transform3D(
-			Basis.IDENTITY,
-			Vector3(side * ARM_OFFSET, 0.0, 0.0)
+		var bottom_a := Vector3(a.x, -half_height, a.y)
+		var bottom_b := Vector3(b.x, -half_height, b.y)
+		var bottom_c := Vector3(c.x, -half_height, c.y)
+
+		_add_triangle(
+			surface,
+			bottom_a,
+			bottom_b,
+			bottom_c,
+			Vector3.DOWN
 		)
-	)
 
 	# =============================================================================
-	# GENERATE THE COMBINED MESH
+	# GENERATE OUTER SIDE WALLS
 	# =============================================================================
 
-	var result: ArrayMesh = surface_tool.commit()
+	# Each outline edge receives two triangles.
+	# Mirrored left-turn outlines use reversed winding.
 
-	return result
+	for i in range(outline.size()):
+
+		var start: Vector2 = outline[i]
+		var finish: Vector2 = outline[
+			(i + 1) % outline.size()
+		]
+
+		var edge: Vector2 = finish - start
+
+		var normal := Vector3(
+			-edge.y,
+			0.0,
+			edge.x
+		).normalized() * side
+
+		var top_start := Vector3(
+			start.x, half_height, start.y
+		)
+
+		var top_finish := Vector3(
+			finish.x, half_height, finish.y
+		)
+
+		var bottom_start := Vector3(
+			start.x, -half_height, start.y
+		)
+
+		var bottom_finish := Vector3(
+			finish.x, -half_height, finish.y
+		)
+
+		if side > 0.0:
+
+			_add_triangle(
+				surface,
+				top_start,
+				bottom_start,
+				top_finish,
+				normal
+			)
+
+			_add_triangle(
+				surface,
+				top_finish,
+				bottom_start,
+				bottom_finish,
+				normal
+			)
+
+		else:
+
+			_add_triangle(
+				surface,
+				top_start,
+				top_finish,
+				bottom_start,
+				normal
+			)
+
+			_add_triangle(
+				surface,
+				top_finish,
+				bottom_finish,
+				bottom_start,
+				normal
+			)
+
+	# =============================================================================
+	# RETURN FINISHED CORNER MESH
+	# =============================================================================
+
+	return surface.commit()
+
+
+# =============================================================================
+# ADD ONE TRIANGLE
+# =============================================================================
+
+# Shared helper for top, bottom, and side surfaces.
+
+static func _add_triangle(
+	surface: SurfaceTool,
+	a: Vector3,
+	b: Vector3,
+	c: Vector3,
+	normal: Vector3
+) -> void:
+
+	surface.set_normal(normal)
+	surface.add_vertex(a)
+
+	surface.set_normal(normal)
+	surface.add_vertex(b)
+
+	surface.set_normal(normal)
+	surface.add_vertex(c)

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_vaqhg"]
 [ext_resource type="Script" uid="uid://cqch6j1sock7f" path="res://scripts/components/building_runtime.gd" id="2_nlw34"]
 [ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_hbm6m"]
+[ext_resource type="Script" uid="uid://vycgy0li3ymm" path="res://scripts/components/item_port_component.gd" id="4_nlw34"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(1, 1, 2.8)
@@ -31,3 +32,15 @@ script = ExtResource("2_nlw34")
 [node name="InventoryComponent" type="Node" parent="." unique_id=1901622226]
 script = ExtResource("3_hbm6m")
 max_capacity = 200
+
+[node name="InputPort" type="Marker3D" parent="." unique_id=877592906 node_paths=PackedStringArray("inventory")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0.5, 1.5)
+script = ExtResource("4_nlw34")
+input_policy = 1
+inventory = NodePath("../InventoryComponent")
+
+[node name="OutputPort" type="Marker3D" parent="." unique_id=297464884 node_paths=PackedStringArray("inventory")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1.5)
+script = ExtResource("4_nlw34")
+direction = 1
+inventory = NodePath("../InventoryComponent")
