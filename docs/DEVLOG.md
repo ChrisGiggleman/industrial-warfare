@@ -1002,3 +1002,50 @@ The updated connected (7/7), timed (8/8) and original full-chain construction (8
 - **Not yet a physical factory:** no building-to-belt snap/load/unload path, visible cargo models, separate splitter/merger, intentional closed-loop closure or automated ingot export. Temporary proximity logistics remains active.
 
 The user committed and pushed the tested gameplay milestone to GitHub `main` before this documentation update. **Next milestone:** visible generic cargo on belts, then machine/storage port connections and full ore-to-ingot physical routing, with regression checks at each step.
+
+---
+
+## 2026-10-27 — Chat 08: Visible Cargo, Building Connections and Physical Factory Test (Second Milestone)
+
+### Implemented & Tested
+
+- Created `ConveyorCargoVisual` as a read-only `MeshInstance3D` placeholder. The real ConveyorStraight scene now has a `CargoVisual` child, hidden when empty and interpolating from input to output along straight belts or an L-shaped local path on converted left/right corners. The carried `ItemDefinition` is generic; distinct item-specific artwork is not implemented yet.
+- Added `OutputPort` to `test_extractor.tscn`, referencing the extractor's existing 50-unit inventory. Existing Test Smelter input/output ports continue to use the producer's selected recipe and separate inventories.
+- Added `ConveyorBuildingSnap` to calculate read-only building-port snap transforms for either port direction and rotated buildings; extended it to reject occupied building and belt endpoints.
+- Added reciprocal `connected_conveyor` / `input_building_port` / `output_building_port` references with alignment checks, exclusive connection ownership and cleanup on endpoint removal. Geometric alignment alone does not authorize transferring items.
+- Added `ConveyorBuildingTransfer` for generic one-item output loading and guarded input unloading. Active-recipe filtering rejects irrelevant materials, full destinations retain cargo, and all transactions use conservation-aware InventoryComponent methods.
+- Updated `ConveyorTransportTimer` to automatically load empty belts from connected output ports and to unload after the travel interval into connected input ports; forward belt-to-belt transfers, congestion retention and recovery remain available.
+- Verified a real Extractor and Smelter with a three-belt route: **2 Test Ore seeded in the extractor → physically carried to Smelter → 1 Test Ingot manufactured**, with manual deterministic timer and producer updates and proximity/extraction processing disabled.
+
+### Local Godot 4.6.2 Test Record
+
+| Test scene | Result |
+| --- | --- |
+| `conveyor_cargo_visual_test.tscn` | 6/6 |
+| `conveyor_corner_cargo_visual_test.tscn` | 8/8 |
+| `extractor_output_port_test.tscn` | 7/7 |
+| `conveyor_building_snap_test.tscn` | 10/10 (after occupancy expansion) |
+| `conveyor_building_connection_test.tscn` | 8/8 |
+| `conveyor_building_loading_test.tscn` | 9/9 |
+| `conveyor_building_unloading_test.tscn` | 10/10 |
+| `conveyor_automatic_unloading_test.tscn` | 9/9 |
+| `conveyor_automatic_loading_test.tscn` | 10/10 |
+| `conveyor_physical_factory_test.tscn` | 9/9 |
+| **Second milestone subtotal** | **86/86** |
+
+With the first milestone **44/44**, Chat 08 now has **130/130 reported checks over individually run suites**. Connected/timed/full transport and automatic unloading regressions were rerun successfully during development. The final physical factory integration test passed 9/9, and the developer pushed the changes to `main`. No single consolidated CI run is claimed.
+
+### Problems Resolved
+
+- `CargoVisual` initially had the **test script** (`conveyor_cargo_visual_test.gd`) attached instead of `conveyor_cargo_visual.gd`, producing a stack overflow during scene initialization. Assigning the correct component script restored passing straight/corner visual tests.
+- An explanatory pseudo-code example was accidentally pasted at the bottom of `conveyor_building_transfer.gd`, duplicating `extends RefCounted` and `class_name` declarations. Removing that sample and appending only the complete top-level `try_unload_from_belt()` function corrected the file.
+- The `conveyor_building_unloading_test` script/scene were initially missing; they were created separately and the new unloading test passed 10/10. `Extractor has no resource node` appeared in isolated tests because no deposit was instantiated; it was not a port/transport failure.
+
+### Boundaries and Next Work
+
+- The normal player factory does **not yet snap belts to building ports through Build Mode**. The completed physical route exists in an isolated test which positions and connects its actors in code, seeds ore instead of mining, and manually drives timers.
+- The temporary Extractor → Storage → Smelter proximity logistics remains enabled in normal gameplay. It must be gated or replaced only after safe physical routes and regression coverage exist, to prevent overlapping transfer systems.
+- Test Storage still needs dedicated universal input/output ports and a validated complete physical route via storage. Further tests should cover multiple simultaneous items, throughput and transfer order under frame-driven updates.
+- The generic orange placeholder is common to all item definitions; distinct item visual models, splitter/merger buildings, explicit loop closure, improved corner colliders and cargo recovery for non-player destruction remain open.
+
+**Next milestone:** integrate building-port preview/connection into `WorldInteraction` carefully, test player-created Extractor → Belt → Smelter networks, and add Storage port support before switching off proximity logistics.
