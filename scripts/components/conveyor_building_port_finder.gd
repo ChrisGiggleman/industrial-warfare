@@ -90,10 +90,13 @@ static func find_nearest_preview(
 		if candidate.is_queued_for_deletion():
 			continue
 
-		# Placement ghosts must never be treated
-		# as real, available building ports.
+		# Exclude actual construction previews, not every disabled
+		# node. Existing production buildings may legitimately have
+		# processing disabled and still need physical port connections.
+		#
+		# WorldInteraction marks only temporary ghosts with this group.
 
-		if candidate.process_mode == Node.PROCESS_MODE_DISABLED:
+		if candidate.is_in_group("construction_preview"):
 			continue
 
 		# =============================================================================
