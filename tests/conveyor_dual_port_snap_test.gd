@@ -137,6 +137,63 @@ func _ready() -> void:
 		)
 	)
 
+	# =============================================================================
+	# EXPLAIN A MISSING DISCOVERY CANDIDATE
+	# =============================================================================
+
+	# In a test scene, a missing candidate can be caused by
+	# group registration, port occupancy, direction, or range.
+	# Print all four inputs before the assertion, so the exact
+	# cause is visible instead of a bare "Assertion failed".
+
+	if discovery.is_empty():
+
+		var port_recheck: Dictionary = (
+			ConveyorBuildingSnap.get_preview_transform(
+				output_port,
+				output_belt
+			)
+		)
+
+		var current_forward: Vector3 = (
+			output_belt.global_transform.basis
+			* Vector3.FORWARD
+		).normalized()
+
+		var proposed_forward: Vector3 = (
+			output_transform.basis * Vector3.FORWARD
+		).normalized()
+
+		var cursor_distance: float = 0.0
+
+		if port_recheck.has("transform"):
+
+			var latest: Transform3D = port_recheck["transform"]
+
+			cursor_distance = Vector2(
+				output_transform.origin.x - latest.origin.x,
+				output_transform.origin.z - latest.origin.z
+			).length()
+
+		print("DIAGNOSTIC C | Smelter group registered: ",
+			smelter.is_in_group("player_built"))
+		print("DIAGNOSTIC C | Group contains Smelter: ",
+			get_tree().get_nodes_in_group("player_built").has(smelter))
+		print("DIAGNOSTIC C | Smelter process disabled: ",
+			smelter.process_mode == Node.PROCESS_MODE_DISABLED)
+		print("DIAGNOSTIC C | Output port occupied: ",
+			is_instance_valid(output_port.connected_conveyor))
+		print("DIAGNOSTIC C | Output inventory valid: ",
+			is_instance_valid(output_port.inventory))
+		print("DIAGNOSTIC C | Port direct child: ",
+			output_port.get_parent() == smelter)
+		print("DIAGNOSTIC C | Preview still available: ",
+			port_recheck.has("transform"))
+		print("DIAGNOSTIC C | Facing dot: ",
+			current_forward.dot(proposed_forward))
+		print("DIAGNOSTIC C | Cursor distance: ",
+			cursor_distance)
+
 	assert(discovery.has("port"))
 	assert(discovery["port"] == output_port)
 	assert(discovery["transform"].is_equal_approx(output_transform))
