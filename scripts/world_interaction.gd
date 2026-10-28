@@ -94,6 +94,17 @@ var conveyor_corner_snap_turn: int = (
 	ConveyorTurnIntent.Turn.STRAIGHT
 )
 
+# =============================================================================
+# TWO-ENDED CONVEYOR BRIDGE SNAP STATE — CHAT 08.3F-6
+# =============================================================================
+
+# Valid only when a single ordinary straight segment physically fits
+# between TWO existing free conveyor endpoints.
+# Preview references are reset every frame and never create links.
+
+var conveyor_bridge_source: ConveyorSegment = null
+var conveyor_bridge_destination: ConveyorSegment = null
+
 # Stores the placed conveyor currently providing a
 # possible snap location for our placement ghost.
 #
@@ -924,6 +935,8 @@ func _update_placement_preview() -> void:
 			building_placement_snap_port = null
 			conveyor_corner_snap_source = null
 			conveyor_corner_snap_turn = ConveyorTurnIntent.Turn.STRAIGHT
+			conveyor_bridge_source = null
+			conveyor_bridge_destination = null
 			placement_ghost.global_position = (
 				current_placement_position
 			)
@@ -938,9 +951,10 @@ func _update_placement_preview() -> void:
 
 			# Always begin with the original grid position and player rotation.
 			# Resolve only one physical target per frame:
-			#   1. Compatible, free building port
-			#   2. Compatible existing conveyor endpoint
-			#   3. Off-grid perpendicular turn preview
+			#   1. Exact two-ended conveyor bridge (if one piece fits)
+			#   2. Compatible, free building port
+			#   3. Compatible existing conveyor endpoint
+			#   4. Off-grid perpendicular turn preview
 			#
 			# Never use an already-snapped ghost position as the mouse
 			# position for the next discovery pass. All connections
@@ -953,7 +967,42 @@ func _update_placement_preview() -> void:
 				)
 
 				# =============================================================================
-				# FIRST: BUILDING PORT — INDEPENDENT IN / OUT
+				# FIRST: EXACT TWO-ENDED BRIDGE
+				# =============================================================================
+
+				# Only select a bridge when ONE unchanged straight conveyor
+				# aligns with two free endpoints and the requested rotation.
+
+				if conveyor_preview_scene == ConveyorPieceSelector.STRAIGHT_SCENE:
+
+					var bridge_preview: Dictionary = (
+						ConveyorDualEndedBridge.find_nearest_preview(
+							ghost_belt,
+							mouse_grid_position,
+							CONVEYOR_SNAP_SEARCH_RADIUS
+						)
+					)
+
+					if not bridge_preview.is_empty():
+
+						conveyor_bridge_source = (
+							bridge_preview["source"] as ConveyorSegment
+						)
+
+						conveyor_bridge_destination = (
+							bridge_preview["destination"] as ConveyorSegment
+						)
+
+						placement_ghost.global_transform = (
+							bridge_preview["transform"]
+						)
+
+						current_placement_position = (
+							placement_ghost.global_position
+						)
+
+				# =============================================================================
+				# SECOND: BUILDING PORT — INDEPENDENT IN / OUT
 				# =============================================================================
 
 				var port_preview: Dictionary = (
@@ -964,7 +1013,10 @@ func _update_placement_preview() -> void:
 					)
 				)
 
-				if not port_preview.is_empty():
+				if (
+					not is_instance_valid(conveyor_bridge_source)
+					and not port_preview.is_empty()
+				):
 
 					var port: ItemPortComponent = (
 						port_preview["port"] as ItemPortComponent
@@ -982,10 +1034,13 @@ func _update_placement_preview() -> void:
 						)
 
 				# =============================================================================
-				# SECOND: EXISTING CONVEYOR ENDPOINT
+				# THIRD: EXISTING CONVEYOR ENDPOINT
 				# =============================================================================
 
-				if not is_instance_valid(conveyor_building_snap_port):
+				if (
+					not is_instance_valid(conveyor_bridge_source)
+					and not is_instance_valid(conveyor_building_snap_port)
+				):
 
 					var belt_preview: Dictionary = (
 						_find_conveyor_snap_preview(
@@ -1012,7 +1067,7 @@ func _update_placement_preview() -> void:
 						)
 
 					# =============================================================================
-					# THIRD: OFF-GRID CORNER PREVIEW
+					# FOURTH: OFF-GRID CORNER PREVIEW
 					# =============================================================================
 
 					else:
@@ -1334,6 +1389,95 @@ func _is_placement_clear() -> bool:
 	# Other buildings and conveyors must still block placement.
 
 	var snap_exclusions: Array[RID] = []
+
+	# =============================================================================
+	# VERIFY BOTH INTENDED NEIGHBORS OF A TWO-ENDED BRIDGE
+	# =============================================================================
+
+	if (
+		is_instance_valid(conveyor_bridge_source)
+		and is_instance_valid(conveyor_bridge_destination)
+	):
+
+		if not placement_ghost is ConveyorSegment:
+			return false
+
+		var bridge_ghost: ConveyorSegment = (
+			placement_ghost as ConveyorSegment
+		)
+
+		var verified_bridge: Dictionary = (
+			ConveyorDualEndedBridge.get_preview_transform(
+				conveyor_bridge_source,
+				bridge_ghost,
+				conveyor_bridge_destination
+			)
+		)
+
+		if verified_bridge.is_empty():
+			return false
+
+		var expected_bridge: Transform3D = (
+			verified_bridge["transform"]
+		)
+
+		if not bridge_ghost.global_transform.is_equal_approx(
+			expected_bridge
+		):
+			return false
+
+		# Connection helpers require exact directed endpoint geometry.
+		# Exclude ONLY these two physical neighbors, and only after
+		# both pairs have been independently revalidated.
+
+		var source_output: Marker3D = (
+			conveyor_bridge_source.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		var bridge_input: Marker3D = (
+			bridge_ghost.get_node_or_null("InputEndpoint")
+			as Marker3D
+		)
+
+		var bridge_output: Marker3D = (
+			bridge_ghost.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		var destination_input: Marker3D = (
+			conveyor_bridge_destination.get_node_or_null("InputEndpoint")
+			as Marker3D
+		)
+
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(
+			source_output,
+			bridge_input,
+			ConveyorSegment.CONNECTION_GAP
+		):
+			return false
+
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(
+			bridge_output,
+			destination_input,
+			ConveyorSegment.CONNECTION_GAP
+		):
+			return false
+
+		for neighbor: ConveyorSegment in [
+			conveyor_bridge_source,
+			conveyor_bridge_destination
+		]:
+
+			var neighbor_body: PhysicsBody3D = (
+				neighbor.get_node_or_null("ConveyorBody")
+				as PhysicsBody3D
+			)
+
+			if not is_instance_valid(neighbor_body):
+				return false
+
+			snap_exclusions.append(neighbor_body.get_rid())
 
 	if (
 		placement_ghost is ConveyorSegment
@@ -1807,7 +1951,19 @@ func _try_place_object() -> void:
 
 	if selected_building_index == 4 and placement_ghost is ConveyorSegment:
 
-		if is_instance_valid(conveyor_building_snap_port):
+		if (
+			is_instance_valid(conveyor_bridge_source)
+			and is_instance_valid(conveyor_bridge_destination)
+		):
+
+			print(
+				"SNAP TARGET | Two-ended bridge: ",
+				conveyor_bridge_source.name,
+				" -> NEW -> ",
+				conveyor_bridge_destination.name
+			)
+
+		elif is_instance_valid(conveyor_building_snap_port):
 
 			print(
 				"SNAP TARGET | Building: ",
@@ -1874,6 +2030,104 @@ func _try_place_object() -> void:
 		return
 
 	
+	# =============================================================================
+	# PERMANENT TWO-ENDED CONVEYOR BRIDGE PLACEMENT
+	# =============================================================================
+
+	# A new straight conveyor must fill the EXACT free gap between
+	# two real existing belts. No endpoint stretching, no extra belt,
+	# and no partial route left behind if either connection fails.
+
+	if (
+		is_instance_valid(conveyor_bridge_source)
+		or is_instance_valid(conveyor_bridge_destination)
+	):
+
+		if (
+			not placement_ghost is ConveyorSegment
+			or selected_building_index != 4
+			or conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
+			or not is_instance_valid(conveyor_bridge_source)
+			or not is_instance_valid(conveyor_bridge_destination)
+			or is_instance_valid(conveyor_building_snap_port)
+			or is_instance_valid(conveyor_snap_source)
+			or is_instance_valid(conveyor_corner_snap_source)
+		):
+			print("Bridge placement failed: Invalid snap state.")
+			return
+
+		# Recheck collision and both endpoint occupancies on click.
+		# This prevents a stale green ghost from committing a bridge.
+
+		if not _is_placement_clear():
+			print("Bridge placement blocked: Geometry or collision changed.")
+			return
+
+		var bridge_check: Dictionary = (
+			ConveyorDualEndedBridge.get_preview_transform(
+				conveyor_bridge_source,
+				placement_ghost as ConveyorSegment,
+				conveyor_bridge_destination
+			)
+		)
+
+		if bridge_check.is_empty():
+			print("Bridge placement failed: Endpoints unavailable.")
+			return
+
+		var bridge_transform: Transform3D = (
+			bridge_check["transform"]
+		)
+
+		if not placement_ghost.global_transform.is_equal_approx(
+			bridge_transform
+		):
+			print("Bridge placement failed: Preview moved.")
+			return
+
+		var bridge_instance: Node = (
+			ConveyorPieceSelector.STRAIGHT_SCENE.instantiate()
+		)
+
+		if not bridge_instance is ConveyorSegment:
+			if is_instance_valid(bridge_instance):
+				bridge_instance.free()
+			print("Bridge placement failed: Invalid conveyor scene.")
+			return
+
+		var placed_bridge: ConveyorSegment = (
+			bridge_instance as ConveyorSegment
+		)
+
+		get_tree().current_scene.add_child(placed_bridge)
+		placed_bridge.global_transform = bridge_transform
+
+		var bridge_connected: bool = (
+			ConveyorDualEndedBridge.try_connect(
+				conveyor_bridge_source,
+				placed_bridge,
+				conveyor_bridge_destination
+			)
+		)
+
+		if not bridge_connected:
+			placed_bridge.queue_free()
+			print("Bridge placement failed: Connections rejected.")
+			return
+
+		print(
+			"TWO-ENDED BRIDGE CONNECTED | Source: ",
+			conveyor_bridge_source.name,
+			" | Bridge: ", placed_bridge.name,
+			" | Destination: ", conveyor_bridge_destination.name,
+			" | Position: ", placed_bridge.global_position
+		)
+
+		# Both links are now physically connected.
+		# Never continue into normal placement on the same click.
+
+		return
+
 	# =============================================================================
 	# PERMANENT BUILDING-TO-CONVEYOR PLACEMENT
 	# =============================================================================
@@ -2733,6 +2987,8 @@ func _destroy_placement_ghost() -> void:
 	building_placement_snap_port = null
 	conveyor_corner_snap_source = null
 	conveyor_corner_snap_turn = ConveyorTurnIntent.Turn.STRAIGHT
+	conveyor_bridge_source = null
+	conveyor_bridge_destination = null
 	conveyor_preview_scene = null
 	placement_ghost = null
 	ghost_material = null
