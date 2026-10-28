@@ -807,14 +807,67 @@ Right/left automatic corner conversion changes the existing belt **in place**, s
 
 ### Operational Boundary
 
-Transport **between existing connected belts** is implemented. Player-placed belts are not yet supplied by machine output ports or discharged into machine/storage input ports. No visible item meshes, player-facing belt loading/unloading, finalized transfer-rate balancing, explicit already-placed loop closure, or cargo recovery on direct node destruction exists yet. Smelter ingots remain in output inventory during ordinary gameplay; extractor → storage → smelter still uses temporary proximity logistics.
+**Status at the first Chat 08 checkpoint (historical):** Belt-to-belt movement was implemented, but building connections, item visuals and automatic machine loading/unloading were not yet in place. These have since been added to the isolated, code-driven Chat 08 integration tests described below. Player-facing Build Mode does **not** yet discover and connect machine ports, so the ordinary factory still uses proximity logistics.
+
+---
+## Cargo Visuals, Physical Machine Ports & Factory Integration — Chat 08 (Second Milestone)
+
+### Generic Cargo Visualization — 08.2D
+
+- `scripts/components/conveyor_cargo_visual.gd` (`ConveyorCargoVisual extends MeshInstance3D`) reads `ConveyorTransportComponent.get_held_item()` and `ConveyorTransportTimer.elapsed_seconds / travel_interval`, producing a simple visible box while occupied and hiding it when empty. It never modifies inventory or transfer timing.
+- Straight belts interpolate between local input/output markers. In-place left/right converted corners use a two-part local-space L path (`input → bend → output`), including under rotated parents. Blocked cargo remains at the output until a transfer succeeds.
+- The `CargoVisual` child is present on `scenes/logistics/conveyor_straight.tscn` and survives in-place corner conversion. **One generic metallic cube is used for all items currently**; item-specific models, materials and more detailed turn animation are future art/gameplay work.
+
+### Building Ports, Read-Only Snap Transforms & Persistent Links — 08.3A–08.3D
+
+- `scenes/buildings/test_extractor.tscn` now has an `OutputPort` (`ItemPortComponent`): local `(0, 0.5, -1.0)`, local Y rotation 0°, `direction = OUTPUT`, inventory `../InventoryComponent`, no producer reference.
+- The existing Test Smelter retains its recipe-filtered `InputPort` and manufactured-product `OutputPort`; Test Storage still has **no dedicated physical input/output ports**.
+- `ConveyorBuildingSnap.get_preview_transform(port, belt)` computes a read-only transform for building OUTPUT → belt INPUT or belt OUTPUT → building INPUT, accounting for building rotation and port/belt occupancy. This helper is **not yet wired into `WorldInteraction` Build Mode**.
+- `ItemPortComponent.connected_conveyor` and `ConveyorSegment.input_building_port`/`output_building_port` hold reciprocal runtime links. `ConveyorSegment.try_connect_building_port()` checks roles, tree validity, inventory ownership/policy where applicable, strict endpoint alignment, and occupied ends. Existing belt-to-belt connection code rejects conflicting machine links.
+- `disconnect_building_port()`, expanded `disconnect_all()` and the `ItemPortComponent._exit_tree()` callback clean up corresponding references when one endpoint is removed. Connection creation/removal alone does not transfer cargo.
+
+### Loading, Unloading & Automatic Timing — 08.3E
+
+- `ConveyorBuildingTransfer.try_load_into_belt()` loads one available `ItemDefinition` unit from the physically linked building OUTPUT through its real inventory into an empty belt. It rechecks reciprocal ownership, current endpoint geometry, quantity and capacity. For mixed-output inventories it currently chooses the first eligible dictionary entry; deliberate prioritization/filtering is pending.
+- `ConveyorBuildingTransfer.try_unload_from_belt()` transfers one unit from the final belt to the physically linked building INPUT only if `ItemPortComponent.can_accept_item()` approves. `RECIPE_INPUTS` matches the active producer recipe; `ANY_ITEM` remains the proposed universal-storage policy. Unsupported items and full inventories remain blocked on the belt.
+- `ConveyorTransportTimer._process(delta)` first attempts a generic building-output load **only when the belt is empty**, resetting travel progress on a successful load. Its `advance_transport(delta)` attempts a connected downstream belt first, or an attached building input after the travel interval. Successful transfers reset progress; blocked transfers retain the item and completed progress.
+- Transfer helpers are safe for **physical inventory handoffs**, but their direct manual invocation is distinct from the timer-controlled travel cadence. One-item-per-segment capacity and 1.0-second default remain initial balance choices.
+
+### Full Extractor → Conveyor → Smelter Integration — 08.3F-1
+
+`tests/conveyor_physical_factory_test.tscn` instantiates real Extractor, three ConveyorStraight segments, and a real Smelter, computes/commits reciprocal endpoint links, seeds **two Test Ore** into the Extractor inventory, advances conveyor timers and the real `ProducerComponent` manually, and verifies **two ore become one Test Ingot**. Production waits for the second ore; final ore-equivalent accounting and cargo emptiness pass. The test disables resource extraction and both temporary proximity logistics components so they cannot interfere. This is an **isolated code-configured route**, not a player-built live factory or a test of an actual ore deposit.
+
+### Chat 08 Test Evidence (Second Milestone)
+
+| Isolated scene | Reported result |
+| --- | --- |
+| `conveyor_cargo_visual_test.tscn` | 6/6 |
+| `conveyor_corner_cargo_visual_test.tscn` | 8/8 |
+| `extractor_output_port_test.tscn` | 7/7 |
+| `conveyor_building_snap_test.tscn` | 10/10 (expanded from seven) |
+| `conveyor_building_connection_test.tscn` | 8/8 |
+| `conveyor_building_loading_test.tscn` | 9/9 |
+| `conveyor_building_unloading_test.tscn` | 10/10 |
+| `conveyor_automatic_unloading_test.tscn` | 9/9 |
+| `conveyor_automatic_loading_test.tscn` | 10/10 |
+| `conveyor_physical_factory_test.tscn` | 9/9 |
+| **Second milestone subtotal** | **86/86** |
+
+With the earlier **44/44**, Chat 08 has **130/130 reported checks across separately run, non-duplicated test suites**, plus several additional repeated regression runs. The developer confirmed the final physical factory test passed 9/9 and pushed the new source to GitHub `main`. **No unified suite execution, GitHub CI run, or final live-game machine-to-belt snap demonstration is claimed.**
+
+### Still to Implement
+
+- Connect building-port discovery, collision-safe preview and persistent endpoint linking to the normal player-facing `WorldInteraction` Build Mode; test actual player placement and rotation against all machine footprints.
+- Add universal InputPort/OutputPort markers to Test Storage (then small/medium/large slot/stack storage later) and validate full Extractor → belts → Storage → belts → Smelter → output-storage workflow.
+- Test true resource-node mining through belts, sustained concurrent multi-item operation, machine throughput/backpressure and normal-frame timing under load. Safely disable or bypass old proximity logistics **only once physical connections are present and tested**.
+- Decide item-specific visuals, output item selection/filtering, safe direct destruction/recovery of occupied belts, deliberate closed-loop connection, corner collision refinements and splitter/merger buildings.
 
 ---
 ## Current Factory Data Flow
 
 **Implemented:** one finite or infinite resource deposit can feed a Test Extractor; extracted ore moves to nearby Test Storage, and nearby Test Smelters pull ore into their independent input inventories. After each valid 2-second cycle, the smelter consumes 2 ore and deposits 1 ingot into its output inventory.
 
-The running factory still uses direct proximity transfers, not physical conveyance. The new `OutputPort` can **manually** hand finished ingots to a suitable receiving port, as demonstrated in isolated tests, but there is **no automatic finished-ingot export in normal gameplay** or machine-to-belt routing; the new belt-to-belt transport foundation is separately implemented and tested. Power and fuel simulation remain unimplemented.
+The ordinary player-built factory still uses direct proximity transfers. Separately, isolated Chat 08 tests now prove automatic machine-to-belt loading, belt-to-belt travel, belt-to-machine delivery, and one complete Extractor → three belts → Smelter manufacturing cycle. However, **Build Mode does not yet create building-port links**, so there is no end-to-end player-built physical route or automatic finished-ingot export in normal gameplay. Power and fuel remain unimplemented.
 
 ---
 
@@ -857,9 +910,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 08:** All previously validated Chat 06 production and Chat 07 recipe/port/conveyor construction work, plus one-item generic cargo buffers, reciprocal-connection-validated belt-to-belt transfers, per-segment timing, backpressure, corner cargo preservation and player-tool protection against demolishing occupied belts. Chat 08 reports **44/44** checks in six local test suites and successful normal gameplay/regression validation; this is not a consolidated CI run.
+**Implemented through Chat 08.3F-1:** Chat 06 production and Chat 07 recipe/port/construction foundations, generic timed one-unit belt cargo, visible straight/corner placeholder motion, reciprocal machine-port/belt connections, generic output loading, recipe-filtered input unloading, backpressure, and a code-configured Extractor → three belts → Smelter test that produces an ingot. Chat 08 totals **130/130 reported local checks across separate suites**; this is not a consolidated CI run.
 
-**Planned:** visible traveling items, machine/storage port-to-belt hookups and snapping, controlled loading/unloading and throughput balancing, safeguards for non-player destruction, deliberate loop closure, refined corner geometry/collisions, slot-and-stack storage, splitters/mergers, ammunition/defense, power/fuel and save/load. **The running factory still relies on temporary proximity-based logistics** until end-to-end physical connections pass regression tests.
+**Planned:** player-facing machine/storage snap and automatic physical hookups in Build Mode; actual mining and finished-product storage routes; safely transitioning proximity logistics; sustained multi-item traffic, throughput/pacing, specific item appearances, non-player cargo destruction recovery, deliberate loop closure, exact corner collisions, slot-and-stack storage, splitters/mergers, ammunition/defense, power/fuel and save/load. **The normal factory continues to use temporary proximity logistics** until those gameplay integrations are validated.
 
 ---
 
