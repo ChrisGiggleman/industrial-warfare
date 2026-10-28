@@ -2074,15 +2074,136 @@ func _try_place_object() -> void:
 
 
 	# =============================================================================
-	# OFF-GRID CORNER PREVIEW SAFETY GUARD
+	# PERMANENT BUILDING-OFFSET CONVEYOR CORNER PLACEMENT
 	# =============================================================================
 
-	# Until the dedicated corner placement commit is connected
-	# to Build Mode, do not silently place an unconnected belt
-	# at the previewed off-grid corner position.
+	# The snap preview uses the next straight conveyor's
+	# exact transform and a free output on an existing straight.
+	#
+	# When placed, the existing straight is converted IN PLACE
+	# into the required left/right corner. This preserves:
+	# - incoming building port and conveyor connections
+	# - the original conveyor node and cargo inventory
+	# - generic item transport, selection and demolition
+	#
+	# The new conveyor stays a straight segment. Never create
+	# an unconnected conveyor if preview revalidation fails.
 
 	if is_instance_valid(conveyor_corner_snap_source):
-		print("Off-grid corner preview only — connection not enabled yet.")
+
+		# =============================================================================
+		# VALIDATE SNAP STATE AND REQUIRED STRAIGHT PREVIEW
+		# =============================================================================
+
+		if not placement_ghost is ConveyorSegment:
+			print("Off-grid corner failed: Invalid conveyor ghost.")
+			return
+
+		if (
+			selected_building_index != 4
+			or conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
+			or is_instance_valid(conveyor_snap_source)
+			or is_instance_valid(conveyor_building_snap_port)
+		):
+			print("Off-grid corner failed: Conflicting snap state.")
+			return
+
+		var corner_source: ConveyorSegment = (
+			conveyor_corner_snap_source
+		)
+
+		if (
+			not corner_source.is_inside_tree()
+			or corner_source.is_queued_for_deletion()
+			or not corner_source.is_in_group("player_built")
+		):
+			print("Off-grid corner failed: Source unavailable.")
+			return
+
+		# =============================================================================
+		# RECHECK PREVIEW GEOMETRY AND ENDPOINT AVAILABILITY
+		# =============================================================================
+
+		# An adjacent placement or demolition may have changed
+		# the source since the last visual preview frame.
+		# Recalculate before creating the permanent conveyor.
+
+		var corner_check: Dictionary = (
+			ConveyorCornerPlacementSnap.get_preview_transform(
+				corner_source,
+				placement_ghost as ConveyorSegment,
+				conveyor_corner_snap_turn
+			)
+		)
+
+		if corner_check.is_empty():
+			print("Off-grid corner failed: Connection no longer available.")
+			return
+
+		var checked_transform: Transform3D = (
+			corner_check["transform"]
+		)
+
+		if not placement_ghost.global_transform.is_equal_approx(
+			checked_transform
+		):
+			print("Off-grid corner failed: Preview alignment changed.")
+			return
+
+		# =============================================================================
+		# INSTANTIATE EXACTLY ONE NEW STRAIGHT CONVEYOR
+		# =============================================================================
+
+		var corner_instance: Node = (
+			ConveyorPieceSelector.STRAIGHT_SCENE.instantiate()
+		)
+
+		if not corner_instance is ConveyorSegment:
+			if is_instance_valid(corner_instance):
+				corner_instance.free()
+			print("Off-grid corner failed: Invalid straight scene.")
+			return
+
+		var corner_receiver: ConveyorSegment = (
+			corner_instance as ConveyorSegment
+		)
+
+		get_tree().current_scene.add_child(corner_receiver)
+
+		# Preserve the off-grid transform from the approved ghost.
+		corner_receiver.global_transform = checked_transform
+
+		# =============================================================================
+		# COMMIT IN-PLACE CORNER CONVERSION AND PHYSICAL LINK
+		# =============================================================================
+
+		var corner_connected: bool = (
+			ConveyorCornerConversion.try_convert_and_connect(
+				corner_source,
+				corner_receiver,
+				conveyor_corner_snap_turn
+			)
+		)
+
+		if not corner_connected:
+			# Conversion restores its old output when link fails.
+			# No disconnected receiver should remain in the scene.
+			corner_receiver.queue_free()
+			print("Off-grid corner failed: Connection rejected.")
+			return
+
+		# =============================================================================
+		# CONFIRM SUCCESS — DO NOT RUN NORMAL PLACEMENT
+		# =============================================================================
+
+		print(
+			"OFF-GRID CORNER CONNECTED | Turn: ",
+			"RIGHT" if conveyor_corner_snap_turn == ConveyorTurnIntent.Turn.RIGHT else "LEFT",
+			" | Source: ", corner_source.name,
+			" | New belt: ", corner_receiver.name,
+			" | Position: ", corner_receiver.global_position
+		)
+
 		return
 
 	# =============================================================================
