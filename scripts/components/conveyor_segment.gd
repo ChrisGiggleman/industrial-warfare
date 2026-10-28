@@ -125,6 +125,16 @@ var previous_segment: ConveyorSegment = null
 # The conveyor receiving items from this segment.
 var next_segment: ConveyorSegment = null
 
+# =============================================================================
+# BUILDING PORT CONNECTION STATE
+# =============================================================================
+
+# Building OUTPUT supplying this conveyor's input.
+var input_building_port: ItemPortComponent = null
+
+# Building INPUT receiving this conveyor's output.
+var output_building_port: ItemPortComponent = null
+
 
 # =============================================================================
 # CALCULATE CONVEYOR SNAP PREVIEW
@@ -434,6 +444,22 @@ func try_connect_to(
 		return false
 
 	# =============================================================================
+	# PREVENT BUILDING AND BELT CONNECTION CONFLICTS
+	# =============================================================================
+
+	# A conveyor output cannot feed another belt when it
+	# already feeds a building.
+	#
+	# A conveyor input cannot receive from another belt
+	# when it already receives from a building.
+
+	if is_instance_valid(output_building_port):
+		return false
+
+	if is_instance_valid(target.input_building_port):
+		return false
+
+	# =============================================================================
 	# CHECK EXISTING CONNECTIONS
 	# =============================================================================
 
@@ -530,15 +556,233 @@ func disconnect_previous() -> bool:
 
 	return true
 
+# =============================================================================
+# CONNECT CONVEYOR TO BUILDING PORT
+# =============================================================================
+
+# Establishes one persistent physical connection.
+#
+# Building OUTPUT -> Conveyor INPUT
+# Conveyor OUTPUT -> Building INPUT
+#
+# Requires correct directions and endpoint alignment.
+#
+# No inventory items move during this operation.
+
+func try_connect_building_port(
+	port: ItemPortComponent
+) -> bool:
+
+	# =============================================================================
+	# VALIDATE SCENE OBJECTS
+	# =============================================================================
+
+	if not is_instance_valid(port):
+		return false
+
+	if not is_inside_tree() or not port.is_inside_tree():
+		return false
+
+	if is_queued_for_deletion():
+		return false
+
+	if port.is_queued_for_deletion():
+		return false
+
+	if not is_instance_valid(port.inventory):
+		return false
+
+	# A building port cannot connect to multiple belts.
+
+	if is_instance_valid(port.connected_conveyor):
+		return false
+
+	# =============================================================================
+	# DETERMINE CONNECTION DIRECTION
+	# =============================================================================
+
+	var outgoing: Marker3D = null
+	var incoming: Marker3D = null
+
+	match port.direction:
+
+		ItemPortComponent.PortDirection.OUTPUT:
+
+			# Building supplies the conveyor.
+			# The conveyor's input must be available.
+
+			if is_instance_valid(previous_segment):
+				return false
+
+			if is_instance_valid(input_building_port):
+				return false
+
+			# Producer outputs must use their real
+			# manufacturing output inventory.
+
+			if is_instance_valid(port.producer_component):
+
+				if (
+					port.producer_component.output_inventory
+					!= port.inventory
+				):
+					return false
+
+			outgoing = port
+
+			incoming = (
+				get_node_or_null("InputEndpoint")
+				as Marker3D
+			)
+
+		ItemPortComponent.PortDirection.INPUT:
+
+			# Conveyor supplies the building.
+			# The conveyor's output must be available.
+
+			if is_instance_valid(next_segment):
+				return false
+
+			if is_instance_valid(output_building_port):
+				return false
+
+			# Validate port configuration without
+			# requiring any particular item type.
+
+			match port.input_policy:
+
+				ItemPortComponent.InputPolicy.RECIPE_INPUTS:
+
+					if not is_instance_valid(
+						port.producer_component
+					):
+						return false
+
+					if (
+						port.producer_component.input_inventory
+						!= port.inventory
+					):
+						return false
+
+				ItemPortComponent.InputPolicy.ANY_ITEM:
+					pass
+
+				_:
+					return false
+
+			outgoing = (
+				get_node_or_null("OutputEndpoint")
+				as Marker3D
+			)
+
+			incoming = port
+
+		_:
+			return false
+
+	# =============================================================================
+	# VERIFY PHYSICAL GEOMETRY
+	# =============================================================================
+
+	if not is_instance_valid(outgoing):
+		return false
+
+	if not is_instance_valid(incoming):
+		return false
+
+	if not LogisticsConnectionGeometry.are_endpoints_aligned(
+		outgoing,
+		incoming,
+		CONNECTION_GAP
+	):
+		return false
+
+	# =============================================================================
+	# ESTABLISH RECIPROCAL CONNECTION
+	# =============================================================================
+
+	if port.direction == ItemPortComponent.PortDirection.OUTPUT:
+
+		input_building_port = port
+
+	else:
+
+		output_building_port = port
+
+	port.connected_conveyor = self
+
+	return true
+
+
+# =============================================================================
+# DISCONNECT BUILDING PORT
+# =============================================================================
+
+# Removes the physical connection from both sides.
+#
+# No inventory or cargo state is changed.
+
+func disconnect_building_port(
+	port: ItemPortComponent
+) -> bool:
+
+	if not is_instance_valid(port):
+		return false
+
+	var was_connected: bool = false
+
+	if input_building_port == port:
+
+		input_building_port = null
+		was_connected = true
+
+	elif output_building_port == port:
+
+		output_building_port = null
+		was_connected = true
+
+	if was_connected:
+
+		if port.connected_conveyor == self:
+			port.connected_conveyor = null
+
+	return was_connected
+
 
 # =============================================================================
 # DISCONNECT ALL CONNECTIONS
 # =============================================================================
 
+
 func disconnect_all() -> void:
+
+	# =============================================================================
+	# DISCONNECT NEIGHBORING CONVEYORS
+	# =============================================================================
 
 	disconnect_next()
 	disconnect_previous()
+
+	# =============================================================================
+	# DISCONNECT ATTACHED BUILDING PORTS
+	# =============================================================================
+
+	if is_instance_valid(input_building_port):
+
+		disconnect_building_port(input_building_port)
+
+	else:
+
+		input_building_port = null
+
+	if is_instance_valid(output_building_port):
+
+		disconnect_building_port(output_building_port)
+
+	else:
+
+		output_building_port = null
+
 
 # =============================================================================
 # SAFE CONVEYOR DEMOLITION CHECK

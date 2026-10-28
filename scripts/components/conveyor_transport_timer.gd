@@ -42,9 +42,78 @@ var successful_transfers: int = 0
 # The same method can be tested using manual delta values
 # without requiring real-time delays in every unit test.
 
+
 func _process(delta: float) -> void:
 
+	# =============================================================================
+	# FIND PARENT CONVEYOR
+	# =============================================================================
+
+	var segment: ConveyorSegment = (
+		get_parent() as ConveyorSegment
+	)
+
+	if is_instance_valid(segment):
+
+		# =============================================================================
+		# FIND CARGO COMPONENT
+		# =============================================================================
+
+		var transport: ConveyorTransportComponent = (
+			segment.get_node_or_null(
+				"ConveyorTransportComponent"
+			) as ConveyorTransportComponent
+		)
+
+		if is_instance_valid(transport):
+
+			# =============================================================================
+			# AUTOMATIC LOADING FROM BUILDING OUTPUT
+			# =============================================================================
+
+			# Only attempt loading if the conveyor is empty.
+			#
+			# ConveyorBuildingTransfer validates:
+			# - Physical building connection
+			# - Correct output-port direction
+			# - Current endpoint alignment
+			# - Item availability
+			# - Empty conveyor capacity
+			#
+			# Item selection is generic.
+
+			if transport.get_held_item() == null:
+
+				# A newly loaded item must start at zero
+				# rather than inherit the previous item's
+				# transport progress.
+
+				elapsed_seconds = 0.0
+
+				if ConveyorBuildingTransfer.try_load_into_belt(
+					segment
+				):
+
+					transport_status = "Loaded"
+
+					# Start movement on the next frame.
+					# Do not advance the newly loaded item
+					# using this frame's elapsed time.
+
+					return
+
+	# =============================================================================
+	# PROCESS EXISTING CONVEYOR TRANSPORTATION
+	# =============================================================================
+
+	# Handles:
+	# - Travel time
+	# - Forward belt transfers
+	# - Delivery into buildings
+	# - Backpressure and blocked destinations
+
 	advance_transport(delta)
+
 
 
 # =============================================================================
@@ -143,11 +212,44 @@ func advance_transport(delta: float) -> bool:
 	#
 	# InventoryComponent handles resource conservation.
 
-	var transferred: bool = (
-		ConveyorTransportLink.try_transfer_forward(
-			segment
+	
+	var transferred: bool = false
+
+	# =============================================================================
+	# DELIVERY TO NEXT CONVEYOR
+	# =============================================================================
+
+	# Preserve the existing belt-to-belt transport.
+	# This takes priority when a downstream belt exists.
+
+	if is_instance_valid(segment.next_segment):
+
+		transferred = (
+			ConveyorTransportLink.try_transfer_forward(
+				segment
+			)
 		)
-	)
+
+	# =============================================================================
+	# DELIVERY TO CONNECTED BUILDING
+	# =============================================================================
+
+	# If this conveyor ends at a building input port,
+	# attempt to unload its current item.
+	#
+	# The receiving building validates its recipe,
+	# inventory capacity and physical connection.
+	#
+	# A rejected item remains on the conveyor.
+
+	elif is_instance_valid(segment.output_building_port):
+
+		transferred = (
+			ConveyorBuildingTransfer.try_unload_from_belt(
+				segment
+			)
+		)
+
 
 	# =============================================================================
 	# SUCCESSFUL TRANSFER

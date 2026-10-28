@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://da8xy5dqls5m5" path="res://scripts/components/logistics_transfer_component.gd" id="5_fr4l3"]
 [ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="6_hyyae"]
 [ext_resource type="Script" uid="uid://tclvudgfgeia" path="res://scripts/components/extractor_component.gd" id="6_nnmqk"]
+[ext_resource type="Script" uid="uid://vycgy0li3ymm" path="res://scripts/components/item_port_component.gd" id="7_ptejt"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 1.8)
@@ -52,3 +53,9 @@ shape = SubResource("SphereShape3D_nnmqk")
 [node name="LogisticsTransferComponent" type="Node" parent="." unique_id=701923578]
 script = ExtResource("5_fr4l3")
 transfer_item = ExtResource("6_hyyae")
+
+[node name="OutputPort" type="Marker3D" parent="." unique_id=1706610682 node_paths=PackedStringArray("inventory")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1)
+script = ExtResource("7_ptejt")
+direction = 1
+inventory = NodePath("../InventoryComponent")

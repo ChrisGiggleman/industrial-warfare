@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bvomcq4tvxwq8"]
+
+[ext_resource type="Script" uid="uid://kch8ib7hhp2f" path="res://tests/extractor_output_port_test.gd" id="1_sayv7"]
+
+[node name="ExtractorOutputPortTest" type="Node" unique_id=1744442710]
+script = ExtResource("1_sayv7")

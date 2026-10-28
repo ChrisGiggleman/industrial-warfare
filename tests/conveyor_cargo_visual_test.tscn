@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://fkavvpo3y6mi"]
+
+[ext_resource type="Script" uid="uid://vn4ie227y46v" path="res://tests/conveyor_cargo_visual_test.gd" id="1_gr6wo"]
+
+[node name="ConveyorCargoVisualTest" type="Node" unique_id=154923318]
+script = ExtResource("1_gr6wo")

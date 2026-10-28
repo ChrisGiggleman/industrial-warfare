@@ -58,6 +58,20 @@ enum InputPolicy {
 
 @export var producer_component: ProducerComponent
 
+# =============================================================================
+# PHYSICAL CONVEYOR CONNECTION STATE
+# =============================================================================
+
+# The conveyor physically attached to this port.
+#
+# Each physical port supports one conveyor connection.
+# This is runtime state, not an Inspector configuration.
+#
+# OUTPUT port -> conveyor input
+# INPUT port  <- conveyor output
+
+var connected_conveyor: ConveyorSegment = null
+
 
 # =============================================================================
 # INPUT PORT ACCEPTANCE CHECK
@@ -256,3 +270,22 @@ func try_transfer_to_port(
 		item,
 		amount
 	)
+
+# =============================================================================
+# PHYSICAL CONNECTION CLEANUP
+# =============================================================================
+
+# When a building is removed, its physical ports leave
+# the scene tree and must clear their conveyor references.
+#
+# This does not remove inventory items.
+
+func _exit_tree() -> void:
+
+	if is_instance_valid(connected_conveyor):
+
+		connected_conveyor.disconnect_building_port(
+			self
+		)
+
+	connected_conveyor = null

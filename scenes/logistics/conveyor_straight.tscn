@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://v1l7u5qt01dc" path="res://scripts/components/inventory_component.gd" id="3_l8fw3"]
 [ext_resource type="Script" uid="uid://bi0iaeax20nje" path="res://scripts/components/conveyor_transport_component.gd" id="4_yn77f"]
 [ext_resource type="Script" uid="uid://b848eeek7sxio" path="res://scripts/components/conveyor_transport_timer.gd" id="5_7h0dl"]
+[ext_resource type="Script" uid="uid://llkuuwsdiqr7" path="res://scripts/components/conveyor_cargo_visual.gd" id="6_yn77f"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tgi11"]
 albedo_color = Color(0.39215687, 0.46666667, 0.5137255, 1)
@@ -62,3 +63,6 @@ cargo_inventory = NodePath("../CargoInventory")
 
 [node name="ConveyorTransportTimer" type="Node" parent="." unique_id=1153068972]
 script = ExtResource("5_7h0dl")
+
+[node name="CargoVisual" type="MeshInstance3D" parent="." unique_id=1207764254]
+script = ExtResource("6_yn77f")
