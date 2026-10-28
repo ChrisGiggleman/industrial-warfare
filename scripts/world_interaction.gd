@@ -156,6 +156,9 @@ var conveyor_preview_scene: PackedScene = null
 
 const CONVEYOR_SNAP_SEARCH_RADIUS: float = 1.25
 
+# Separate range for machine ports, which can sit off the grid.
+const CONVEYOR_BUILDING_PORT_SEARCH_RADIUS: float = 1.75
+
 # Demolition Tool state.
 var demolition_mode_active: bool = false
 var demolition_hover_target: Node = null
@@ -871,7 +874,7 @@ func _update_placement_preview() -> void:
 			hit_position.y,
 			snappedf(hit_position.z, grid_size)
 		)
-				# =============================================================================
+		# =============================================================================
 		# PRESERVE ORIGINAL MOUSE GRID POSITION
 		# =============================================================================
 
@@ -884,6 +887,7 @@ func _update_placement_preview() -> void:
 		var mouse_grid_position: Vector3 = (
 			current_placement_position
 		)
+
 		# =============================================================================
 		# CONVEYOR PLACEMENT — STRAIGHT GHOST
 		# =============================================================================
@@ -929,234 +933,113 @@ func _update_placement_preview() -> void:
 			)
 
 			# =============================================================================
-			# PRIORITIZE AVAILABLE BUILDING PORTS
+			# SELECT ONE CONVEYOR SNAP TARGET — CHAT 08.3F
 			# =============================================================================
 
-			# Check for a compatible building connection
-			# before selecting other conveyor endpoints.
+			# Always begin with the original grid position and player rotation.
+			# Resolve only one physical target per frame:
+			#   1. Compatible, free building port
+			#   2. Compatible existing conveyor endpoint
+			#   3. Off-grid perpendicular turn preview
 			#
-			# This prevents an existing belt snap from
-			# overriding a nearby machine input/output.
-			#
-			# The finder respects player rotation and
-			# rejects occupied building ports.
+			# Never use an already-snapped ghost position as the mouse
+			# position for the next discovery pass. All connections
+			# are still committed only during permanent placement.
 
 			if placement_ghost is ConveyorSegment:
 
+				var ghost_belt: ConveyorSegment = (
+					placement_ghost as ConveyorSegment
+				)
+
+				# =============================================================================
+				# FIRST: BUILDING PORT — INDEPENDENT IN / OUT
+				# =============================================================================
+
 				var port_preview: Dictionary = (
 					ConveyorBuildingPortFinder.find_nearest_preview(
-						placement_ghost as ConveyorSegment,
+						ghost_belt,
 						mouse_grid_position,
-						1.5
+						CONVEYOR_BUILDING_PORT_SEARCH_RADIUS
 					)
 				)
 
 				if not port_preview.is_empty():
 
-					var selected_port: ItemPortComponent = (
-						port_preview["port"]
-						as ItemPortComponent
+					var port: ItemPortComponent = (
+						port_preview["port"] as ItemPortComponent
 					)
 
-					if is_instance_valid(selected_port):
+					if is_instance_valid(port):
 
 						placement_ghost.global_transform = (
 							port_preview["transform"]
 						)
 
-						conveyor_building_snap_port = (
-							selected_port
-						)
-
+						conveyor_building_snap_port = port
 						current_placement_position = (
 							placement_ghost.global_position
 						)
 
-			# =============================================================================
-			# CHECK CONVEYOR SNAP PREVIEW
-			# =============================================================================
-
-			
-			if placement_ghost is ConveyorSegment:
-
 				# =============================================================================
-				# DISCOVER EXISTING CONVEYOR ONLY WHEN NO BUILDING PORT WON
+				# SECOND: EXISTING CONVEYOR ENDPOINT
 				# =============================================================================
 
-				var snap_result: Dictionary = {}
+				if not is_instance_valid(conveyor_building_snap_port):
 
-				if not is_instance_valid(
-					conveyor_building_snap_port
-				):
-
-					snap_result = (
+					var belt_preview: Dictionary = (
 						_find_conveyor_snap_preview(
 							mouse_grid_position
 						)
 					)
 
-
-				if not snap_result.is_empty():
-
-					# Move the ghost only.
-					# Do not connect the real conveyors.
-
-					placement_ghost.global_transform = (
-						snap_result["transform"]
-					)
-
-					conveyor_snap_source = (
-						snap_result["source"]
-					)
-
-					# Remember which side of the existing conveyor
-					# the new segment would connect to.
-
-					conveyor_snap_before = bool(
-						snap_result["before"]
-					)
-
-					current_placement_position = (
-						placement_ghost.global_position
-					)
-
-				# =============================================================================
-				# CHECK OFF-GRID CORNER SNAP PREVIEW
-				# =============================================================================
-
-				# Existing straight conveyor snaps take priority.
-				# When no straight snap exists, try a left or
-				# right corner from an off-grid conveyor.
-
-				if (
-					snap_result.is_empty()
-					and not is_instance_valid(
-						conveyor_building_snap_port
-					)
-				):
-
-					var corner_preview: Dictionary = (
-						_find_offset_corner_snap_preview(
-							current_placement_position
-						)
-					)
-
-					if not corner_preview.is_empty():
+					if not belt_preview.is_empty():
 
 						placement_ghost.global_transform = (
-							corner_preview["transform"]
+							belt_preview["transform"]
 						)
 
-						conveyor_corner_snap_source = (
-							corner_preview["source"]
+						conveyor_snap_source = (
+							belt_preview["source"] as ConveyorSegment
 						)
 
-						conveyor_corner_snap_turn = int(
-							corner_preview["turn"]
+						conveyor_snap_before = bool(
+							belt_preview["before"]
 						)
 
 						current_placement_position = (
 							placement_ghost.global_position
 						)
 
-				
-				# =============================================================================
-				# CHECK BUILDING PORT SNAP PREVIEW
-				# =============================================================================
+					# =============================================================================
+					# THIRD: OFF-GRID CORNER PREVIEW
+					# =============================================================================
 
-				# Evaluate building ports even when an
-				# existing conveyor snap is available.
-				#
-				# Prefer whichever candidate is closer
-				# to the player's original mouse position.
-				#
-				# Do not override an active corner preview.
+					else:
 
-				
-				if (
-					not is_instance_valid(
-						conveyor_corner_snap_source
-					)
-					and not is_instance_valid(
-						conveyor_building_snap_port
-					)
-				):
-
-
-					var building_preview: Dictionary = (
-						ConveyorBuildingPortFinder.find_nearest_preview(
-							placement_ghost as ConveyorSegment,
-							mouse_grid_position,
-							1.75
-						)
-					)
-
-					if not building_preview.is_empty():
-
-						# =============================================================================
-						# MEASURE EXISTING CONVEYOR SNAP DISTANCE
-						# =============================================================================
-
-						var belt_distance_squared: float = INF
-
-						if not snap_result.is_empty():
-
-							var belt_transform: Transform3D = (
-								snap_result["transform"]
+						var corner_preview: Dictionary = (
+							_find_offset_corner_snap_preview(
+								mouse_grid_position
 							)
-
-							var belt_offset := Vector2(
-								mouse_grid_position.x
-								- belt_transform.origin.x,
-								mouse_grid_position.z
-								- belt_transform.origin.z
-							)
-
-							belt_distance_squared = (
-								belt_offset.length_squared()
-							)
-
-						# =============================================================================
-						# COMPARE BUILDING AND CONVEYOR TARGETS
-						# =============================================================================
-
-						var building_distance_squared: float = (
-							float(building_preview["distance_squared"])
 						)
 
-						if (
-							building_distance_squared
-							< belt_distance_squared
-						):
+						if not corner_preview.is_empty():
 
-							var target_port: ItemPortComponent = (
-								building_preview["port"]
-								as ItemPortComponent
+							placement_ghost.global_transform = (
+								corner_preview["transform"]
 							)
 
-							if is_instance_valid(target_port):
+							conveyor_corner_snap_source = (
+								corner_preview["source"] as ConveyorSegment
+							)
 
-								# =============================================================================
-								# SELECT BUILDING PORT SNAP
-								# =============================================================================
+							conveyor_corner_snap_turn = int(
+								corner_preview["turn"]
+							)
 
-								placement_ghost.global_transform = (
-									building_preview["transform"]
-								)
-
-								conveyor_building_snap_port = (
-									target_port
-								)
-
-								# Cancel the competing belt snap.
-								# Only one target controls placement.
-
-								conveyor_snap_source = null
-								conveyor_snap_before = false
-
-								current_placement_position = (
-									placement_ghost.global_position
-								)
+							current_placement_position = (
+								placement_ghost.global_position
+							)
 
 			# =============================================================================
 			# BUILDING PLACEMENT SNAP TO EXISTING CONVEYOR
@@ -1916,137 +1799,37 @@ func _find_perpendicular_corner_candidate(
 func _try_place_object() -> void:
 
 	# =============================================================================
-	# TEMPORARY SNAP DEBUG
+	# SNAP TARGET — CLICK DIAGNOSTIC
 	# =============================================================================
 
-	var placed_belts: int = 0
-
-	for node: Node in get_tree().get_nodes_in_group(
-		"player_built"
-	):
-		if node is ConveyorSegment and node != placement_ghost:
-			placed_belts += 1
-
-	print(
-		"SNAP DEBUG | Slot: ", selected_building_index,
-		" | Belts: ", placed_belts,
-		" | Ghost conveyor: ", placement_ghost is ConveyorSegment,
-		" | Source found: ", is_instance_valid(conveyor_snap_source),
-		" | Before: ", conveyor_snap_before,
-		" | Placement valid: ", placement_is_valid
-	)
-
-	# =============================================================================
-	# CORNER SELECTION DEBUG — PRINT ONLY ON CLICK
-	# =============================================================================
-
-	if selected_building_index == 4:
-
-		var preview_path: String = "None"
-
-		if conveyor_preview_scene != null:
-			preview_path = conveyor_preview_scene.resource_path
-
-		print(
-			"CORNER CLICK | Preview: ", preview_path,
-			" | Source found: ",
-			is_instance_valid(conveyor_snap_source),
-			" | Before: ", conveyor_snap_before,
-			" | Valid: ", placement_is_valid,
-			" | Mouse grid: ", current_placement_position
-		)
-
-	# =============================================================================
-	# TEMPORARY BUILDING PORT SNAP DIAGNOSTIC
-	# =============================================================================
-
-	# Runs only when the player clicks with the
-	# Conveyor Belt tool selected.
-	#
-	# Does not modify placement or connections.
+	# One concise message makes it clear whether the
+	# new object will be physically connected or placed freely.
 
 	if selected_building_index == 4 and placement_ghost is ConveyorSegment:
 
-		var nearby_port_count: int = 0
+		if is_instance_valid(conveyor_building_snap_port):
 
-		var requested_forward: Vector3 = (
-			Basis(
-				Vector3.UP,
-				deg_to_rad(placement_rotation_degrees)
-			) * Vector3.FORWARD
-		).normalized()
+			print(
+				"SNAP TARGET | Building: ",
+				conveyor_building_snap_port.get_parent().name,
+				" / ", conveyor_building_snap_port.name
+			)
 
-		for building: Node in get_tree().get_nodes_in_group(
-			"player_built"
-		):
+		elif is_instance_valid(conveyor_snap_source):
 
-			if not building is Node3D:
-				continue
+			print(
+				"SNAP TARGET | Conveyor: ",
+				conveyor_snap_source.name,
+				" | Before: ", conveyor_snap_before
+			)
 
-			if building is ConveyorSegment:
-				continue
+		elif is_instance_valid(conveyor_corner_snap_source):
 
-			for child: Node in building.get_children():
+			print("SNAP TARGET | Off-grid corner preview")
 
-				if not child is ItemPortComponent:
-					continue
+		else:
 
-				var port: ItemPortComponent = child as ItemPortComponent
-
-				if port.global_position.distance_to(
-					current_placement_position
-				) > 3.0:
-					continue
-
-				nearby_port_count += 1
-
-				var preview: Dictionary = (
-					ConveyorBuildingSnap.get_preview_transform(
-						port,
-						placement_ghost as ConveyorSegment
-					)
-				)
-
-				if preview.is_empty():
-
-					print(
-						"PORT DEBUG | ", building.name,
-						" / ", port.name,
-						" | Preview unavailable",
-						" | Occupied: ",
-						is_instance_valid(port.connected_conveyor),
-						" | Inventory valid: ",
-						is_instance_valid(port.inventory)
-					)
-
-					continue
-
-				var proposed: Transform3D = preview["transform"]
-
-				var distance: float = Vector2(
-					current_placement_position.x - proposed.origin.x,
-					current_placement_position.z - proposed.origin.z
-				).length()
-
-				var facing_match: float = requested_forward.dot(
-					(proposed.basis * Vector3.FORWARD).normalized()
-				)
-
-				print(
-					"PORT DEBUG | ", building.name,
-					" / ", port.name,
-					" | Distance: ", distance,
-					" | Within radius: ",
-					distance < CONVEYOR_SNAP_SEARCH_RADIUS,
-					" | Direction match: ", facing_match,
-					" | Selected: ",
-					conveyor_building_snap_port == port
-				)
-
-		print(
-			"PORT DEBUG | Nearby ports found: ",
-			nearby_port_count
-		)
+			print("SNAP TARGET | Free grid placement")
 
 	# =============================================================================
 	# CORNER PLACEMENT SAFETY CHECK
@@ -2289,6 +2072,18 @@ func _try_place_object() -> void:
 
 		return
 
+
+	# =============================================================================
+	# OFF-GRID CORNER PREVIEW SAFETY GUARD
+	# =============================================================================
+
+	# Until the dedicated corner placement commit is connected
+	# to Build Mode, do not silently place an unconnected belt
+	# at the previewed off-grid corner position.
+
+	if is_instance_valid(conveyor_corner_snap_source):
+		print("Off-grid corner preview only — connection not enabled yet.")
+		return
 
 	# =============================================================================
 	# USE ACTIVE CONVEYOR SHAPE FOR PLACEMENT
@@ -2810,6 +2605,8 @@ func _destroy_placement_ghost() -> void:
 	conveyor_building_snap_port = null
 	building_placement_snap_belt = null
 	building_placement_snap_port = null
+	conveyor_corner_snap_source = null
+	conveyor_corner_snap_turn = ConveyorTurnIntent.Turn.STRAIGHT
 	conveyor_preview_scene = null
 	placement_ghost = null
 	ghost_material = null
