@@ -293,6 +293,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			_inspect_existing_conveyor_junction()
 			return
 
+		# =============================================================================
+		# CHAT 08.3G — CONNECT EXISTING CONVEYOR JUNCTION (K)
+		# =============================================================================
+
+		# Available only in Build Mode with the Conveyor Belt selected.
+		# This connects two existing belts; it does not place a new belt.
+		# Keep the command before primary_action and the final return.
+
+		if (
+			selected_building_index == 4
+			and event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and (
+				event.physical_keycode == KEY_K
+				or event.keycode == KEY_K
+			)
+		):
+			print("K KEY DETECTED | Attempting junction connection")
+			_connect_existing_conveyor_junction()
+			return
+
 		if event.is_action_pressed("primary_action"):
 			_try_place_object()
 			return
@@ -302,24 +324,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("primary_action"):
 		_select_under_mouse()
 
-
-		# =============================================================================
-		# CHAT 08.3G — CONNECT EXISTING CONVEYOR JUNCTION
-		# =============================================================================
-
-		# K connects an existing receiver-side corner.
-		# No new conveyor is placed.
-		# The connection is revalidated before committing.
-
-		if (
-			selected_building_index == 4
-			and event is InputEventKey
-			and event.pressed
-			and not event.echo
-			and event.physical_keycode == KEY_K
-		):
-			_connect_existing_conveyor_junction()
-			return
 
 # =============================================================================
 # CHAT 08.3G-3C — EXISTING CONVEYOR JUNCTION INSPECTION
