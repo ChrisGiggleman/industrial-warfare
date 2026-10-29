@@ -1669,6 +1669,11 @@ func _update_placement_preview() -> void:
 
 			if extractor_component != null:
 				placement_is_valid = _extractor_has_resource_node()
+	else:
+		# Never retain a stale conversion candidate after the mouse leaves
+		# the ground, or allow a click to commit it at an old location.
+		_clear_receiver_corner_preview()
+		placement_is_valid = false
 
 	if ghost_material != null:
 		if placement_is_valid:
@@ -2615,6 +2620,22 @@ func _try_place_object() -> void:
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
+
+	# =============================================================================
+	# CHAT 08.3G-3E — REFRESH RECEIVER CORNER ON CLICK
+	# =============================================================================
+
+	# A queued mouse event can arrive after the last preview update.
+	# Require the target to remain under the current pointer.
+	if (
+		selected_building_index == 4
+		and not receiver_corner_preview.is_empty()
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+		_update_placement_preview()
+		if receiver_corner_preview.is_empty():
+			print("RECEIVER CORNER | Target no longer under cursor.")
+			return
 
 	# =============================================================================
 	# CHAT 08.3G-3E — CONVERT EXISTING RECEIVER ON ONE CLICK
