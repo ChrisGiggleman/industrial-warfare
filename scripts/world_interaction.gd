@@ -113,6 +113,12 @@ var receiver_corner_preview: Dictionary = {}
 var receiver_corner_preview_mesh: MeshInstance3D = null
 
 # =============================================================================
+# CHAT 08.3G-3F — SOURCE-SIDE AUTO CORNER PREVIEW STATE
+# =============================================================================
+var source_corner_preview: Dictionary = {}
+var source_corner_preview_mesh: MeshInstance3D = null
+
+# =============================================================================
 # TWO-ENDED CONVEYOR BRIDGE SNAP STATE — CHAT 08.3F-6
 # =============================================================================
 
@@ -1384,10 +1390,33 @@ func _update_placement_preview() -> void:
 				)
 
 			if not receiver_candidate.is_empty():
+				_clear_source_corner_preview()
 				if not _show_receiver_corner_preview(receiver_candidate):
 					_clear_receiver_corner_preview()
 			else:
 				_clear_receiver_corner_preview()
+
+			# =============================================================================
+			# CHAT 08.3G-3F — SOURCE CORNER DISCOVERY
+			# =============================================================================
+			var source_candidate: Dictionary = {}
+			if (
+				selected_building_index == 4
+				and missing_corner_preview.is_empty()
+				and receiver_corner_preview.is_empty()
+				and not Input.is_physical_key_pressed(KEY_SHIFT)
+			):
+				source_candidate = (
+					ConveyorSourceCornerAutoSnap.find_nearest_preview(
+						get_tree(), mouse_grid_position, 0.75
+					)
+				)
+
+			if not source_candidate.is_empty():
+				if not _show_source_corner_preview(source_candidate):
+					_clear_source_corner_preview()
+			else:
+				_clear_source_corner_preview()
 
 			# =============================================================================
 			# RESET NORMAL GRID PREVIEW
@@ -1453,6 +1482,7 @@ func _update_placement_preview() -> void:
 				placement_ghost is ConveyorSegment
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
+				and source_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
 
@@ -1657,6 +1687,14 @@ func _update_placement_preview() -> void:
 						PLACEMENT_BLOCKER_COLLISION_MASK
 					)
 				)
+			elif not source_corner_preview.is_empty():
+				placement_is_valid = (
+					ConveyorSourceCornerBuildPreview.is_clear(
+						get_viewport().world_3d,
+						source_corner_preview,
+						PLACEMENT_BLOCKER_COLLISION_MASK
+					)
+				)
 			else:
 				placement_is_valid = _is_placement_clear()
 
@@ -1673,6 +1711,7 @@ func _update_placement_preview() -> void:
 		# Never retain a stale conversion candidate after the mouse leaves
 		# the ground, or allow a click to commit it at an old location.
 		_clear_receiver_corner_preview()
+		_clear_source_corner_preview()
 		placement_is_valid = false
 
 	if ghost_material != null:
@@ -1693,6 +1732,46 @@ func _update_placement_preview() -> void:
 
 	else:
 		placement_is_valid = false
+
+
+# =============================================================================
+# CHAT 08.3G-3F — EXISTING SOURCE CORNER VISUAL PREVIEW
+# =============================================================================
+
+func _clear_source_corner_preview() -> void:
+	if is_instance_valid(source_corner_preview_mesh):
+		source_corner_preview_mesh.queue_free()
+	source_corner_preview_mesh = null
+	source_corner_preview.clear()
+	if is_instance_valid(placement_ghost):
+		placement_ghost.visible = true
+
+
+func _show_source_corner_preview(candidate: Dictionary) -> bool:
+	if not is_instance_valid(placement_ghost):
+		return false
+	var source: ConveyorSegment = candidate.get("source") as ConveyorSegment
+	if not is_instance_valid(source):
+		return false
+	var needs_overlay: bool = (
+		not is_instance_valid(source_corner_preview_mesh)
+		or source_corner_preview.get("source") != source
+		or int(source_corner_preview.get("turn", -1)) != int(candidate.get("turn", -1))
+	)
+	if needs_overlay:
+		_clear_source_corner_preview()
+		var overlay: MeshInstance3D = (
+			ConveyorSourceCornerBuildPreview.make_overlay(candidate, ghost_material)
+		)
+		if overlay == null:
+			return false
+		var saved_transform: Transform3D = overlay.transform
+		get_tree().current_scene.add_child(overlay)
+		overlay.global_transform = saved_transform
+		source_corner_preview_mesh = overlay
+	source_corner_preview = candidate
+	placement_ghost.visible = false
+	return true
 
 
 # =============================================================================
@@ -2619,6 +2698,36 @@ func _try_place_object() -> void:
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
+
+	# =============================================================================
+	# CHAT 08.3G-3F — COMMIT SOURCE CORNER ON CLICK
+	# =============================================================================
+	if (
+		selected_building_index == 4
+		and not source_corner_preview.is_empty()
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+		_update_placement_preview()
+		if source_corner_preview.is_empty():
+			print("SOURCE CORNER | Target changed or cursor moved.")
+			return
+		var candidate: Dictionary = source_corner_preview.duplicate()
+		if not ConveyorSourceCornerBuildPreview.is_clear(
+			get_viewport().world_3d, candidate, PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("SOURCE CORNER | Blocked or endpoint changed.")
+			return
+		if not ConveyorExistingConnection.try_connect_candidate(candidate):
+			print("SOURCE CORNER | Connection rejected safely.")
+			return
+		var source: ConveyorSegment = candidate["source"] as ConveyorSegment
+		var receiver: ConveyorSegment = candidate["receiver"] as ConveyorSegment
+		print(
+			"SOURCE CORNER CONNECTED | Source: ", source.name,
+			" | Receiver: ", receiver.name, " | Turn: ", candidate["turn"]
+		)
+		_clear_source_corner_preview()
+		return
 
 	# =============================================================================
 	# CHAT 08.3G-3E — REFRESH RECEIVER CORNER ON CLICK
@@ -3769,6 +3878,7 @@ func _create_placement_ghost(
 
 func _destroy_placement_ghost() -> void:
 	_clear_receiver_corner_preview()
+	_clear_source_corner_preview()
 	if placement_ghost != null and is_instance_valid(placement_ghost):
 		placement_ghost.queue_free()
 
