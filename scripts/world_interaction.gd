@@ -95,6 +95,17 @@ var conveyor_corner_snap_turn: int = (
 )
 
 # =============================================================================
+# CHAT 08.3G-3D — AUTOMATIC MISSING CORNER PREVIEW STATE
+# =============================================================================
+
+# Holds a validated one-tile corner candidate.
+# Empty means normal conveyor placement.
+#
+# No permanent conveyor is created during preview.
+
+var missing_corner_preview: Dictionary = {}
+
+# =============================================================================
 # TWO-ENDED CONVEYOR BRIDGE SNAP STATE — CHAT 08.3F-6
 # =============================================================================
 
@@ -1278,6 +1289,76 @@ func _update_placement_preview() -> void:
 		if placement_ghost != null:
 
 			# =============================================================================
+			# CHAT 08.3G-3D — AUTOMATIC MISSING CORNER DISCOVERY
+			# =============================================================================
+
+			var corner_candidate: Dictionary = {}
+
+			if (
+				selected_building_index == 4
+				and not Input.is_physical_key_pressed(KEY_SHIFT)
+			):
+				corner_candidate = (
+					ConveyorMissingCornerPreview.find_nearest(
+						get_tree(),
+						mouse_grid_position,
+						0.75
+					)
+				)
+
+			if not corner_candidate.is_empty():
+
+				var corner_turn: int = int(
+					corner_candidate["turn"]
+				)
+
+				var corner_scene: PackedScene = (
+					ConveyorPieceSelector.get_scene_for_turn(
+						corner_turn
+					)
+				)
+
+				var previous_turn: int = int(
+					missing_corner_preview.get("turn", -1)
+				)
+
+				# Only recreate the ghost when the corner
+				# type changes. Never recreate every frame.
+
+				if (
+					conveyor_preview_scene != corner_scene
+					or previous_turn != corner_turn
+				):
+					_create_placement_ghost(corner_scene)
+
+					var corner_mesh := (
+						placement_ghost.get_node_or_null(
+							"BeltMesh"
+						) as MeshInstance3D
+					)
+
+					if corner_mesh != null:
+						corner_mesh.mesh = (
+							ConveyorCornerVisualMesh.build(
+								corner_turn
+							)
+						)
+
+				missing_corner_preview = corner_candidate
+
+			else:
+
+				# Restore our ordinary straight conveyor
+				# when the mouse leaves the valid corner.
+
+				if not missing_corner_preview.is_empty():
+					_create_placement_ghost(
+						ConveyorPieceSelector.STRAIGHT_SCENE
+					)
+
+				missing_corner_preview.clear()
+
+			# =============================================================================
 			# RESET NORMAL GRID PREVIEW
 			# =============================================================================
 
@@ -1294,6 +1375,7 @@ func _update_placement_preview() -> void:
 			conveyor_corner_snap_turn = ConveyorTurnIntent.Turn.STRAIGHT
 			conveyor_bridge_source = null
 			conveyor_bridge_destination = null
+			
 			placement_ghost.global_position = (
 				current_placement_position
 			)
@@ -1301,6 +1383,24 @@ func _update_placement_preview() -> void:
 			placement_ghost.rotation_degrees.y = (
 				placement_rotation_degrees
 			)
+
+			# =============================================================================
+			# APPLY AUTOMATIC MISSING CORNER TRANSFORM
+			# =============================================================================
+
+			# Apply the detected corner transform LAST.
+			# Otherwise normal player rotation can overwrite it.
+
+			if not missing_corner_preview.is_empty():
+
+				placement_ghost.global_transform = (
+					missing_corner_preview["transform"]
+				)
+
+				current_placement_position = (
+					placement_ghost.global_position
+				)
+
 
 			# =============================================================================
 			# SELECT ONE CONVEYOR SNAP TARGET — CHAT 08.3F
@@ -1317,10 +1417,13 @@ func _update_placement_preview() -> void:
 			# position for the next discovery pass. All connections
 			# are still committed only during permanent placement.
 
+			
 			if (
 				placement_ghost is ConveyorSegment
+				and missing_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
+
 
 				var ghost_belt: ConveyorSegment = (
 					placement_ghost as ConveyorSegment
@@ -1749,6 +1852,110 @@ func _is_placement_clear() -> bool:
 	# Other buildings and conveyors must still block placement.
 
 	var snap_exclusions: Array[RID] = []
+
+	# =============================================================================
+	# CHAT 08.3G-3D — VALIDATE MISSING CORNER PLACEMENT
+	# =============================================================================
+
+	if not missing_corner_preview.is_empty():
+
+		if not placement_ghost is ConveyorSegment:
+			return false
+
+		var corner_source: ConveyorSegment = (
+			missing_corner_preview.get("source") as ConveyorSegment
+		)
+
+		var corner_destination: ConveyorSegment = (
+			missing_corner_preview.get("destination") as ConveyorSegment
+		)
+
+		if (
+			not is_instance_valid(corner_source)
+			or not is_instance_valid(corner_destination)
+		):
+			return false
+
+		var corner_turn: int = int(
+			missing_corner_preview.get("turn", -1)
+		)
+
+		# Revalidate endpoints and the exact proposed transform.
+
+		var fresh_corner: Dictionary = (
+			ConveyorMissingCornerPreview.preview_for_pair(
+				corner_source,
+				corner_destination,
+				corner_turn
+			)
+		)
+
+		if fresh_corner.is_empty():
+			return false
+
+		var expected_corner: Transform3D = (
+			fresh_corner["transform"]
+		)
+
+		if not placement_ghost.global_transform.is_equal_approx(
+			expected_corner
+		):
+			return false
+
+		var source_output := (
+			corner_source.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		var ghost_input := (
+			placement_ghost.get_node_or_null("InputEndpoint")
+			as Marker3D
+		)
+
+		var ghost_output := (
+			placement_ghost.get_node_or_null("OutputEndpoint")
+			as Marker3D
+		)
+
+		var destination_input := (
+			corner_destination.get_node_or_null("InputEndpoint")
+			as Marker3D
+		)
+
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(
+			source_output,
+			ghost_input,
+			ConveyorSegment.CONNECTION_GAP
+		):
+			return false
+
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(
+			ghost_output,
+			destination_input,
+			ConveyorSegment.CONNECTION_GAP
+		):
+			return false
+
+		# Both intended neighbors are verified.
+		# Exclude only their collision bodies.
+		# All unrelated obstacles must still block placement.
+
+		for neighbor: ConveyorSegment in [
+			corner_source,
+			corner_destination
+		]:
+
+			var neighbor_body := (
+				neighbor.get_node_or_null("ConveyorBody")
+				as PhysicsBody3D
+			)
+
+			if not is_instance_valid(neighbor_body):
+				return false
+
+			snap_exclusions.append(
+				neighbor_body.get_rid()
+			)
 
 	# =============================================================================
 	# VERIFY BOTH INTENDED NEIGHBORS OF A TWO-ENDED BRIDGE
@@ -2302,6 +2509,7 @@ func _find_perpendicular_corner_candidate(
 
 func _try_place_object() -> void:
 	
+
 	# =============================================================================
 	# MANUAL CONVEYOR PLACEMENT — SHIFT OVERRIDE
 	# =============================================================================
@@ -2315,6 +2523,66 @@ func _try_place_object() -> void:
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
+
+	# =============================================================================
+	# CHAT 08.3G-3D — PERMANENT MISSING CORNER PLACEMENT
+	# =============================================================================
+
+	# A valid one-tile missing corner has priority over
+	# ordinary conveyor placement.
+	#
+	# Shift continues to bypass automatic corner snapping.
+
+	if (
+		selected_building_index == 4
+		and not missing_corner_preview.is_empty()
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+
+		if not placement_ghost is ConveyorSegment:
+			print("MISSING CORNER | Invalid placement ghost.")
+			return
+
+		# Validate collisions again when the player clicks.
+
+		if not placement_is_valid or not _is_placement_clear():
+			print("MISSING CORNER | Placement blocked.")
+			return
+
+		var corner_parent: Node3D = (
+			get_tree().current_scene as Node3D
+		)
+
+		if not is_instance_valid(corner_parent):
+			print("MISSING CORNER | Invalid scene root.")
+			return
+
+		var placed_corner: ConveyorSegment = (
+			ConveyorMissingCornerPlacement.try_place(
+				corner_parent,
+				missing_corner_preview
+			)
+		)
+
+		if not is_instance_valid(placed_corner):
+			print(
+				"MISSING CORNER | Connection rejected or "
+				+ "candidate changed."
+			)
+			return
+
+		print(
+			"MISSING CORNER CONNECTED | Position: ",
+			placed_corner.global_position,
+			" | Turn: ",
+			placed_corner.get_meta("conveyor_turn")
+		)
+
+		# Successful placement is complete.
+		# The next preview update will restore the
+		# normal straight ghost automatically.
+
+		return
 
 	# =============================================================================
 	# SNAP TARGET — CLICK DIAGNOSTIC
@@ -3372,4 +3640,5 @@ func _destroy_placement_ghost() -> void:
 	conveyor_preview_scene = null
 	placement_ghost = null
 	ghost_material = null
+	missing_corner_preview.clear()
 	placement_ghost_collisions.clear()

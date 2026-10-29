@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://gkvix0d46wjp"]
+
+[ext_resource type="Script" uid="uid://ck0wsn0op435w" path="res://tests/conveyor_missing_corner_placement_test.gd" id="1_k76ql"]
+
+[node name="ConveyorMissingCornerPlacementTest" type="Node" unique_id=1225603960]
+script = ExtResource("1_k76ql")
