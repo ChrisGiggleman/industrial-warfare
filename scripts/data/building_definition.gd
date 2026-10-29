@@ -32,3 +32,21 @@ class_name BuildingDefinition
 
 # Scene instantiated when this building is placed in the world.
 @export var building_scene: PackedScene
+
+# =============================================================================
+# BUILDING GRID FOOTPRINT
+# =============================================================================
+
+# Logical construction footprint measured in grid tiles.
+#
+# Examples:
+# - Extractor: 1 x 2
+# - Storage:   1 x 3
+# - Smelter:   2 x 2
+#
+# Used by FactoryGrid to calculate placement origins
+# and keep conveyor connection ports aligned.
+#
+# Rotation automatically swaps dimensions when needed.
+
+@export var footprint_tiles: Vector2i = Vector2i.ONE

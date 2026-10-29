@@ -10,4 +10,5 @@ display_name = "Test Smelter"
 description = "Prototype manufacturing building that converts Test Ore into Test Ingots using separate input and output inventories."
 category = &"Production"
 building_scene = ExtResource("1_xi8yq")
+footprint_tiles = Vector2i(2, 2)
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

@@ -275,6 +275,24 @@ func _unhandled_input(event: InputEvent) -> void:
 			_rotate_placement()
 			return
 
+		# =============================================================================
+		# CHAT 08.3G — INSPECT EXISTING CONVEYOR JUNCTION
+		# =============================================================================
+
+		# J inspects nearby existing conveyor connections.
+		# Only available with Conveyor Belt selected.
+		# Does not modify the factory.
+
+		if (
+			selected_building_index == 4
+			and event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and event.physical_keycode == KEY_J
+		):
+			_inspect_existing_conveyor_junction()
+			return
+
 		if event.is_action_pressed("primary_action"):
 			_try_place_object()
 			return
@@ -285,6 +303,291 @@ func _unhandled_input(event: InputEvent) -> void:
 		_select_under_mouse()
 
 
+		# =============================================================================
+		# CHAT 08.3G — CONNECT EXISTING CONVEYOR JUNCTION
+		# =============================================================================
+
+		# K connects an existing receiver-side corner.
+		# No new conveyor is placed.
+		# The connection is revalidated before committing.
+
+		if (
+			selected_building_index == 4
+			and event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and event.physical_keycode == KEY_K
+		):
+			_connect_existing_conveyor_junction()
+			return
+
+# =============================================================================
+# CHAT 08.3G-3C — EXISTING CONVEYOR JUNCTION INSPECTION
+# =============================================================================
+
+# Finds a compatible connection near the mouse cursor.
+# Uses the existing, tested endpoint-discovery helper.
+#
+# This is diagnostic only.
+# No connection or corner conversion is committed.
+
+func _inspect_existing_conveyor_junction() -> void:
+
+
+
+	if not is_instance_valid(camera):
+		print("JUNCTION DEBUG | Camera unavailable.")
+		return
+
+	# =============================================================================
+	# FIND MOUSE POSITION ON FACTORY FLOOR
+	# =============================================================================
+
+	var mouse_position: Vector2 = (
+		get_viewport().get_mouse_position()
+	)
+
+	var ray_origin: Vector3 = (
+		camera.project_ray_origin(mouse_position)
+	)
+
+	var ray_direction: Vector3 = (
+		camera.project_ray_normal(mouse_position)
+	)
+
+	var ray_end: Vector3 = (
+		ray_origin + ray_direction * ray_length
+	)
+
+	var query := PhysicsRayQueryParameters3D.create(
+		ray_origin,
+		ray_end
+	)
+
+	query.collision_mask = GROUND_COLLISION_MASK
+
+	var hit: Dictionary = (
+		get_viewport().world_3d.direct_space_state.intersect_ray(
+			query
+		)
+	)
+
+	if hit.is_empty():
+		print("JUNCTION DEBUG | No ground detected.")
+		return
+
+	# =============================================================================
+	# FIND NEAREST COMPATIBLE EXISTING CONNECTION
+	# =============================================================================
+
+	var candidate: Dictionary = (
+		ConveyorExistingEndpointFinder.find_nearest_candidate(
+			get_tree(),
+			hit["position"],
+			1.25
+		)
+	)
+
+	if candidate.is_empty():
+		print(
+			"JUNCTION DEBUG | No compatible free endpoints near ",
+			hit["position"]
+		)
+		return
+
+	# =============================================================================
+	# REPORT CONNECTION TYPE
+	# =============================================================================
+
+	var source: ConveyorSegment = (
+		candidate["source"] as ConveyorSegment
+	)
+
+	var receiver: ConveyorSegment = (
+		candidate["receiver"] as ConveyorSegment
+	)
+
+	print(
+		"JUNCTION FOUND | Source: ",
+		source.name,
+		" | Receiver: ",
+		receiver.name,
+		" | Mode: ",
+		candidate["mode"],
+		" | Turn: ",
+		candidate["turn"],
+		" | Position: ",
+		candidate["junction"]
+	)
+# =============================================================================
+# CHAT 08.3G — CONNECT EXISTING RECEIVER CORNER
+# =============================================================================
+
+# Temporary explicit construction command.
+#
+# Connects two existing lines without placing a new belt.
+# Only receiver-side corner conversions are enabled here.
+#
+# Validates the physical junction and checks that the
+# receiver tile contains no unrelated placement blockers.
+
+func _connect_existing_conveyor_junction() -> void:
+
+	if not is_instance_valid(camera):
+		print("JUNCTION CONNECT | Camera unavailable.")
+		return
+
+	# =============================================================================
+	# FIND MOUSE POSITION ON GROUND
+	# =============================================================================
+
+	var mouse_position: Vector2 = (
+		get_viewport().get_mouse_position()
+	)
+
+	var ray_origin: Vector3 = (
+		camera.project_ray_origin(mouse_position)
+	)
+
+	var ray_end: Vector3 = (
+		ray_origin
+		+ camera.project_ray_normal(mouse_position) * ray_length
+	)
+
+	var query := PhysicsRayQueryParameters3D.create(
+		ray_origin,
+		ray_end
+	)
+
+	query.collision_mask = GROUND_COLLISION_MASK
+
+	var hit: Dictionary = (
+		get_viewport().world_3d.direct_space_state.intersect_ray(
+			query
+		)
+	)
+
+	if hit.is_empty():
+		print("JUNCTION CONNECT | No ground detected.")
+		return
+
+	# =============================================================================
+	# DISCOVER COMPATIBLE EXISTING ENDPOINTS
+	# =============================================================================
+
+	var candidate: Dictionary = (
+		ConveyorExistingEndpointFinder.find_nearest_candidate(
+			get_tree(),
+			hit["position"],
+			1.25
+		)
+	)
+
+	if candidate.is_empty():
+		print("JUNCTION CONNECT | No compatible endpoints.")
+		return
+
+	# First integration supports receiver-side corners.
+	# Direct and source-side connections will follow.
+
+	if candidate.get("mode") != "convert_receiver":
+		print(
+			"JUNCTION CONNECT | Not enabled for mode: ",
+			candidate.get("mode")
+		)
+		return
+
+	var source: ConveyorSegment = (
+		candidate["source"] as ConveyorSegment
+	)
+
+	var receiver: ConveyorSegment = (
+		candidate["receiver"] as ConveyorSegment
+	)
+
+	if (
+		not is_instance_valid(source)
+		or not is_instance_valid(receiver)
+	):
+		print("JUNCTION CONNECT | Invalid conveyor.")
+		return
+
+	# =============================================================================
+	# VALIDATE CORNER TILE CLEARANCE
+	# =============================================================================
+
+	# A converted corner occupies the receiving belt's tile.
+	# Test a conservative square footprint against Layer 3.
+	#
+	# Exclude only the receiver's own existing collision body.
+	# Other physical obstacles must still be rejected.
+
+	var receiver_body: PhysicsBody3D = (
+		receiver.get_node_or_null("ConveyorBody")
+		as PhysicsBody3D
+	)
+
+	if not is_instance_valid(receiver_body):
+		print("JUNCTION CONNECT | Receiver body missing.")
+		return
+
+	var clearance_shape := BoxShape3D.new()
+	clearance_shape.size = Vector3(0.98, 0.2, 0.98)
+
+	var shape_query := PhysicsShapeQueryParameters3D.new()
+	shape_query.shape = clearance_shape
+	shape_query.transform = (
+		receiver.global_transform
+		* Transform3D(
+			Basis.IDENTITY,
+			Vector3(0.0, 0.3, 0.0)
+		)
+	)
+	shape_query.collision_mask = PLACEMENT_BLOCKER_COLLISION_MASK
+
+	var exclusions: Array[RID] = [
+		receiver_body.get_rid()
+	]
+
+	shape_query.exclude = exclusions
+
+	var obstacles: Array[Dictionary] = (
+		get_viewport().world_3d.direct_space_state.intersect_shape(
+			shape_query,
+			8
+		)
+	)
+
+	if not obstacles.is_empty():
+		print(
+			"JUNCTION CONNECT | Receiver tile obstructed: ",
+			obstacles[0].get("collider")
+		)
+		return
+
+	# =============================================================================
+	# COMMIT PERMANENT CONNECTION
+	# =============================================================================
+
+	# The shared manager revalidates the candidate.
+	# The receiver conversion preserves downstream links
+	# and existing item inventories.
+
+	if ConveyorExistingConnection.try_connect_candidate(
+		candidate
+	):
+		print(
+			"JUNCTION CONNECTED | Source: ",
+			source.name,
+			" | Receiver: ",
+			receiver.name,
+			" | Turn: ",
+			candidate["turn"]
+		)
+	else:
+		print(
+			"JUNCTION CONNECT FAILED | Geometry or state changed."
+		)
 # =============================================================================
 # BUILD MODE TOGGLE
 # =============================================================================
@@ -898,6 +1201,56 @@ func _update_placement_preview() -> void:
 		var mouse_grid_position: Vector3 = (
 			current_placement_position
 		)
+
+		# =============================================================================
+		# CHAT 08.3G — UNIFIED SMELTER GRID PLACEMENT
+		# =============================================================================
+
+		# Use the shared factory grid for our migrated Smelter.
+		#
+		# A 2x2 building uses a half-tile-centered origin.
+		# Calculate from the ORIGINAL mouse hit position,
+		# not the already-rounded integer grid position.
+		#
+		# Other buildings and conveyors keep their current
+		# placement behavior until their own migration.
+
+		if (
+			is_instance_valid(placement_ghost)
+			and not placement_ghost is ConveyorSegment
+		):
+
+			var grid_definition: BuildingDefinition = (
+				_get_selected_building_definition()
+			)
+
+			if (
+				grid_definition != null
+				and grid_definition.building_id == &"test_smelter"
+			):
+
+				# Convert the selected 90-degree rotation
+				# into a number of quarter turns.
+
+				var quarter_turns: int = roundi(
+					placement_rotation_degrees
+					/ ROTATION_STEP_DEGREES
+				)
+
+				var world_footprint: Vector2i = (
+					FactoryGrid.rotated_footprint(
+						grid_definition.footprint_tiles,
+						quarter_turns
+					)
+				)
+
+				current_placement_position = (
+					FactoryGrid.snap_building_origin(
+						hit_position,
+						world_footprint,
+						grid_size
+					)
+				)
 
 		# =============================================================================
 		# CONVEYOR PLACEMENT — STRAIGHT GHOST

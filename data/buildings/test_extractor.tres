@@ -10,4 +10,5 @@ display_name = "Test Extractor"
 description = "Prototype resource extractor that collects resources from nearby deposits."
 category = &"Extraction"
 building_scene = ExtResource("1_ki6ym")
+footprint_tiles = Vector2i(1, 2)
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

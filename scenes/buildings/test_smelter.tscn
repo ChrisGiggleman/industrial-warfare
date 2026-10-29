@@ -11,10 +11,10 @@
 [ext_resource type="Script" uid="uid://vycgy0li3ymm" path="res://scripts/components/item_port_component.gd" id="9_jyll2"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8araf"]
-size = Vector3(1.5, 1, 1.5)
+size = Vector3(2, 1, 2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wugof"]
-size = Vector3(1.5, 1, 1.5)
+size = Vector3(2, 1, 2)
 
 [node name="TestSmelter" type="Node3D" unique_id=832498239 node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
 script = ExtResource("1_r27uo")
@@ -57,13 +57,13 @@ producer_component = NodePath("../ProducerComponent")
 transfer_item = ExtResource("7_vi7jt")
 
 [node name="InputPort" type="Marker3D" parent="." unique_id=906779989 node_paths=PackedStringArray("inventory", "producer_component")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.85, 0.5, 0)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1, 0.5, -0.5)
 script = ExtResource("9_jyll2")
 inventory = NodePath("../InputInventory")
 producer_component = NodePath("../ProducerComponent")
 
 [node name="OutputPort" type="Marker3D" parent="." unique_id=912886525 node_paths=PackedStringArray("inventory", "producer_component")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0.85, 0.5, 0)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1, 0.5, -0.5)
 script = ExtResource("9_jyll2")
 direction = 1
 inventory = NodePath("../OutputInventory")

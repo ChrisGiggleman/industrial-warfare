@@ -230,11 +230,140 @@ func _ready() -> void:
 
 	print("PASS G: All rotations and port lanes align")
 
+	# =============================================================================
+	# TEST H — BUILDING DEFINITION FOOTPRINTS
+	# =============================================================================
+
+	var extractor_def := load(
+		"res://data/buildings/test_extractor.tres"
+	) as BuildingDefinition
+
+	var storage_def := load(
+		"res://data/buildings/test_storage.tres"
+	) as BuildingDefinition
+
+	var smelter_def := load(
+		"res://data/buildings/test_smelter.tres"
+	) as BuildingDefinition
+
+	assert(extractor_def != null)
+	assert(storage_def != null)
+	assert(smelter_def != null)
+
+	assert(extractor_def.footprint_tiles == Vector2i(1, 2))
+	assert(storage_def.footprint_tiles == Vector2i(1, 3))
+	assert(smelter_def.footprint_tiles == Vector2i(2, 2))
+
+	print("PASS H: Building footprints configured correctly")
+
+
+	# =============================================================================
+	# TEST I — ACTUAL SMELTER SCENE GRID ALIGNMENT
+	# =============================================================================
+
+	# Verify that the real Smelter scene matches
+	# our unified 2x2 construction footprint.
+
+	var smelter_grid_scene := load(
+		"res://scenes/buildings/test_smelter.tscn"
+	) as PackedScene
+
+	assert(smelter_grid_scene != null)
+
+	var grid_smelter := smelter_grid_scene.instantiate() as Node3D
+	assert(grid_smelter != null)
+
+	add_child(grid_smelter)
+
+	var grid_mesh := (
+		grid_smelter.get_node("BuildingMesh") as MeshInstance3D
+	)
+
+	var grid_collision := (
+		grid_smelter.get_node(
+			"BuildingBody/CollisionShape3D"
+		) as CollisionShape3D
+	)
+
+	var grid_input := (
+		grid_smelter.get_node("InputPort") as ItemPortComponent
+	)
+
+	var grid_output := (
+		grid_smelter.get_node("OutputPort") as ItemPortComponent
+	)
+
+	assert(grid_mesh != null)
+	assert(grid_collision != null)
+	assert(grid_input != null)
+	assert(grid_output != null)
+
+	# Verify physical footprint.
+
+	var box_mesh := grid_mesh.mesh as BoxMesh
+	var box_shape := grid_collision.shape as BoxShape3D
+
+	assert(box_mesh != null)
+	assert(box_shape != null)
+
+	assert(box_mesh.size == Vector3(2.0, 1.0, 2.0))
+	assert(box_shape.size == Vector3(2.0, 1.0, 2.0))
+
+	# Verify standardized physical port positions.
+
+	assert(
+		grid_input.position.is_equal_approx(
+			Vector3(-1.0, 0.5, -0.5)
+		)
+	)
+
+	assert(
+		grid_output.position.is_equal_approx(
+			Vector3(1.0, 0.5, -0.5)
+		)
+	)
+
+	# Verify every rotation keeps conveyor centers
+	# aligned to the unified world grid.
+
+	for smelter_turn in range(4):
+
+		var grid_origin := FactoryGrid.snap_building_origin(
+			Vector3(4.2, 0.0, 6.1),
+			Vector2i(2, 2)
+		)
+
+		grid_smelter.global_transform = Transform3D(
+			Basis(
+				Vector3.UP,
+				float(smelter_turn) * PI / 2.0
+			),
+			grid_origin
+		)
+
+		var input_center := FactoryGrid.get_conveyor_center(
+			grid_smelter.global_transform,
+			grid_input.position,
+			FactoryGrid.Side.NEGATIVE_X
+		)
+
+		var output_center := FactoryGrid.get_conveyor_center(
+			grid_smelter.global_transform,
+			grid_output.position,
+			FactoryGrid.Side.POSITIVE_X
+		)
+
+		assert(FactoryGrid.is_on_conveyor_grid(input_center))
+		assert(FactoryGrid.is_on_conveyor_grid(output_center))
+
+	grid_smelter.queue_free()
+
+	print("PASS I: Actual Smelter geometry and rotations aligned")
 
 	# =============================================================================
 	# FINAL RESULT
 	# =============================================================================
 
 	print("============================================")
-	print("ALL 7 FACTORY GRID TESTS PASSED")
+	print("ALL 9 FACTORY GRID TESTS PASSED")
 	print("============================================")

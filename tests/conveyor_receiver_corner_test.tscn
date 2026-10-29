@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c40bqgs6sffr4"]
+
+[ext_resource type="Script" uid="uid://cqyjj0oyxbi8o" path="res://tests/conveyor_receiver_corner_test.gd" id="1_cluie"]
+
+[node name="ConveyorReceiverCornerTest" type="Node" unique_id=1262253000]
+script = ExtResource("1_cluie")
