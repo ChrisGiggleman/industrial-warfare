@@ -127,10 +127,10 @@ func _ready() -> void:
 	assert(receiver.next_segment == downstream)
 	assert(downstream.previous_segment == receiver)
 	assert(receiver.global_transform == original_transform)
-	assert(
+	var current_output: Transform3D = (
 		(receiver.get_node("OutputEndpoint") as Marker3D).transform
-		.is_equal_approx(original_output)
 	)
+	assert(current_output.is_equal_approx(original_output))
 	assert(source_cargo.get_amount(ore) == 1)
 	print("PASS G: One-click commit preserves downstream, position and cargo")
 
