@@ -1743,7 +1743,10 @@ func _clear_source_corner_preview() -> void:
 		source_corner_preview_mesh.queue_free()
 	source_corner_preview_mesh = null
 	source_corner_preview.clear()
-	if is_instance_valid(placement_ghost):
+	if (
+		is_instance_valid(placement_ghost)
+		and receiver_corner_preview.is_empty()
+	):
 		placement_ghost.visible = true
 
 
@@ -1786,7 +1789,10 @@ func _clear_receiver_corner_preview() -> void:
 		receiver_corner_preview_mesh.queue_free()
 	receiver_corner_preview_mesh = null
 	receiver_corner_preview.clear()
-	if is_instance_valid(placement_ghost):
+	if (
+		is_instance_valid(placement_ghost)
+		and source_corner_preview.is_empty()
+	):
 		placement_ghost.visible = true
 
 
