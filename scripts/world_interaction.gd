@@ -1722,8 +1722,7 @@ func _show_receiver_corner_preview(candidate: Dictionary) -> bool:
 	var needs_overlay: bool = (
 		not is_instance_valid(receiver_corner_preview_mesh)
 		or receiver_corner_preview.get("receiver") != receiver
-		or int(receiver_corner_preview.get("turn", -1))
-			!= int(candidate.get("turn", -1))
+		or int(receiver_corner_preview.get("turn", -1)) != int(candidate.get("turn", -1))
 	)
 
 	if needs_overlay:
