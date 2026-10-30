@@ -236,102 +236,19 @@ func _get_cargo_path_position(
 ) -> Vector3:
 
 	# =============================================================================
-	# GET LOCAL ENDPOINT POSITIONS
+	# DISTANCE-WEIGHTED STRAIGHT AND CORNER MOVEMENT — CHAT 08.3G-3H
 	# =============================================================================
 
-	var start_position: Vector3 = input_endpoint.position
-	var end_position: Vector3 = output_endpoint.position
+	# Follow the actual endpoint-to-endpoint path.
+	# For a corner with unequal legs, the longer leg gets a
+	# proportional share of the travel interval.
+	# The displayed item keeps the same physical speed before
+	# and after the bend.
 
-	var travel_progress: float = clampf(
-		progress,
-		0.0,
-		1.0
-	)
-
-	# =============================================================================
-	# DETERMINE ENDPOINT DIRECTIONS
-	# =============================================================================
-
-	# Godot uses local -Z as forward.
-	#
-	# Straight endpoints have parallel/opposite axes.
-	# Corner output axes are perpendicular to input.
-
-	var input_direction: Vector3 = (
-		input_endpoint.transform.basis
-		* Vector3.FORWARD
-	).normalized()
-
-	var output_direction: Vector3 = (
-		output_endpoint.transform.basis
-		* Vector3.FORWARD
-	).normalized()
-
-	var direction_dot: float = (
-		input_direction.dot(output_direction)
-	)
-
-	# =============================================================================
-	# STRAIGHT CONVEYOR MOVEMENT
-	# =============================================================================
-
-	# Straight belts use a single linear path.
-	#
-	# This also provides a simple fallback for any
-	# endpoint configuration that is not a 90-degree
-	# corner in our current prototype.
-
-	if absf(direction_dot) >= 0.1:
-
-		return start_position.lerp(
-			end_position,
-			travel_progress
-		)
-
-	# =============================================================================
-	# CALCULATE 90-DEGREE CORNER BEND
-	# =============================================================================
-
-	# For our existing L-shaped conveyor geometry:
-	#
-	# - The first half travels along local Z.
-	# - The second half travels along local X.
-	#
-	# Both right and left turns use the same formula.
-	# The output endpoint decides the turn direction.
-
-	var bend_position: Vector3 = Vector3(
-		start_position.x,
-		start_position.y,
-		end_position.z
-	)
-
-	# =============================================================================
-	# FIRST HALF — INPUT TO BEND
-	# =============================================================================
-
-	if travel_progress <= 0.5:
-
-		var first_half_progress: float = (
-			travel_progress * 2.0
-		)
-
-		return start_position.lerp(
-			bend_position,
-			first_half_progress
-		)
-
-	# =============================================================================
-	# SECOND HALF — BEND TO OUTPUT
-	# =============================================================================
-
-	var second_half_progress: float = (
-		(travel_progress - 0.5) * 2.0
-	)
-
-	return bend_position.lerp(
-		end_position,
-		second_half_progress
+	return ConveyorPathMotion.position_at_progress(
+		input_endpoint,
+		output_endpoint,
+		progress
 	)
 
 # =============================================================================
