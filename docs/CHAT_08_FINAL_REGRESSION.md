@@ -42,12 +42,12 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 
 - Directed straight belts, existing receiver-corner connection, automatic source-corner connection, and missing-corner bridging constructed successfully.
 - Small fractional/offset gaps were filled by a **real** conveyor; the user observed item flow at consistent speed following the length-based motion correction.
-- A 1×1 Merger was constructed with three physically attached input lines and an output connected to Storage.
+- A 1×1 Merger was constructed with three physically attached input lines and an output connected to Storage. **Additional live verification (2026-10-30):** the developer supplied a new screenshot showing item cargo along the three incoming routes and confirmed that the constructed three-input Merger works correctly in normal gameplay. Exact live `From A/B/C` per-lane HUD counters were not shown in that screenshot; these should not be reported as numerical observations.
 - A 1×1 Splitter was constructed with all three output ports connected; its Production Debug HUD showed **13 completed splits (A=5, B=4, C=4)** and output buffers 0/1 at screenshot time. This validates all three lanes routing items during a live session.
 
 ### Still required before marking Chat 08 fully complete
 
-1. **Merger live throughput:** Run three actively supplied inputs. Select Merger; record `From A`, `From B`, `From C`, total completed merges, input inventory levels and output connection. Counters must rise for each *active* source over time when output space is available. Capturing only the connection log is not enough to claim live 3-way transport.
+1. **Merger live throughput — developer-reported operational:** Construction screenshot shows cargo on all three incoming routes, and the developer explicitly confirmed the live Merger is working correctly (2026-10-30). For detailed performance evidence, the `From A/B/C` HUD counters and total merges may still be captured; no per-lane numeric values were provided in the screenshot. Do not treat that absence as a regression failure.
 2. **Merger backpressure:** Temporarily block the downstream belt. Confirm output saturates, inputs retain cargo without loss, and flow resumes when the obstruction is cleared.
 3. **Splitter repeat:** Confirm that `To A/B/C` continue increasing with a steady input. Temporarily fill/disconnect one output and confirm other available ports still receive items, then restore it.
 4. **Full physical chain:** Connect Extractor → Storage → Smelter → destination Storage. Confirm ore is consumed only through the selected recipe and ingots reach the destination through physical conveyors; note any still-active legacy proximity transfer components separately.
