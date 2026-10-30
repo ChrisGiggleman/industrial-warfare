@@ -176,6 +176,8 @@ func _refresh_merger_display(
 		+ " / " + str(output_inventory.max_capacity)
 		+ "\nConnection: " + ("Connected" if connected_out else "Disconnected")
 		+ "\n\nCompleted merges: " + str(merger.completed_merges)
+		+ "\nFrom A: " + str(merger.completed_from_a)
+		+ " | From B: " + str(merger.completed_from_b)
 		+ "\nNext input lane: " + ("A" if merger.next_lane == 0 else "B")
 	)
 
