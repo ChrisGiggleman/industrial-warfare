@@ -120,6 +120,36 @@ func _ready() -> void:
 	assert(belt_out.input_building_port == output)
 	print("PASS J: Merger kept all three persistent building links")
 
+	# =============================================================================
+	# L/M — TWO CONTINUOUS LANES MUST BOTH MAKE PROGRESS
+	# =============================================================================
+
+	# Model two actively supplying inputs and a slower one-item output.
+	# A full output must stall BOTH inputs safely until the downstream
+	# conveyor releases space. Once cleared, alternating lanes must
+	# both progress over multiple cycles.
+
+	assert(a_inventory.add_item(ore, 4) == 4)
+	assert(b_inventory.add_item(ingot, 4) == 4)
+
+	var from_a_before: int = component.completed_from_a
+	var from_b_before: int = component.completed_from_b
+
+	for cycle: int in range(8):
+		var expected: ItemDefinition = ore if cycle % 2 == 0 else ingot
+		assert(component.advance_merge())
+		assert(out_inventory.get_amount(expected) == 1)
+		assert(not component.advance_merge())
+		assert(out_inventory.remove_item(expected, 1))
+
+	assert(component.completed_from_a == from_a_before + 4)
+	assert(component.completed_from_b == from_b_before + 4)
+	assert(a_inventory.get_total_amount() == 0)
+	assert(b_inventory.get_total_amount() == 0)
+	assert(out_inventory.get_total_amount() == 0)
+	print("PASS L: Both active input lanes receive equal output opportunities")
+	print("PASS M: Repeated output backpressure retains every item")
+
 	merger.free()
 	assert(belt_a.output_building_port == null)
 	assert(belt_b.output_building_port == null)
@@ -128,5 +158,5 @@ func _ready() -> void:
 
 	root.queue_free()
 	print("================================================")
-	print("ALL 11 MERGER TESTS PASSED")
+	print("ALL 13 MERGER TESTS PASSED")
 	print("================================================")
