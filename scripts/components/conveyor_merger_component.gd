@@ -2,16 +2,17 @@ extends Node
 class_name ConveyorMergerComponent
 
 # =============================================================================
-# CHAT 08.3G-3G — TWO INPUTS, ONE OUTPUT
+# CHAT 08.3G-3K — THREE INPUT LANES TO ONE PHYSICAL OUTPUT
 # =============================================================================
 
-# Each incoming port has its own bounded queue. An internal round-robin
-# arbiter moves at most one item into a one-unit output queue per cycle.
-# Standard ConveyorBuildingTransfer handles all physical port transfers.
-# This is a real item movement; no teleport between external belts.
+# Three isolated input buffers and one bounded output buffer.
+# Alternates among available inputs without removing any item unless
+# the output can accept it. An unavailable input is skipped fairly.
+# All external transfers still use ItemPortComponent and conveyors.
 
 @export var input_a: InventoryComponent
 @export var input_b: InventoryComponent
+@export var input_c: InventoryComponent
 @export var output_inventory: InventoryComponent
 @export_range(0.05, 10.0, 0.05) var merge_interval: float = 0.25
 
@@ -20,6 +21,7 @@ var next_lane: int = 0
 var completed_merges: int = 0
 var completed_from_a: int = 0
 var completed_from_b: int = 0
+var completed_from_c: int = 0
 
 
 func _process(delta: float) -> void:
@@ -36,25 +38,35 @@ func advance_merge() -> bool:
 	if (
 		not is_instance_valid(input_a)
 		or not is_instance_valid(input_b)
+		or not is_instance_valid(input_c)
 		or not is_instance_valid(output_inventory)
 	):
 		return false
+
 	if output_inventory.get_available_space() == 0:
 		return false
 
-	for offset: int in range(2):
-		var lane: int = (next_lane + offset) % 2
-		var inventory: InventoryComponent = input_a if lane == 0 else input_b
+	var lanes: Array[InventoryComponent] = [input_a, input_b, input_c]
+	for offset: int in range(lanes.size()):
+		var lane: int = (next_lane + offset) % lanes.size()
+		var inventory: InventoryComponent = lanes[lane]
+
 		for key in inventory.items.keys():
 			var item: ItemDefinition = key as ItemDefinition
 			if item == null or not inventory.has_amount(item, 1):
 				continue
-			if inventory.transfer_to(output_inventory, item, 1) == 1:
-				next_lane = (lane + 1) % 2
-				completed_merges += 1
-				if lane == 0:
+			if inventory.transfer_to(output_inventory, item, 1) != 1:
+				continue
+
+			next_lane = (lane + 1) % lanes.size()
+			completed_merges += 1
+			match lane:
+				0:
 					completed_from_a += 1
-				else:
+				1:
 					completed_from_b += 1
-				return true
+				2:
+					completed_from_c += 1
+			return true
+
 	return false
