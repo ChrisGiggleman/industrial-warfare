@@ -260,14 +260,14 @@ Planned major systems:
 - [x] Add a generic visible box for occupied straight and in-place left/right corner belts, synchronized with travel progress.
 - [ ] Add **distinct item-specific** meshes/materials/models based on `ItemDefinition` (the current box is shared).
 - [x] Add Test Extractor OutputPort and reuse Test Smelter input/output ports; implement read-only port-to-belt snap transforms, reciprocal physical connections, guarded loading/unloading and automatic timer-driven transfers.
-- [ ] Integrate building-port snapping and connection commits into **player-facing Build Mode**; include placement obstruction checks and occupied-port previews.
-- [ ] Add universal physical input/output ports to Test Storage.
+- [x] Integrate building-port snapping and connection commits into **player-facing Build Mode**; include placement obstruction checks and occupied-port previews (completed after the 08.3F foundation).
+- [x] Add universal physical input/output ports to Test Storage (subsequent Chat 08 gameplay integration).
 - [x] Pass isolated Extractor → three belts → Smelter → Test Ingot production route (seeded ore, manually advanced timers, without storage).
 - [ ] Test full Extractor → Belt → Storage → Belt → Smelter → Belt → Storage in actual gameplay; replace proximity logistics only when safe.
 - [ ] Decide a safe item recovery/drop policy for non-player belt destruction and persistence.
 - [ ] Refine loop closure, speed/capacity balancing, exact corner collision shapes, and comprehensive test orchestration.
 
-**Status:** Belt-to-belt cargo transport foundation validated. The main factory does **not** yet transport items between buildings using belts; proximity-based transfers remain enabled.
+**Historical checkpoint status (08 foundation):** Belt-to-belt cargo transport validated before Build Mode integration. **Superseded:** The normal game now supports physical connections between buildings; legacy proximity components have not yet been formally retired.
 ### 1E.6 — Building Port Integration & Isolated Production Route (Chat 08, 2026-10-27)
 
 - [x] Add conveyor cargo visuals for straight and left/right corners; preserve generic `ItemDefinition` behavior.
@@ -278,11 +278,29 @@ Planned major systems:
 - [x] Pass **86/86** newer checks across ten separate Godot test scenes (total Chat 08 **130/130** across sixteen separate reported suites).
 - [x] Validate isolated Extractor → three connected belts → Smelter: two seeded ore produce one ingot with correct accounting.
 - [x] Commit and push this code and regression suite to `main`.
-- [ ] Support normal in-game placement/snap discovery and hookup from player-built belts to buildings via `WorldInteraction`.
-- [ ] Add Test Storage physical ports and a complete physical production chain via storage.
+- [x] Support normal in-game placement/snap discovery and hookup from player-built belts to buildings via `WorldInteraction` (subsequent Chat 08.3F/08.3G integration).
+- [x] Add Test Storage physical ports and player-built routes through Storage; final full-chain isolation from legacy proximity logic remains to be validated.
 - [ ] Test deposit-fed extraction, simultaneous item traffic, steady throughput and removal of proximity transfers without breaking the original factory.
 
-**Status:** Building-port logistics and a complete seeded-ore production route work in isolated tests; **normal gameplay still uses proximity logistics** and the in-game Build Mode does not yet link buildings to belts. Distinct item visuals and reliable direct cargo-destruction recovery are still future work.
+**Historical checkpoint status (08.3F-1):** The isolated seeded-ore test passed before normal Build Mode hookups existed. **Superseded by 08.3G:** Building-port links and output export work during player placement. Distinct item visuals, safe cargo recovery, and verified retirement of the parallel proximity flow remain pending.
+### 1E.7 — Full Player-Built Conveyor Logistics, Unified Grid & Routing Buildings (Chat 08.3G, 2026-10-30)
+
+- [x] Implement free-end and missing-corner preview/commit, including source/receiver existing-straight conversions.
+- [x] Implement exact two-ended bridging, fractional straight connectors and perpendicular variable-leg L connectors with real collision/selection and item transport.
+- [x] Normalize physical item velocity over variable connector lengths using `ConveyorPathMotion`.
+- [x] Apply `FactoryGrid` origin parity and rotated port alignment to all building definitions.
+- [x] Convert Merger to **1×1, 3 IN / 1 OUT**, with three independent bounded input buffers, one output buffer, round-robin fairness and per-lane counters.
+- [x] Add **1×1 Splitter, 1 IN / 3 OUT**, with three independently buffered outputs, disconnected/full output skipping and conservation.
+- [x] Add the build slots **6** / **7** and real-time Merger/Splitter input/output diagnostics.
+- [x] Receive developer-reported passing isolated regressions for grid/merger/splitter after redesign, and live evidence of 13 Splitter transfers (**5/4/4**).
+- [x] Verify that small gaps can be physically filled and their item movement appears speed-consistent in live gameplay.
+- [ ] Record a live Merger HUD showing all three actively supplied `From A/B/C` counters increasing, including output-full/backpressure recovery.
+- [ ] Run all final regression scenes consecutively and verify a deposit-fed, physically routed ore→ingot→destination factory independently of retained proximity transfers.
+- [ ] Complete final **accepted** Chat 08 GitHub checkpoint and identify any follow-up issues from gameplay validation.
+- [ ] Add safe cargo-recovery handling for destructive events and then retire/gate old proximity logistics after conservation tests.
+
+**Status: Implementation and targeted isolated/live tests successful; final acceptance pending.** Use [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md). Earlier 08.3F sections are historical checkpoints, not the latest capability inventory.
+
 ### 1F — Enemy & Defense Prototype
 
 - [ ] Add simple zombie enemy
@@ -365,4 +383,6 @@ Completed:
 
 **Chat 07.5 checkpoint:** In-place left/right corner conversion, yellow arrows, visual L-shaped placeholders and tested connection/demolition behavior remain working.
 
-**Latest milestone (Chat 08.3F-1):** One-unit generic transport, visible straight/corner cargo, physically linked building ports, automatic loading/unloading and an isolated Extractor → three belts → Smelter manufacturing route are committed on GitHub `main`. Godot results total **130/130 across separate suites**, not a combined CI run. **Next:** wire machine-port snapping into normal Build Mode, introduce universal Storage input/output ports, then validate deposit-driven and multi-item physical factory gameplay before disabling proximity logistics. Distinct item art, universal slotted storage, splitters/mergers and ammunition-fed defense remain planned in [GAME_VISION.md](GAME_VISION.md).
+**Current milestone (Chat 08.3G-3K):** Player-built connected conveyors, source/receiver corners, missing corners, short straight and offset-L bridges, consistent cargo pacing, shared grid and 1×1 routing buildings are implemented in GitHub `main`. Both new 1×1 routing suites and the shared-grid suite passed in Godot. In live gameplay, the Splitter distributed **13 items across all three outputs (5/4/4)**; Merger construction and all four physical connections were observed, but **live transfer counters for all three active Merger inputs remain to be confirmed**. The final full regression and safe phase-out of legacy proximity transfers are outstanding. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
+
+**Next after Chat 08 acceptance:** concentrate on the ammunition-fed production/defense loop and the First Night vertical slice, with universal slotted storage, cargo recovery, save/load, visual polish and power/fuel sequenced as appropriate.
