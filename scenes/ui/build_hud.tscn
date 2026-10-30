@@ -10,7 +10,7 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = -171.0
+offset_top = -194.0
 offset_right = 179.0
 offset_bottom = -20.0
 grow_vertical = 0
@@ -48,6 +48,10 @@ text = "[4] Test Smelter"
 [node name="Building5Label" type="Label" parent="BuildPanel/PanelMargin/BuildInfo" unique_id=77691376]
 layout_mode = 2
 text = "[5] Conveyor Belt"
+
+[node name="Building6Label" type="Label" parent="BuildPanel/PanelMargin/BuildInfo"]
+layout_mode = 2
+text = "[6] Conveyor Merger"
 
 [node name="ControlsLabel" type="Label" parent="BuildPanel/PanelMargin/BuildInfo" unique_id=1895815257]
 layout_mode = 2
