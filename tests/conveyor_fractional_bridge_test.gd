@@ -48,6 +48,14 @@ func _ready() -> void:
 	assert(destination.output_building_port == port_out)
 	print("PASS B: Preview does not modify existing endpoints")
 
+	var by_cursor := ConveyorFractionalBridge.find_nearest_preview(
+		get_tree(), Vector3(0, 0, -0.825), 0.75
+	)
+	assert(by_cursor.get("source") == source)
+	assert(by_cursor.get("destination") == destination)
+	assert(is_equal_approx(float(by_cursor["length"]), 0.65))
+	print("PASS K: Build Mode discovers the fractional connector at its midpoint")
+
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	assert(ConveyorFractionalBridge.is_clear(
@@ -135,5 +143,5 @@ func _ready() -> void:
 
 	root.queue_free()
 	print("==============================================")
-	print("ALL 10 FRACTIONAL BRIDGE TESTS PASSED")
+	print("ALL 11 FRACTIONAL BRIDGE TESTS PASSED")
 	print("==============================================")
