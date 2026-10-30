@@ -144,7 +144,7 @@ static func _rectangles(candidate: Dictionary) -> Array[Dictionary]:
 	var s: float = candidate["output_length"]
 	var side: float = candidate["side"]
 	# Two joined 0.78-wide legs. Their center overlap fills the bend.
-	return [
+	var rectangles: Array[Dictionary] = [
 		{
 			"size": Vector3(WIDTH, 0.18, t + HALF_WIDTH),
 			"offset": Vector3(0.0, 0.3, (t - HALF_WIDTH) * 0.5)
@@ -154,6 +154,7 @@ static func _rectangles(candidate: Dictionary) -> Array[Dictionary]:
 			"offset": Vector3(side * (s - HALF_WIDTH) * 0.5, 0.3, 0.0)
 		}
 	]
+	return rectangles
 
 
 static func is_clear(
