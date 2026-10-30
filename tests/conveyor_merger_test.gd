@@ -1,10 +1,10 @@
 extends Node
 
 # =============================================================================
-# CHAT 08.3G-3G — TWO-INPUT MERGER REGRESSION
+# CHAT 08.3G-3K — 1x1 THREE-INPUT MERGER REGRESSION
 # =============================================================================
 
-func _new_belt(parent: Node3D) -> ConveyorSegment:
+func _belt(parent: Node3D) -> ConveyorSegment:
 	var belt := ConveyorPieceSelector.STRAIGHT_SCENE.instantiate() as ConveyorSegment
 	assert(belt != null)
 	parent.add_child(belt)
@@ -12,151 +12,149 @@ func _new_belt(parent: Node3D) -> ConveyorSegment:
 	return belt
 
 
-func _connect_port(
-	belt: ConveyorSegment,
-	port: ItemPortComponent
-) -> bool:
-	var preview := ConveyorBuildingSnap.get_preview_transform(port, belt)
-	if preview.is_empty():
+func _connect(belt: ConveyorSegment, port: ItemPortComponent) -> bool:
+	var snap: Dictionary = ConveyorBuildingSnap.get_preview_transform(port, belt)
+	if snap.is_empty():
 		return false
-	belt.global_transform = preview["transform"]
+	belt.global_transform = snap["transform"]
 	return belt.try_connect_building_port(port)
 
 
 func _ready() -> void:
-	print("\n===== CHAT 08.3G-3G: TWO-INPUT MERGER =====")
+	print("\n===== CHAT 08.3G-3K: THREE-INPUT MERGER =====")
+	var packed := load("res://scenes/buildings/conveyor_merger.tscn") as PackedScene
+	var definition := load("res://data/buildings/conveyor_merger.tres") as BuildingDefinition
+	assert(packed != null and definition != null)
+	assert(definition.footprint_tiles == Vector2i.ONE)
 	var root := Node3D.new()
 	add_child(root)
-	var packed := load("res://scenes/buildings/conveyor_merger.tscn") as PackedScene
-	assert(packed != null)
 	var merger := packed.instantiate() as Node3D
 	assert(merger != null)
 	root.add_child(merger)
 
-	var input_a := merger.get_node("InputPortA") as ItemPortComponent
-	var input_b := merger.get_node("InputPortB") as ItemPortComponent
-	var output := merger.get_node("OutputPort") as ItemPortComponent
-	var a_inventory := merger.get_node("InputAInventory") as InventoryComponent
-	var b_inventory := merger.get_node("InputBInventory") as InventoryComponent
-	var out_inventory := merger.get_node("OutputInventory") as InventoryComponent
-	var component := merger.get_node("MergerComponent") as ConveyorMergerComponent
-	component.set_process(false)
-	assert(input_a != input_b)
-	assert(input_a.direction == ItemPortComponent.PortDirection.INPUT)
-	assert(input_b.direction == ItemPortComponent.PortDirection.INPUT)
-	assert(output.direction == ItemPortComponent.PortDirection.OUTPUT)
-	assert(input_a.input_policy == ItemPortComponent.InputPolicy.ANY_ITEM)
-	assert(input_b.input_policy == ItemPortComponent.InputPolicy.ANY_ITEM)
-	print("PASS A: Two independent input ports and one output port configured")
+	var pa := merger.get_node("InputPortA") as ItemPortComponent
+	var pb := merger.get_node("InputPortB") as ItemPortComponent
+	var pc := merger.get_node("InputPortC") as ItemPortComponent
+	var po := merger.get_node("OutputPort") as ItemPortComponent
+	var ia := merger.get_node("InputAInventory") as InventoryComponent
+	var ib := merger.get_node("InputBInventory") as InventoryComponent
+	var ic := merger.get_node("InputCInventory") as InventoryComponent
+	var io := merger.get_node("OutputInventory") as InventoryComponent
+	var m := merger.get_node("MergerComponent") as ConveyorMergerComponent
+	m.set_process(false)
 
-	var belt_a := _new_belt(root)
-	var belt_b := _new_belt(root)
-	var belt_out := _new_belt(root)
-	assert(_connect_port(belt_a, input_a))
-	assert(_connect_port(belt_b, input_b))
-	assert(_connect_port(belt_out, output))
-	assert(input_a.connected_conveyor == belt_a)
-	assert(input_b.connected_conveyor == belt_b)
-	assert(output.connected_conveyor == belt_out)
-	print("PASS B: All three distinct physical conveyor connections align")
+	assert(pa.direction == ItemPortComponent.PortDirection.INPUT)
+	assert(pb.direction == ItemPortComponent.PortDirection.INPUT)
+	assert(pc.direction == ItemPortComponent.PortDirection.INPUT)
+	assert(po.direction == ItemPortComponent.PortDirection.OUTPUT)
+	assert(pa.input_policy == ItemPortComponent.InputPolicy.ANY_ITEM)
+	assert(pb.input_policy == ItemPortComponent.InputPolicy.ANY_ITEM)
+	assert(pc.input_policy == ItemPortComponent.InputPolicy.ANY_ITEM)
+	print("PASS A: 1x1 building has 3 universal inputs and 1 output")
+
+	var ba := _belt(root)
+	var bb := _belt(root)
+	var bc := _belt(root)
+	var bo := _belt(root)
+	assert(_connect(ba, pa))
+	assert(_connect(bb, pb))
+	assert(_connect(bc, pc))
+	assert(_connect(bo, po))
+	assert(pa.connected_conveyor == ba)
+	assert(pb.connected_conveyor == bb)
+	assert(pc.connected_conveyor == bc)
+	assert(po.connected_conveyor == bo)
+	print("PASS B: All four physical conveyor ports connect separately")
 
 	var ore := load("res://data/items/test_ore.tres") as ItemDefinition
 	var ingot := load("res://data/items/test_ingot.tres") as ItemDefinition
 	assert(ore != null and ingot != null)
-	var cargo_a := belt_a.get_node("CargoInventory") as InventoryComponent
-	var cargo_b := belt_b.get_node("CargoInventory") as InventoryComponent
-	var cargo_out := belt_out.get_node("CargoInventory") as InventoryComponent
-	assert(cargo_a.add_item(ore, 1) == 1)
-	assert(cargo_b.add_item(ingot, 1) == 1)
-	assert(ConveyorBuildingTransfer.try_unload_from_belt(belt_a))
-	assert(ConveyorBuildingTransfer.try_unload_from_belt(belt_b))
-	assert(a_inventory.get_amount(ore) == 1)
-	assert(b_inventory.get_amount(ingot) == 1)
-	assert(cargo_a.get_total_amount() == 0)
-	assert(cargo_b.get_total_amount() == 0)
-	print("PASS C: Two incoming cargo types delivered independently")
+	var ca := ba.get_node("CargoInventory") as InventoryComponent
+	var cb := bb.get_node("CargoInventory") as InventoryComponent
+	var cc := bc.get_node("CargoInventory") as InventoryComponent
+	var co := bo.get_node("CargoInventory") as InventoryComponent
 
-	assert(component.advance_merge())
-	assert(out_inventory.get_amount(ore) == 1)
-	assert(a_inventory.get_total_amount() == 0)
-	assert(b_inventory.get_amount(ingot) == 1)
-	print("PASS D: First lane transferred one item into output buffer")
+	assert(ca.add_item(ore, 1) == 1)
+	assert(cb.add_item(ingot, 1) == 1)
+	assert(cc.add_item(ore, 1) == 1)
+	assert(ConveyorBuildingTransfer.try_unload_from_belt(ba))
+	assert(ConveyorBuildingTransfer.try_unload_from_belt(bb))
+	assert(ConveyorBuildingTransfer.try_unload_from_belt(bc))
+	assert(ia.get_amount(ore) == 1)
+	assert(ib.get_amount(ingot) == 1)
+	assert(ic.get_amount(ore) == 1)
+	print("PASS C: Three belts unload into three independent queues")
 
-	assert(not component.advance_merge())
-	assert(out_inventory.get_total_amount() == 1)
-	assert(b_inventory.get_amount(ingot) == 1)
-	print("PASS E: Full output applies backpressure without item loss")
+	assert(m.advance_merge())
+	assert(io.get_amount(ore) == 1)
+	assert(not m.advance_merge())
+	assert(ib.get_amount(ingot) == 1 and ic.get_amount(ore) == 1)
+	print("PASS D: Full shared output safely blocks further transfers")
 
-	assert(ConveyorBuildingTransfer.try_load_into_belt(belt_out))
-	assert(cargo_out.get_amount(ore) == 1)
-	assert(out_inventory.get_total_amount() == 0)
-	assert(component.advance_merge())
-	assert(out_inventory.get_amount(ingot) == 1)
-	assert(b_inventory.get_amount(ingot) == 0)
-	print("PASS F: Output unload allows round-robin second lane")
-
-	assert(component.completed_merges == 2)
-	assert(component.next_lane == 0)
-	assert(cargo_out.get_amount(ore) == 1)
-	assert(out_inventory.get_amount(ingot) == 1)
-	print("PASS G: Deterministic alternating lane arbitration")
+	assert(ConveyorBuildingTransfer.try_load_into_belt(bo))
+	assert(co.get_amount(ore) == 1)
+	assert(m.advance_merge())
+	assert(io.get_amount(ingot) == 1)
+	assert(co.remove_item(ore, 1))
+	assert(ConveyorBuildingTransfer.try_load_into_belt(bo))
+	assert(co.get_amount(ingot) == 1)
+	assert(m.advance_merge())
+	assert(io.get_amount(ore) == 1)
+	assert(m.completed_from_a == 1)
+	assert(m.completed_from_b == 1)
+	assert(m.completed_from_c == 1)
+	assert(m.next_lane == 0)
+	print("PASS E: Physical output delivers A, B, C in round-robin order")
 
 	assert(not bool(merger.call("can_demolish_safely")))
-	print("PASS H: Merger cannot be demolished while it stores cargo")
-
-	var output_cargo := belt_out.get_node("CargoInventory") as InventoryComponent
-	assert(output_cargo.remove_item(ore, 1))
-	assert(ConveyorBuildingTransfer.try_load_into_belt(belt_out))
-	assert(output_cargo.get_amount(ingot) == 1)
-	assert(out_inventory.get_total_amount() == 0)
+	assert(co.remove_item(ingot, 1))
+	assert(ConveyorBuildingTransfer.try_load_into_belt(bo))
+	assert(io.get_total_amount() == 0)
 	assert(bool(merger.call("can_demolish_safely")))
-	print("PASS I: Both item types leave through the physical output belt")
+	print("PASS F: Stored cargo prevents demolition until fully drained")
 
-	assert(input_a.connected_conveyor == belt_a)
-	assert(input_b.connected_conveyor == belt_b)
-	assert(output.connected_conveyor == belt_out)
-	assert(belt_a.output_building_port == input_a)
-	assert(belt_b.output_building_port == input_b)
-	assert(belt_out.input_building_port == output)
-	print("PASS J: Merger kept all three persistent building links")
+	assert(ia.add_item(ore, 3) == 3)
+	assert(ib.add_item(ingot, 3) == 3)
+	assert(ic.add_item(ore, 3) == 3)
+	for cycle: int in range(9):
+		var expected: ItemDefinition = ingot if cycle % 3 == 1 else ore
+		assert(m.advance_merge())
+		assert(io.get_amount(expected) == 1)
+		assert(not m.advance_merge())
+		assert(io.remove_item(expected, 1))
+	assert(ia.get_total_amount() == 0)
+	assert(ib.get_total_amount() == 0)
+	assert(ic.get_total_amount() == 0)
+	assert(m.completed_from_a == 4)
+	assert(m.completed_from_b == 4)
+	assert(m.completed_from_c == 4)
+	print("PASS G: Continuous 3-lane traffic remains fair under backpressure")
 
-	# =============================================================================
-	# L/M — TWO CONTINUOUS LANES MUST BOTH MAKE PROGRESS
-	# =============================================================================
+	# Leave A empty: the scheduler must skip it and still serve B and C.
+	assert(ib.add_item(ingot, 1) == 1)
+	assert(ic.add_item(ore, 1) == 1)
+	assert(m.advance_merge())
+	assert(io.get_amount(ingot) == 1)
+	assert(io.remove_item(ingot, 1))
+	assert(m.advance_merge())
+	assert(io.get_amount(ore) == 1)
+	assert(io.remove_item(ore, 1))
+	print("PASS H: Empty lanes do not stall other inputs")
 
-	# Model two actively supplying inputs and a slower one-item output.
-	# A full output must stall BOTH inputs safely until the downstream
-	# conveyor releases space. Once cleared, alternating lanes must
-	# both progress over multiple cycles.
-
-	assert(a_inventory.add_item(ore, 4) == 4)
-	assert(b_inventory.add_item(ingot, 4) == 4)
-
-	var from_a_before: int = component.completed_from_a
-	var from_b_before: int = component.completed_from_b
-
-	for cycle: int in range(8):
-		var expected: ItemDefinition = ore if cycle % 2 == 0 else ingot
-		assert(component.advance_merge())
-		assert(out_inventory.get_amount(expected) == 1)
-		assert(not component.advance_merge())
-		assert(out_inventory.remove_item(expected, 1))
-
-	assert(component.completed_from_a == from_a_before + 4)
-	assert(component.completed_from_b == from_b_before + 4)
-	assert(a_inventory.get_total_amount() == 0)
-	assert(b_inventory.get_total_amount() == 0)
-	assert(out_inventory.get_total_amount() == 0)
-	print("PASS L: Both active input lanes receive equal output opportunities")
-	print("PASS M: Repeated output backpressure retains every item")
+	assert(ba.output_building_port == pa)
+	assert(bb.output_building_port == pb)
+	assert(bc.output_building_port == pc)
+	assert(bo.input_building_port == po)
+	print("PASS I: All three inputs and output retain distinct links")
 
 	merger.free()
-	assert(belt_a.output_building_port == null)
-	assert(belt_b.output_building_port == null)
-	assert(belt_out.input_building_port == null)
-	print("PASS K: Removing empty merger disconnects all ports")
+	assert(ba.output_building_port == null)
+	assert(bb.output_building_port == null)
+	assert(bc.output_building_port == null)
+	assert(bo.input_building_port == null)
+	print("PASS J: Removing an empty merger disconnects all four links")
 
 	root.queue_free()
 	print("================================================")
-	print("ALL 13 MERGER TESTS PASSED")
+	print("ALL 10 THREE-INPUT MERGER TESTS PASSED")
 	print("================================================")
