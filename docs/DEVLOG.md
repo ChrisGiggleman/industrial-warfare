@@ -1113,3 +1113,35 @@ These are **reported individual test runs**, not a single scripted or CI-based f
 **Remaining release gate:** Run the critical scenes as a single final manual regression pass, verify Merger backpressure/recovery, confirm full deposit-driven physical mining→smelting→destination delivery without double counting retained proximity scaffolding, and inspect collision/selection/demolition behavior. Then create the final accepted GitHub checkpoint.
 
 **Future product goals:** Gradually retire prototype proximity logistics with conservation checks, cargo recovery for destructive events, universal tiered slot/stack storage, polished visual cues, ammunition manufacture, defense and zombie First Night gameplay.
+
+---
+
+## 2026-10-30 — Chat 08 Final Logistics Acceptance Checkpoint (Core Systems)
+
+### Final manual regression
+
+The developer ran **all 20** enumerated Godot `F6` test scenes over **four rounds of five tests**, confirming every round passed. Covered grid alignment and rotated ports; three-input Merger and three-output Splitter; existing and missing corner conversion; endpoint discovery; two-ended and fractional/offset bridges; cargo path visuals; automatic machine loading/unloading; and isolated physical ore-to-ingot transport.
+
+**Evidence status:** These are developer-reported local editor results, not one automated GitHub CI run. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the exact scene list.
+
+### Live gameplay completion
+
+- **Merger (1×1, 3 IN / 1 OUT):** Three connected source routes showed physical item transport; developer subsequently confirmed Merger operation in the live factory. Detailed `From A/B/C` HUD values were not separately captured.
+- **Splitter (1×1, 1 IN / 3 OUT):** Live Production Debug HUD captured **13 successful splits**, distributed A=5, B=4, C=4; all three output ports connected.
+- **Backpressure:** Developer explicitly confirmed that the Merger retained cargo under blocked-output conditions and resumed after space became available.
+- **Ore-to-ingot production:** Developer explicitly confirmed a fully working ore-to-ingot factory chain in gameplay, beyond the earlier seeded isolated physical factory test. No numerical end-to-end resource-conservation snapshot was supplied for this new run.
+
+### Milestone decision
+
+**Core Chat 08 physical factory-logistics milestone: ACCEPTED (2026-10-30).** Both the manual regression and the principal player-visible production/routing behavior have passed.
+
+This acceptance **does not** mean everything in the long-term logistics roadmap is finished. We have not separately verified that legacy proximity-based scripts were disabled for the latest live run; a confirmed functioning belt chain does not, by itself, prove there are no parallel automatic proximity transfers. Do not remove that legacy logic without a controlled physical-only conservation regression.
+
+### Carry-forward work (later milestone)
+
+1. Confirm physical-only resource accounting and carefully retire/gate redundant short-range proximity transfer scripts.
+2. Improve diagnostic snapshots/throughput benchmarking (Merger lane counts; Splitter blocked-output sustained-traffic behavior).
+3. Confirm demolition, collision refusal and cargo-recovery behavior in complex live builds; establish persistence and player-friendly build visuals.
+4. Continue the original gameplay vision toward ammunition production, defensive supply and the zombie First Night vertical slice.
+
+**Documentation checkpoint:** `GAME_DESIGN.md`, `ARCHITECTURE.md`, `TROUBLESHOOTING.md`, `ROADMAP.md` and this log capture implementation and engineering lessons. This entry supersedes earlier *historical* statements that Merger/backpressure and full factory live verification were still pending.
