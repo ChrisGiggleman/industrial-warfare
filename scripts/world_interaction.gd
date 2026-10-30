@@ -119,6 +119,14 @@ var source_corner_preview: Dictionary = {}
 var source_corner_preview_mesh: MeshInstance3D = null
 
 # =============================================================================
+# CHAT 08.3G-3G — FRACTIONAL AND OFFSET CONNECTOR PREVIEW
+# =============================================================================
+
+var gap_connector_preview: Dictionary = {}
+var gap_connector_overlay: MeshInstance3D = null
+
+
+# =============================================================================
 # TWO-ENDED CONVEYOR BRIDGE SNAP STATE — CHAT 08.3F-6
 # =============================================================================
 
@@ -1419,6 +1427,39 @@ func _update_placement_preview() -> void:
 				_clear_source_corner_preview()
 
 			# =============================================================================
+			# CHAT 08.3G-3G — CONNECT TWO FREE OFF-GRID ENDPOINTS
+			# =============================================================================
+			# One L-shaped connector for perpendicular free endpoints,
+			# or one fractional straight for aligned free endpoints.
+			# Never reinterpret a two-input merger as a simple corner.
+
+			var gap_candidate: Dictionary = {}
+			if (
+				selected_building_index == 4
+				and missing_corner_preview.is_empty()
+				and receiver_corner_preview.is_empty()
+				and source_corner_preview.is_empty()
+				and not Input.is_physical_key_pressed(KEY_SHIFT)
+			):
+				gap_candidate = ConveyorOffsetCornerBridge.find_nearest_preview(
+					get_tree(), mouse_grid_position, 0.8
+				)
+				if not gap_candidate.is_empty():
+					gap_candidate["kind"] = "offset_corner"
+				else:
+					gap_candidate = ConveyorFractionalBridge.find_nearest_preview(
+						get_tree(), mouse_grid_position, 0.75
+					)
+					if not gap_candidate.is_empty():
+						gap_candidate["kind"] = "fractional_straight"
+
+			if not gap_candidate.is_empty():
+				if not _show_gap_connector_preview(gap_candidate):
+					_clear_gap_connector_preview()
+			else:
+				_clear_gap_connector_preview()
+
+			# =============================================================================
 			# RESET NORMAL GRID PREVIEW
 			# =============================================================================
 
@@ -1483,6 +1524,7 @@ func _update_placement_preview() -> void:
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
 				and source_corner_preview.is_empty()
+				and gap_connector_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
 
@@ -1695,6 +1737,10 @@ func _update_placement_preview() -> void:
 						PLACEMENT_BLOCKER_COLLISION_MASK
 					)
 				)
+			elif not gap_connector_preview.is_empty():
+				placement_is_valid = _is_gap_connector_clear(
+					gap_connector_preview
+				)
 			else:
 				placement_is_valid = _is_placement_clear()
 
@@ -1712,6 +1758,7 @@ func _update_placement_preview() -> void:
 		# the ground, or allow a click to commit it at an old location.
 		_clear_receiver_corner_preview()
 		_clear_source_corner_preview()
+		_clear_gap_connector_preview()
 		placement_is_valid = false
 
 	if ghost_material != null:
@@ -1732,6 +1779,84 @@ func _update_placement_preview() -> void:
 
 	else:
 		placement_is_valid = false
+
+
+# =============================================================================
+# CHAT 08.3G-3G — FRACTIONAL AND OFFSET BRIDGE GHOST
+# =============================================================================
+
+func _clear_gap_connector_preview() -> void:
+	if is_instance_valid(gap_connector_overlay):
+		gap_connector_overlay.queue_free()
+	gap_connector_overlay = null
+	gap_connector_preview.clear()
+	if (
+		is_instance_valid(placement_ghost)
+		and source_corner_preview.is_empty()
+		and receiver_corner_preview.is_empty()
+	):
+		placement_ghost.visible = true
+
+
+func _show_gap_connector_preview(candidate: Dictionary) -> bool:
+	if not is_instance_valid(placement_ghost):
+		return false
+
+	# A single overlay is reused for stable candidates; the overlay
+	# is NOT a conveyor and carries no inventory or physics connections.
+	var kind: String = str(candidate.get("kind", ""))
+	var mesh_resource: Mesh = null
+	if kind == "offset_corner":
+		mesh_resource = ConveyorOffsetCornerBridge.make_preview_mesh(candidate)
+	elif kind == "fractional_straight":
+		var box := BoxMesh.new()
+		box.size = Vector3(0.8, 0.2, float(candidate["length"]))
+		mesh_resource = box
+	else:
+		return false
+
+	if mesh_resource == null:
+		return false
+
+	if (
+		not is_instance_valid(gap_connector_overlay)
+		or gap_connector_preview.get("kind") != kind
+		or gap_connector_preview.get("source") != candidate.get("source")
+		or gap_connector_preview.get("destination") != candidate.get("destination")
+	):
+		_clear_gap_connector_preview()
+		gap_connector_overlay = MeshInstance3D.new()
+		gap_connector_overlay.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		)
+		gap_connector_overlay.material_override = ghost_material
+		get_tree().current_scene.add_child(gap_connector_overlay)
+
+	gap_connector_overlay.mesh = mesh_resource
+	gap_connector_overlay.global_transform = (
+		(candidate["transform"] as Transform3D)
+		* Transform3D(Basis.IDENTITY, Vector3(0.0, 0.3, 0.0))
+	)
+	gap_connector_preview = candidate
+	placement_ghost.visible = false
+	return true
+
+
+func _is_gap_connector_clear(candidate: Dictionary) -> bool:
+	match str(candidate.get("kind", "")):
+		"offset_corner":
+			return ConveyorOffsetCornerBridge.is_clear(
+				get_viewport().world_3d,
+				candidate,
+				PLACEMENT_BLOCKER_COLLISION_MASK
+			)
+		"fractional_straight":
+			return ConveyorFractionalBridge.is_clear(
+				get_viewport().world_3d,
+				candidate,
+				PLACEMENT_BLOCKER_COLLISION_MASK
+			)
+	return false
 
 
 # =============================================================================
@@ -2704,6 +2829,46 @@ func _try_place_object() -> void:
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
+
+	# =============================================================================
+	# CHAT 08.3G-3G — PLACE TWO-ENDED VARIABLE GEOMETRY
+	# =============================================================================
+
+	if (
+		selected_building_index == 4
+		and not gap_connector_preview.is_empty()
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+		_update_placement_preview()
+		if gap_connector_preview.is_empty():
+			print("GAP CONNECTOR | Candidate changed or cursor moved.")
+			return
+		var candidate: Dictionary = gap_connector_preview.duplicate()
+		if not _is_gap_connector_clear(candidate):
+			print("GAP CONNECTOR | Physical placement blocked.")
+			return
+		var parent := get_tree().current_scene as Node3D
+		if parent == null:
+			return
+		var new_belt: ConveyorSegment = null
+		match str(candidate.get("kind", "")):
+			"offset_corner":
+				new_belt = ConveyorOffsetCornerBridge.try_place(
+					parent, candidate, PLACEMENT_BLOCKER_COLLISION_MASK
+				)
+			"fractional_straight":
+				new_belt = ConveyorFractionalBridge.try_place(
+					parent, candidate
+				)
+		if not is_instance_valid(new_belt):
+			print("GAP CONNECTOR | Both endpoints must remain free and aligned.")
+			return
+		print(
+			"GAP CONNECTOR CONNECTED | Kind: ", candidate["kind"],
+			" | Position: ", new_belt.global_position
+		)
+		_clear_gap_connector_preview()
+		return
 
 	# =============================================================================
 	# CHAT 08.3G-3F — COMMIT SOURCE CORNER ON CLICK
@@ -3885,6 +4050,7 @@ func _create_placement_ghost(
 func _destroy_placement_ghost() -> void:
 	_clear_receiver_corner_preview()
 	_clear_source_corner_preview()
+	_clear_gap_connector_preview()
 	if placement_ghost != null and is_instance_valid(placement_ghost):
 		placement_ghost.queue_free()
 
