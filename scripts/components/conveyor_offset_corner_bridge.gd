@@ -49,7 +49,7 @@ static func inspect_pair(
 	var basis: Basis = from_marker.global_transform.basis.orthonormalized()
 	var incoming_direction: Vector3 = (basis * Vector3.FORWARD).normalized()
 	var outgoing_direction: Vector3 = (
-		-to_marker.global_transform.basis * Vector3.FORWARD
+		-(to_marker.global_transform.basis * Vector3.FORWARD)
 	).normalized()
 	if absf(incoming_direction.dot(outgoing_direction)) > PERPENDICULAR_DOT:
 		return {}
