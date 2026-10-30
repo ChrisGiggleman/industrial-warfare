@@ -5,7 +5,7 @@ extends Node
 # INVENTORY TRANSFER TEST
 # =============================================================================
 
-# Chat 05 - Step 4.2A
+# Validates partially full inventory transfers.
 #
 # Verifies that InventoryComponent.transfer_to()
 # correctly handles a partially full destination.

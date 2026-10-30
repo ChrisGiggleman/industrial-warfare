@@ -1,7 +1,7 @@
 extends Node
 
 # =============================================================================
-# CHAT 08.3G-3F — FRACTIONAL GAP BRIDGE REGRESSION
+# FRACTIONAL GAP BRIDGE REGRESSION
 # =============================================================================
 
 func _belt(parent: Node3D) -> ConveyorSegment:

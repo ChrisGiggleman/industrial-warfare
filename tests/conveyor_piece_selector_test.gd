@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — AUTOMATIC CONVEYOR SHAPE SELECTION TEST
+# AUTOMATIC CONVEYOR SHAPE SELECTION TEST
 # =============================================================================
 
 func _ready() -> void:

@@ -4,7 +4,7 @@ class_name ConveyorCornerConversion
 
 
 # =============================================================================
-# CHAT 07 — IN-PLACE CONVEYOR CORNER CONVERSION
+# IN-PLACE CONVEYOR CORNER CONVERSION
 # =============================================================================
 
 # Converts an existing straight conveyor into a corner

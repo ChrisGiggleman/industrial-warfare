@@ -2,7 +2,7 @@ extends Node
 class_name ConveyorSplitterComponent
 
 # =============================================================================
-# CHAT 08.3G-3K — ONE INPUT TO THREE PHYSICAL OUTPUTS
+# ONE INPUT TO THREE PHYSICAL OUTPUTS
 # =============================================================================
 
 # The input is one bounded InventoryComponent; each output uses a separate

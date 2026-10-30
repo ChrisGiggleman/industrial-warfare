@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3B — BUILDING CONVEYOR SNAP FOUNDATION TEST
+# BUILDING CONVEYOR SNAP FOUNDATION TEST
 # =============================================================================
 
 # Validates:

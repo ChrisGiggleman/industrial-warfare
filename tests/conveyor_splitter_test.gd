@@ -1,7 +1,7 @@
 extends Node
 
 # =============================================================================
-# CHAT 08.3G-3K — 1x1 THREE-OUTPUT SPLITTER REGRESSION
+# 1x1 THREE-OUTPUT SPLITTER REGRESSION
 # =============================================================================
 
 func _belt(parent: Node3D) -> ConveyorSegment:

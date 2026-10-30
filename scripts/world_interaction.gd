@@ -95,7 +95,7 @@ var conveyor_corner_snap_turn: int = (
 )
 
 # =============================================================================
-# CHAT 08.3G-3D — AUTOMATIC MISSING CORNER PREVIEW STATE
+# AUTOMATIC MISSING CORNER PREVIEW STATE
 # =============================================================================
 
 # Holds a validated one-tile corner candidate.
@@ -106,20 +106,20 @@ var conveyor_corner_snap_turn: int = (
 var missing_corner_preview: Dictionary = {}
 
 # =============================================================================
-# CHAT 08.3G-3E — EXISTING RECEIVER CORNER PREVIEW STATE
+# EXISTING RECEIVER CORNER PREVIEW STATE
 # =============================================================================
 
 var receiver_corner_preview: Dictionary = {}
 var receiver_corner_preview_mesh: MeshInstance3D = null
 
 # =============================================================================
-# CHAT 08.3G-3F — SOURCE-SIDE AUTO CORNER PREVIEW STATE
+# SOURCE-SIDE AUTO CORNER PREVIEW STATE
 # =============================================================================
 var source_corner_preview: Dictionary = {}
 var source_corner_preview_mesh: MeshInstance3D = null
 
 # =============================================================================
-# CHAT 08.3G-3G — FRACTIONAL AND OFFSET CONNECTOR PREVIEW
+# FRACTIONAL AND OFFSET CONNECTOR PREVIEW
 # =============================================================================
 
 var gap_connector_preview: Dictionary = {}
@@ -127,7 +127,7 @@ var gap_connector_overlay: MeshInstance3D = null
 
 
 # =============================================================================
-# TWO-ENDED CONVEYOR BRIDGE SNAP STATE — CHAT 08.3F-6
+# TWO-ENDED CONVEYOR BRIDGE SNAP STATE
 # =============================================================================
 
 # Valid only when a single ordinary straight segment physically fits
@@ -313,7 +313,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_building(5)
 			return
 
-		# CHAT 08.3G-3K — 1x1 Splitter in build slot 7
+		# 1x1 Splitter in build slot 7
 		if (
 			event is InputEventKey
 			and event.pressed
@@ -328,7 +328,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 		# =============================================================================
-		# CHAT 08.3G — INSPECT EXISTING CONVEYOR JUNCTION
+		# INSPECT EXISTING CONVEYOR JUNCTION
 		# =============================================================================
 
 		# J inspects nearby existing conveyor connections.
@@ -346,7 +346,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 		# =============================================================================
-		# CHAT 08.3G — CONNECT EXISTING CONVEYOR JUNCTION (K)
+		# CONNECT EXISTING CONVEYOR JUNCTION (K)
 		# =============================================================================
 
 		# Available only in Build Mode with the Conveyor Belt selected.
@@ -378,7 +378,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 # =============================================================================
-# CHAT 08.3G-3C — EXISTING CONVEYOR JUNCTION INSPECTION
+# EXISTING CONVEYOR JUNCTION INSPECTION
 # =============================================================================
 
 # Finds a compatible connection near the mouse cursor.
@@ -476,7 +476,7 @@ func _inspect_existing_conveyor_junction() -> void:
 		candidate["junction"]
 	)
 # =============================================================================
-# CHAT 08.3G — CONNECT EXISTING RECEIVER CORNER
+# CONNECT EXISTING RECEIVER CORNER
 # =============================================================================
 
 # Temporary explicit construction command.
@@ -1270,7 +1270,7 @@ func _update_placement_preview() -> void:
 		)
 
 		# =============================================================================
-		# CHAT 08.3G-3J — SHARED GRID FOR ALL BUILDING FOOTPRINTS
+		# SHARED GRID FOR ALL BUILDING FOOTPRINTS
 		# =============================================================================
 
 		# Every building (Extractor, Storage, Smelter, Merger and future
@@ -1340,7 +1340,7 @@ func _update_placement_preview() -> void:
 		if placement_ghost != null:
 
 			# =============================================================================
-			# CHAT 08.3G-3D — AUTOMATIC MISSING CORNER DISCOVERY
+			# AUTOMATIC MISSING CORNER DISCOVERY
 			# =============================================================================
 
 			var corner_candidate: Dictionary = {}
@@ -1410,7 +1410,7 @@ func _update_placement_preview() -> void:
 				missing_corner_preview.clear()
 
 			# =============================================================================
-			# CHAT 08.3G-3E — EXISTING STRAIGHT RECEIVER AUTO SNAP
+			# EXISTING STRAIGHT RECEIVER AUTO SNAP
 			# =============================================================================
 
 			var receiver_candidate: Dictionary = {}
@@ -1435,7 +1435,7 @@ func _update_placement_preview() -> void:
 				_clear_receiver_corner_preview()
 
 			# =============================================================================
-			# CHAT 08.3G-3F — SOURCE CORNER DISCOVERY
+			# SOURCE CORNER DISCOVERY
 			# =============================================================================
 			var source_candidate: Dictionary = {}
 			if (
@@ -1457,7 +1457,7 @@ func _update_placement_preview() -> void:
 				_clear_source_corner_preview()
 
 			# =============================================================================
-			# CHAT 08.3G-3G — CONNECT TWO FREE OFF-GRID ENDPOINTS
+			# CONNECT TWO FREE OFF-GRID ENDPOINTS
 			# =============================================================================
 			# One L-shaped connector for perpendicular free endpoints,
 			# or one fractional straight for aligned free endpoints.
@@ -1534,7 +1534,7 @@ func _update_placement_preview() -> void:
 
 
 			# =============================================================================
-			# SELECT ONE CONVEYOR SNAP TARGET — CHAT 08.3F
+			# SELECT ONE CONVEYOR SNAP TARGET
 			# =============================================================================
 
 			# Always begin with the original grid position and player rotation.
@@ -1823,7 +1823,7 @@ func _update_placement_preview() -> void:
 
 
 # =============================================================================
-# CHAT 08.3G-3G — FRACTIONAL AND OFFSET BRIDGE GHOST
+# FRACTIONAL AND OFFSET BRIDGE GHOST
 # =============================================================================
 
 func _clear_gap_connector_preview() -> void:
@@ -1901,7 +1901,7 @@ func _is_gap_connector_clear(candidate: Dictionary) -> bool:
 
 
 # =============================================================================
-# CHAT 08.3G-3F — EXISTING SOURCE CORNER VISUAL PREVIEW
+# EXISTING SOURCE CORNER VISUAL PREVIEW
 # =============================================================================
 
 func _clear_source_corner_preview() -> void:
@@ -1944,7 +1944,7 @@ func _show_source_corner_preview(candidate: Dictionary) -> bool:
 
 
 # =============================================================================
-# CHAT 08.3G-3E — EXISTING RECEIVER CORNER VISUAL PREVIEW
+# EXISTING RECEIVER CORNER VISUAL PREVIEW
 # =============================================================================
 
 # The real straight belt remains untouched until a click commits the link.
@@ -2201,7 +2201,7 @@ func _is_placement_clear() -> bool:
 	var snap_exclusions: Array[RID] = []
 
 	# =============================================================================
-	# CHAT 08.3G-3D — VALIDATE MISSING CORNER PLACEMENT
+	# VALIDATE MISSING CORNER PLACEMENT
 	# =============================================================================
 
 	if not missing_corner_preview.is_empty():
@@ -2872,7 +2872,7 @@ func _try_place_object() -> void:
 		_update_placement_preview()
 
 	# =============================================================================
-	# CHAT 08.3G-3G — PLACE TWO-ENDED VARIABLE GEOMETRY
+	# PLACE TWO-ENDED VARIABLE GEOMETRY
 	# =============================================================================
 
 	if (
@@ -2912,7 +2912,7 @@ func _try_place_object() -> void:
 		return
 
 	# =============================================================================
-	# CHAT 08.3G-3F — COMMIT SOURCE CORNER ON CLICK
+	# COMMIT SOURCE CORNER ON CLICK
 	# =============================================================================
 	if (
 		selected_building_index == 4
@@ -2942,7 +2942,7 @@ func _try_place_object() -> void:
 		return
 
 	# =============================================================================
-	# CHAT 08.3G-3E — REFRESH RECEIVER CORNER ON CLICK
+	# REFRESH RECEIVER CORNER ON CLICK
 	# =============================================================================
 
 	# A queued mouse event can arrive after the last preview update.
@@ -2958,7 +2958,7 @@ func _try_place_object() -> void:
 			return
 
 	# =============================================================================
-	# CHAT 08.3G-3E — CONVERT EXISTING RECEIVER ON ONE CLICK
+	# CONVERT EXISTING RECEIVER ON ONE CLICK
 	# =============================================================================
 
 	# A selected straight receiver already occupies this tile.
@@ -2993,7 +2993,7 @@ func _try_place_object() -> void:
 		return
 
 	# =============================================================================
-	# CHAT 08.3G-3D — PERMANENT MISSING CORNER PLACEMENT
+	# PERMANENT MISSING CORNER PLACEMENT
 	# =============================================================================
 
 	# A valid one-tile missing corner has priority over

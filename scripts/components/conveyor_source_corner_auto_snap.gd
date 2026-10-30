@@ -2,7 +2,7 @@ extends RefCounted
 class_name ConveyorSourceCornerAutoSnap
 
 # =============================================================================
-# CHAT 08.3G-3F — AUTO-DISCOVER CORNER AT AN EXISTING SOURCE OUTPUT
+# AUTO-DISCOVER CORNER AT AN EXISTING SOURCE OUTPUT
 # =============================================================================
 
 # Complements receiver-side discovery. The cursor must be near the

@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — 90 DEGREE CONVEYOR CONNECTION TEST
+# 90 DEGREE CONVEYOR CONNECTION TEST
 # =============================================================================
 
 # Tests a physical L-shaped conveyor chain:

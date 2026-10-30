@@ -2,7 +2,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3F-6A — TWO-ENDED CONVEYOR BRIDGE REGRESSION
+# TWO-ENDED CONVEYOR BRIDGE REGRESSION
 # =============================================================================
 
 # Verifies read-only preview, both permanent links, safe rejection,

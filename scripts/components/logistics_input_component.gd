@@ -243,10 +243,10 @@ func _find_nearby_storage() -> Node3D:
 
 # Checks nearby storage once per configured transfer interval.
 #
-# For Step 5C, this only identifies eligible storage.
-# It does not perform resource transfers.
+# Checks eligible storage before attempting transfers.
+# Transfers items only when the selected recipe permits them.
 #
-# Actual inventory movement will be added in Step 5D.
+# Inventory movement occurs during the transfer cycle.
 
 func _process(delta: float) -> void:
 

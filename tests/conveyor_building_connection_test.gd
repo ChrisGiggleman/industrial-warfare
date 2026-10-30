@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3C — PERSISTENT BUILDING CONNECTION TEST
+# PERSISTENT BUILDING CONNECTION TEST
 # =============================================================================
 
 # Validates:

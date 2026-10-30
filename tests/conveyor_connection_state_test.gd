@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — CONVEYOR CONNECTION STATE TEST
+# CONVEYOR CONNECTION STATE TEST
 # =============================================================================
 
 # Tests the actual ConveyorStraight scene:

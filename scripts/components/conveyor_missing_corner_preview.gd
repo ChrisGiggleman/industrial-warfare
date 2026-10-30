@@ -4,7 +4,7 @@ class_name ConveyorMissingCornerPreview
 
 
 # =============================================================================
-# CHAT 08.3G-3D — AUTOMATIC MISSING CORNER DISCOVERY
+# AUTOMATIC MISSING CORNER DISCOVERY
 # =============================================================================
 
 # Finds an exact one-tile corner between two existing belts.

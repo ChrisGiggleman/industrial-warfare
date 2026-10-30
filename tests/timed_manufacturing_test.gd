@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 06 — TIMED MANUFACTURING REGRESSION TEST
+# TIMED MANUFACTURING REGRESSION TEST
 # =============================================================================
 
 # Tests ProducerComponent's manufacturing timer.

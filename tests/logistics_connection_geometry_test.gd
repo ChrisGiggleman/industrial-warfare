@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — PHYSICAL CONNECTION GEOMETRY TEST
+# PHYSICAL CONNECTION GEOMETRY TEST
 # =============================================================================
 
 # Tests endpoint position, orientation, rotation,

@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3G — RECEIVER CORNER REGRESSION
+# RECEIVER CORNER REGRESSION
 # =============================================================================
 
 func _make_belt(parent: Node3D) -> ConveyorSegment:

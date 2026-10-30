@@ -4,7 +4,7 @@ class_name FactoryGrid
 
 
 # =============================================================================
-# CHAT 08.3G — UNIFIED FACTORY GRID
+# UNIFIED FACTORY GRID
 # =============================================================================
 
 # Shared construction geometry for buildings and conveyors.

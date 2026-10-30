@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.2D-1 — CONVEYOR CARGO VISUAL TEST
+# CONVEYOR CARGO VISUAL TEST
 # =============================================================================
 
 # Tests generic cargo placeholder rendering against

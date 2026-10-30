@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — AUTOMATIC CORNER CONVERSION TEST
+# AUTOMATIC CORNER CONVERSION TEST
 # =============================================================================
 
 # Tests conversion of the preceding belt in place.

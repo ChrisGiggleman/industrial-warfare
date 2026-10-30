@@ -3,7 +3,7 @@ class_name ConveyorPathMotion
 
 
 # =============================================================================
-# CHAT 08.3G-3H — UNIFORM CARGO SPEED OVER DIFFERENT BELT LENGTHS
+# UNIFORM CARGO SPEED OVER DIFFERENT BELT LENGTHS
 # =============================================================================
 
 # An ordinary 1-unit conveyor takes its exported timer interval to travel.

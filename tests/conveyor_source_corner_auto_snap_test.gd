@@ -1,7 +1,7 @@
 extends Node
 
 # =============================================================================
-# CHAT 08.3G-3F — SOURCE CORNER WITH EXISTING BUILDING CONNECTIONS
+# SOURCE CORNER WITH EXISTING BUILDING CONNECTIONS
 # =============================================================================
 
 func _make_belt(parent: Node3D) -> ConveyorSegment:

@@ -236,7 +236,7 @@ func _get_cargo_path_position(
 ) -> Vector3:
 
 	# =============================================================================
-	# DISTANCE-WEIGHTED STRAIGHT AND CORNER MOVEMENT — CHAT 08.3G-3H
+	# DISTANCE-WEIGHTED STRAIGHT AND CORNER MOVEMENT
 	# =============================================================================
 
 	# Follow the actual endpoint-to-endpoint path.

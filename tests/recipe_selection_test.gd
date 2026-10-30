@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — RECIPE SELECTION REGRESSION TEST
+# RECIPE SELECTION REGRESSION TEST
 # =============================================================================
 
 # Tests ProducerComponent.select_recipe() without changing

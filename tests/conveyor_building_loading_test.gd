@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3E-1 — BUILDING TO CONVEYOR LOADING TEST
+# BUILDING TO CONVEYOR LOADING TEST
 # =============================================================================
 
 # Verifies:

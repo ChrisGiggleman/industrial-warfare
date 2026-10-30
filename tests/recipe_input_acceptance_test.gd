@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — RECIPE INPUT ACCEPTANCE REGRESSION TEST
+# RECIPE INPUT ACCEPTANCE REGRESSION TEST
 # =============================================================================
 
 # Verifies that input eligibility is determined by the

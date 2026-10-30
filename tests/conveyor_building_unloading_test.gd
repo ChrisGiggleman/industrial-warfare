@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3E-2 — CONVEYOR TO BUILDING UNLOADING TEST
+# CONVEYOR TO BUILDING UNLOADING TEST
 # =============================================================================
 
 # Checks:

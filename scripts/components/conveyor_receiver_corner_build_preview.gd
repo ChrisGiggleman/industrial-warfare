@@ -3,7 +3,7 @@ class_name ConveyorReceiverCornerBuildPreview
 
 
 # =============================================================================
-# CHAT 08.3G-3E — EXISTING RECEIVER CORNER VISUAL & COLLISION PREVIEW
+# EXISTING RECEIVER CORNER VISUAL & COLLISION PREVIEW
 # =============================================================================
 
 # Does not mutate the real receiver. Its output and inventory stay intact.

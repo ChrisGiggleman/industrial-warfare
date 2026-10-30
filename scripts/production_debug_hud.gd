@@ -16,8 +16,8 @@ class_name ProductionDebugHUD
 # Displays the progress of the selected building's
 # extraction or manufacturing cycle.
 #
-# For Chat 06, we first connect manufacturing progress.
-# Extractor progress will use this same UI component later.
+# Shows manufacturing and extraction progress.
+# Both producer and extractor components share this UI control.
 #
 # The progress bar remains hidden when the selected
 # object does not have a supported production component.
@@ -113,7 +113,7 @@ func _refresh_display() -> void:
 
 
 # =============================================================================
-# CHAT 08.3G-3J — SHOW BOTH MERGER LANES AND OUTPUT BACKPRESSURE
+# SHOW ALL MERGER INPUT LANES AND OUTPUT BACKPRESSURE
 # =============================================================================
 
 func _refresh_merger_display(
@@ -188,7 +188,7 @@ func _refresh_merger_display(
 
 
 # =============================================================================
-# CHAT 08.3G-3K — THREE-OUTPUT SPLITTER DEBUG
+# THREE-OUTPUT SPLITTER DEBUG
 # =============================================================================
 
 func _refresh_splitter_display(
@@ -330,7 +330,7 @@ func _refresh_building_display(
 		return
 
 	# =============================================================================
-	# CHAT 08.3G-3J — MERGER BACKPRESSURE AND PORT DIAGNOSTICS
+	# MERGER BACKPRESSURE AND PORT DIAGNOSTICS
 	# =============================================================================
 
 	var merger: ConveyorMergerComponent = (

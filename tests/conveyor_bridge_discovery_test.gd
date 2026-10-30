@@ -2,7 +2,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3F-6B — BUILD MODE BRIDGE DISCOVERY REGRESSION
+# BUILD MODE BRIDGE DISCOVERY REGRESSION
 # =============================================================================
 
 # Uses real conveyor scenes. Finds one exactly fitting segment

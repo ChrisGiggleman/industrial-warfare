@@ -2,7 +2,7 @@ extends Node
 class_name ConveyorMergerComponent
 
 # =============================================================================
-# CHAT 08.3G-3K — THREE INPUT LANES TO ONE PHYSICAL OUTPUT
+# THREE INPUT LANES TO ONE PHYSICAL OUTPUT
 # =============================================================================
 
 # Three isolated input buffers and one bounded output buffer.

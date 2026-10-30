@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3G-3B — EXISTING CONNECTION REGRESSION
+# EXISTING CONNECTION REGRESSION
 # =============================================================================
 
 # Uses real conveyor scenes with automatic transport paused.

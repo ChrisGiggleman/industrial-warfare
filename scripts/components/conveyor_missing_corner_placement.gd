@@ -4,7 +4,7 @@ class_name ConveyorMissingCornerPlacement
 
 
 # =============================================================================
-# CHAT 08.3G-3D-2 — PERMANENT MISSING CORNER PLACEMENT
+# PERMANENT MISSING CORNER PLACEMENT
 # =============================================================================
 
 # Inserts one transport-capable conveyor corner between

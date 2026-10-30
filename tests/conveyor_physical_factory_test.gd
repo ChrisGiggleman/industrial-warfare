@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3F-1 — PHYSICAL FACTORY INTEGRATION TEST
+# PHYSICAL FACTORY INTEGRATION TEST
 # =============================================================================
 
 # Validates a complete physical production route:

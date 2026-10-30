@@ -4,7 +4,7 @@ class_name ConveyorExistingConnection
 
 
 # =============================================================================
-# CHAT 08.3G-3B — PERMANENT EXISTING CONVEYOR CONNECTION
+# PERMANENT EXISTING CONVEYOR CONNECTION
 # =============================================================================
 
 # Connects two ALREADY PLACED conveyor segments.

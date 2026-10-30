@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — MACHINE PORT INTEGRATION TEST
+# MACHINE PORT INTEGRATION TEST
 # =============================================================================
 
 # Tests physical input and output ports on an actual

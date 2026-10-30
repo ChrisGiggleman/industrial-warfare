@@ -2,7 +2,7 @@ extends RefCounted
 class_name ConveyorFractionalBridge
 
 # =============================================================================
-# CHAT 08.3G-3F — FRACTIONAL BUILDING-TO-BUILDING GAP BRIDGE
+# FRACTIONAL BUILDING-TO-BUILDING GAP BRIDGE
 # =============================================================================
 
 # An exactly aligned short gap may be smaller than one normal conveyor tile.

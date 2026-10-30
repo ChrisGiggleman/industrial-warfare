@@ -4,7 +4,7 @@ class_name ConveyorBuildingPortFinder
 
 
 # =============================================================================
-# CHAT 08.3F-2A — BUILDING PORT DISCOVERY
+# BUILDING PORT DISCOVERY
 # =============================================================================
 
 # Searches existing player-built structures for

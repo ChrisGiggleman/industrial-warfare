@@ -4,7 +4,7 @@ class_name ConveyorBuildingPlacementSnap
 
 
 # =============================================================================
-# CHAT 08.3F-2E — BUILDING PLACEMENT AGAINST CONVEYORS
+# BUILDING PLACEMENT AGAINST CONVEYORS
 # =============================================================================
 
 # Calculates where an unplaced building should snap

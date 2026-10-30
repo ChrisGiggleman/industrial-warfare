@@ -2,7 +2,7 @@ extends RefCounted
 class_name ConveyorSourceCornerBuildPreview
 
 # =============================================================================
-# CHAT 08.3G-3F — SOURCE-SIDE CORNER OVERLAY AND COLLISION CHECK
+# SOURCE-SIDE CORNER OVERLAY AND COLLISION CHECK
 # =============================================================================
 
 # The existing source keeps its input (conveyor or building port).

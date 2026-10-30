@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 06 — RECIPE OUTPUT CAPACITY TEST
+# RECIPE OUTPUT CAPACITY TEST
 # =============================================================================
 
 # Tests ProducerComponent.can_store_recipe_outputs().

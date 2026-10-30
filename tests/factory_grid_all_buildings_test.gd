@@ -1,7 +1,7 @@
 extends Node
 
 # =============================================================================
-# CHAT 08.3G-3J — SHARED GRID AND MULTI-PORT ALIGNMENT
+# SHARED GRID AND MULTI-PORT ALIGNMENT
 # =============================================================================
 
 # All buildings must land on one footprint-aware grid, including after

@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — CORNER SNAP PREVIEW FOUNDATION TEST
+# CORNER SNAP PREVIEW FOUNDATION TEST
 # =============================================================================
 
 # Confirms that our existing snapping method can position

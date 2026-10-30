@@ -2,7 +2,7 @@ extends RefCounted
 class_name ConveyorOffsetCornerBridge
 
 # =============================================================================
-# CHAT 08.3G-3G — EXACT PERPENDICULAR GAP CONNECTOR
+# EXACT PERPENDICULAR GAP CONNECTOR
 # =============================================================================
 
 # Joins an unoccupied output to an unoccupied input through one real

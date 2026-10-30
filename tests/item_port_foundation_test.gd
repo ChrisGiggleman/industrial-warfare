@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — ITEM PORT FOUNDATION REGRESSION TEST
+# ITEM PORT FOUNDATION REGRESSION TEST
 # =============================================================================
 
 # Tests ingredient rules, inventory capacity, general

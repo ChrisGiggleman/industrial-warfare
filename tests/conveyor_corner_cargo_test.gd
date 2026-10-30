@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.2B-3C — CORNER CARGO PRESERVATION TEST
+# CORNER CARGO PRESERVATION TEST
 # =============================================================================
 
 # Tests cargo movement through automatic conveyor corners.

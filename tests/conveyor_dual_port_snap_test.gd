@@ -2,7 +2,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3F — SMELTER DUAL-PORT SNAP REGRESSION
+# SMELTER DUAL-PORT SNAP REGRESSION
 # =============================================================================
 
 # The two physical ports on the same real Smelter must

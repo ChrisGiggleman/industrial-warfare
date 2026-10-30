@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 06 — MANUFACTURING TRANSACTION REGRESSION TEST
+# MANUFACTURING TRANSACTION REGRESSION TEST
 # =============================================================================
 
 # Tests ProducerComponent.try_complete_recipe_cycle().

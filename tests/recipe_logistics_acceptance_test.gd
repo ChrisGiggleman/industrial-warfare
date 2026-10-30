@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — RECIPE-AWARE LOGISTICS REGRESSION TEST
+# RECIPE-AWARE LOGISTICS REGRESSION TEST
 # =============================================================================
 
 # Tests that LogisticsInputComponent respects the active recipe.

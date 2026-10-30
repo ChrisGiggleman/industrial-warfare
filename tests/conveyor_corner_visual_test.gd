@@ -3,7 +3,7 @@ extends Node3D
 
 
 # =============================================================================
-# CHAT 07 — CORNER VISUAL GEOMETRY TEST
+# CORNER VISUAL GEOMETRY TEST
 # =============================================================================
 
 # Validates the generated L-shaped meshes.

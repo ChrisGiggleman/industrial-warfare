@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — CONVEYOR ALIGNMENT REGRESSION TEST
+# CONVEYOR ALIGNMENT REGRESSION TEST
 # =============================================================================
 
 # Tests two actual ConveyorStraight scenes using

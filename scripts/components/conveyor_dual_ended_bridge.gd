@@ -3,7 +3,7 @@ class_name ConveyorDualEndedBridge
 
 
 # =============================================================================
-# CHAT 08.3F-6 — TWO-ENDED CONVEYOR BRIDGE
+# TWO-ENDED CONVEYOR BRIDGE
 # =============================================================================
 
 # Connects two already-placed conveyor lines by inserting ONE

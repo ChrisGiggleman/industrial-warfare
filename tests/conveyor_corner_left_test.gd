@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — LEFT CORNER CONNECTION REGRESSION TEST
+# LEFT CORNER CONNECTION REGRESSION TEST
 # =============================================================================
 
 # Verifies:

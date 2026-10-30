@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 06 — RECIPE INPUT AVAILABILITY TEST
+# RECIPE INPUT AVAILABILITY TEST
 # =============================================================================
 
 # Verifies that ProducerComponent correctly checks recipe inputs.

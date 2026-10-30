@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — SAFE PORT TRANSFER REGRESSION TEST
+# SAFE PORT TRANSFER REGRESSION TEST
 # =============================================================================
 
 # Tests guarded item movement between an output port

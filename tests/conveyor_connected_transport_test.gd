@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.2B-1 — CONNECTED CONVEYOR TRANSPORT TEST
+# CONNECTED CONVEYOR TRANSPORT TEST
 # =============================================================================
 
 # Verifies:

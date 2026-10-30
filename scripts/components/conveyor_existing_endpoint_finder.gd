@@ -4,7 +4,7 @@ class_name ConveyorExistingEndpointFinder
 
 
 # =============================================================================
-# CHAT 08.3G-3A — EXISTING ENDPOINT DISCOVERY
+# EXISTING ENDPOINT DISCOVERY
 # =============================================================================
 
 # Detects compatible connections between TWO placed conveyors.

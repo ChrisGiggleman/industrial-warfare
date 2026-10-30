@@ -4,7 +4,7 @@ class_name ConveyorCornerPlacementSnap
 
 
 # =============================================================================
-# CHAT 08.3F-2C — BUILDING-CONNECTED CONVEYOR CORNER SNAP
+# BUILDING-CONNECTED CONVEYOR CORNER SNAP
 # =============================================================================
 
 # Calculates a new straight conveyor's transform when

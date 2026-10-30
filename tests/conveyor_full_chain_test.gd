@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — FULL CONVEYOR CHAIN REGRESSION TEST
+# FULL CONVEYOR CHAIN REGRESSION TEST
 # =============================================================================
 
 # Tests the new automatic corner-conversion foundation.

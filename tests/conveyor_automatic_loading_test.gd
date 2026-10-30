@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3E-3B — AUTOMATIC BUILDING LOADING TEST
+# AUTOMATIC BUILDING LOADING TEST
 # =============================================================================
 
 # Verifies:

@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.2C-1 — FULL CONVEYOR TRANSPORT REGRESSION
+# FULL CONVEYOR TRANSPORT REGRESSION
 # =============================================================================
 
 # Tests six connected conveyor segments, including:

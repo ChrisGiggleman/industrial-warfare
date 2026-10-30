@@ -2,7 +2,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3G-3E — AUTOMATIC RECEIVER CORNER BUILD MODE TEST
+# AUTOMATIC RECEIVER CORNER BUILD MODE TEST
 # =============================================================================
 
 func _make_belt(parent: Node3D) -> ConveyorSegment:

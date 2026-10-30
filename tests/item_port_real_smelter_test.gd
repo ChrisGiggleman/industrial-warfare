@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — REAL SMELTER PORT HANDOFF TEST
+# REAL SMELTER PORT HANDOFF TEST
 # =============================================================================
 
 # Uses the actual Test Smelter scene and its installed ports.

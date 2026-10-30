@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3F-2C-1 — BUILDING-CONNECTED CORNER SNAP TEST
+# BUILDING-CONNECTED CORNER SNAP TEST
 # =============================================================================
 
 

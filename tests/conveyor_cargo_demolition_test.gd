@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.2C-2 — CONVEYOR CARGO DEMOLITION SAFETY TEST
+# CONVEYOR CARGO DEMOLITION SAFETY TEST
 # =============================================================================
 
 # Validates that:

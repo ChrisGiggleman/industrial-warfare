@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3E-3A — AUTOMATIC BUILDING DELIVERY TEST
+# AUTOMATIC BUILDING DELIVERY TEST
 # =============================================================================
 
 # Tests:

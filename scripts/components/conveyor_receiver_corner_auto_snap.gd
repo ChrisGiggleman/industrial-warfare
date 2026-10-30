@@ -3,7 +3,7 @@ class_name ConveyorReceiverCornerAutoSnap
 
 
 # =============================================================================
-# CHAT 08.3G-3E — AUTOMATIC EXISTING RECEIVER CORNER DISCOVERY
+# AUTOMATIC EXISTING RECEIVER CORNER DISCOVERY
 # =============================================================================
 
 # Read-only Build Mode search for connecting an existing conveyor's free

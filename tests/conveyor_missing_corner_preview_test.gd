@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 08.3G-3D — MISSING CORNER PREVIEW TEST
+# MISSING CORNER PREVIEW TEST
 # =============================================================================
 
 func _make_belt(parent: Node3D) -> ConveyorSegment:

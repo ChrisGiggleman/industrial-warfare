@@ -4,7 +4,7 @@ class_name ConveyorBuildingTransfer
 
 
 # =============================================================================
-# CHAT 08 — BUILDING TO CONVEYOR TRANSFER
+# BUILDING TO CONVEYOR TRANSFER
 # =============================================================================
 
 # Loads one item from a physically connected building
@@ -154,7 +154,7 @@ static func try_load_into_belt(
 	return false
 
 # =============================================================================
-# CHAT 08.3E-2 — CONVEYOR TO BUILDING UNLOADING
+# CONVEYOR TO BUILDING UNLOADING
 # =============================================================================
 
 # Transfers one item from a physically connected conveyor

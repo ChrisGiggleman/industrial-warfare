@@ -3,7 +3,7 @@ extends Node
 
 
 # =============================================================================
-# CHAT 07 — CONVEYOR TURN INTENT TEST
+# CONVEYOR TURN INTENT TEST
 # =============================================================================
 
 # Tests automatic straight/right/left recognition.

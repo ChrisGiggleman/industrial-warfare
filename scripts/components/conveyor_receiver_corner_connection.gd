@@ -4,7 +4,7 @@ class_name ConveyorReceiverCornerConnection
 
 
 # =============================================================================
-# CHAT 08.3G — RECEIVER-SIDE CORNER CONNECTION
+# RECEIVER-SIDE CORNER CONNECTION
 # =============================================================================
 
 # Converts an existing straight receiver into a corner.
