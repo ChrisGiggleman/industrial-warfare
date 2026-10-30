@@ -122,64 +122,149 @@ func _refresh_merger_display(
 ) -> void:
 	if info_label == null:
 		return
-
-	var input_a: InventoryComponent = merger.input_a
-	var input_b: InventoryComponent = merger.input_b
-	var output_inventory: InventoryComponent = merger.output_inventory
-	if (
-		not is_instance_valid(input_a)
-		or not is_instance_valid(input_b)
-		or not is_instance_valid(output_inventory)
-	):
-		info_label.text = "PRODUCTION DEBUG\n\nMerger inventory references missing"
+	var lanes: Array[InventoryComponent] = [
+		merger.input_a, merger.input_b, merger.input_c
+	]
+	var names: Array[String] = ["A", "B", "C"]
+	var output: InventoryComponent = merger.output_inventory
+	if not is_instance_valid(output):
+		info_label.text = "PRODUCTION DEBUG\n\nMerger output inventory missing"
 		return
 
-	var port_a := selected_building.get_node_or_null("InputPortA") as ItemPortComponent
-	var port_b := selected_building.get_node_or_null("InputPortB") as ItemPortComponent
-	var port_out := selected_building.get_node_or_null("OutputPort") as ItemPortComponent
-
-	var connected_a: bool = (
-		is_instance_valid(port_a)
-		and is_instance_valid(port_a.connected_conveyor)
+	var output_port := (
+		selected_building.get_node_or_null("OutputPort") as ItemPortComponent
 	)
-	var connected_b: bool = (
-		is_instance_valid(port_b)
-		and is_instance_valid(port_b.connected_conveyor)
+	var connected_output: bool = (
+		is_instance_valid(output_port)
+		and is_instance_valid(output_port.connected_conveyor)
 	)
-	var connected_out: bool = (
-		is_instance_valid(port_out)
-		and is_instance_valid(port_out.connected_conveyor)
-	)
-
 	var status: String = "Transferring"
-	if not connected_out:
+	if not connected_output:
 		status = "Output conveyor disconnected"
-	elif output_inventory.is_full():
+	elif output.is_full():
 		status = "Output full / backpressure"
-	elif input_a.get_total_amount() == 0 and input_b.get_total_amount() == 0:
-		status = "Waiting for input items"
+	elif (
+		merger.input_a.get_total_amount() == 0
+		and merger.input_b.get_total_amount() == 0
+		and merger.input_c.get_total_amount() == 0
+	):
+		status = "Waiting for items"
 
-	info_label.text = (
-		"PRODUCTION DEBUG\n\n"
-		+ "Building: "
+	var display: String = (
+		"PRODUCTION DEBUG\n\nBuilding: "
 		+ building_runtime.building_definition.display_name
-		+ "\nType: Conveyor Merger"
+		+ "\nType: Conveyor Merger (3 IN / 1 OUT)"
 		+ "\nStatus: " + status
-		+ "\n\nInput A: "
-		+ str(input_a.get_total_amount()) + " / " + str(input_a.max_capacity)
-		+ "\nConnection: " + ("Connected" if connected_a else "Disconnected")
-		+ "\nInput B: "
-		+ str(input_b.get_total_amount()) + " / " + str(input_b.max_capacity)
-		+ "\nConnection: " + ("Connected" if connected_b else "Disconnected")
-		+ "\n\nOutput: "
-		+ str(output_inventory.get_total_amount())
-		+ " / " + str(output_inventory.max_capacity)
-		+ "\nConnection: " + ("Connected" if connected_out else "Disconnected")
+	)
+	for i: int in range(lanes.size()):
+		var port := selected_building.get_node_or_null(
+			"InputPort" + names[i]
+		) as ItemPortComponent
+		var inv: InventoryComponent = lanes[i]
+		if not is_instance_valid(inv):
+			continue
+		var connected: bool = (
+			is_instance_valid(port)
+			and is_instance_valid(port.connected_conveyor)
+		)
+		display += (
+			"\n\nInput " + names[i] + ": "
+			+ str(inv.get_total_amount()) + " / " + str(inv.max_capacity)
+			+ "\nConnection: " + ("Connected" if connected else "Disconnected")
+		)
+	display += (
+		"\n\nOutput: " + str(output.get_total_amount())
+		+ " / " + str(output.max_capacity)
+		+ "\nConnection: " + (
+			"Connected" if connected_output else "Disconnected"
+		)
 		+ "\n\nCompleted merges: " + str(merger.completed_merges)
 		+ "\nFrom A: " + str(merger.completed_from_a)
-		+ " | From B: " + str(merger.completed_from_b)
-		+ "\nNext input lane: " + ("A" if merger.next_lane == 0 else "B")
+		+ " | B: " + str(merger.completed_from_b)
+		+ " | C: " + str(merger.completed_from_c)
+		+ "\nNext lane: " + names[merger.next_lane]
 	)
+	info_label.text = display
+
+
+# =============================================================================
+# CHAT 08.3G-3K — THREE-OUTPUT SPLITTER DEBUG
+# =============================================================================
+
+func _refresh_splitter_display(
+	building_runtime: BuildingRuntime,
+	splitter: ConveyorSplitterComponent
+) -> void:
+	if info_label == null:
+		return
+	var input_inv: InventoryComponent = splitter.input_inventory
+	if not is_instance_valid(input_inv):
+		info_label.text = "PRODUCTION DEBUG\n\nSplitter input inventory missing"
+		return
+	var in_port := (
+		selected_building.get_node_or_null("InputPort") as ItemPortComponent
+	)
+	var connected_input: bool = (
+		is_instance_valid(in_port)
+		and is_instance_valid(in_port.connected_conveyor)
+	)
+	var outputs: Array[InventoryComponent] = [
+		splitter.output_a, splitter.output_b, splitter.output_c
+	]
+	var output_ports: Array[ItemPortComponent] = [
+		splitter.output_port_a, splitter.output_port_b,
+		splitter.output_port_c
+	]
+	var names: Array[String] = ["A", "B", "C"]
+	var any_ready: bool = false
+	for i: int in range(outputs.size()):
+		if (
+			is_instance_valid(outputs[i])
+			and is_instance_valid(output_ports[i])
+			and is_instance_valid(output_ports[i].connected_conveyor)
+			and not outputs[i].is_full()
+		):
+			any_ready = true
+
+	var status: String = "Distributing"
+	if not connected_input:
+		status = "Input conveyor disconnected"
+	elif input_inv.get_total_amount() == 0:
+		status = "Waiting for items"
+	elif not any_ready:
+		status = "All outputs blocked or disconnected"
+
+	var display: String = (
+		"PRODUCTION DEBUG\n\nBuilding: "
+		+ building_runtime.building_definition.display_name
+		+ "\nType: Conveyor Splitter (1 IN / 3 OUT)"
+		+ "\nStatus: " + status
+		+ "\n\nInput: " + str(input_inv.get_total_amount())
+		+ " / " + str(input_inv.max_capacity)
+		+ "\nConnection: " + ("Connected" if connected_input else "Disconnected")
+	)
+	for i: int in range(outputs.size()):
+		var inv: InventoryComponent = outputs[i]
+		var port: ItemPortComponent = output_ports[i]
+		if not is_instance_valid(inv):
+			continue
+		var connected: bool = (
+			is_instance_valid(port)
+			and is_instance_valid(port.connected_conveyor)
+		)
+		display += (
+			"\n\nOutput " + names[i] + ": "
+			+ str(inv.get_total_amount()) + " / " + str(inv.max_capacity)
+			+ "\nConnection: " + ("Connected" if connected else "Disconnected")
+		)
+	display += (
+		"\n\nCompleted splits: " + str(splitter.completed_splits)
+		+ "\nTo A: " + str(splitter.completed_to_a)
+		+ " | B: " + str(splitter.completed_to_b)
+		+ " | C: " + str(splitter.completed_to_c)
+		+ "\nNext lane: " + names[splitter.next_lane]
+	)
+	info_label.text = display
 
 
 # =============================================================================
@@ -254,6 +339,14 @@ func _refresh_building_display(
 	)
 	if is_instance_valid(merger):
 		_refresh_merger_display(building_runtime, merger)
+		return
+
+	var splitter: ConveyorSplitterComponent = (
+		selected_building.get_node_or_null("SplitterComponent")
+		as ConveyorSplitterComponent
+	)
+	if is_instance_valid(splitter):
+		_refresh_splitter_display(building_runtime, splitter)
 		return
 
 	var inventory_component: InventoryComponent = (
