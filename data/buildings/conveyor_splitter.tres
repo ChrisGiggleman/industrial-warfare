@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/buildings/conveyor_splitter.tscn" id="1_scene"]
+[ext_resource type="Script" path="res://scripts/data/building_definition.gd" id="2_def"]
+
+[resource]
+script = ExtResource("2_def")
+building_id = &"conveyor_splitter"
+display_name = "Conveyor Splitter"
+description = "Distributes one incoming conveyor across three independent output lanes, avoiding disconnected or blocked outputs."
+category = &"Logistics"
+building_scene = ExtResource("1_scene")
+footprint_tiles = Vector2i(1, 1)
