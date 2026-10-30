@@ -75,6 +75,60 @@ static func inspect_pair(
 	}
 
 
+# =============================================================================
+# BUILD MODE — NEAREST PARTIAL-LENGTH STRAIGHT GAP
+# =============================================================================
+
+# Full one-unit gaps already belong to the normal two-ended bridge tool.
+# This helper only offers a fractional segment when the gap is shorter.
+# Hover near the proposed segment center; neither neighbor is moved.
+
+static func find_nearest_preview(
+	tree: SceneTree,
+	cursor: Vector3,
+	search_radius: float = 0.75
+) -> Dictionary:
+	if tree == null or search_radius <= 0.0:
+		return {}
+
+	var nearby: Array[ConveyorSegment] = []
+	var reach: float = MAX_LENGTH * 2.0 + search_radius
+	for node: Node in tree.get_nodes_in_group("player_built"):
+		if not node is ConveyorSegment:
+			continue
+		var belt: ConveyorSegment = node as ConveyorSegment
+		if belt.is_queued_for_deletion() or belt.is_in_group("construction_preview"):
+			continue
+		if Vector2(
+			belt.global_position.x - cursor.x,
+			belt.global_position.z - cursor.z
+		).length() <= reach:
+			nearby.append(belt)
+
+	var best: Dictionary = {}
+	var closest: float = search_radius * search_radius
+	for source: ConveyorSegment in nearby:
+		if is_instance_valid(source.next_segment) or is_instance_valid(source.output_building_port):
+			continue
+		for destination: ConveyorSegment in nearby:
+			if source == destination:
+				continue
+			var candidate: Dictionary = inspect_pair(source, destination)
+			if candidate.is_empty():
+				continue
+			# Normal 1.0 segments continue using the existing bridge path.
+			if float(candidate["length"]) >= 0.95:
+				continue
+			var p: Vector3 = (candidate["transform"] as Transform3D).origin
+			var d2: float = Vector2(cursor.x - p.x, cursor.z - p.z).length_squared()
+			if d2 >= closest:
+				continue
+			best = candidate
+			closest = d2
+
+	return best
+
+
 static func is_clear(
 	world: World3D,
 	candidate: Dictionary,
