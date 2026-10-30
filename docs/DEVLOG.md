@@ -1049,3 +1049,67 @@ With the first milestone **44/44**, Chat 08 now has **130/130 reported checks ov
 - The generic orange placeholder is common to all item definitions; distinct item visual models, splitter/merger buildings, explicit loop closure, improved corner colliders and cargo recovery for non-player destruction remain open.
 
 **Next milestone:** integrate building-port preview/connection into `WorldInteraction` carefully, test player-created Extractor → Belt → Smelter networks, and add Storage port support before switching off proximity logistics.
+
+---
+
+## 2026-10-27–30 — Chat 08.3F–08.3G: Player-Built Physical Logistics, Grid Alignment and 1×1 Routing Buildings
+
+### Goals and design decisions
+
+The user identified recurring final-junction failures while building a real Extractor → Storage → Smelter route and returning belts to previously placed factories. Core decisions:
+
+- **Construction order should not matter** when the endpoints and turn direction are actually compatible.
+- **Conveyors remain physical:** no magical item movement or forced joining of visually touching but incompatible arrows.
+- Use a **shared 1-unit factory grid**, taking rotated footprint parity into account, instead of independently rounding buildings and conveyors.
+- Support correct final connections with new missing corners, in-place source or receiver corner conversion, exact bridges, fractional straight spans and offset L-shaped connectors.
+- Dedicated **Merger**/**Splitter** are not ordinary belt turns. Final prototypes are each **1×1** with a port on every side: **3 IN → 1 OUT** and **1 IN → 3 OUT** respectively.
+- Keep inventories bounded, preserve cargo and existing building links, and reject invalid occupancy rather than overwriting old connections.
+
+### Major construction features committed
+
+1. **Smelter dual-port and building port foundation:** Independent input/output ports, directed build previews, building-to-existing-belt snapping and reciprocal links. In-game logs showed successful building hookups and ore/ingot movement.
+2. **Conveyor bridge and corner discovery:** Read-only previews, collision/endpoint revalidation on click, separate missing-corner and existing-receiver/source conversion paths, and safe two-ended bridge commits. The user reproduced prior impossible loop-closure cases and verified automatic corners connecting successfully.
+3. **`FactoryGrid` consistency:** Footprint-aware odd/even building origins, rotated grid lanes and shared coordinate tests. All current building types use grid-aware placement; placement snap-to-belt rejects transforms that would put a new building off-grid.
+4. **Fractional/offset geometry:** `conveyor_fractional_bridge.gd` and `conveyor_offset_corner_bridge.gd` construct actual cargo-carrying variable-length straight and L-shaped segments, with properly adjusted endpoints, physics and selection hitboxes. These resolve half-tile Extractor spacing and small perpendicular gaps when free endpoints are directionally compatible.
+5. **Constant physical item speed:** `conveyor_path_motion.gd` scales connector travel time according to path length and allocates corner interpolation proportionally to each leg. A developer live check confirmed that ore moved at the same apparent speed over short and regular belts after the change.
+6. **1×1 routing buildings:** `conveyor_merger.tscn` with `ConveyorMergerComponent` has three separate input buffers and a single output; `conveyor_splitter.tscn` with `ConveyorSplitterComponent` has one input and three independent bounded output buffers. Both route fairly under backpressure and require physical connections. Build Mode uses **6** for Merger and **7** for Splitter.
+7. **Diagnostics and safe demolition:** Production Debug HUD shows port connections, input/output buffer quantities and per-lane completed transfer counters. Full Merger/Splitter buffers block unsafe player demolition; standard cargo-bearing conveyors retain their cargo-protection rules.
+
+### Reported validation (Godot 4.6.2 Stable, local)
+
+| Checkpoint | Reported outcome |
+|---|---|
+| Original Smelter dual-port snap | 8/8 |
+| Dual-ended conveyor bridge | 11/11 |
+| Bridge discovery | 10/10 |
+| Factory-grid alignment (progressively expanded) | 9/9 early; latest suite covers five building types and 52 rotated lanes |
+| Existing endpoint/connection and receiver-corner work | Individual suites passed; regression runs also reported |
+| Existing receiver auto-snap | 11/11 |
+| Building-safe source corner auto-snap | 10/10 |
+| Fractional straight connector | Initial 10/10; additional later assertions passed after Build Mode and speed changes |
+| Offset L-shaped connector | Initial 10/10; additional later assertions passed after constant-speed correction |
+| 1×1 Merger: 3 inputs, 1 output | 10/10 |
+| 1×1 Splitter: 1 input, 3 outputs | 10/10 |
+| Live Splitter production | **13 completed splits**, `To A: 5`, `B: 4`, `C: 4`; three physically connected output ports |
+
+These are **reported individual test runs**, not a single scripted or CI-based full regression. Exact test-scene names and a reproducible acceptance sequence are in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
+
+### Important troubleshooting and lessons
+
+- A translucent conveyor ghost can be visually correct but still fail to commit; always distinguish *snap discovery* from validated permanent connection.
+- Opposite-facing/free endpoints are essential. A corner may redirect a single flow but cannot safely combine two occupied incoming branches.
+- The first Merger design used a 2×2 body whose output center could sit between grid lanes; it was replaced by the final 1×1, four-port layout.
+- Short conveyor segments taking the same interval as regular 1-unit belts looked slower; constant distance-based timing fixed the visual inconsistency without changing inventories.
+- A busy Merger may stall because **three supplies share one bounded output**, not because a building-input port was disconnected. Per-lane counts and output occupancy must be inspected together.
+- Before editing a long controller script, locate changes by major section headers, inspect parser errors at their first occurrence, and use discrete test scenes as regression gates.
+- GitHub file edits can trigger Godot's “newer on disk” prompt; preserve unsaved edits and reload the pulled scene resources.
+
+### Current acceptance status and remaining work (2026-10-30)
+
+**Completed and observed:** Physical conveyor connections, short-gap placement, constant cargo speed, 1×1 Merger construction with three connected incoming lanes, and three-way Splitter cargo distribution in the main game. The developer reported the latest grid/Merger/Splitter isolated tests all passing.
+
+**Not yet fully observed:** The 1×1 Merger's live **`From A`, `From B`, `From C`** counters all progressing during a sustained three-input/one-output production run. In particular, a paused input must be distinguished from a full output buffer; do not claim final full Merger acceptance solely from construction screenshots.
+
+**Remaining release gate:** Run the critical scenes as a single final manual regression pass, verify Merger backpressure/recovery, confirm full deposit-driven physical mining→smelting→destination delivery without double counting retained proximity scaffolding, and inspect collision/selection/demolition behavior. Then create the final accepted GitHub checkpoint.
+
+**Future product goals:** Gradually retire prototype proximity logistics with conservation checks, cargo recovery for destructive events, universal tiered slot/stack storage, polished visual cues, ammunition manufacture, defense and zombie First Night gameplay.
