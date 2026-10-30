@@ -109,7 +109,7 @@ func _ready() -> void:
 	assert(ConveyorBuildingTransfer.try_load_into_belt(belt_out))
 	assert(output_cargo.get_amount(ingot) == 1)
 	assert(out_inventory.get_total_amount() == 0)
-	assert(merger.can_demolish_safely())
+	assert(bool(merger.call("can_demolish_safely")))
 	print("PASS I: Both item types leave through the physical output belt")
 
 	assert(input_a.connected_conveyor == belt_a)
