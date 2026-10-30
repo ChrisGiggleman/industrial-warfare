@@ -101,7 +101,7 @@ func _ready() -> void:
 	assert(out_inventory.get_amount(ingot) == 1)
 	print("PASS G: Deterministic alternating lane arbitration")
 
-	assert(not merger.can_demolish_safely())
+	assert(not bool(merger.call("can_demolish_safely")))
 	print("PASS H: Merger cannot be demolished while it stores cargo")
 
 	var output_cargo := belt_out.get_node("CargoInventory") as InventoryComponent
