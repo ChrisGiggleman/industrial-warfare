@@ -302,6 +302,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed("select_building_5"):
 			_select_building(4)
 			return
+
+		# A new logistics building occupies slot 6.
+		if (
+			event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and (event.physical_keycode == KEY_6 or event.keycode == KEY_6)
+		):
+			_select_building(5)
+			return
 			
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
@@ -933,6 +943,17 @@ func _try_demolish_under_mouse() -> void:
 		if current_node.is_in_group("player_built"):
 
 			# =============================================================================
+			# PROTECT MERGER INVENTORIES BEFORE DEMOLITION
+			# =============================================================================
+
+			if (
+				current_node.has_method("can_demolish_safely")
+				and not current_node.can_demolish_safely()
+			):
+				print("Demolition blocked: Stored items must be recovered first.")
+				return
+
+			# =============================================================================
 			# PROTECT CONVEYOR CARGO BEFORE DEMOLITION
 			# =============================================================================
 
@@ -1262,7 +1283,7 @@ func _update_placement_preview() -> void:
 
 			if (
 				grid_definition != null
-				and grid_definition.building_id == &"test_smelter"
+				and grid_definition.building_id in [&"test_smelter", &"conveyor_merger"]
 			):
 
 				# Convert the selected 90-degree rotation
