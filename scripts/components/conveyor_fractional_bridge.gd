@@ -80,7 +80,8 @@ static func inspect_pair(
 # =============================================================================
 
 # Full one-unit gaps already belong to the normal two-ended bridge tool.
-# This helper only offers a fractional segment when the gap is shorter.
+# This helper offers nonstandard lengths up to 1.5 units and leaves
+# exact one-unit gaps to the existing standard bridge tool.
 # Hover near the proposed segment center; neither neighbor is moved.
 
 static func find_nearest_preview(
@@ -116,8 +117,8 @@ static func find_nearest_preview(
 			var candidate: Dictionary = inspect_pair(source, destination)
 			if candidate.is_empty():
 				continue
-			# Normal 1.0 segments continue using the existing bridge path.
-			if float(candidate["length"]) >= 0.95:
+			# Exact 1.0 segments continue using the existing bridge path.
+			if absf(float(candidate["length"]) - 1.0) <= 0.05:
 				continue
 			var p: Vector3 = (candidate["transform"] as Transform3D).origin
 			var d2: float = Vector2(cursor.x - p.x, cursor.z - p.z).length_squared()
