@@ -3,9 +3,9 @@
 **Prepared:** 2026-10-30  
 **Engine:** Godot 4.6.2 Stable / Forward+ / GDScript  
 **Repository:** `ChrisGiggleman/industrial-warfare`, branch `main`  
-**Status:** Regression plan and documentation checkpoint. **Final regression not yet completed as a single pass.**
+**Status (2026-10-30): All 20 listed Godot scenes passed in four consecutively reported manual regression rounds (5 per round); no combined automated CI run is claimed. Final live factory acceptance is still pending.**
 
-This checklist distinguishes **historical Godot passes**, **recent gameplay observations**, and **pending acceptance**. A committed test is not considered passed merely because it exists. Run each scene individually using **F6**, record its actual final PASS banner, and confirm no parser errors or unwanted continuing processes.
+This checklist distinguishes **reported final manual Godot passes**, **confirmed gameplay observations**, and **pending live acceptance**. On 2026-10-30 the developer reported that all four rounds of five individually executed F6 scenes finished successfully. This records the developer's local results; it does not assert a GitHub CI job or combined test harness.
 
 ## A. Critical regression scenes
 
@@ -13,28 +13,28 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 
 | Order | Scene | Purpose | Final-check status |
 |---|---|---|---|
-| 1 | `factory_grid_all_buildings_test.tscn` | All five building definitions and 52 rotated input/output lane checks | **Previously passed** (reported after 1×1 conversion); final rerun pending |
-| 2 | `conveyor_building_placement_snap_test.tscn` | Building-to-conveyor snapping | Historical pass; final rerun pending |
-| 3 | `conveyor_dual_port_snap_test.tscn` | Independent building inputs and outputs | Historical pass; final rerun pending |
-| 4 | `conveyor_existing_endpoint_test.tscn` | Discover valid free existing endpoints | Historical pass; final rerun pending |
-| 5 | `conveyor_existing_connection_test.tscn` | Commit/revalidate existing connections | Historical pass; final rerun pending |
-| 6 | `conveyor_receiver_corner_test.tscn` | Existing receiver corner conversion | Historical pass; final rerun pending |
-| 7 | `conveyor_receiver_auto_snap_test.tscn` | Automatic receiver corner discovery, click, cargo safety | **11/11 previously passed**; final rerun pending |
-| 8 | `conveyor_source_corner_auto_snap_test.tscn` | Corner conversion without disconnecting building output | **10/10 previously passed**; final rerun pending |
-| 9 | `conveyor_missing_corner_preview_test.tscn` | Missing L-shaped corner discovery | Historical pass; final rerun pending |
-| 10 | `conveyor_missing_corner_placement_test.tscn` | Permanent missing corner and item flow | Historical pass; final rerun pending |
-| 11 | `conveyor_dual_ended_bridge_test.tscn` | Exact free-end two-ended bridge | Historical pass; final rerun pending |
-| 12 | `conveyor_bridge_discovery_test.tscn` | Two-ended bridge search/validation | Historical pass; final rerun pending |
-| 13 | `conveyor_fractional_bridge_test.tscn` | Short straight real connector + length-based pacing | Reported passing after length/speed fix; final rerun pending |
-| 14 | `conveyor_offset_corner_bridge_test.tscn` | Half-grid perpendicular connector + path length | Reported passing after length/speed fix; final rerun pending |
-| 15 | `conveyor_corner_cargo_visual_test.tscn` | Cargo visualization across corners | Historical pass; final rerun pending |
-| 16 | `conveyor_automatic_loading_test.tscn` | Port-to-belt loading | Historical pass; final rerun pending |
-| 17 | `conveyor_automatic_unloading_test.tscn` | Belt-to-port unloading | Historical pass; final rerun pending |
-| 18 | `conveyor_physical_factory_test.tscn` | Integrated ore-to-smelter physical transport | Historical pass; final rerun pending |
-| 19 | `conveyor_merger_test.tscn` | 1×1 Merger, **3 inputs → 1 output**, lane fairness and backpressure | **10/10 previously passed**; final rerun pending |
-| 20 | `conveyor_splitter_test.tscn` | 1×1 Splitter, **1 input → 3 outputs**, blocked/disconnected output behavior | **10/10 previously passed**; final rerun pending |
+| 1 | `factory_grid_all_buildings_test.tscn` | All five building definitions and 52 rotated input/output lane checks | **PASS — final manual regression (2026-10-30)** |
+| 2 | `conveyor_building_placement_snap_test.tscn` | Building-to-conveyor snapping | **PASS — final manual regression (2026-10-30)** |
+| 3 | `conveyor_dual_port_snap_test.tscn` | Independent building inputs and outputs | **PASS — final manual regression (2026-10-30)** |
+| 4 | `conveyor_existing_endpoint_test.tscn` | Discover valid free existing endpoints | **PASS — final manual regression (2026-10-30)** |
+| 5 | `conveyor_existing_connection_test.tscn` | Commit/revalidate existing connections | **PASS — final manual regression (2026-10-30)** |
+| 6 | `conveyor_receiver_corner_test.tscn` | Existing receiver corner conversion | **PASS — final manual regression (2026-10-30)** |
+| 7 | `conveyor_receiver_auto_snap_test.tscn` | Automatic receiver corner discovery, click, cargo safety | **PASS — final manual regression (2026-10-30)** |
+| 8 | `conveyor_source_corner_auto_snap_test.tscn` | Corner conversion without disconnecting building output | **PASS — final manual regression (2026-10-30)** |
+| 9 | `conveyor_missing_corner_preview_test.tscn` | Missing L-shaped corner discovery | **PASS — final manual regression (2026-10-30)** |
+| 10 | `conveyor_missing_corner_placement_test.tscn` | Permanent missing corner and item flow | **PASS — final manual regression (2026-10-30)** |
+| 11 | `conveyor_dual_ended_bridge_test.tscn` | Exact free-end two-ended bridge | **PASS — final manual regression (2026-10-30)** |
+| 12 | `conveyor_bridge_discovery_test.tscn` | Two-ended bridge search/validation | **PASS — final manual regression (2026-10-30)** |
+| 13 | `conveyor_fractional_bridge_test.tscn` | Short straight real connector + length-based pacing | **PASS — final manual regression (2026-10-30)** |
+| 14 | `conveyor_offset_corner_bridge_test.tscn` | Half-grid perpendicular connector + path length | **PASS — final manual regression (2026-10-30)** |
+| 15 | `conveyor_corner_cargo_visual_test.tscn` | Cargo visualization across corners | **PASS — final manual regression (2026-10-30)** |
+| 16 | `conveyor_automatic_loading_test.tscn` | Port-to-belt loading | **PASS — final manual regression (2026-10-30)** |
+| 17 | `conveyor_automatic_unloading_test.tscn` | Belt-to-port unloading | **PASS — final manual regression (2026-10-30)** |
+| 18 | `conveyor_physical_factory_test.tscn` | Integrated ore-to-smelter physical transport | **PASS — final manual regression (2026-10-30)** |
+| 19 | `conveyor_merger_test.tscn` | 1×1 Merger, **3 inputs → 1 output**, lane fairness and backpressure | **PASS — final manual regression (2026-10-30)** |
+| 20 | `conveyor_splitter_test.tscn` | 1×1 Splitter, **1 input → 3 outputs**, blocked/disconnected output behavior | **PASS — final manual regression (2026-10-30)** |
 
-**Efficient run order:** Start with 1, 13, 14, 19, 20 (highest-change risk), then run the remainder in table order. If a single suite fails, stop and fix that specific regression before treating this as a milestone pass.
+**Final manual regression: 20/20 passed.** Round 1 covered rows 1, 13, 14, 19 and 20; Round 2 covered rows 2–6; Round 3 covered rows 7–11; Round 4 covered rows 12 and 15–18. These pass reports are user-confirmed, not independently run in this connector environment.
 
 ## B. Live factory acceptance
 
@@ -67,7 +67,7 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 
 ## D. Release gate and GitHub workflow
 
-**This documentation commit is a checkpoint, not final acceptance.** Do not mark the final Chat 08 logistics milestone complete until Section A is rerun and all pending Section B behavior is observed.
+**Regression acceptance: COMPLETE (20/20 manual scene passes). Live gameplay acceptance: PENDING.** Do not mark the entire Chat 08 logistics milestone complete until the remaining Section B observations are verified, particularly Merger A/B/C flow and recovery from output backpressure.
 
 After successful tests, use VS Code PowerShell:
 
