@@ -7,7 +7,7 @@
 script = ExtResource("2_def")
 building_id = &"conveyor_merger"
 display_name = "Conveyor Merger"
-description = "Combines two separately buffered incoming conveyor lines into one output using a fair round-robin transfer."
+description = "Combines three independently buffered incoming conveyor lines into one output using fair round-robin transfers."
 category = &"Logistics"
 building_scene = ExtResource("1_scene")
-footprint_tiles = Vector2i(2, 2)
+footprint_tiles = Vector2i(1, 1)
