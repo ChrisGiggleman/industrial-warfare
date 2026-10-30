@@ -32,7 +32,17 @@ const HALF_CELL: float = 0.5
 # CREATE CORNER MESH
 # =============================================================================
 
-static func build(turn: int) -> ArrayMesh:
+static func build(
+	turn: int,
+	input_length: float = HALF_CELL,
+	output_length: float = HALF_CELL
+) -> ArrayMesh:
+	# The default shape is exactly the existing one-tile corner.
+	# Longer incoming/outgoing arms support offset building grids.
+	if input_length < BELT_WIDTH * 0.5:
+		return null
+	if output_length < BELT_WIDTH * 0.5:
+		return null
 
 	var side: float = 0.0
 
@@ -60,10 +70,10 @@ static func build(turn: int) -> ArrayMesh:
 	var half_width: float = BELT_WIDTH * 0.5
 
 	var outline := PackedVector2Array([
-		Vector2(-half_width * side, HALF_CELL),
-		Vector2(half_width * side, HALF_CELL),
+		Vector2(-half_width * side, input_length),
+		Vector2(half_width * side, input_length),
 		Vector2(half_width * side, half_width),
-		Vector2(HALF_CELL * side, half_width),
+		Vector2(output_length * side, half_width),
 		Vector2(HALF_CELL * side, -half_width),
 		Vector2(-half_width * side, -half_width)
 	])
