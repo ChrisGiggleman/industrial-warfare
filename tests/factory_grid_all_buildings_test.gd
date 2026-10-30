@@ -14,11 +14,12 @@ func _ready() -> void:
 		"res://data/buildings/test_extractor.tres",
 		"res://data/buildings/test_storage.tres",
 		"res://data/buildings/test_smelter.tres",
-		"res://data/buildings/conveyor_merger.tres"
+		"res://data/buildings/conveyor_merger.tres",
+		"res://data/buildings/conveyor_splitter.tres"
 	]
-	var expected_port_counts: Array[int] = [1, 2, 2, 3]
+	var expected_port_counts: Array[int] = [1, 2, 2, 4, 4]
 	var names: Array[String] = [
-		"Extractor", "Storage", "Smelter", "Merger"
+		"Extractor", "Storage", "Smelter", "Merger", "Splitter"
 	]
 
 	for building_index: int in range(definitions.size()):
@@ -93,5 +94,5 @@ func _ready() -> void:
 		)
 
 	print("================================================")
-	print("ALL 4 BUILDING TYPES AND 32 ROTATED PORT LANES PASSED")
+	print("ALL 5 BUILDING TYPES AND 52 ROTATED PORT LANES PASSED")
 	print("================================================")
