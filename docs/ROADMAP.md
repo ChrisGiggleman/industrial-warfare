@@ -294,12 +294,12 @@ Planned major systems:
 - [x] Add the build slots **6** / **7** and real-time Merger/Splitter input/output diagnostics.
 - [x] Receive developer-reported passing isolated regressions for grid/merger/splitter after redesign, and live evidence of 13 Splitter transfers (**5/4/4**).
 - [x] Verify that small gaps can be physically filled and their item movement appears speed-consistent in live gameplay.
-- [ ] Record a live Merger HUD showing all three actively supplied `From A/B/C` counters increasing, including output-full/backpressure recovery.
-- [ ] Run all final regression scenes consecutively and verify a deposit-fed, physically routed ore→ingot→destination factory independently of retained proximity transfers.
-- [ ] Complete final **accepted** Chat 08 GitHub checkpoint and identify any follow-up issues from gameplay validation.
+- [x] Confirm live 1×1 Merger with three incoming conveyor routes and successful output-full **backpressure/recovery**. The user confirmed operation; numerical `From A/B/C` HUD counters were not separately captured and remain an optional benchmarking follow-up.
+- [x] Complete final 20/20 manual Godot regression scenes (four rounds) and user-confirmed ore-to-ingot factory chain in live gameplay. **Separately verifying physical-only item conservation with legacy proximity scripts disabled/accounted for remains pending.**
+- [x] Accept **core Chat 08 physical logistics milestone** and record verification evidence in the devlog/regression checklist (2026-10-30); leave robustness/migration items as follow-up work.
 - [ ] Add safe cargo-recovery handling for destructive events and then retire/gate old proximity logistics after conservation tests.
 
-**Status: Implementation and targeted isolated/live tests successful; final acceptance pending.** Use [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md). Earlier 08.3F sections are historical checkpoints, not the latest capability inventory.
+**Status: Core physical logistics milestone accepted (2026-10-30): 20/20 manual regression scenes passed; Merger, Splitter, blocked-output recovery and full ore-to-ingot gameplay confirmed.** Legacy proximity retirement, measured physical-only conservation and destructive-event cargo recovery are explicitly deferred. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md). Earlier 08.3F sections are historical checkpoints.
 
 ### 1F — Enemy & Defense Prototype
 
@@ -383,6 +383,6 @@ Completed:
 
 **Chat 07.5 checkpoint:** In-place left/right corner conversion, yellow arrows, visual L-shaped placeholders and tested connection/demolition behavior remain working.
 
-**Current milestone (Chat 08.3G-3K):** Player-built connected conveyors, source/receiver corners, missing corners, short straight and offset-L bridges, consistent cargo pacing, shared grid and 1×1 routing buildings are implemented in GitHub `main`. Both new 1×1 routing suites and the shared-grid suite passed in Godot. In live gameplay, the Splitter distributed **13 items across all three outputs (5/4/4)**; Merger construction and all four physical connections were observed, but **live transfer counters for all three active Merger inputs remain to be confirmed**. The final full regression and safe phase-out of legacy proximity transfers are outstanding. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
+**Accepted milestone (Chat 08.3G-3K, 2026-10-30):** Player-built physical belts, corners, variable-length connectors, uniform cargo pacing, shared grid and 1×1 Merger/Splitter are implemented on GitHub `main`. **All 20 final individual manual Godot test scenes passed**. The Splitter's live HUD recorded **13 routed items (5/4/4)**, the three-input Merger worked in gameplay, and the developer confirmed downstream backpressure/recovery and the complete ore-to-ingot factory chain. Exact live Merger per-lane counters were not captured, and safe retirement of legacy proximity scripts still requires a physical-only conservation test. Details: [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
 **Next after Chat 08 acceptance:** concentrate on the ammunition-fed production/defense loop and the First Night vertical slice, with universal slotted storage, cargo recovery, save/load, visual polish and power/fuel sequenced as appropriate.
