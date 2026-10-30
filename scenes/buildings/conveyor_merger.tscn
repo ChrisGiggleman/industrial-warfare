@@ -7,10 +7,10 @@
 [ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="5_runtime"]
 
 [sub_resource type="BoxMesh" id="Mesh_body"]
-size = Vector3(1.9, 0.9, 1.9)
+size = Vector3(0.9, 0.9, 0.9)
 
 [sub_resource type="BoxShape3D" id="Shape_body"]
-size = Vector3(1.9, 0.9, 1.9)
+size = Vector3(0.9, 0.9, 0.9)
 
 [node name="ConveyorMerger" type="Node3D" node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
 script = ExtResource("1_merger")
@@ -38,32 +38,44 @@ max_capacity = 5
 script = ExtResource("3_inv")
 max_capacity = 5
 
+[node name="InputCInventory" type="Node" parent="."]
+script = ExtResource("3_inv")
+max_capacity = 5
+
 [node name="OutputInventory" type="Node" parent="."]
 script = ExtResource("3_inv")
 max_capacity = 1
 
-[node name="MergerComponent" type="Node" parent="." node_paths=PackedStringArray("input_a", "input_b", "output_inventory")]
+[node name="MergerComponent" type="Node" parent="." node_paths=PackedStringArray("input_a", "input_b", "input_c", "output_inventory")]
 script = ExtResource("2_merge")
 input_a = NodePath("../InputAInventory")
 input_b = NodePath("../InputBInventory")
+input_c = NodePath("../InputCInventory")
 output_inventory = NodePath("../OutputInventory")
 
 [node name="InputPortA" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
-position = Vector3(-1, 0.5, -0.5)
+position = Vector3(-0.5, 0.5, 0)
 rotation = Vector3(0, 1.5707964, 0)
 script = ExtResource("4_port")
 input_policy = 1
 inventory = NodePath("../InputAInventory")
 
 [node name="InputPortB" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
-position = Vector3(-1, 0.5, 0.5)
-rotation = Vector3(0, 1.5707964, 0)
+position = Vector3(0, 0.5, -0.5)
+rotation = Vector3(0, 0, 0)
 script = ExtResource("4_port")
 input_policy = 1
 inventory = NodePath("../InputBInventory")
 
+[node name="InputPortC" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
+position = Vector3(0, 0.5, 0.5)
+rotation = Vector3(0, 3.1415927, 0)
+script = ExtResource("4_port")
+input_policy = 1
+inventory = NodePath("../InputCInventory")
+
 [node name="OutputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
-position = Vector3(1, 0.5, -0.5)
+position = Vector3(0.5, 0.5, 0)
 rotation = Vector3(0, -1.5707964, 0)
 script = ExtResource("4_port")
 direction = 1
