@@ -132,7 +132,7 @@ The factory should grow through understandable stages.
 
 **Current design direction:** Infinite deposits are the default for the early factory-and-defense loop so players can focus on building and defending production. Finite deposits are supported for later balance experiments, special resources, or scarcity-oriented scenarios. This is a direction, not a finalized economy balance.
 
-Current prototype limitations: Test Ore is the only mineable world resource; physical conveyors, advanced routing, and a finalized player-facing mining UI remain unimplemented. Chat 05 added capacity-limited inventories and short-range extractor-to-storage delivery; Chat 06 added storage-to-smelter input delivery and real ore-to-ingot manufacturing. The committed test deposit is currently finite with 500 starting units, rather than infinite; this is a test configuration.
+Current prototype limits: Test Ore remains the mineable world resource and the test deposit is configured with **500 finite units** for regression work. Physical conveyors, routed machine ports, Merger and Splitter are now implemented; advanced distribution filters, finalized extraction UI, permanent saves and production balance are not. Earlier proximity-based transfers from Chats 05–06 are retained as temporary compatibility scaffolding and should not be confused with the player-built belt routes.
 
 ### Production
 
@@ -153,7 +153,7 @@ The first permanent recipe is:
 
 For player feedback, processing and extraction share a reusable progress indicator tied to their actual cycle timers. It moves only while work can proceed; blocked machines show **0%** and an explicit reason. Storage and resource deposits do not display a processing bar.
 
-**Not yet implemented:** smelter finished-product export, downstream manufacturing steps, machine power/fuel consumption, recipe selection UI, research/recipe unlocks, and final machine art/animations.
+**Current update (Chat 08):** Physical Smelter output ports and belt-to-storage ingot export have been exercised in live factory construction. Recipe selection controls and recipe-aware input acceptance remain component-level capabilities, not a finished player-facing recipe menu. Downstream ammunition manufacturing, power/fuel consumption, research/unlocks, and final machine art/animations remain planned.
 
 ### Storage
 
@@ -165,18 +165,19 @@ The debug view reports storage inventory totals and item quantities, while manuf
 
 ### Logistics
 
-**Implemented as an automatic short-range chain across Chats 05–06:**
+**Implemented through Chat 08.3G–08.3K:** Player-built, directional, cargo-carrying conveyors now link real building ports. Logistics is physically visible, construction-driven and subject to occupancy/throughput constraints; it is no longer correct to describe the current prototype as having no visible belts or no routed networks.
 
-- **Extractor → Storage:** `LogisticsTransferComponent` transfers Test Ore into the nearest eligible Test Storage in a 5-world-unit radius, requesting up to 5 units every 1 second. Transfers respect source availability, destination capacity, and conservation.
-- **Storage → Smelter:** `LogisticsInputComponent` on the smelter finds eligible stocked storage within 5 world units and uses the same `InventoryComponent.transfer_to()` primitive. It requests up to 5 Test Ore every 1 second, normally refilling the smelter's input inventory toward **10** ore, rather than filling all 50 slots.
+- **Build Mode:** One conveyor belt tool (key **5**) creates straight segments; automatic left/right turns and source/receiver-side corner conversion handle compatible 90° connections. Missing corners, existing free endpoints, exact bridges, and short fractional/offset connectors can close appropriate gaps without moving existing machines.
+- **Grid alignment:** `FactoryGrid` uses a shared one-unit logical grid. Odd footprints (including both 1×1 routing buildings) use integer-centered origins; even footprints use half-unit origins. Rotated machine ports align with conveyor lanes, with offset connectors available for legacy half-grid situations.
+- **Physical movement:** Each belt is a directed, capacity-limited item carrier. Real `InputEndpoint` and `OutputEndpoint` markers, reciprocal connections, port occupancy, collision checks and backpressure govern transfers. The timer and orange placeholder cargo visual use path-length-aware motion for fractional and L-shaped segments; cargo retains the same physical speed through short connectors.
+- **Recipe inputs and universal storage:** Smelter ports accept ingredients according to the selected recipe; general storage accepts material types independent of recipe choice. Earlier Test Extractor → Test Storage → Test Smelter proximity transfers still exist as legacy prototype scaffolding and require controlled migration to avoid duplicate item movement.
+- **Merger, build slot 6:** A **1×1**, **3 IN / 1 OUT** placeable building. Independent bounded input buffers arbitrate fairly to one output buffer. Incoming lines do not merge spontaneously at ordinary belt corners.
+- **Splitter, build slot 7:** A **1×1**, **1 IN / 3 OUT** placeable building. The one input buffer distributes items round-robin to available connected outputs; disconnected/full outputs are skipped, with blocked items retained rather than lost.
+- **Debugging:** Selecting a routing building shows per-lane inventory/port status, completed transfer counts and the next scheduled lane.
 
-The completed prototype production route is:
+**Observed live evidence:** Small gaps were filled and cargo visibly moved smoothly through the connectors. A constructed 1×1 Splitter displayed **13 completed splits: A 5, B 4, C 4**, with all three outlets connected and empty at capture time. The 1×1 Merger has verified physical connections and isolated transfer regressions; **live progression of all three `From A/B/C` counters is still awaiting explicit confirmation**.
 
-**Test Ore Deposit → Test Extractor → Test Storage → Test Smelter → Test Ingots**
-
-Transfers are still deliberately **abstract and proximity-based**. There are no visible belts, inserters, ports, or routed conveyor networks. Finished ingots currently remain inside the smelter's output inventory until future output logistics are implemented.
-
-Extractor logistics reports its status, most recent attempt, and most recent successful transfer. Smelter input logistics also exposes transfer state and the latest quantity moved. Configured transfer rates are upper bounds, not guaranteed throughput.
+**Important boundaries:** No unrestricted 3-way connections on a plain belt, no finalized smart filtering/priorities, no safe automatic item-recovery behavior for destructive cargo removal, and no declaration that the temporary proximity-transfer path has been retired. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the final regression and outstanding game-session checks.
 
 ### Production Feedback
 
@@ -276,26 +277,26 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 
 ## Current Prototype Priorities
 
-Completed to date:
+### Working gameplay foundations
 
-1. RTS camera, selection, construction, rotation, and demolition systems.
-2. Data-driven building/item/recipe definitions and reusable runtime components.
-3. Finite/infinite deposit extraction with source-dependent placement and capacity-aware mining.
-4. Dedicated storage, safe partial inventory transfers, and automatic short-range extractor-to-storage logistics.
-5. Actual manufacturing with validated input consumption and output capacity protection; a Test Smelter with separate 50-input/100-output inventories and a 2-ore-to-1-ingot recipe.
-6. Automatic storage-to-smelter input logistics (up to 5 ore per second; target buffer of 10).
-7. Live input/output inventory HUD, machine status, and shared extraction/manufacturing progress indicator.
-8. Chat 06's **36/36** standalone manufacturing assertions and successful end-to-end resource conservation checks.
+1. RTS camera, selection, building placement/rotation and protected demolition.
+2. Data-defined items, buildings, recipes, inventory capacities and ore deposits.
+3. Test Extractor mining finite resource nodes; Test Smelter processes **2 Test Ore → 1 Test Ingot**.
+4. Physically linked building ports and visible, time-based conveyor transport.
+5. Straight belt placement, automatic corners, missing-corner joining, source/receiver conversion, two-ended bridges and length-aware fractional/offset connections.
+6. Shared factory footprint grid with rotation-aware ports; 1×1 3-input Merger and 1×1 3-output Splitter.
+7. Per-building Production Debug HUD, including inventory statuses, progress bars and routing-lane transfer counters.
+8. Developer-reported isolated tests and live screenshots showing three-lane Splitter distribution. These are separate runs, **not** a single CI suite.
 
-Potential next milestones, to prioritize before starting the next development chat:
+### Completion gate and upcoming work
 
-1. Transfer finished ingots out of smelters and introduce a downstream use or recipient, or prototype conveyor/inserter/port routing on top of `InventoryComponent.transfer_to()`.
-2. Explore machine-operation constraints (power/fuel), output logistics, and multi-machine scalability.
-3. Begin the first zombie enemy, structure damage/health, and basic defense to advance the First Night vertical slice.
+- Re-run the high-risk tests in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) after this documentation checkpoint.
+- Validate live **Merger `From A/B/C` throughput** and backpressure with all three sources operating.
+- Validate a fully deposit-driven Extractor → Storage → Smelter → destination Storage belt route while accounting for any still-enabled prototype proximity components.
+- Only then gate/remove redundant proximity transfers with an explicit conservation check.
+- Later: safe cargo recovery, universal slotted storage tiers, final item art/FX, ammunition/defense systems and the First Night enemy vertical slice.
 
-The finite-500-ore test is a **regression fixture**, not a finalized resource economy. Historical Chat 05 conservation was 250 deposit + 50 extractor + 200 storage = 500. Chat 06 accounted for **236 deposit + 50 extractor + 200 storage + 10 smelter ore + (2 ingots × 2 ore)** = **500** ore equivalents.
-
----
+The finite-500-ore deposit remains a regression fixture, not the final resource economy. The historic Chat 06 conservation snapshot was **236 deposit + 50 extractor + 200 storage + 10 smelter input + (2 ingots × 2 ore)** = **500** ore equivalents; this does not describe the new conveyor/multi-building layouts.
 
 ## Development Philosophy
 
