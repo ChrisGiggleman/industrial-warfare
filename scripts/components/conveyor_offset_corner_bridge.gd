@@ -280,6 +280,13 @@ static func try_place(
 
 	belt.set_meta("conveyor_turn", int(fresh["turn"]))
 	belt.set_meta("offset_corner", true)
+
+	# An L connector traverses both legs, not one fixed-length tile.
+	# Use identical units/second to the normal conveyor pieces.
+	if not ConveyorPathMotion.configure_segment(belt):
+		belt.free()
+		return null
+
 	parent.add_child(belt)
 	belt.global_transform = fresh["transform"]
 
