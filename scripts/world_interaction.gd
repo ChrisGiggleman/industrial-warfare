@@ -312,6 +312,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		):
 			_select_building(5)
 			return
+
+		# CHAT 08.3G-3K — 1x1 Splitter in build slot 7
+		if (
+			event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and (event.physical_keycode == KEY_7 or event.keycode == KEY_7)
+		):
+			_select_building(6)
+			return
 			
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
