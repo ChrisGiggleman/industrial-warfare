@@ -1,6 +1,6 @@
 # Industrial Warfare — Technical Architecture
 
-This document describes the current technical organization of the Industrial Warfare Godot project.
+This document describes the technical organization of the Industrial Warfare Godot project. **Current operational status is updated through Chat 08.3G-3K (2026-10-30); older Chat 07–08.3F sections below are retained as historical checkpoints and may describe features that were subsequently implemented.**
 
 The architecture is intentionally modular so individual systems can be tested, replaced, and expanded without turning a single controller into the entire game.
 
@@ -143,6 +143,9 @@ The current prototype bindings include:
 - `B` — Build Mode
 - `R` — rotate building
 - `1` / `2` / `3` / `4` — Test Extractor / Large Building / Test Storage / Test Smelter
+- `5` — Conveyor Belt, with straight/corner/bridge automatic placement
+- `6` — 1×1 Conveyor Merger (3 IN / 1 OUT)
+- `7` — 1×1 Conveyor Splitter (1 IN / 3 OUT)
 - `Delete` — toggle Demolition Tool while in Build Mode
 
 ---
@@ -191,7 +194,7 @@ Entered with `B`.
 - Green indicates valid placement.
 - Red indicates blocked placement.
 - `R` rotates in 90-degree increments.
-- `1`, `2`, `3`, and `4` select Test Extractor, Large Building, Test Storage, and Test Smelter respectively.
+- `1`–`7` select the current building definitions, including conveyor, Merger and Splitter. Eligible new buildings use `FactoryGrid`'s rotated-footprint grid origin; conveyors use their physical endpoint snapping and geometry checks.
 - LMB places a valid building.
 - RMB exits Build Mode.
 
@@ -202,7 +205,7 @@ Demolition exists inside Build Mode.
 - `Delete` enters or leaves the Demolition Tool.
 - Placement ghost is removed while demolition is active.
 - Valid `player_built` targets receive red hover feedback.
-- LMB demolishes the current valid target.
+- LMB demolishes the current valid target when safe. Occupied conveyor buffers and non-empty Merger/Splitter inventories prevent unsafe removal.
 - Non-player-built objects such as `ReferenceCube` remain protected.
 - RMB exits Build Mode completely.
 
@@ -855,21 +858,47 @@ Right/left automatic corner conversion changes the existing belt **in place**, s
 
 With the earlier **44/44**, Chat 08 has **130/130 reported checks across separately run, non-duplicated test suites**, plus several additional repeated regression runs. The developer confirmed the final physical factory test passed 9/9 and pushed the new source to GitHub `main`. **No unified suite execution, GitHub CI run, or final live-game machine-to-belt snap demonstration is claimed.**
 
-### Still to Implement
+### Historical 08.3F boundary and subsequent update
 
-- Connect building-port discovery, collision-safe preview and persistent endpoint linking to the normal player-facing `WorldInteraction` Build Mode; test actual player placement and rotation against all machine footprints.
-- Add universal InputPort/OutputPort markers to Test Storage (then small/medium/large slot/stack storage later) and validate full Extractor → belts → Storage → belts → Smelter → output-storage workflow.
-- Test true resource-node mining through belts, sustained concurrent multi-item operation, machine throughput/backpressure and normal-frame timing under load. Safely disable or bypass old proximity logistics **only once physical connections are present and tested**.
-- Decide item-specific visuals, output item selection/filtering, safe direct destruction/recovery of occupied belts, deliberate closed-loop connection, corner collision refinements and splitter/merger buildings.
+At the **earlier** Chat 08.3F checkpoint, the machine-port preview was tested only in isolated scenes and universal Storage ports were still pending. **That is no longer the current state.** The player now builds port-connected storage/machine routes, directional belts, missing and existing corners, short fractional straight connectors and offset L-shaped segments. Two dedicated 1×1 routing buildings are buildable.
 
----
+### Current construction and transport architecture (Chat 08.3G–08.3K)
+
+| Layer | Primary scripts/resources | Responsibilities |
+|---|---|---|
+| Grid and data | `factory_grid.gd`, `building_definition.gd` | Shared 1-unit grid; odd-size integer origins, even-size half-tile origins; rotated footprints and grid-aligned ports |
+| Construction | `world_interaction.gd`, `conveyor_building_placement_snap.gd` | Cursor preview, building-to-belt and belt-to-building linking, placement collision/occupancy, protected commit and demolition |
+| Conveyor graph | `conveyor_segment.gd`, existing endpoint/discovery/connection, dual-port and bridge utilities | Directed one-input/one-output belt links, in-place source/receiver turns, existing/missing-corner joining |
+| Nonstandard geometry | `conveyor_fractional_bridge.gd`, `conveyor_offset_corner_bridge.gd`, `conveyor_corner_visual_mesh.gd` | Real short straight and variable-leg perpendicular belts with appropriately sized mesh, collision and selection regions |
+| Timing and visuals | `conveyor_transport_timer.gd`, `conveyor_path_motion.gd`, `conveyor_cargo_visual.gd` | One buffered item per segment; path-length-scaled travel duration; local-space visual interpolation along straight and L paths |
+| Building ports | `item_port_component.gd`, `conveyor_building_transfer.gd` | Persistent physical port links, matching input/output direction, recipe filters, capacity and safe transfer |
+| 3→1 Merger | `conveyor_merger_component.gd`, `conveyor_merger_building.gd`, `conveyor_merger.tscn` | Three separately buffered physical inputs, 1-unit output buffer, round-robin arbitration, per-lane counts and demolition safety |
+| 1→3 Splitter | `conveyor_splitter_component.gd`, `conveyor_splitter_building.gd`, `conveyor_splitter.tscn` | One physical input, three independently buffered outputs, connected-output round-robin distribution and backpressure |
+| Debug HUD | `production_debug_hud.gd` | Port connection status, per-lane buffers, completed transfers, next-lane selection and full-output diagnosis |
+
+**Source/receiver corner distinction:** Conversion may turn an existing straight on its available input side or output side, provided its pre-existing building or belt link stays intact. A normal belt never accepts multiple sources. A multi-input join requires the Merger building.
+
+**Transaction and obstruction constraints:** Discovery/ghost previews do not mutate permanent belts. Permanent links are revalidated before commit. Occupied ports, incompatible directions, intervening collision bodies and full buffers reject or defer transfer rather than destroying cargo. Cargo-bearing belts and filled routing buildings are protected from player demolition.
+
+**Live evidence:** Splitter debug counters showed **A=5, B=4, C=4 (total 13)** in a single main-game session, with three outputs physically connected. Fractional connectors were visibly filled and cargo speed reported consistent after path-length correction. Merger 3-way physical hookup was observed; live `From A/B/C` progression is the remaining acceptance gate. Historical suites are separately reported, not consolidated CI.
+
 ## Current Factory Data Flow
 
-**Implemented:** one finite or infinite resource deposit can feed a Test Extractor; extracted ore moves to nearby Test Storage, and nearby Test Smelters pull ore into their independent input inventories. After each valid 2-second cycle, the smelter consumes 2 ore and deposits 1 ingot into its output inventory.
+Current player-built flows use explicit directional connections:
 
-The ordinary player-built factory still uses direct proximity transfers. Separately, isolated Chat 08 tests now prove automatic machine-to-belt loading, belt-to-belt travel, belt-to-machine delivery, and one complete Extractor → three belts → Smelter manufacturing cycle. However, **Build Mode does not yet create building-port links**, so there is no end-to-end player-built physical route or automatic finished-ingot export in normal gameplay. Power and fuel remain unimplemented.
+```text
+World ore deposit → Test Extractor → Conveyor(s)
+                                    → 1×1 Merger (up to 3 IN / 1 OUT)
+                                    → Storage → Smelter → Output Conveyor
+                                    → 1×1 Splitter (1 IN / up to 3 OUT)
+                                    → Destination Storage
+```
 
----
+This is a **capability diagram**, not a claim that every arrow was exercised simultaneously in one recorded live test. The Smelter recipe remains **2 Test Ore → 1 Test Ingot**, with separate input/output buffers. The existing Chat 05/06 proximity-transfer components are retained as compatibility scaffolding; their current scene enablement must be checked before attributing every observed item transfer solely to belts.
+
+**Performance/throughput:** Merger lanes are served fairly when output capacity permits. Three active incoming belts do not imply three times the throughput of one output belt; backpressure can legitimately hold ore in incoming buffers. Splitter routes one item at a time toward available outputs, and will retain buffered items if all output lanes are full or disconnected.
+
+See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the current run list and remaining live acceptance checks.
 
 ## Build HUD
 
@@ -897,6 +926,8 @@ The current Build HUD is a prototype and may later evolve into an icon-based qui
 - **Extractor:** component-owned `extraction_status`, detected resource, stored ore, 50-unit inventory/capacity, extraction logistics status and transfer telemetry.
 - **Storage:** 200-unit capacity, total stored quantities, and per-item contents.
 - **Smelter:** recipe name, `production_status`, required input amounts and quantities, separate input (50) and output (100) inventory totals, and finished ingot quantities.
+- **Merger:** Input A/B/C and output queue levels, port connection status, completed transfer counts `From A/B/C`, current lane and backpressure.
+- **Splitter:** Input and output A/B/C queues, connectivity, `To A/B/C` counts, next lane and blocked-output status.
 - **Other/non-producing objects:** neutral recipe or default selection information.
 
 The shared `ActivityProgressBar` is a `ProgressBar` under `ProductionDebugHUD/InfoPanel/PanelMargin/InfoContent`, alongside `InfoLabel`. It displays:
@@ -910,11 +941,11 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 ## Current Architectural Boundaries
 
-**Implemented through Chat 08.3F-1:** Chat 06 production and Chat 07 recipe/port/construction foundations, generic timed one-unit belt cargo, visible straight/corner placeholder motion, reciprocal machine-port/belt connections, generic output loading, recipe-filtered input unloading, backpressure, and a code-configured Extractor → three belts → Smelter test that produces an ingot. Chat 08 totals **130/130 reported local checks across separate suites**; this is not a consolidated CI run.
+**Current implemented prototype (through 08.3G-3K):** Shared grid construction; physical extractor/storage/smelter ports; directional timed belts; automatic corners and both existing-end conversion types; two-ended and fractional/offset bridges; path-length-based cargo speed; 1×1, four-sided 3→1 Merger and 1→3 Splitter; and their bounded inventory/throughput feedback. Developer-reported isolated Godot suites for shared-grid, Merger and Splitter passed after the 1×1 redesign. These do **not** constitute a single unified CI run.
 
-**Planned:** player-facing machine/storage snap and automatic physical hookups in Build Mode; actual mining and finished-product storage routes; safely transitioning proximity logistics; sustained multi-item traffic, throughput/pacing, specific item appearances, non-player cargo destruction recovery, deliberate loop closure, exact corner collisions, slot-and-stack storage, splitters/mergers, ammunition/defense, power/fuel and save/load. **The normal factory continues to use temporary proximity logistics** until those gameplay integrations are validated.
+**Still pending:** Live Merger throughput counters for all three actively supplied inputs, backpressure recovery observation, final combined regression, explicit confirmation of a deposit-driven physical ore→ingot→destination route independent of legacy proximity transfers, safe recovery of cargo during destructive events, finalized slot/stack tiers, save/load, item-specific visuals, ammunition production, enemies/defense, power/fuel and larger-world performance.
 
----
+**Safety:** Do not delete established proximity logic until item conservation can be verified with physical movement alone. Do not classify a Merger with a full output buffer as broken simply because one input temporarily stops. Full acceptance criteria live in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
 ## Architectural Principles
 
