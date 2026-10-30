@@ -175,7 +175,7 @@ The debug view reports storage inventory totals and item quantities, while manuf
 - **Splitter, build slot 7:** A **1×1**, **1 IN / 3 OUT** placeable building. The one input buffer distributes items round-robin to available connected outputs; disconnected/full outputs are skipped, with blocked items retained rather than lost.
 - **Debugging:** Selecting a routing building shows per-lane inventory/port status, completed transfer counts and the next scheduled lane.
 
-**Observed live evidence:** Small gaps were filled and cargo visibly moved smoothly through the connectors. A constructed 1×1 Splitter displayed **13 completed splits: A 5, B 4, C 4**, with all three outlets connected and empty at capture time. The 1×1 Merger has verified physical connections and isolated transfer regressions; **live progression of all three `From A/B/C` counters is still awaiting explicit confirmation**.
+**Observed and developer-confirmed live evidence (2026-10-30):** Small gaps were filled and cargo visibly moved smoothly through the connectors. A constructed 1×1 Splitter displayed **13 completed splits: A 5, B 4, C 4** with all three outlets connected. The three-input Merger was connected and confirmed operational in gameplay; its backpressure and subsequent recovery were also confirmed. The complete ore-to-ingot factory chain worked in live gameplay. Numeric live `From A/B/C` values and a physical-only resource-conservation tally were not supplied.
 
 **Important boundaries:** No unrestricted 3-way connections on a plain belt, no finalized smart filtering/priorities, no safe automatic item-recovery behavior for destructive cargo removal, and no declaration that the temporary proximity-transfer path has been retired. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the final regression and outstanding game-session checks.
 
@@ -286,15 +286,15 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 5. Straight belt placement, automatic corners, missing-corner joining, source/receiver conversion, two-ended bridges and length-aware fractional/offset connections.
 6. Shared factory footprint grid with rotation-aware ports; 1×1 3-input Merger and 1×1 3-output Splitter.
 7. Per-building Production Debug HUD, including inventory statuses, progress bars and routing-lane transfer counters.
-8. Developer-reported isolated tests and live screenshots showing three-lane Splitter distribution. These are separate runs, **not** a single CI suite.
+8. Developer-reported **20/20 manual regression scenes passed** in four rounds, plus verified live Splitter 5/4/4 distribution and confirmed three-input Merger, backpressure/recovery, and full ore-to-ingot factory operation. These are individual Godot F6 runs and developer observations, **not** a single CI suite.
 
-### Completion gate and upcoming work
+### Accepted milestone and upcoming work
 
-- Re-run the high-risk tests in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) after this documentation checkpoint.
-- Validate live **Merger `From A/B/C` throughput** and backpressure with all three sources operating.
-- Validate a fully deposit-driven Extractor → Storage → Smelter → destination Storage belt route while accounting for any still-enabled prototype proximity components.
-- Only then gate/remove redundant proximity transfers with an explicit conservation check.
-- Later: safe cargo recovery, universal slotted storage tiers, final item art/FX, ammunition/defense systems and the First Night enemy vertical slice.
+**Core Chat 08 factory logistics: ACCEPTED (2026-10-30).** All 20 listed manual Godot regressions passed; the Merger, Splitter, blocked-output recovery and ore-to-ingot production chain have developer-confirmed gameplay operation. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the evidence and limitations.
+
+- **Follow-up hardening:** Check physical-only ore-equivalent conservation with redundant proximity scripts disabled/accounted for *before* retiring that scaffolding; capture detailed throughput telemetry for sustained traffic.
+- **System robustness:** Protect/restore cargo through demolition or destruction and verify occupied-port refusal during complex builds.
+- **Next game feature:** Progress toward ammunition production and delivery to defensive structures, then the First Night zombie-defense vertical slice; universal slotted storage tiers, final art/FX, and power are later enhancements.
 
 The finite-500-ore deposit remains a regression fixture, not the final resource economy. The historic Chat 06 conservation snapshot was **236 deposit + 50 extractor + 200 storage + 10 smelter input + (2 ingots × 2 ore)** = **500** ore equivalents; this does not describe the new conveyor/multi-building layouts.
 
