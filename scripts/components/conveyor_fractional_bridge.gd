@@ -231,6 +231,12 @@ static func try_place(
 	input.position.z = half
 	output.position.z = -half
 
+	# Scale travel time to the actual short-belt length.
+	# A 0.65-unit segment travels in 0.65 of the normal interval.
+	if not ConveyorPathMotion.configure_segment(belt):
+		belt.free()
+		return null
+
 	parent.add_child(belt)
 	belt.global_transform = proposed
 
