@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://dcdrdn55bn320" path="res://scenes/ui/production_debug_hud.tscn" id="8_phv0v"]
 [ext_resource type="Resource" uid="uid://rw6ixvl0u5qp" path="res://data/buildings/conveyor_belt.tres" id="9_5xrq8"]
 [ext_resource type="Resource" path="res://data/buildings/conveyor_merger.tres" id="10_merger"]
+[ext_resource type="Resource" path="res://data/buildings/conveyor_splitter.tres" id="11_splitter"]
 [ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
@@ -82,7 +83,7 @@ camera = NodePath("../CameraRig/Camera3D")
 build_hud_panel = NodePath("../BuildHUD/BuildPanel")
 build_hud = NodePath("../BuildHUD")
 production_debug_hud = NodePath("../ProductionDebugHUD")
-buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5"), ExtResource("8_ocd3q"), ExtResource("9_5xrq8"), ExtResource("10_merger")])
+buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5"), ExtResource("8_ocd3q"), ExtResource("9_5xrq8"), ExtResource("10_merger"), ExtResource("11_splitter")])
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")
