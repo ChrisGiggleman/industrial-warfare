@@ -105,6 +105,13 @@ func _ready() -> void:
 	assert(is_equal_approx((shape.shape as BoxShape3D).size.z, 0.55))
 	print("PASS F: Cargo, selection and sized geometry preserved")
 
+	# Short belts should not take a full second to cover 0.65 units.
+	var short_timer := bridge.get_node("ConveyorTransportTimer") as ConveyorTransportTimer
+	assert(is_equal_approx(short_timer.travel_interval, 0.65))
+	assert(ConveyorPathMotion.configure_segment(bridge))
+	assert(is_equal_approx(short_timer.travel_interval, 0.65))
+	print("PASS L: Fractional segment uses proportional travel time")
+
 	var ore := load("res://data/items/test_ore.tres") as ItemDefinition
 	assert(ore != null)
 	var a := source.get_node("CargoInventory") as InventoryComponent
@@ -143,5 +150,5 @@ func _ready() -> void:
 
 	root.queue_free()
 	print("==============================================")
-	print("ALL 11 FRACTIONAL BRIDGE TESTS PASSED")
+	print("ALL 12 FRACTIONAL BRIDGE TESTS PASSED")
 	print("==============================================")
