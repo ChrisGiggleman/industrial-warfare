@@ -3,7 +3,7 @@
 **Prepared:** 2026-10-30  
 **Engine:** Godot 4.6.2 Stable / Forward+ / GDScript  
 **Repository:** `ChrisGiggleman/industrial-warfare`, branch `main`  
-**Status (2026-10-30): All 20 listed Godot scenes passed in four consecutively reported manual regression rounds (5 per round); no combined automated CI run is claimed. Final live factory acceptance is still pending.**
+**Status (2026-10-30): All 20 listed Godot scenes passed in four consecutively reported manual regression rounds (5 per round); no combined automated CI run is claimed. **Core live factory acceptance confirmed by the developer** (Merger operation, output backpressure/recovery, complete ore-to-ingot factory chain); follow-up hardening remains open.**
 
 This checklist distinguishes **reported final manual Godot passes**, **confirmed gameplay observations**, and **pending live acceptance**. On 2026-10-30 the developer reported that all four rounds of five individually executed F6 scenes finished successfully. This records the developer's local results; it does not assert a GitHub CI job or combined test harness.
 
@@ -38,6 +38,8 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 
 ## B. Live factory acceptance
 
+**2026-10-30 developer confirmation:** Merger output backpressure was reproduced and recovery after downstream reconnection succeeded in live gameplay. The complete ore-to-ingot factory chain was also confirmed working. These are user-reported live checks; a full conservation snapshot, individual Merger HUD counters, and confirmation that the legacy proximity components were disabled were **not** separately supplied.
+
 ### Confirmed in main-game screenshots and logs
 
 - Directed straight belts, existing receiver-corner connection, automatic source-corner connection, and missing-corner bridging constructed successfully.
@@ -45,15 +47,25 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 - A 1×1 Merger was constructed with three physically attached input lines and an output connected to Storage. **Additional live verification (2026-10-30):** the developer supplied a new screenshot showing item cargo along the three incoming routes and confirmed that the constructed three-input Merger works correctly in normal gameplay. Exact live `From A/B/C` per-lane HUD counters were not shown in that screenshot; these should not be reported as numerical observations.
 - A 1×1 Splitter was constructed with all three output ports connected; its Production Debug HUD showed **13 completed splits (A=5, B=4, C=4)** and output buffers 0/1 at screenshot time. This validates all three lanes routing items during a live session.
 
-### Still required before marking Chat 08 fully complete
+### Core acceptance ledger (2026-10-30)
 
-1. **Merger live throughput — developer-reported operational:** Construction screenshot shows cargo on all three incoming routes, and the developer explicitly confirmed the live Merger is working correctly (2026-10-30). For detailed performance evidence, the `From A/B/C` HUD counters and total merges may still be captured; no per-lane numeric values were provided in the screenshot. Do not treat that absence as a regression failure.
-2. **Merger backpressure:** Temporarily block the downstream belt. Confirm output saturates, inputs retain cargo without loss, and flow resumes when the obstruction is cleared.
-3. **Splitter repeat:** Confirm that `To A/B/C` continue increasing with a steady input. Temporarily fill/disconnect one output and confirm other available ports still receive items, then restore it.
-4. **Full physical chain:** Connect Extractor → Storage → Smelter → destination Storage. Confirm ore is consumed only through the selected recipe and ingots reach the destination through physical conveyors; note any still-active legacy proximity transfer components separately.
-5. **Selection, construction and demolition:** Ensure selected buildings and belts highlight properly. Empty belts should demolish; conveyors carrying items and non-empty Merger/Splitter buffers must be protected.
-6. **Collision/placement refusal:** A blocked tile or occupied port must not silently reconnect, duplicate items, or create visually overlapping belts.
-7. **Restart after pull:** If Godot detects `main.tscn` modified outside the editor, reload from disk only after preserving unsaved scene edits, then check Debugger errors.
+| Live criterion | Outcome | Evidence boundary |
+|---|---|---|
+| 1×1 Merger: three physically supplied input routes | **PASS — developer-confirmed live operation** | Item movement visible in screenshot; no numeric `From A/B/C` HUD snapshot was provided |
+| Merger output backpressure and recovery | **PASS — developer-confirmed live test** | User confirmed both the blocked/output-full behavior and recovery; no recorded buffer numbers |
+| 1×1 Splitter: all three output routes | **PASS — observed HUD** | 13 completed splits: A=5, B=4, C=4 |
+| Complete ore-to-ingot factory chain | **PASS — developer-confirmed live test** | User confirmed the full chain works; no per-building conservation totals or evidence of proximity logistics disabled supplied |
+| Final manual regression | **PASS — 20/20 scenes** | Four consecutively reported F6 rounds; not a CI run |
+
+### Deferred hardening and observability (not blockers for core logistics checkpoint)
+
+- Capture quantitative Merger HUD counts for A/B/C, plus source/output buffer before/after a backpressure cycle, to enable later throughput benchmarking.
+- Repeat the live Splitter test with an intentionally full or disconnected output (the isolation regression for this behavior already passed).
+- Run a complete ore-equivalent conservation snapshot with **legacy proximity components explicitly disabled or accounted for** before safely removing them. The completed live production chain by itself does not prove exclusive physical transport.
+- Reconfirm occupied-cargo demolition safety, blocked placement/port refusal, save/reload behavior and recovery after destructive events as production hardening.
+
+**Checkpoint judgment:** The **core player-built physical logistics milestone is accepted** based on the complete manual regression, observed Splitter routing and developer-confirmed Merger flow, backpressure/recovery and ore-to-ingot processing. Broader robustness and transition work remains tracked above. Do not claim that legacy proximity logistics is already removed or that every edge case was live-tested.
+
 
 ## C. Safety and conservation assertions
 
@@ -67,7 +79,7 @@ Each of the following `.tscn` files has been verified as present in `res://tests
 
 ## D. Release gate and GitHub workflow
 
-**Regression acceptance: COMPLETE (20/20 manual scene passes). Live gameplay acceptance: PENDING.** Do not mark the entire Chat 08 logistics milestone complete until the remaining Section B observations are verified, particularly Merger A/B/C flow and recovery from output backpressure.
+**Core logistics milestone: ACCEPTED (2026-10-30).** All 20 individual regression scenes passed; Merger, Splitter, backpressure recovery and ore-to-ingot chain have developer-confirmed live acceptance as documented above. Remaining hardening and migration checks are follow-on tasks, not claimed as completed.
 
 After successful tests, use VS Code PowerShell:
 
@@ -80,4 +92,4 @@ git push origin main
 
 Skip commit/push if `git status` shows nothing to commit (GitHub-side documentation changes may already be present). Review any unexpected untracked files before staging them.
 
-**Next planned work after acceptance:** remove/gate prototype proximity transfers once a deposit-driven full physical chain is proven, add safe cargo recovery during demolition, and progress toward ammunition production/defense per `GAME_VISION.md`.
+**Next planned work:** Prove physical-only conservation with legacy proximity components disabled/accounted for *before* removing or gating them; complete cargo recovery/blocked placement hardening; then progress toward ammunition production and defense per `GAME_VISION.md`.
