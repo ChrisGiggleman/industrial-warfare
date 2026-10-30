@@ -1,0 +1,70 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/conveyor_merger_building.gd" id="1_merger"]
+[ext_resource type="Script" path="res://scripts/components/conveyor_merger_component.gd" id="2_merge"]
+[ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="3_inv"]
+[ext_resource type="Script" path="res://scripts/components/item_port_component.gd" id="4_port"]
+[ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="5_runtime"]
+
+[sub_resource type="BoxMesh" id="Mesh_body"]
+size = Vector3(1.9, 0.9, 1.9)
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(1.9, 0.9, 1.9)
+
+[node name="ConveyorMerger" type="Node3D" node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+script = ExtResource("1_merger")
+selection_mesh = NodePath("BuildingMesh")
+
+[node name="BuildingMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.45, 0)
+mesh = SubResource("Mesh_body")
+
+[node name="BuildingBody" type="StaticBody3D" parent="."]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildingBody"]
+position = Vector3(0, 0.45, 0)
+shape = SubResource("Shape_body")
+
+[node name="BuildingRuntime" type="Node" parent="."]
+script = ExtResource("5_runtime")
+
+[node name="InputAInventory" type="Node" parent="."]
+script = ExtResource("3_inv")
+max_capacity = 5
+
+[node name="InputBInventory" type="Node" parent="."]
+script = ExtResource("3_inv")
+max_capacity = 5
+
+[node name="OutputInventory" type="Node" parent="."]
+script = ExtResource("3_inv")
+max_capacity = 1
+
+[node name="MergerComponent" type="Node" parent="." node_paths=PackedStringArray("input_a", "input_b", "output_inventory")]
+script = ExtResource("2_merge")
+input_a = NodePath("../InputAInventory")
+input_b = NodePath("../InputBInventory")
+output_inventory = NodePath("../OutputInventory")
+
+[node name="InputPortA" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
+position = Vector3(-1, 0.5, -0.5)
+rotation = Vector3(0, 1.5707964, 0)
+script = ExtResource("4_port")
+input_policy = 1
+inventory = NodePath("../InputAInventory")
+
+[node name="InputPortB" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
+position = Vector3(-1, 0.5, 0.5)
+rotation = Vector3(0, 1.5707964, 0)
+script = ExtResource("4_port")
+input_policy = 1
+inventory = NodePath("../InputBInventory")
+
+[node name="OutputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
+position = Vector3(1, 0.5, 0)
+rotation = Vector3(0, -1.5707964, 0)
+script = ExtResource("4_port")
+direction = 1
+inventory = NodePath("../OutputInventory")
