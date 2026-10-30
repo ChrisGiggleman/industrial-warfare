@@ -30,7 +30,8 @@ class_name ConveyorBuildingPlacementSnap
 static func find_nearest_preview(
 	building: Node3D,
 	mouse_world_position: Vector3,
-	search_radius: float = 1.5
+	search_radius: float = 1.5,
+	world_footprint: Vector2i = Vector2i.ZERO
 ) -> Dictionary:
 
 	# =============================================================================
@@ -187,6 +188,27 @@ static func find_nearest_preview(
 				building_basis,
 				proposed_position
 			)
+
+			# =============================================================================
+			# KEEP ALL SNAPPED BUILDINGS ON THE SHARED FACTORY GRID
+			# =============================================================================
+
+			# Building-origin parity depends on the rotated footprint.
+			# Never quietly pull a new building half a tile off its
+			# footprint grid just to connect to an older off-grid belt.
+			# Those belts can instead use the existing offset connectors.
+
+			if world_footprint.x > 0 and world_footprint.y > 0:
+				var grid_origin: Vector3 = FactoryGrid.snap_building_origin(
+					proposed_position,
+					world_footprint
+				)
+				var grid_offset := Vector2(
+					proposed_position.x - grid_origin.x,
+					proposed_position.z - grid_origin.z
+				)
+				if grid_offset.length_squared() > 0.0001:
+					continue
 
 			# =============================================================================
 			# MEASURE DISTANCE TO PLAYER'S MOUSE
