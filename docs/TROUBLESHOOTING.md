@@ -963,7 +963,7 @@ A Merger with three independent inputs and one output can receive items more qui
 4. Check that the legacy proximity-transfer components are not also delivering the same ore independently of the new belt graph.
 5. Use `res://tests/conveyor_merger_test.tscn` for isolated three-lane scheduling and conservation checks before changing transfer rules.
 
-**Verification boundary:** In isolated tests, three-lane Merger scheduling and backpressure passed. In main-game screenshots, three input lines were connected; the full live per-lane counters still need recording.
+**Updated verification (2026-10-30):** The final isolated Merger suite passed, the developer confirmed the three-input Merger was operating correctly in live gameplay, and **backpressure plus recovery** were subsequently confirmed with a temporarily blocked downstream route. The screenshot did not contain numeric `From A/B/C` values, so detailed per-lane throughput benchmarking remains open.
 
 ---
 
@@ -986,3 +986,22 @@ Inspect `Output A/B/C` connection status, buffer occupancy, `To A/B/C` counts an
 The GitHub edits changed `main.tscn` and related scene resources while the Godot editor was open. Choose **Reload from disk** to use the pulled version **only after saving or otherwise preserving any unsaved scene changes**. Then inspect the Debugger for the first parser/runtime error and run the changed test scenes individually with **F6**.
 
 For the complete final release gate, refer to [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
+
+
+---
+
+## 2026-10-30 — Final Logistics Acceptance: Backpressure Recovery and Ore-to-Ingot Route
+
+### Verified outcome
+
+- The developer reported all **20/20** final manual regression test scenes passed in four rounds of five.
+- The three-input Merger was observed in the main game and its operation confirmed.
+- Blocking the Merger's downstream output produced expected **backpressure**; restoring downstream capacity resumed transfer. The developer confirmed both stages.
+- The developer confirmed the complete **ore-to-ingot factory chain** operating in normal gameplay.
+- The Splitter's earlier live HUD independently recorded **13 successful transfers (A=5, B=4, C=4)**.
+
+### Remaining diagnostics if a later build behaves differently
+
+When ore reaches a Smelter unexpectedly or appears to bypass a belt, **first check whether the older `LogisticsTransferComponent` / `LogisticsInputComponent` proximity transfers are still active**. A successful visible conveyor chain does not prove these older scripts have been turned off. Before removing them, record source deposit ore, each machine/storage/belt inventory, consumed ore and output ingots in a common ore-equivalent accounting snapshot to prove physical-only conservation. Do not change working logistics code just to make debug counters match without confirming the transfer path.
+
+**Status:** Core Chat 08 logistics accepted. Numerical Merger lane counts, legacy transfer migration, cargo-destruction recovery and blocked-port live stress checks are later hardening work. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
