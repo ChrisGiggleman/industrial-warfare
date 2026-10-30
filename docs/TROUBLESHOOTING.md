@@ -870,3 +870,119 @@ When a new error appears:
 7. Confirm physical collision shapes and detection-only Area3D shapes are handled separately.
 8. Check that helper functions were not overwritten when editing long scripts.
 9. Re-run the smallest relevant gameplay test before changing additional systems.
+
+---
+
+## 2026-10-30 — Chat 08.3G: Conveyor Line Appears Joined but the Last Corner Will Not Connect
+
+### Symptom
+
+Two physically touching conveyor runs show adjacent collision outlines, but their final 90° connection is blocked. A new straight belt may snap to one open endpoint while another existing belt is already occupying the intended receiver tile.
+
+### Cause / Resolution
+
+Different junction types need distinct commit paths:
+
+- **Free tile:** preview/place a new missing corner.
+- **Existing straight with free input:** convert the receiver in place.
+- **Existing straight with free output:** convert the source while preserving its building input or previous conveyor.
+- **Two free ends with a nonstandard gap:** use an exact fractional straight or offset L connector.
+- **Multiple upstream belts sharing one downstream route:** use a dedicated Merger instead of a three-way plain corner.
+
+The previous free-end-only search could not turn an occupied receiver, and a player-rotated ghost could make a correct connection appear geometrically blocked. Current `WorldInteraction` priority and temporary mesh previews handle compatible cases. Revalidate inputs/outputs on click; do not commit a stale preview.
+
+### Verification
+
+Receiver auto-snap **11/11**, building-safe source auto-snap **10/10**, and isolated missing-corner and bridge suites were reported passed. Both source- and receiver-side conversion produced successful live connection logs.
+
+---
+
+## 2026-10-30 — Chat 08.3G: Extractor Half-Tile Belts Leave a Narrow Gap
+
+### Symptom
+
+A run built directly from an Extractor's output occupies coordinates such as `1.5, 0.5, -0.5, -1.5` on the relevant axis. A separate integer-grid conveyor lies nearby but cannot be joined with an ordinary 1-unit straight or corner. The Output panel reports `Off-grid corner preview` followed by `Placement blocked`.
+
+### Cause / Resolution
+
+A one-tile segment is the wrong geometry for a fractional or perpendicular half-grid gap. `ConveyorFractionalBridge` supports a real variable-length **straight** segment between free aligned endpoints, while `ConveyorOffsetCornerBridge` supports an L with separately measured incoming and outgoing legs. Both use proper visual mesh, physical collision, selection shapes, endpoint transforms and normal cargo transport.
+
+The shared `FactoryGrid` now snaps all footprint-defined buildings, not just Smelters/Mergers; invalid building-to-existing-belt snapping is refused instead of pulling a new building off-grid. **Existing** legacy half-grid conveyors are not automatically repositioned.
+
+### Verification
+
+Isolated fractional/offset regression tests were reported passed, followed by a live screenshot showing the gap filled and ore moving across it.
+
+---
+
+## 2026-10-30 — Chat 08.3G: Cargo Appears to Slow Down on Short Connectors
+
+### Symptom
+
+Items cross a short conveyor junction visibly, but their perceived speed slows and then accelerates on the next normal belt.
+
+### Cause / Resolution
+
+The prototype originally used one fixed timer interval for every segment independent of its length. A 0.65-unit connector taking the same interval as a 1-unit belt gives inconsistent physical speed, while an unequal-leg L path using a 50/50 time split gives a speed discontinuity at the corner.
+
+`ConveyorPathMotion` now calculates path length from input/output endpoints, scales special segment travel duration to that length, and allocates visual progress according to leg distances. Do not change item counts or transfer eligibility to solve an animation timing issue.
+
+### Verification
+
+The developer reported that the live cargo movement correction made short and standard conveyors appear to run at the same speed. Follow-up isolated speed regressions were also reported successful.
+
+---
+
+## 2026-10-30 — Chat 08.3G: A 2×2 Merger Output Sits Between Conveyor Grid Lanes
+
+### Symptom
+
+Inputs align, but the output points between tile centers, leading to unexpected spacing or forced bridge solutions when building larger routes.
+
+### Cause / Resolution
+
+The earlier 2×2 Merger output was centered along an even-width wall where grid-aligned conveyor centers lie at `±0.5` offsets. Its output port initially used the seam at `0.0` rather than one of those lanes.
+
+The final design has been **replaced** by a **1×1** Merger and Splitter, each with a port at the midpoint of each of four sides. The shared-grid test now checks five building types and their rotated physical port centers.
+
+### Verification
+
+The current five-building grid suite, 1×1 three-input Merger suite and 1×1 three-output Splitter suite were all reported passed. Merger three-way *physical connections* were observed in live gameplay. All three live `From A/B/C` throughput counters are **not yet confirmed together**.
+
+---
+
+## 2026-10-30 — Chat 08.3G: Merger Input Appears Stalled
+
+### Diagnostic procedure
+
+A Merger with three independent inputs and one output can receive items more quickly than its output line can remove them. This is normal bounded-buffer **backpressure**, not automatically a wiring failure.
+
+1. Select the Merger and inspect **Input A/B/C**, **Output**, each port's **Connected/Disconnected** status, `From A/B/C` counters, and `Next lane`.
+2. If the output is `1/1`, unblock the outgoing conveyor and observe whether the counters resume. No input may silently lose or overwrite stored items.
+3. If the output has space yet one active lane's completed count never rises, verify the affected physical input port, arrow direction, inventory capacity and corresponding Extractor's output.
+4. Check that the legacy proximity-transfer components are not also delivering the same ore independently of the new belt graph.
+5. Use `res://tests/conveyor_merger_test.tscn` for isolated three-lane scheduling and conservation checks before changing transfer rules.
+
+**Verification boundary:** In isolated tests, three-lane Merger scheduling and backpressure passed. In main-game screenshots, three input lines were connected; the full live per-lane counters still need recording.
+
+---
+
+## 2026-10-30 — Chat 08.3G: Splitter Seems to Ignore an Output
+
+### Diagnostic procedure
+
+The current 1×1 Splitter has **one input** and **three independent output buffers**; routing is round-robin among **connected outputs with space**. A missing/blocked output is intentionally skipped rather than having cargo teleported or dropped.
+
+Inspect `Output A/B/C` connection status, buffer occupancy, `To A/B/C` counts and the next lane. If all outputs are blocked, the input waits. The `conveyor_splitter_test.tscn` isolated suite exercises disconnected and full outlets.
+
+**Live verification:** The Production Debug HUD showed **13 completed splits** distributed **A=5, B=4, C=4**, all three outputs connected, and output buffers `0/1` at the captured moment. This establishes real three-output routing during that session, not final sustained-traffic performance.
+
+---
+
+## 2026-10-30 — Godot Reports Files Modified Outside the Editor After `git pull`
+
+### Cause / Safe action
+
+The GitHub edits changed `main.tscn` and related scene resources while the Godot editor was open. Choose **Reload from disk** to use the pulled version **only after saving or otherwise preserving any unsaved scene changes**. Then inspect the Debugger for the first parser/runtime error and run the changed test scenes individually with **F6**.
+
+For the complete final release gate, refer to [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
