@@ -113,6 +113,74 @@ func _refresh_display() -> void:
 
 
 # =============================================================================
+# CHAT 08.3G-3J — SHOW BOTH MERGER LANES AND OUTPUT BACKPRESSURE
+# =============================================================================
+
+func _refresh_merger_display(
+	building_runtime: BuildingRuntime,
+	merger: ConveyorMergerComponent
+) -> void:
+	if info_label == null:
+		return
+
+	var input_a: InventoryComponent = merger.input_a
+	var input_b: InventoryComponent = merger.input_b
+	var output_inventory: InventoryComponent = merger.output_inventory
+	if (
+		not is_instance_valid(input_a)
+		or not is_instance_valid(input_b)
+		or not is_instance_valid(output_inventory)
+	):
+		info_label.text = "PRODUCTION DEBUG\n\nMerger inventory references missing"
+		return
+
+	var port_a := selected_building.get_node_or_null("InputPortA") as ItemPortComponent
+	var port_b := selected_building.get_node_or_null("InputPortB") as ItemPortComponent
+	var port_out := selected_building.get_node_or_null("OutputPort") as ItemPortComponent
+
+	var connected_a: bool = (
+		is_instance_valid(port_a)
+		and is_instance_valid(port_a.connected_conveyor)
+	)
+	var connected_b: bool = (
+		is_instance_valid(port_b)
+		and is_instance_valid(port_b.connected_conveyor)
+	)
+	var connected_out: bool = (
+		is_instance_valid(port_out)
+		and is_instance_valid(port_out.connected_conveyor)
+	)
+
+	var status: String = "Transferring"
+	if not connected_out:
+		status = "Output conveyor disconnected"
+	elif output_inventory.is_full():
+		status = "Output full / backpressure"
+	elif input_a.get_total_amount() == 0 and input_b.get_total_amount() == 0:
+		status = "Waiting for input items"
+
+	info_label.text = (
+		"PRODUCTION DEBUG\n\n"
+		+ "Building: "
+		+ building_runtime.building_definition.display_name
+		+ "\nType: Conveyor Merger"
+		+ "\nStatus: " + status
+		+ "\n\nInput A: "
+		+ str(input_a.get_total_amount()) + " / " + str(input_a.max_capacity)
+		+ "\nConnection: " + ("Connected" if connected_a else "Disconnected")
+		+ "\nInput B: "
+		+ str(input_b.get_total_amount()) + " / " + str(input_b.max_capacity)
+		+ "\nConnection: " + ("Connected" if connected_b else "Disconnected")
+		+ "\n\nOutput: "
+		+ str(output_inventory.get_total_amount())
+		+ " / " + str(output_inventory.max_capacity)
+		+ "\nConnection: " + ("Connected" if connected_out else "Disconnected")
+		+ "\n\nCompleted merges: " + str(merger.completed_merges)
+		+ "\nNext input lane: " + ("A" if merger.next_lane == 0 else "B")
+	)
+
+
+# =============================================================================
 # RESOURCE NODE DISPLAY
 # =============================================================================
 
@@ -172,6 +240,18 @@ func _refresh_building_display(
 			"PRODUCTION DEBUG\n\n"
 			+ "Building definition unavailable."
 		)
+		return
+
+	# =============================================================================
+	# CHAT 08.3G-3J — MERGER BACKPRESSURE AND PORT DIAGNOSTICS
+	# =============================================================================
+
+	var merger: ConveyorMergerComponent = (
+		selected_building.get_node_or_null("MergerComponent")
+		as ConveyorMergerComponent
+	)
+	if is_instance_valid(merger):
+		_refresh_merger_display(building_runtime, merger)
 		return
 
 	var inventory_component: InventoryComponent = (
