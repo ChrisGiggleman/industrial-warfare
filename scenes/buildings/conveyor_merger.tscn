@@ -63,7 +63,9 @@ input_policy = 1
 inventory = NodePath("../InputBInventory")
 
 [node name="OutputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
-position = Vector3(1, 0.5, 0)
+# A 2-wide edge has grid-centered lanes at z = -0.5 and +0.5.
+# z = 0 would place the output belt halfway between factory tiles.
+position = Vector3(1, 0.5, -0.5)
 rotation = Vector3(0, -1.5707964, 0)
 script = ExtResource("4_port")
 direction = 1
