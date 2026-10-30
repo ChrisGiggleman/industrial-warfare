@@ -18,6 +18,8 @@ class_name ConveyorMergerComponent
 var elapsed: float = 0.0
 var next_lane: int = 0
 var completed_merges: int = 0
+var completed_from_a: int = 0
+var completed_from_b: int = 0
 
 
 func _process(delta: float) -> void:
@@ -50,5 +52,9 @@ func advance_merge() -> bool:
 			if inventory.transfer_to(output_inventory, item, 1) == 1:
 				next_lane = (lane + 1) % 2
 				completed_merges += 1
+				if lane == 0:
+					completed_from_a += 1
+				else:
+					completed_from_b += 1
 				return true
 	return false
