@@ -880,7 +880,7 @@ At the **earlier** Chat 08.3F checkpoint, the machine-port preview was tested on
 
 **Transaction and obstruction constraints:** Discovery/ghost previews do not mutate permanent belts. Permanent links are revalidated before commit. Occupied ports, incompatible directions, intervening collision bodies and full buffers reject or defer transfer rather than destroying cargo. Cargo-bearing belts and filled routing buildings are protected from player demolition.
 
-**Live evidence:** Splitter debug counters showed **A=5, B=4, C=4 (total 13)** in a single main-game session, with three outputs physically connected. Fractional connectors were visibly filled and cargo speed reported consistent after path-length correction. Merger 3-way physical hookup was observed; live `From A/B/C` progression is the remaining acceptance gate. Historical suites are separately reported, not consolidated CI.
+**Final live evidence (2026-10-30):** Splitter debug counters showed **A=5, B=4, C=4 (total 13)** with three connected outputs. Fractional connectors visibly filled gaps and cargo speed was reported consistent. The developer confirmed that the three-input Merger operates correctly, that blocked-output backpressure **and recovery** work in live play, and that the full ore-to-ingot factory chain functions. Exact Merger `From A/B/C` telemetry was not captured. All **20/20** final individual Godot regression scenes passed in manual runs, not CI.
 
 ## Current Factory Data Flow
 
@@ -943,9 +943,9 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 **Current implemented prototype (through 08.3G-3K):** Shared grid construction; physical extractor/storage/smelter ports; directional timed belts; automatic corners and both existing-end conversion types; two-ended and fractional/offset bridges; path-length-based cargo speed; 1×1, four-sided 3→1 Merger and 1→3 Splitter; and their bounded inventory/throughput feedback. Developer-reported isolated Godot suites for shared-grid, Merger and Splitter passed after the 1×1 redesign. These do **not** constitute a single unified CI run.
 
-**Still pending:** Live Merger throughput counters for all three actively supplied inputs, backpressure recovery observation, final combined regression, explicit confirmation of a deposit-driven physical ore→ingot→destination route independent of legacy proximity transfers, safe recovery of cargo during destructive events, finalized slot/stack tiers, save/load, item-specific visuals, ammunition production, enemies/defense, power/fuel and larger-world performance.
+**Core milestone accepted (2026-10-30):** The developer reported **20/20** Godot manual regression scenes passed and confirmed Merger, Splitter, backpressure/recovery and a full live ore-to-ingot factory chain. **Remaining hardening:** live numerical Merger per-lane throughput snapshots, explicit physical-only conservation with legacy proximity transfer scripts disabled or accounted for, safe recovery of cargo during destructive events, finalized slot/stack tiers, save/load, item-specific visuals, ammunition production, enemies/defense, power/fuel and larger-world performance.
 
-**Safety:** Do not delete established proximity logic until item conservation can be verified with physical movement alone. Do not classify a Merger with a full output buffer as broken simply because one input temporarily stops. Full acceptance criteria live in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
+**Safety:** Do not delete established proximity logic until item conservation can be verified with physical movement alone; a working ore-to-ingot chain does not by itself prove the absence of parallel transfers. Do not classify a Merger with a full output buffer as broken simply because one input temporarily stops. Core acceptance evidence and deferred robustness checks are recorded in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
 ## Architectural Principles
 
