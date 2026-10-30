@@ -1260,17 +1260,15 @@ func _update_placement_preview() -> void:
 		)
 
 		# =============================================================================
-		# CHAT 08.3G — UNIFIED SMELTER GRID PLACEMENT
+		# CHAT 08.3G-3J — SHARED GRID FOR ALL BUILDING FOOTPRINTS
 		# =============================================================================
 
-		# Use the shared factory grid for our migrated Smelter.
+		# Every building (Extractor, Storage, Smelter, Merger and future
+		# buildings with footprint data) uses the same rotated footprint
+		# parity convention. Only conveyors use grid-centered tiles.
 		#
-		# A 2x2 building uses a half-tile-centered origin.
-		# Calculate from the ORIGINAL mouse hit position,
-		# not the already-rounded integer grid position.
-		#
-		# Other buildings and conveyors keep their current
-		# placement behavior until their own migration.
+		# Use the ORIGINAL mouse hit before ordinary integer snapping.
+		# Even tile counts use half-unit origins on that axis.
 
 		if (
 			is_instance_valid(placement_ghost)
@@ -1283,7 +1281,8 @@ func _update_placement_preview() -> void:
 
 			if (
 				grid_definition != null
-				and grid_definition.building_id in [&"test_smelter", &"conveyor_merger"]
+				and grid_definition.footprint_tiles.x > 0
+				and grid_definition.footprint_tiles.y > 0
 			):
 
 				# Convert the selected 90-degree rotation
@@ -1699,11 +1698,22 @@ func _update_placement_preview() -> void:
 
 			if not placement_ghost is ConveyorSegment:
 
+				var selected_footprint: Vector2i = Vector2i.ZERO
+				var placement_definition: BuildingDefinition = (
+					_get_selected_building_definition()
+				)
+				if placement_definition != null:
+					selected_footprint = FactoryGrid.rotated_footprint(
+						placement_definition.footprint_tiles,
+						roundi(placement_rotation_degrees / ROTATION_STEP_DEGREES)
+					)
+
 				var building_preview: Dictionary = (
 					ConveyorBuildingPlacementSnap.find_nearest_preview(
 						placement_ghost,
 						current_placement_position,
-						1.5
+						1.5,
+						selected_footprint
 					)
 				)
 
