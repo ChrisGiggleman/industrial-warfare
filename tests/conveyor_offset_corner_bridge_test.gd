@@ -96,6 +96,22 @@ func _ready() -> void:
 	assert(bridge.has_meta("offset_corner"))
 	print("PASS G: Transport, collision legs and selection hitboxes preserved")
 
+	var offset_timer := bridge.get_node("ConveyorTransportTimer") as ConveyorTransportTimer
+	assert(is_equal_approx(offset_timer.travel_interval, 1.5))
+	var input_marker := bridge.get_node("InputEndpoint") as Marker3D
+	var output_marker := bridge.get_node("OutputEndpoint") as Marker3D
+	assert(is_equal_approx(
+		ConveyorPathMotion.get_path_length(input_marker, output_marker), 1.5
+	))
+	assert(
+		ConveyorPathMotion.position_at_progress(
+			input_marker, output_marker, 2.0 / 3.0
+		).is_equal_approx(Vector3(0, 0.5, 0))
+	)
+	assert(ConveyorPathMotion.configure_segment(bridge))
+	assert(is_equal_approx(offset_timer.travel_interval, 1.5))
+	print("PASS K: Offset path travels at constant speed across both legs")
+
 	var ore := load("res://data/items/test_ore.tres") as ItemDefinition
 	var a := source.get_node("CargoInventory") as InventoryComponent
 	var b := bridge.get_node("CargoInventory") as InventoryComponent
@@ -131,5 +147,5 @@ func _ready() -> void:
 
 	root.queue_free()
 	print("================================================")
-	print("ALL 10 OFFSET CORNER TESTS PASSED")
+	print("ALL 11 OFFSET CORNER TESTS PASSED")
 	print("================================================")
