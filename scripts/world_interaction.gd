@@ -948,7 +948,7 @@ func _try_demolish_under_mouse() -> void:
 
 			if (
 				current_node.has_method("can_demolish_safely")
-				and not current_node.can_demolish_safely()
+				and not bool(current_node.call("can_demolish_safely"))
 			):
 				print("Demolition blocked: Stored items must be recovered first.")
 				return
