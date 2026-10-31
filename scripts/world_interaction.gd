@@ -119,6 +119,13 @@ var source_corner_preview: Dictionary = {}
 var source_corner_preview_mesh: MeshInstance3D = null
 
 # =============================================================================
+# EXISTING CONVEYOR TERMINAL CORNER INTO BUILDING
+# =============================================================================
+
+var terminal_corner_preview: Dictionary = {}
+var terminal_corner_preview_mesh: MeshInstance3D = null
+
+# =============================================================================
 # FRACTIONAL AND OFFSET CONNECTOR PREVIEW
 # =============================================================================
 
@@ -1458,6 +1465,31 @@ func _update_placement_preview() -> void:
 				_clear_source_corner_preview()
 
 			# =============================================================================
+			# TERMINAL CORNER INTO AN EXISTING BUILDING INPUT
+			# =============================================================================
+			# Hover the last existing straight conveyor, not the
+			# occupied building tile. Its output can bend into a
+			# free, exactly aligned side input without placing a new belt.
+
+			var terminal_candidate: Dictionary = {}
+			if (
+				selected_building_index == 4
+				and missing_corner_preview.is_empty()
+				and not Input.is_physical_key_pressed(KEY_SHIFT)
+			):
+				terminal_candidate = ConveyorTerminalBuildingCorner.find_nearest(
+					get_tree(), mouse_grid_position, 0.65
+				)
+
+			if not terminal_candidate.is_empty():
+				_clear_receiver_corner_preview()
+				_clear_source_corner_preview()
+				if not _show_terminal_corner_preview(terminal_candidate):
+					_clear_terminal_corner_preview()
+			else:
+				_clear_terminal_corner_preview()
+
+			# =============================================================================
 			# CONNECT TWO FREE OFF-GRID ENDPOINTS
 			# =============================================================================
 			# One L-shaped connector for perpendicular free endpoints,
@@ -1470,6 +1502,7 @@ func _update_placement_preview() -> void:
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
 				and source_corner_preview.is_empty()
+				and terminal_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
 				gap_candidate = ConveyorOffsetCornerBridge.find_nearest_preview(
@@ -1555,6 +1588,7 @@ func _update_placement_preview() -> void:
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
 				and source_corner_preview.is_empty()
+				and terminal_corner_preview.is_empty()
 				and gap_connector_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
@@ -1763,7 +1797,13 @@ func _update_placement_preview() -> void:
 			# EXISTING PLACEMENT COLLISION VALIDATION
 			# =============================================================================
 
-			if not receiver_corner_preview.is_empty():
+			if not terminal_corner_preview.is_empty():
+				placement_is_valid = ConveyorTerminalBuildingCorner.is_clear(
+					get_viewport().world_3d,
+					terminal_corner_preview,
+					PLACEMENT_BLOCKER_COLLISION_MASK
+				)
+			elif not receiver_corner_preview.is_empty():
 				placement_is_valid = (
 					ConveyorReceiverCornerBuildPreview.is_clear(
 						get_viewport().world_3d,
@@ -1800,6 +1840,7 @@ func _update_placement_preview() -> void:
 		# the ground, or allow a click to commit it at an old location.
 		_clear_receiver_corner_preview()
 		_clear_source_corner_preview()
+		_clear_terminal_corner_preview()
 		_clear_gap_connector_preview()
 		placement_is_valid = false
 
@@ -1899,6 +1940,52 @@ func _is_gap_connector_clear(candidate: Dictionary) -> bool:
 				PLACEMENT_BLOCKER_COLLISION_MASK
 			)
 	return false
+
+
+# =============================================================================
+# EXISTING CONVEYOR TERMINAL CORNER PREVIEW
+# =============================================================================
+
+func _clear_terminal_corner_preview() -> void:
+	if is_instance_valid(terminal_corner_preview_mesh):
+		terminal_corner_preview_mesh.queue_free()
+	terminal_corner_preview_mesh = null
+	terminal_corner_preview.clear()
+	if (
+		is_instance_valid(placement_ghost)
+		and receiver_corner_preview.is_empty()
+		and source_corner_preview.is_empty()
+	):
+		placement_ghost.visible = true
+
+
+func _show_terminal_corner_preview(candidate: Dictionary) -> bool:
+	if not is_instance_valid(placement_ghost):
+		return false
+	var belt: ConveyorSegment = candidate.get("belt") as ConveyorSegment
+	var port: ItemPortComponent = candidate.get("port") as ItemPortComponent
+	if not is_instance_valid(belt) or not is_instance_valid(port):
+		return false
+	var needs_overlay: bool = (
+		not is_instance_valid(terminal_corner_preview_mesh)
+		or terminal_corner_preview.get("belt") != belt
+		or terminal_corner_preview.get("port") != port
+		or int(terminal_corner_preview.get("turn", -1)) != int(candidate.get("turn", -1))
+	)
+	if needs_overlay:
+		_clear_terminal_corner_preview()
+		var overlay := ConveyorTerminalBuildingCorner.make_overlay(
+			candidate, ghost_material
+		)
+		if overlay == null:
+			return false
+		var world_transform: Transform3D = overlay.transform
+		get_tree().current_scene.add_child(overlay)
+		overlay.global_transform = world_transform
+		terminal_corner_preview_mesh = overlay
+	terminal_corner_preview = candidate
+	placement_ghost.visible = false
+	return true
 
 
 # =============================================================================
@@ -2871,6 +2958,39 @@ func _try_place_object() -> void:
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
+
+	# =============================================================================
+	# COMPLETE A CONVEYOR CORNER DIRECTLY INTO A BUILDING INPUT
+	# =============================================================================
+
+	if (
+		selected_building_index == 4
+		and not terminal_corner_preview.is_empty()
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
+		_update_placement_preview()
+		if terminal_corner_preview.is_empty():
+			print("TERMINAL CORNER | Cursor or target changed.")
+			return
+		var candidate: Dictionary = terminal_corner_preview.duplicate()
+		if not ConveyorTerminalBuildingCorner.is_clear(
+			get_viewport().world_3d,
+			candidate,
+			PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("TERMINAL CORNER | Blocked or port unavailable.")
+			return
+		if not ConveyorTerminalBuildingCorner.try_connect(candidate):
+			print("TERMINAL CORNER | Physical connection rejected.")
+			return
+		print(
+			"TERMINAL CORNER CONNECTED | Belt: ",
+			(candidate["belt"] as ConveyorSegment).name,
+			" | Port: ",
+			(candidate["port"] as ItemPortComponent).name
+		)
+		_clear_terminal_corner_preview()
+		return
 
 	# =============================================================================
 	# PLACE TWO-ENDED VARIABLE GEOMETRY
@@ -4110,6 +4230,7 @@ func _create_placement_ghost(
 func _destroy_placement_ghost() -> void:
 	_clear_receiver_corner_preview()
 	_clear_source_corner_preview()
+	_clear_terminal_corner_preview()
 	_clear_gap_connector_preview()
 	if placement_ghost != null and is_instance_valid(placement_ghost):
 		placement_ghost.queue_free()
