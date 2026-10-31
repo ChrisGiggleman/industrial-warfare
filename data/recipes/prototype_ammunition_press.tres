@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ProductionRecipe" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/production_recipe.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://scripts/data/item_amount.gd" id="2_amount"]
+[ext_resource type="Resource" path="res://data/items/test_ingot.tres" id="3_ingot"]
+[ext_resource type="Resource" path="res://data/items/prototype_ammunition.tres" id="4_ammunition"]
+
+[sub_resource type="Resource" id="InputIngot"]
+script = ExtResource("2_amount")
+item = ExtResource("3_ingot")
+amount = 1
+
+[sub_resource type="Resource" id="OutputAmmunition"]
+script = ExtResource("2_amount")
+item = ExtResource("4_ammunition")
+amount = 4
+
+[resource]
+script = ExtResource("1_recipe")
+recipe_id = &"prototype_ammunition_press"
+display_name = "Prototype Ammunition Pressing"
+production_time = 2.0
+inputs = Array[ExtResource("2_amount")]([SubResource("InputIngot")])
+outputs = Array[ExtResource("2_amount")]([SubResource("OutputAmmunition")])
