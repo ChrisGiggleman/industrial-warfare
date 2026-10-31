@@ -1,0 +1,67 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/selectable_object.gd" id="1_select"]
+[ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
+[ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="3_inventory"]
+[ext_resource type="Script" path="res://scripts/components/producer_component.gd" id="4_producer"]
+[ext_resource type="Script" path="res://scripts/components/item_port_component.gd" id="5_port"]
+[ext_resource type="Script" path="res://scripts/data/production_recipe.gd" id="6_recipe"]
+[ext_resource type="Resource" path="res://data/recipes/prototype_ammunition_press.tres" id="7_ammo_recipe"]
+
+[sub_resource type="BoxShape3D" id="PressShape"]
+size = Vector3(2, 1, 2)
+
+[sub_resource type="BoxMesh" id="PressMesh"]
+size = Vector3(2, 1, 2)
+
+[sub_resource type="StandardMaterial3D" id="PressMaterial"]
+albedo_color = Color(0.35, 0.38, 0.27, 1.0)
+metallic = 0.4
+roughness = 0.7
+
+[node name="PrototypeAmmunitionPress" type="Node3D" node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+script = ExtResource("1_select")
+selection_mesh = NodePath("BuildingMesh")
+
+[node name="BuildingBody" type="StaticBody3D" parent="."]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildingBody"]
+position = Vector3(0, 0.5, 0)
+shape = SubResource("PressShape")
+
+[node name="BuildingMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.5, 0)
+material_override = SubResource("PressMaterial")
+mesh = SubResource("PressMesh")
+
+[node name="BuildingRuntime" type="Node" parent="."]
+script = ExtResource("2_runtime")
+
+[node name="InputInventory" type="Node" parent="."]
+script = ExtResource("3_inventory")
+max_capacity = 50
+
+[node name="OutputInventory" type="Node" parent="."]
+script = ExtResource("3_inventory")
+max_capacity = 100
+
+[node name="ProducerComponent" type="Node" parent="." node_paths=PackedStringArray("input_inventory", "output_inventory")]
+script = ExtResource("4_producer")
+recipe = ExtResource("7_ammo_recipe")
+available_recipes = Array[ExtResource("6_recipe")]([ExtResource("7_ammo_recipe")])
+input_inventory = NodePath("../InputInventory")
+output_inventory = NodePath("../OutputInventory")
+
+[node name="InputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory", "producer_component")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1, 0.5, -0.5)
+script = ExtResource("5_port")
+inventory = NodePath("../InputInventory")
+producer_component = NodePath("../ProducerComponent")
+
+[node name="OutputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory", "producer_component")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1, 0.5, -0.5)
+script = ExtResource("5_port")
+direction = 1
+inventory = NodePath("../OutputInventory")
+producer_component = NodePath("../ProducerComponent")
