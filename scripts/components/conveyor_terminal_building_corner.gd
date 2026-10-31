@@ -278,3 +278,130 @@ static func try_connect(candidate: Dictionary) -> bool:
 	belt.set_meta("conveyor_turn", turn)
 	template.free()
 	return true
+
+
+# =============================================================================
+# READ-ONLY IN-GAME TERMINAL CORNER INSPECTION
+# =============================================================================
+
+# Called only when the player requests a placement diagnostic.
+# Does not move any object, change a connection, or transfer cargo.
+
+static func inspect_at_cursor(
+	tree: SceneTree,
+	world: World3D,
+	mouse_world_position: Vector3,
+	collision_mask: int,
+	search_radius: float = 0.65
+) -> void:
+	if tree == null:
+		return
+
+	print("TERMINAL INSPECT | Cursor grid: ", mouse_world_position)
+
+	var nearest: ConveyorSegment = null
+	var best_squared: float = search_radius * search_radius
+	for node: Node in tree.get_nodes_in_group("player_built"):
+		if not node is ConveyorSegment:
+			continue
+		var belt := node as ConveyorSegment
+		if belt.is_queued_for_deletion() or belt.is_in_group("construction_preview"):
+			continue
+		var delta := Vector2(
+			mouse_world_position.x - belt.global_position.x,
+			mouse_world_position.z - belt.global_position.z
+		)
+		var distance_squared: float = delta.length_squared()
+		if distance_squared <= best_squared:
+			nearest = belt
+			best_squared = distance_squared
+
+	if nearest == null:
+		print("TERMINAL INSPECT | No existing conveyor centered on this tile.")
+		return
+
+	print(
+		"TERMINAL INSPECT | Belt: ", nearest.name,
+		" at ", nearest.global_position,
+		" | rotation Y: ", nearest.rotation_degrees.y,
+		" | next_busy: ", is_instance_valid(nearest.next_segment),
+		" | output_port_busy: ", is_instance_valid(nearest.output_building_port),
+		" | already_corner: ", nearest.has_meta("conveyor_turn")
+	)
+
+	var input_port: ItemPortComponent = null
+	var best_port_squared: float = 4.0
+	for building: Node in tree.get_nodes_in_group("player_built"):
+		if not building is Node3D or building is ConveyorSegment:
+			continue
+		if building.is_queued_for_deletion() or building.is_in_group("construction_preview"):
+			continue
+		for child: Node in building.get_children():
+			if not child is ItemPortComponent:
+				continue
+			var port := child as ItemPortComponent
+			if port.direction != ItemPortComponent.PortDirection.INPUT:
+				continue
+			var delta := Vector2(
+				port.global_position.x - nearest.global_position.x,
+				port.global_position.z - nearest.global_position.z
+			)
+			var d2: float = delta.length_squared()
+			if d2 < best_port_squared:
+				best_port_squared = d2
+				input_port = port
+
+	if input_port == null:
+		print("TERMINAL INSPECT | No building INPUT within two tiles.")
+		return
+
+	print(
+		"TERMINAL INSPECT | Nearest input: ",
+		input_port.get_parent().name, "/", input_port.name,
+		" at ", input_port.global_position,
+		" | occupied: ", is_instance_valid(input_port.connected_conveyor),
+		" | inventory_valid: ", is_instance_valid(input_port.inventory)
+	)
+
+	for turn: int in [
+		ConveyorTurnIntent.Turn.LEFT,
+		ConveyorTurnIntent.Turn.RIGHT
+	]:
+		var label: String = (
+			"LEFT" if turn == ConveyorTurnIntent.Turn.LEFT else "RIGHT"
+		)
+		var scene: PackedScene = ConveyorPieceSelector.get_scene_for_turn(turn)
+		if scene == null:
+			continue
+		var template := scene.instantiate() as ConveyorSegment
+		if template == null:
+			continue
+		var output := template.get_node_or_null("OutputEndpoint") as Marker3D
+		if output == null:
+			template.free()
+			continue
+		var proposed: Transform3D = nearest.global_transform * output.transform
+		var direction_a: Vector3 = (
+			proposed.basis * Vector3.FORWARD
+		).normalized()
+		var direction_b: Vector3 = (
+			input_port.global_transform.basis * Vector3.FORWARD
+		).normalized()
+		var candidate: Dictionary = inspect_pair(nearest, input_port, turn)
+		print(
+			"TERMINAL INSPECT | ", label,
+			" | gap: ", proposed.origin.distance_to(input_port.global_position),
+			" | facing_dot: ", direction_a.dot(direction_b),
+			" | exact_candidate: ", not candidate.is_empty(),
+			" | clearance: ",
+			(is_clear(world, candidate, collision_mask) if not candidate.is_empty() else false)
+		)
+		template.free()
+
+	var found: Dictionary = find_nearest(
+		tree, mouse_world_position, search_radius
+	)
+	print(
+		"TERMINAL INSPECT | Discovery result: ",
+		("MATCH" if not found.is_empty() else "NO MATCH")
+	)
