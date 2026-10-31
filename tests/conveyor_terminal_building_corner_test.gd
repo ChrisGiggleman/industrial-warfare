@@ -44,6 +44,43 @@ func _ready() -> void:
 	var candidate := ConveyorTerminalBuildingCorner.inspect_pair(
 		end, input, ConveyorTurnIntent.Turn.LEFT
 	)
+	if candidate.is_empty():
+		# =============================================================================
+		# TERMINAL CORNER ALIGNMENT DIAGNOSTICS
+		# =============================================================================
+		# Read-only details to identify which production safety gate
+		# rejects the terminal connection. No transforms are changed.
+		print("TERMINAL DEBUG | direction=", input.direction,
+			" inventory_valid=", is_instance_valid(input.inventory),
+			" occupied=", is_instance_valid(input.connected_conveyor),
+			" preview_parent=", merger.is_in_group("construction_preview"))
+		print("TERMINAL DEBUG | belt next=", is_instance_valid(end.next_segment),
+			" output_port=", is_instance_valid(end.output_building_port),
+			" already_corner=", end.has_meta("conveyor_turn"),
+			" belt_in_tree=", end.is_inside_tree())
+		var existing_output := end.get_node("OutputEndpoint") as Marker3D
+		print("TERMINAL DEBUG | straight output local position=",
+			existing_output.position)
+		var template := ConveyorPieceSelector.LEFT_CORNER_SCENE.instantiate() as ConveyorSegment
+		if template != null:
+			var template_output := template.get_node("OutputEndpoint") as Marker3D
+			var proposed: Transform3D = template_output.transform
+			proposed.basis = proposed.basis * Basis(Vector3.UP, PI)
+			proposed = end.global_transform * proposed
+			var outgoing_direction := (proposed.basis * Vector3.FORWARD).normalized()
+			var incoming_direction := (
+				input.global_transform.basis * Vector3.FORWARD
+			).normalized()
+			print("TERMINAL DEBUG | proposed position=", proposed.origin,
+				" port position=", input.global_position,
+				" gap=", proposed.origin.distance_to(input.global_position))
+			print("TERMINAL DEBUG | outgoing=", outgoing_direction,
+				" incoming=", incoming_direction,
+				" facing_dot=", outgoing_direction.dot(incoming_direction),
+				" exact_match=", ConveyorDualEndedBridge._transforms_align(
+					proposed, input.global_transform
+				))
+			template.free()
 	assert(not candidate.is_empty())
 	assert(candidate["belt"] == end and candidate["port"] == input)
 	print("PASS B: Only correctly directed terminal turn matches the input")
