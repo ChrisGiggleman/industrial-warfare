@@ -1877,6 +1877,7 @@ func _clear_gap_connector_preview() -> void:
 		is_instance_valid(placement_ghost)
 		and source_corner_preview.is_empty()
 		and receiver_corner_preview.is_empty()
+		and terminal_corner_preview.is_empty()
 	):
 		placement_ghost.visible = true
 
