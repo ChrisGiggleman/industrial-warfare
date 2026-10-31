@@ -194,13 +194,14 @@ var building_placement_snap_port: ItemPortComponent = null
 
 var conveyor_preview_scene: PackedScene = null
 
-# How close the mouse's grid position must be to a
-# valid snapped conveyor position.
+# Keep snap discovery within the cursor's intended grid tile.
+# A full one-tile range can steal the adjacent parallel lane.
 
-const CONVEYOR_SNAP_SEARCH_RADIUS: float = 1.25
+const CONVEYOR_SNAP_SEARCH_RADIUS: float = 0.65
 
-# Separate range for machine ports, which can sit off the grid.
-const CONVEYOR_BUILDING_PORT_SEARCH_RADIUS: float = 1.75
+# Allow a half-tile port offset without grabbing another lane
+# or a building's port one whole tile away.
+const CONVEYOR_BUILDING_PORT_SEARCH_RADIUS: float = 0.65
 
 # Demolition Tool state.
 var demolition_mode_active: bool = false
@@ -1353,7 +1354,7 @@ func _update_placement_preview() -> void:
 					ConveyorMissingCornerPreview.find_nearest(
 						get_tree(),
 						mouse_grid_position,
-						0.75
+						0.65
 					)
 				)
 
@@ -1423,7 +1424,7 @@ func _update_placement_preview() -> void:
 					ConveyorReceiverCornerAutoSnap.find_nearest_preview(
 						get_tree(),
 						mouse_grid_position,
-						0.75
+						0.65
 					)
 				)
 
@@ -1446,7 +1447,7 @@ func _update_placement_preview() -> void:
 			):
 				source_candidate = (
 					ConveyorSourceCornerAutoSnap.find_nearest_preview(
-						get_tree(), mouse_grid_position, 0.75
+						get_tree(), mouse_grid_position, 0.65
 					)
 				)
 
@@ -1472,13 +1473,13 @@ func _update_placement_preview() -> void:
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
 				gap_candidate = ConveyorOffsetCornerBridge.find_nearest_preview(
-					get_tree(), mouse_grid_position, 0.8
+					get_tree(), mouse_grid_position, 0.65
 				)
 				if not gap_candidate.is_empty():
 					gap_candidate["kind"] = "offset_corner"
 				else:
 					gap_candidate = ConveyorFractionalBridge.find_nearest_preview(
-						get_tree(), mouse_grid_position, 0.75
+						get_tree(), mouse_grid_position, 0.65
 					)
 					if not gap_candidate.is_empty():
 						gap_candidate["kind"] = "fractional_straight"
@@ -1722,7 +1723,7 @@ func _update_placement_preview() -> void:
 					ConveyorBuildingPlacementSnap.find_nearest_preview(
 						placement_ghost,
 						current_placement_position,
-						1.5,
+						0.65,
 						selected_footprint
 					)
 				)
@@ -3712,10 +3713,12 @@ func _try_place_object() -> void:
 			building_snap_belt.global_position
 		)
 
-		# The connection is complete.
-		# Do not run normal building placement,
-		# which would create a second conveyor.
+		# Short gaps may place the second free endpoint directly
+		# against another building port or pre-existing conveyor.
+		# Connect only uniquely matched, physically aligned endpoints.
+		ConveyorNearbyConnection.complete_open_ends(building_snap_belt)
 
+		# Do not create a duplicate conveyor on the same click.
 		return
 
 
@@ -3815,9 +3818,11 @@ func _try_place_object() -> void:
 
 		print("CONVEYOR PLACED | Scene: ", selected_scene.resource_path)
 
-		# Important: stop here.
-		# Normal building placement must not run afterward.
+		# A second building port may meet the remaining free
+		# endpoint. Complete that connection without moving the belt.
+		ConveyorNearbyConnection.complete_open_ends(new_belt)
 
+		# Normal building placement must not run afterward.
 		return
 
 	# =============================================================================
@@ -3941,6 +3946,17 @@ func _try_place_object() -> void:
 				" | New straight: ",
 				placed_straight.global_position
 			)
+
+	# =============================================================================
+	# CONNECT EXACT ADJACENT ENDPOINTS AFTER FREE PLACEMENT
+	# =============================================================================
+
+	# A free-placed belt may sit exactly between building ports.
+	# Parallel lanes remain independent unless endpoints align.
+	if new_object is ConveyorSegment:
+		ConveyorNearbyConnection.complete_open_ends(
+			new_object as ConveyorSegment
+		)
 
 	# =============================================================================
 	# PLACEMENT CONFIRMATION
