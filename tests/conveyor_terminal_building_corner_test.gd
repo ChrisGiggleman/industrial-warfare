@@ -64,9 +64,9 @@ func _ready() -> void:
 		var template := ConveyorPieceSelector.LEFT_CORNER_SCENE.instantiate() as ConveyorSegment
 		if template != null:
 			var template_output := template.get_node("OutputEndpoint") as Marker3D
-			var proposed: Transform3D = template_output.transform
-			proposed.basis = proposed.basis * Basis(Vector3.UP, PI)
-			proposed = end.global_transform * proposed
+			var proposed: Transform3D = (
+				end.global_transform * template_output.transform
+			)
 			var outgoing_direction := (proposed.basis * Vector3.FORWARD).normalized()
 			var incoming_direction := (
 				input.global_transform.basis * Vector3.FORWARD
