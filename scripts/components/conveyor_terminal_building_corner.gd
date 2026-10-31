@@ -56,8 +56,15 @@ static func inspect_pair(
 		template.free()
 		return {}
 
+	# The corner templates' side-output marker faces inward.
+	# Flip only the converted terminal output so it faces the
+	# building input while preserving its exact edge position.
+	var terminal_output: Transform3D = corner_output.transform
+	terminal_output.basis = (
+		terminal_output.basis * Basis(Vector3.UP, PI)
+	)
 	var proposed_output: Transform3D = (
-		belt.global_transform * corner_output.transform
+		belt.global_transform * terminal_output
 	)
 	template.free()
 
@@ -261,7 +268,11 @@ static func try_connect(candidate: Dictionary) -> bool:
 		return false
 
 	var original_output: Transform3D = output.transform
-	output.transform = corner_output.transform
+	var terminal_output: Transform3D = corner_output.transform
+	terminal_output.basis = (
+		terminal_output.basis * Basis(Vector3.UP, PI)
+	)
+	output.transform = terminal_output
 	if not belt.try_connect_building_port(port):
 		output.transform = original_output
 		template.free()
