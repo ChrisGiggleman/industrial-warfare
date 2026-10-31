@@ -51,10 +51,13 @@ func _ready() -> void:
 	assert(ConveyorTerminalBuildingCorner.find_nearest(
 		get_tree(), end.global_position, 0.65
 	).get("belt") == end)
+	var parallel := _belt(root, Vector3(0, 0, 2))
 	assert(ConveyorTerminalBuildingCorner.find_nearest(
-		get_tree(), end.global_position + Vector3(1, 0, 0), 0.65
+		get_tree(), parallel.global_position, 0.65
 	).is_empty())
-	print("PASS C: Mouse discovers the intended tile, not a parallel lane")
+	assert(parallel.next_segment == null)
+	assert(parallel.previous_segment == null)
+	print("PASS C: One-tile parallel conveyor lane remains independent")
 
 	var original_input := (end.get_node("InputEndpoint") as Marker3D).transform
 	var original_transform := end.global_transform
@@ -86,7 +89,9 @@ func _ready() -> void:
 	assert(end.global_transform.is_equal_approx(original_transform))
 	assert((end.get_node("InputEndpoint") as Marker3D).transform == original_input)
 	assert(cargo.get_amount(ore) == 1)
-	print("PASS F: In-place corner preserves incoming connection and cargo")
+	assert(parallel.next_segment == null and parallel.previous_segment == null)
+	assert(parallel.output_building_port == null)
+	print("PASS F: In-place corner preserves incoming link, cargo, and parallel lane")
 
 	assert(ConveyorBuildingTransfer.try_unload_from_belt(end))
 	assert(cargo.get_amount(ore) == 0)
