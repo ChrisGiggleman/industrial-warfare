@@ -3953,7 +3953,10 @@ func _try_place_object() -> void:
 
 	# A free-placed belt may sit exactly between building ports.
 	# Parallel lanes remain independent unless endpoints align.
-	if new_object is ConveyorSegment:
+	if (
+		new_object is ConveyorSegment
+		and not Input.is_physical_key_pressed(KEY_SHIFT)
+	):
 		ConveyorNearbyConnection.complete_open_ends(
 			new_object as ConveyorSegment
 		)
