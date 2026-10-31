@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_definition.gd" id="1_building"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/prototype_ammunition_press.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_building")
+building_id = &"prototype_ammunition_press"
+display_name = "Prototype Ammunition Press"
+description = "Manufactures Prototype Rounds from Test Ingots through physical input/output conveyor ports."
+category = &"Production"
+building_scene = ExtResource("2_scene")
+footprint_tiles = Vector2i(2, 2)
