@@ -336,6 +336,25 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 		# =============================================================================
+		# INSPECT CONVEYOR CORNER INTO BUILDING (H)
+		# =============================================================================
+
+		# Read-only diagnosis of the conveyor under the mouse and its
+		# nearest building input. No connections are modified.
+		if (
+			selected_building_index == 4
+			and event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and (
+				event.physical_keycode == KEY_H
+				or event.keycode == KEY_H
+			)
+		):
+			_inspect_terminal_building_corner()
+			return
+
+		# =============================================================================
 		# INSPECT EXISTING CONVEYOR JUNCTION
 		# =============================================================================
 
@@ -383,6 +402,47 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("primary_action"):
 		_select_under_mouse()
+
+
+# =============================================================================
+# INSPECT TERMINAL BUILDING CORNER UNDER CURSOR
+# =============================================================================
+
+func _inspect_terminal_building_corner() -> void:
+	if not is_instance_valid(camera):
+		return
+	var screen_position: Vector2 = get_viewport().get_mouse_position()
+	var ray_origin: Vector3 = camera.project_ray_origin(screen_position)
+	var ray_direction: Vector3 = camera.project_ray_normal(screen_position)
+	var query := PhysicsRayQueryParameters3D.create(
+		ray_origin, ray_origin + ray_direction * ray_length
+	)
+	query.collision_mask = GROUND_COLLISION_MASK
+	var result: Dictionary = (
+		get_viewport().world_3d.direct_space_state.intersect_ray(query)
+	)
+	if result.is_empty():
+		print("TERMINAL INSPECT | Cursor is not over ground.")
+		return
+
+	var hit: Vector3 = result["position"]
+	var cursor_grid := Vector3(
+		snappedf(hit.x, grid_size),
+		hit.y,
+		snappedf(hit.z, grid_size)
+	)
+	ConveyorTerminalBuildingCorner.inspect_at_cursor(
+		get_tree(),
+		get_viewport().world_3d,
+		cursor_grid,
+		PLACEMENT_BLOCKER_COLLISION_MASK,
+		0.65
+	)
+	print(
+		"TERMINAL INSPECT | Active preview: ",
+		not terminal_corner_preview.is_empty(),
+		" | placement valid: ", placement_is_valid
+	)
 
 
 # =============================================================================
