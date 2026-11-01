@@ -1194,3 +1194,27 @@ The developer ran `res://tests/prototype_defensive_turret_test.tscn` in Godot 4.
 The developer ran `res://tests/defensive_turret_build_mode_test.tscn` in Godot 4.6.2 and supplied the Output screenshot confirming **all 12/12 checks passed**. Verified existing eight build slots and new slot 9, preview and 90-degree rotation, grid-aligned turret input, ammunition-only acceptance, physical conveyor delivery, loaded-turret demolition protection, Production Debug HUD (connected state/1 of 40 rounds/readiness), a single simulated shot updating the counter, port cleanup, and switching between slots 8 and 9. This completes the local automated acceptance of turret Build Mode integration.
 
 **Next live-game checkpoint:** Use the already-working ammunition factory to feed a placed turret through real conveyors. Existing Storage provides a universal output port; a Storage → Conveyor → Turret connection avoids disrupting the Ammunition Press's single occupied output port. Expect the turret HUD's magazine count to increase while `Fired Shots` stays at zero because no automatic targeting or in-game firing action is implemented yet. Visual targeting, enemy behavior and damage remain pending.
+
+
+---
+
+## 2026-11-01 — Live Ammunition-Fed Turret Accepted; Isolated Targeting Checkpoint
+
+### Accepted live-game evidence
+
+A screenshot of the player-built factory and selected Defensive Turret HUD confirms physical ammunition supply into the turret: **Ammo Conveyor Connected; Ammunition 9 / 40; Status Ready; Cooldown 0.00 seconds; Fired Shots 0**. This is the first accepted complete physical chain from extraction, smelting and ammunition manufacturing through storage/conveyors into a turret magazine during normal gameplay.
+
+The zero-shot count is correct: no automatic combat behavior was attached to the live turret at the time of acceptance.
+
+### New combat foundation (not yet locally tested)
+
+- `CombatHealthComponent`: generic positive health, guarded damage transaction and death signal.
+- `prototype_zombie_target.tscn`: stationary hostile placeholder with visible body and 30 health (not yet a moving zombie).
+- `TurretTargetingComponent`: optional child component that scans the `hostile_targets` group, selects the nearest living target within a horizontal range (default 7 world units), and uses the existing `DefensiveTurretComponent.try_fire()` transaction before applying a temporary 10 damage instant hit. Every shot consumes one Prototype Round, obeys cooldown and skips out-of-range, friendly and already-dead targets.
+- `tests/defensive_turret_targeting_test.tscn`: isolated 12-case Godot regression covering range, nearest selection, no-target/no-ammo behavior, cooldown, exact damage, target defeat and retargeting, and conservation.
+
+**Important:** This targeting behavior is **not yet attached to the Build Mode turret**. There is no projectile simulation, line-of-sight check, target movement, zombie spawning, building damage or enemy attack behavior. Run the new isolated test first, then integrate into live gameplay only after local verification.
+
+### Next check
+
+Run the targeting regression with F6 in Godot 4.6.2. Preserve the previously passing turret ammo/Build Mode suites, conveyor factory, and ammunition production tests.
