@@ -10,7 +10,7 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = -244.0
+offset_top = -271.0
 offset_right = 291.0
 offset_bottom = -20.0
 grow_vertical = 0
@@ -60,6 +60,10 @@ text = "[7] Conveyor Splitter"
 [node name="Building8Label" type="Label" parent="BuildPanel/PanelMargin/BuildInfo"]
 layout_mode = 2
 text = "[8] Ammunition Press"
+
+[node name="Building9Label" type="Label" parent="BuildPanel/PanelMargin/BuildInfo"]
+layout_mode = 2
+text = "[9] Defensive Turret"
 
 [node name="ControlsLabel" type="Label" parent="BuildPanel/PanelMargin/BuildInfo" unique_id=1895815257]
 layout_mode = 2
