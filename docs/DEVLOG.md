@@ -1218,3 +1218,18 @@ The zero-shot count is correct: no automatic combat behavior was attached to the
 ### Next check
 
 Run the targeting regression with F6 in Godot 4.6.2. Preserve the previously passing turret ammo/Build Mode suites, conveyor factory, and ammunition production tests.
+
+
+### Follow-up acceptance: isolated targeting/damage regression
+
+The developer supplied Godot 4.6.2 output confirming **12/12** tests passed in `res://tests/defensive_turret_targeting_test.tscn`: no-target and out-of-range ammo preservation, ignoring non-hostiles, nearest-hostile targeting, real one-round consumption, cooldown, 10 damage per hit to a 30-HP dummy, skipping defeated targets, retargeting, empty-magazine protection and ammo/shot conservation.
+
+### Player-world combat integration (committed; local validation pending)
+
+- Attached the validated `TurretTargetingComponent` to `prototype_defensive_turret.tscn`. Its range is 7 units and damage 10 per authorized shot; it consumes rounds exclusively through `DefensiveTurretComponent.try_fire()`.
+- Placed a stationary `PrototypeZombieTarget` instance at **(-6, 0, -6)** inside the main world's ground area, farther than 7 units from origin to avoid disrupting older slot-9 regression tests. This is a static test dummy, not a zombie with AI or movement.
+- Added a visible target health/defeated Label3D and read-only combat statistics to the turret Production Debug HUD (current target, hits, defeated count). Preserved the existing magazine/cooldown/counter display.
+- Updated the older turret Build Mode regression's combat label assertion to reflect automatic targeting now being attached.
+- Added `res://tests/live_turret_combat_integration_test.tscn`, an **11-case** integration test against the real Main scene, connected physical belt, ammunition inventory, range detection, automatic fire, target health, visible defeat state, HUD and disconnect cleanup.
+
+**Not yet validated locally:** The full scene integration, player-built turret automatic fire and on-screen damage. Do not claim live combat acceptance until the new F6 test and a manual in-game demonstration pass. Instant damage is a temporary placeholder; projectiles, LOS checks, zombie movement/spawning, death animations and combat balancing are future work.
