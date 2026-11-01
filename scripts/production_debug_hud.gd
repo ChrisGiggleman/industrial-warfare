@@ -317,9 +317,8 @@ func _refresh_resource_node_display(
 # DEFENSIVE TURRET AMMUNITION STATUS
 # =============================================================================
 
-# The prototype turret currently performs a controlled, manual firing
-# transaction. Show its live ammo and readiness, but do not imply that
-# automatic targeting or combat is active.
+# The turret's ammunition and cooldown are shared by manual tests and
+# automatic firing. Target detection and hit counts are read-only HUD data.
 
 func _refresh_turret_display(
 	building_runtime: BuildingRuntime,
@@ -374,8 +373,40 @@ func _refresh_turret_display(
 		+ " s"
 		+ "\nFired Shots: "
 		+ str(turret.shots_fired)
-		+ "\nCombat: Targeting not implemented"
 	)
+
+	# =============================================================================
+	# AUTOMATIC COMBAT STATUS
+	# =============================================================================
+
+	var targeting := selected_building.get_node_or_null(
+		"TargetingComponent"
+	) as TurretTargetingComponent
+
+	if is_instance_valid(targeting):
+		text_value += (
+			"\nCombat: Auto targeting (instant-hit prototype)"
+			+ "\nRange: " + str(targeting.detection_range)
+			+ "\nHits: " + str(targeting.confirmed_hits)
+			+ "\nTargets Defeated: " + str(targeting.confirmed_kills)
+		)
+
+		var target: Node3D = targeting.current_target
+		if is_instance_valid(target) and target.is_inside_tree():
+			var health := target.get_node_or_null(
+				"HealthComponent"
+			) as CombatHealthComponent
+			if is_instance_valid(health) and health.is_alive():
+				text_value += (
+					"\nTarget: " + target.name
+					+ " | HP: " + str(health.current_health)
+				)
+			else:
+				text_value += "\nTarget: None"
+		else:
+			text_value += "\nTarget: None"
+	else:
+		text_value += "\nCombat: Targeting not installed"
 
 	info_label.text = text_value
 
