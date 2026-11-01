@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/combat_health_component.gd" id="1_health"]
+
+[sub_resource type="CapsuleMesh" id="BodyMesh"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="HostileMaterial"]
+albedo_color = Color(0.42, 0.22, 0.18, 1)
+roughness = 0.9
+
+[node name="PrototypeZombieTarget" type="Node3D" groups=["hostile_targets"]]
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.8, 0)
+mesh = SubResource("BodyMesh")
+material_override = SubResource("HostileMaterial")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("1_health")
+max_health = 30
