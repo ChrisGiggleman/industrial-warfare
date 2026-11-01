@@ -155,7 +155,7 @@ func _ready() -> void:
 	assert(targeting.find_nearest_target() == null)
 	assert(friendly_hp.current_health == 30)
 	assert((far.get_node("HealthComponent") as CombatHealthComponent).current_health == 30)
-	assert(not targeting.current_target)
+	assert(targeting.current_target == null)
 	assert(turret.shots_fired == targeting.confirmed_hits)
 	print("PASS L: No dead/friendly/distant target is hit; six shots conserved")
 
