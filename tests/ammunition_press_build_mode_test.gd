@@ -14,7 +14,7 @@ func _press_key(controller: Node, key: Key) -> void:
 	event.echo = false
 	event.keycode = key
 	event.physical_keycode = key
-	controller._unhandled_input(event)
+	controller.call("_unhandled_input", event)
 
 
 func _ready() -> void:
@@ -26,8 +26,8 @@ func _ready() -> void:
 	assert(world != null)
 	add_child(world)
 
-	var controller := world.get_node("WorldInteraction")
-	var hud := world.get_node("BuildHUD")
+	var controller = world.get_node("WorldInteraction")
+	var hud = world.get_node("BuildHUD")
 	assert(controller != null and hud != null)
 	assert(controller.buildable_definitions.size() == 8)
 
