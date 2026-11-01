@@ -314,10 +314,11 @@ Planned major systems:
 
 ### 1F — Enemy & Defense Prototype
 
-**First defense foundation:** A 1×1 ammunition-fed turret with a physical input port, 40-round magazine, guarded firing transactions and cooldown is in the repository. The isolated `prototype_defensive_turret_test.tscn` scene **passed all 10/10 checks in local Godot 4.6.2**. The turret is now registered as Build Mode slot **9** and has a dedicated ammo/shot/cooldown Debug HUD display. The new player-build integration requires local validation before acceptance.
+**Defense foundation accepted:** The 1×1 ammunition-fed turret has a physical input port, 40-round magazine, guarded firing transactions, and cooldown. Both the isolated ammo regression (**10/10**) and main-scene Build Mode slot **9** regression (**12/12**) passed locally in Godot 4.6.2. The Debug HUD displays magazine quantity, port connection, readiness, cooldown and shot count. **Next:** verify live conveyor delivery from the ammunition factory/storage to a player-placed turret. Automated targeting and damage are not yet implemented.
 
 - [x] Validate turret ammunition-only input, backpressure, firing/cooldown, conservation and demolition (**10/10** isolated regression).
-- [ ] Validate turret Build Mode slot 9, HUD, port placement, ammo input and connection cleanup (**12-case regression prepared; not yet run locally**).
+- [x] Validate turret Build Mode slot 9, HUD, port placement, ammo input and connection cleanup (**12/12** local Godot regression).
+- [ ] Confirm physical delivery of factory-produced Prototype Rounds to a player-placed turret's magazine.
 - [ ] Add automatic targeting, projectile/damage and ammo-dependent firing.
 - [ ] Add simple zombie enemy
 - [ ] Add navigation toward player structures
@@ -401,4 +402,4 @@ Completed:
 
 **Accepted milestone (Chat 08.3G-3K, 2026-10-30):** Player-built physical belts, corners, variable-length connectors, uniform cargo pacing, shared grid and 1×1 Merger/Splitter are implemented on GitHub `main`. **All 20 final individual manual Godot test scenes passed**. The Splitter's live HUD recorded **13 routed items (5/4/4)**, the three-input Merger worked in gameplay, and the developer confirmed downstream backpressure/recovery and the complete ore-to-ingot factory chain. Exact live Merger per-lane counters were not captured, and safe retirement of legacy proximity scripts still requires a physical-only conservation test. Details: [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
-**Current next step (2026-10-31):** Live ammunition manufacture and delivery to Storage are validated; the turret ammunition-only regression passed **10/10**. Run `tests/defensive_turret_build_mode_test.tscn` to validate Build Mode slot **9** and the live turret information display. Then connect factory ammunition to the placed turret. Enemy spawning, targeting, damage, slotted storage, cargo recovery and persistence are later increments.
+**Current next step (2026-10-31):** Live ammunition production and storage delivery are verified; turret ammo-only (**10/10**) and slot 9 Build Mode (**12/12**) regressions passed locally. Complete the **Storage → Conveyor → Turret** live-game transfer and verify the magazine HUD increments. Then implement deliberate enemy targeting, ammo-dependent shots and damage. Cargo recovery, slotted storage and persistence remain separate follow-ups.
