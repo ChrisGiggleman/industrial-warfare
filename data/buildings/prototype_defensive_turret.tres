@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/prototype_defensive_turret.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_definition")
+building_id = &"prototype_defensive_turret"
+display_name = "Prototype Defensive Turret"
+description = "An ammunition-fed defensive building with a physical input port. Targeting and damage are planned."
+category = &"Defense"
+building_scene = ExtResource("2_scene")
+footprint_tiles = Vector2i(1, 1)
