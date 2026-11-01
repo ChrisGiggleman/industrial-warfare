@@ -1187,3 +1187,10 @@ The developer ran `res://tests/prototype_defensive_turret_test.tscn` in Godot 4.
 - Updated the older ammunition press Build Mode regression to continue checking its original eight slots within the new nine-slot roster.
 
 **Acceptance gate:** Run the new 12-case turret Build Mode test in local Godot before claiming the slot 9 integration is validated. Then confirm live delivery of factory-produced Prototype Rounds into the turret magazine. Automatic targeting, firing, damage, zombies and combat balancing remain unimplemented.
+
+
+### Follow-up acceptance: turret Build Mode slot 9
+
+The developer ran `res://tests/defensive_turret_build_mode_test.tscn` in Godot 4.6.2 and supplied the Output screenshot confirming **all 12/12 checks passed**. Verified existing eight build slots and new slot 9, preview and 90-degree rotation, grid-aligned turret input, ammunition-only acceptance, physical conveyor delivery, loaded-turret demolition protection, Production Debug HUD (connected state/1 of 40 rounds/readiness), a single simulated shot updating the counter, port cleanup, and switching between slots 8 and 9. This completes the local automated acceptance of turret Build Mode integration.
+
+**Next live-game checkpoint:** Use the already-working ammunition factory to feed a placed turret through real conveyors. Existing Storage provides a universal output port; a Storage → Conveyor → Turret connection avoids disrupting the Ammunition Press's single occupied output port. Expect the turret HUD's magazine count to increase while `Fired Shots` stays at zero because no automatic targeting or in-game firing action is implemented yet. Visual targeting, enemy behavior and damage remain pending.
