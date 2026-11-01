@@ -319,8 +319,9 @@ Planned major systems:
 - [x] Validate turret ammunition-only input, backpressure, firing/cooldown, conservation and demolition (**10/10** isolated regression).
 - [x] Validate turret Build Mode slot 9, HUD, port placement, ammo input and connection cleanup (**12/12** local Godot regression).
 - [x] Confirm physical delivery of factory-produced Prototype Rounds to a player-placed turret's magazine (**9 / 40 rounds, live HUD screenshot**).
-- [ ] Run `tests/defensive_turret_targeting_test.tscn` (**12-case isolated regression committed; local Godot validation pending**).
-- [ ] Add automatic targeting, projectile/damage and ammo-dependent firing.
+- [x] Pass isolated turret targeting, cooldown, conservation and dummy damage regression (**12/12** in local Godot 4.6.2).
+- [ ] Validate the main-scene turret/hostile dummy combat integration (**11-case regression committed; awaiting local Godot run**).
+- [ ] Validate automatic in-game targeting and ammo-dependent instant-hit damage; visible projectile simulation remains a later step.
 - [ ] Add simple zombie enemy
 - [ ] Add navigation toward player structures
 - [ ] Add building health
@@ -403,4 +404,4 @@ Completed:
 
 **Accepted milestone (Chat 08.3G-3K, 2026-10-30):** Player-built physical belts, corners, variable-length connectors, uniform cargo pacing, shared grid and 1×1 Merger/Splitter are implemented on GitHub `main`. **All 20 final individual manual Godot test scenes passed**. The Splitter's live HUD recorded **13 routed items (5/4/4)**, the three-input Merger worked in gameplay, and the developer confirmed downstream backpressure/recovery and the complete ore-to-ingot factory chain. Exact live Merger per-lane counters were not captured, and safe retirement of legacy proximity scripts still requires a physical-only conservation test. Details: [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
-**Current next step (2026-11-01):** The entire live physical supply path through the turret magazine is verified (**9 / 40 rounds**). Turret ammo-only (**10/10**) and Build Mode (**12/12**) regressions passed locally. Validate the new isolated, static enemy range/target/damage test before attaching automated combat to the player-buildable turret. Then proceed to simple zombie movement, targeting feedback, projectile visuals and enemy damage rules. Cargo recovery, slotted storage and persistence remain separate follow-ups.
+**Current next step (2026-11-01):** The live physical ammo chain into the turret magazine is accepted (**9 / 40 rounds**). Turret ammo-only (**10/10**), Build Mode (**12/12**), and isolated targeting/damage (**12/12**) regressions have passed locally. The player-buildable turret now has the ammo-gated targeting script, and a stationary 30-HP target is in the main world at **(-6, 0, -6)**. Run `tests/live_turret_combat_integration_test.tscn` first; integration and visible live combat are not accepted until that test and manual gameplay pass. Zombie movement, spawned waves, projectile visuals, building damage, cargo recovery, slotted storage and persistence remain follow-ups.
