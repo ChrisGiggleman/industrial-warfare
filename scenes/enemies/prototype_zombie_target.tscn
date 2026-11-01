@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/combat_health_component.gd" id="1_health"]
+[ext_resource type="Script" path="res://scripts/components/prototype_zombie_target_visual.gd" id="2_visual"]
 
 [sub_resource type="CapsuleMesh" id="BodyMesh"]
 radius = 0.35
@@ -11,6 +12,7 @@ albedo_color = Color(0.42, 0.22, 0.18, 1)
 roughness = 0.9
 
 [node name="PrototypeZombieTarget" type="Node3D" groups=["hostile_targets"]]
+script = ExtResource("2_visual")
 
 [node name="BodyMesh" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.8, 0)
@@ -20,3 +22,11 @@ material_override = SubResource("HostileMaterial")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("1_health")
 max_health = 30
+
+[node name="HealthLabel" type="Label3D" parent="."]
+position = Vector3(0, 2.0, 0)
+billboard = 1
+text = "TARGET HP: 30 / 30"
+font_size = 32
+pixel_size = 0.007
+outline_size = 6
