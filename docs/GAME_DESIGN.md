@@ -153,7 +153,7 @@ The first permanent recipe is:
 
 For player feedback, processing and extraction share a reusable progress indicator tied to their actual cycle timers. It moves only while work can proceed; blocked machines show **0%** and an explicit reason. Storage and resource deposits do not display a processing bar.
 
-**Current update (Chat 08):** Physical Smelter output ports and belt-to-storage ingot export have been exercised in live factory construction. Recipe selection controls and recipe-aware input acceptance remain component-level capabilities, not a finished player-facing recipe menu. Downstream ammunition manufacturing, power/fuel consumption, research/unlocks, and final machine art/animations remain planned.
+**Current update (2026-10-31):** Physical Smelter output ports and ingot export work in live factory construction. The 2×2 Prototype Ammunition Press is also operational: a temporary **1 Test Ingot → 4 Prototype Rounds** recipe is processed using the reusable ProducerComponent, separated inventories and real input/output belts. A live screenshot confirmed **6 Prototype Rounds in Test Storage**. Recipe selection controls and recipe-aware input acceptance are still component-level capabilities, not a finished player-facing menu. Power/fuel, research/unlocks and final machine models remain planned.
 
 ### Storage
 
@@ -292,9 +292,9 @@ Its purpose is to prove that factory building, automation, exploration, and defe
 
 **Core Chat 08 factory logistics: ACCEPTED (2026-10-30).** All 20 listed manual Godot regressions passed; the Merger, Splitter, blocked-output recovery and ore-to-ingot production chain have developer-confirmed gameplay operation. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md) for the evidence and limitations.
 
-- **Follow-up hardening:** Check physical-only ore-equivalent conservation with redundant proximity scripts disabled/accounted for *before* retiring that scaffolding; capture detailed throughput telemetry for sustained traffic.
+- **Follow-up hardening:** The isolated finite-deposit physical-only ore-equivalent conservation run passed **9/9 checks** with old proximity components disabled. Their scripts remain in the repository for compatibility; continue broader end-to-end accounting and cargo-recovery testing before final retirement. Capture detailed throughput telemetry for sustained traffic.
 - **System robustness:** Protect/restore cargo through demolition or destruction and verify occupied-port refusal during complex builds.
-- **Next game feature:** Progress toward ammunition production and delivery to defensive structures, then the First Night zombie-defense vertical slice; universal slotted storage tiers, final art/FX, and power are later enhancements.
+- **Next game feature:** Connect manufactured ammunition to defensive structures. The first isolated defensive turret scene and ammo-only port have been committed but await Godot test validation; target selection, projectile damage and zombies are not yet implemented. Universal slotted storage tiers, final art/FX and power are later enhancements.
 
 The finite-500-ore deposit remains a regression fixture, not the final resource economy. The historic Chat 06 conservation snapshot was **236 deposit + 50 extractor + 200 storage + 10 smelter input + (2 ingots × 2 ore)** = **500** ore equivalents; this does not describe the new conveyor/multi-building layouts.
 
