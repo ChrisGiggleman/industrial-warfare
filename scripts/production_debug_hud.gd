@@ -314,6 +314,73 @@ func _refresh_resource_node_display(
 
 
 # =============================================================================
+# DEFENSIVE TURRET AMMUNITION STATUS
+# =============================================================================
+
+# The prototype turret currently performs a controlled, manual firing
+# transaction. Show its live ammo and readiness, but do not imply that
+# automatic targeting or combat is active.
+
+func _refresh_turret_display(
+	building_runtime: BuildingRuntime,
+	turret: DefensiveTurretComponent
+) -> void:
+	var ammunition: InventoryComponent = turret.ammunition_inventory
+	var port := selected_building.get_node_or_null(
+		"InputPort"
+	) as ItemPortComponent
+	var connected: bool = (
+		is_instance_valid(port)
+		and is_instance_valid(port.connected_conveyor)
+	)
+
+	var text_value: String = (
+		"PRODUCTION DEBUG\n\n"
+		+ "Building: "
+		+ building_runtime.building_definition.display_name
+		+ "\nType: Defensive Turret"
+		+ "\nAmmo Conveyor: "
+		+ ("Connected" if connected else "Disconnected")
+	)
+
+	if not is_instance_valid(ammunition):
+		info_label.text = text_value + "\nMagazine: Missing"
+		return
+
+	var capacity: int = ammunition.max_capacity
+	var max_text: String = (
+		str(capacity) if capacity > 0 else "Unlimited"
+	)
+	var status: String = "Out of Ammo"
+	if (
+		not is_instance_valid(turret.ammunition_item)
+		or turret.fire_interval <= 0.0
+	):
+		status = "Invalid Setup"
+	elif turret.cooldown_remaining > 0.0:
+		status = "Cooldown"
+	elif turret.stored_ammunition() > 0:
+		status = "Ready"
+
+	text_value += (
+		"\nAmmunition: "
+		+ str(turret.stored_ammunition())
+		+ " / "
+		+ max_text
+		+ "\nStatus: "
+		+ status
+		+ "\nCooldown: "
+		+ ("%.2f" % turret.cooldown_remaining)
+		+ " s"
+		+ "\nFired Shots: "
+		+ str(turret.shots_fired)
+		+ "\nCombat: Targeting not implemented"
+	)
+
+	info_label.text = text_value
+
+
+# =============================================================================
 # BUILDING DISPLAY
 # =============================================================================
 
@@ -327,6 +394,17 @@ func _refresh_building_display(
 			"PRODUCTION DEBUG\n\n"
 			+ "Building definition unavailable."
 		)
+		return
+
+	# =============================================================================
+	# AMMUNITION-FED DEFENSIVE TURRET STATUS
+	# =============================================================================
+
+	var turret := selected_building.get_node_or_null(
+		"TurretComponent"
+	) as DefensiveTurretComponent
+	if is_instance_valid(turret):
+		_refresh_turret_display(building_runtime, turret)
 		return
 
 	# =============================================================================
