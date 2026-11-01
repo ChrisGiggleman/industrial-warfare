@@ -1168,3 +1168,22 @@ This acceptance **does not** mean everything in the long-term logistics roadmap 
 ### Next acceptance gate
 
 Run `res://tests/prototype_defensive_turret_test.tscn` with **F6** in Godot 4.6.2. Record the result and fix any isolated test issues before registering the turret in the main Build HUD. Preserve the existing conveyor, recipe and warehouse test suites.
+
+
+---
+
+## 2026-10-31 — Turret Ammunition Foundation Accepted; Build Mode Slot 9 Prepared
+
+### Local test results
+
+The developer ran `res://tests/prototype_defensive_turret_test.tscn` in Godot 4.6.2 and supplied console output confirming **all 10/10 tests passed**. Verified: ammunition-only port acceptance, rejection of ore and ingots, one-way physical belt connection, backpressure, correct one-round firing transactions, cooldown, conservation, magazine capacity recovery, safe demolition, and physical connection cleanup.
+
+### Next integration checkpoint (committed, pending local test)
+
+- Registered **Prototype Defensive Turret** as construction **slot 9** (`9` key), preserving existing slots 1–8.
+- Updated `BuildHUD` scene and script with the ninth selection label; adjusted its vertical layout.
+- Added `ProductionDebugHUD` turret-specific display showing ammunition quantity/capacity, input-port connection status, cooldown, firing readiness, shot count and an explicit note that **targeting is not implemented**.
+- Added `tests/defensive_turret_build_mode_test.tscn` with 12 checks against the real Main scene, building rotation/grid, incoming conveyor, ammo handling, HUD and cleanup.
+- Updated the older ammunition press Build Mode regression to continue checking its original eight slots within the new nine-slot roster.
+
+**Acceptance gate:** Run the new 12-case turret Build Mode test in local Godot before claiming the slot 9 integration is validated. Then confirm live delivery of factory-produced Prototype Rounds into the turret magazine. Automatic targeting, firing, damage, zombies and combat balancing remain unimplemented.
