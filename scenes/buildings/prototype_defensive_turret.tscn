@@ -1,0 +1,63 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/prototype_defensive_turret_building.gd" id="1_building"]
+[ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
+[ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="3_inventory"]
+[ext_resource type="Script" path="res://scripts/components/defensive_turret_component.gd" id="4_turret"]
+[ext_resource type="Script" path="res://scripts/components/turret_ammunition_port.gd" id="5_port"]
+[ext_resource type="Resource" path="res://data/items/prototype_ammunition.tres" id="6_rounds"]
+
+[sub_resource type="BoxShape3D" id="TurretShape"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="BoxMesh" id="TurretBaseMesh"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="BoxMesh" id="TurretBarrelMesh"]
+size = Vector3(0.18, 0.18, 0.85)
+
+[sub_resource type="StandardMaterial3D" id="TurretMaterial"]
+albedo_color = Color(0.28, 0.31, 0.30, 1)
+metallic = 0.55
+roughness = 0.55
+
+[node name="PrototypeDefensiveTurret" type="Node3D" node_paths=PackedStringArray("selection_mesh") groups=["player_built", "selectable"]]
+script = ExtResource("1_building")
+selection_mesh = NodePath("BuildingMesh")
+
+[node name="BuildingBody" type="StaticBody3D" parent="."]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildingBody"]
+position = Vector3(0, 0.5, 0)
+shape = SubResource("TurretShape")
+
+[node name="BuildingMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.5, 0)
+mesh = SubResource("TurretBaseMesh")
+material_override = SubResource("TurretMaterial")
+
+[node name="BarrelMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.05, -0.33)
+mesh = SubResource("TurretBarrelMesh")
+material_override = SubResource("TurretMaterial")
+
+[node name="BuildingRuntime" type="Node" parent="."]
+script = ExtResource("2_runtime")
+
+[node name="AmmunitionInventory" type="Node" parent="."]
+script = ExtResource("3_inventory")
+max_capacity = 40
+
+[node name="TurretComponent" type="Node" parent="." node_paths=PackedStringArray("ammunition_inventory")]
+script = ExtResource("4_turret")
+ammunition_inventory = NodePath("../AmmunitionInventory")
+ammunition_item = ExtResource("6_rounds")
+fire_interval = 1.0
+
+[node name="InputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0.5, 0.5)
+script = ExtResource("5_port")
+input_policy = 1
+inventory = NodePath("../AmmunitionInventory")
+accepted_ammunition = ExtResource("6_rounds")
