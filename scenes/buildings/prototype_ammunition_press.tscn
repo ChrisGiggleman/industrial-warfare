@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3]
 
-[ext_resource type="Script" path="res://scripts/selectable_object.gd" id="1_select"]
+[ext_resource type="Script" path="res://scripts/components/prototype_ammunition_press_building.gd" id="1_select"]
 [ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
 [ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="3_inventory"]
 [ext_resource type="Script" path="res://scripts/components/producer_component.gd" id="4_producer"]
