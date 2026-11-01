@@ -1233,3 +1233,12 @@ The developer supplied Godot 4.6.2 output confirming **12/12** tests passed in `
 - Added `res://tests/live_turret_combat_integration_test.tscn`, an **11-case** integration test against the real Main scene, connected physical belt, ammunition inventory, range detection, automatic fire, target health, visible defeat state, HUD and disconnect cleanup.
 
 **Not yet validated locally:** The full scene integration, player-built turret automatic fire and on-screen damage. Do not claim live combat acceptance until the new F6 test and a manual in-game demonstration pass. Instant damage is a temporary placeholder; projectiles, LOS checks, zombie movement/spawning, death animations and combat balancing are future work.
+
+
+### Follow-up acceptance: real Main-scene combat integration
+
+On **2026-11-01**, the developer ran `res://tests/live_turret_combat_integration_test.tscn` in Godot 4.6.2 and supplied the full Output screenshot confirming **all 11/11 tests passed**.
+
+Verified in the main scene: the stationary 30-HP target exists, slot 9 builds a turret containing automatic targeting, target distance gates firing, no-ammunition preserves health, a real conveyor attaches to the magazine port, each delivered round authorizes one 10-damage shot, cooldown prevents phantom hits, three rounds defeat the dummy without loss, defeated targets stop receiving hits, the target displays `TARGET DEFEATED`, combat counters update in the Production Debug HUD, and empty-turret removal does not break the existing conveyor.
+
+**Next checkpoint (not yet accepted):** Manual, player-controlled gameplay with an ammunition-fed turret near the static target at (-6, 0, -6). Verify that the target health label and turret HUD update while rounds are physically delivered and the dummy is defeated in the running main world. Do not count this as proof of moving zombies, projectile simulation, enemy attack AI or line-of-sight.
