@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/prototype_defensive_turret_building.gd" id="1_building"]
 [ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/components/defensive_turret_component.gd" id="4_turret"]
 [ext_resource type="Script" path="res://scripts/components/turret_ammunition_port.gd" id="5_port"]
 [ext_resource type="Resource" path="res://data/items/prototype_ammunition.tres" id="6_rounds"]
+[ext_resource type="Script" path="res://scripts/components/turret_targeting_component.gd" id="7_targeting"]
 
 [sub_resource type="BoxShape3D" id="TurretShape"]
 size = Vector3(1, 1, 1)
@@ -54,6 +55,12 @@ script = ExtResource("4_turret")
 ammunition_inventory = NodePath("../AmmunitionInventory")
 ammunition_item = ExtResource("6_rounds")
 fire_interval = 1.0
+
+[node name="TargetingComponent" type="Node" parent="." node_paths=PackedStringArray("turret")]
+script = ExtResource("7_targeting")
+turret = NodePath("../TurretComponent")
+detection_range = 7.0
+shot_damage = 10
 
 [node name="InputPort" type="Marker3D" parent="." node_paths=PackedStringArray("inventory")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0.5, 0.5)
