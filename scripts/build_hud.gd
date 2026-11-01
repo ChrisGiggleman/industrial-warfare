@@ -41,6 +41,9 @@ extends CanvasLayer
 	$BuildPanel/PanelMargin/BuildInfo/Building7Label
 )
 
+@onready var building_8_label: Label = (
+	$BuildPanel/PanelMargin/BuildInfo/Building8Label
+)
 @onready var controls_label: Label = (
 	$BuildPanel/PanelMargin/BuildInfo/ControlsLabel
 )
@@ -86,6 +89,7 @@ extends CanvasLayer
 # Index 0 = Test Extractor (key 1)
 # Index 1 = Large Building (key 2)
 # Index 2 = Test Storage (key 3)
+# Index 7 = Ammunition Press (key 8)
 
 func set_selected_building(index: int) -> void:
 
@@ -93,7 +97,7 @@ func set_selected_building(index: int) -> void:
 	# RESET BUILDING LABELS
 	# =============================================================================
 
-	# Restore all three labels to their normal colors.
+	# Restore all build-slot labels to their normal colors.
 	building_1_label.modulate = normal_color
 	building_2_label.modulate = normal_color
 	building_3_label.modulate = normal_color
@@ -101,6 +105,7 @@ func set_selected_building(index: int) -> void:
 	building_5_label.modulate = normal_color
 	building_6_label.modulate = normal_color
 	building_7_label.modulate = normal_color
+	building_8_label.modulate = normal_color
 
 	# Remove selection markers before applying the active selection.
 	building_1_label.text = "  [1] Test Extractor"
@@ -110,6 +115,7 @@ func set_selected_building(index: int) -> void:
 	building_5_label.text = "  [5] Conveyor Belt"
 	building_6_label.text = "  [6] Conveyor Merger"
 	building_7_label.text = "  [7] Conveyor Splitter"
+	building_8_label.text = "  [8] Ammunition Press"
 
 	# =============================================================================
 	# APPLY BUILDING SELECTION
@@ -146,6 +152,11 @@ func set_selected_building(index: int) -> void:
 	elif index == 6:
 		building_7_label.modulate = selected_color
 		building_7_label.text = "> [7] Conveyor Splitter"
+
+
+	elif index == 7:
+		building_8_label.modulate = selected_color
+		building_8_label.text = "> [8] Ammunition Press"
 
 # =============================================================================
 # DEMOLITION MODE DISPLAY
