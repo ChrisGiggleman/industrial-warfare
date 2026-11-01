@@ -344,6 +344,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_building(7)
 			return
 			
+		# =============================================================================
+		# DEFENSIVE TURRET — BUILD SLOT 9
+		# =============================================================================
+
+		if (
+			event is InputEventKey
+			and event.pressed
+			and not event.echo
+			and (event.physical_keycode == KEY_9 or event.keycode == KEY_9)
+		):
+			_select_building(8)
+			return
+
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
 			return
