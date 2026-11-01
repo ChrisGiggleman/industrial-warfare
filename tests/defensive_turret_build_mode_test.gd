@@ -5,8 +5,8 @@ extends Node
 # =============================================================================
 
 # Exercises the real Main scene, HUD and selected-building logic.
-# Simulated shots are invoked only by this test: gameplay has no
-# target acquisition, projectiles or automatic firing yet.
+# Simulated shots are invoked by this test; the real turret has a
+# targeting component, but the world target is outside its test range.
 
 func _press_key(controller: Node, key: Key) -> void:
 	var event := InputEventKey.new()
@@ -144,7 +144,7 @@ func _ready() -> void:
 	assert(info.text.contains("Ammunition: 1 / 40"))
 	assert(info.text.contains("Ammo Conveyor: Connected"))
 	assert(info.text.contains("Status: Ready"))
-	assert(info.text.contains("Combat: Targeting not implemented"))
+	assert(info.text.contains("Combat: Auto targeting (instant-hit prototype)"))
 	print("PASS I: Production Debug HUD shows ammo, connection, and ready state")
 
 	assert(component.try_fire())
