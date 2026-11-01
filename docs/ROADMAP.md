@@ -301,8 +301,24 @@ Planned major systems:
 
 **Status: Core physical logistics milestone accepted (2026-10-30): 20/20 manual regression scenes passed; Merger, Splitter, blocked-output recovery and full ore-to-ingot gameplay confirmed.** Legacy proximity retirement, measured physical-only conservation and destructive-event cargo recovery are explicitly deferred. See [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md). Earlier 08.3F sections are historical checkpoints.
 
+### 1E.8 — Physical-Only Factory and Ammunition Production (2026-10-31)
+
+- [x] Verify finite-deposit conservation through physically connected Extractor → Storage → Smelter → Storage, without legacy proximity movement (**9/9** Godot checks).
+- [x] Add `Prototype Rounds` and a reusable `1 Test Ingot → 4 Prototype Rounds` recipe (temporary prototype ratio).
+- [x] Add 2×2 Prototype Ammunition Press using existing producer/input/output components, independent inventories and physical conveyor ports (**9/9** isolated checks).
+- [x] Register Ammunition Press in Build Mode slot **8**, with rotation, HUD selection and safe demolition (**9/9** integration checks).
+- [x] Verify live production and physical delivery of Prototype Rounds to normal Test Storage (**6 rounds visible** in the user's HUD screenshot).
+- [ ] Finalize ammunition balance, ammunition-specific cargo graphics and the turret's combat behavior.
+
+**Status: Ammunition production and physical warehouse delivery developer-verified.** The old proximity components remain in source for compatibility, but their extractor/smelter scene nodes are disabled; retain them until the migration is fully documented and broader conservation coverage is complete.
+
 ### 1F — Enemy & Defense Prototype
 
+**First isolated defense foundation (code committed; Godot validation pending):** A 1×1 turret with an ammunition-only physical input, a 40-round magazine and guarded one-round firing/cooldown has been added. The `prototype_defensive_turret_test.tscn` regression is the next local test; the turret is not yet registered in Build Mode and has no targeting, projectile or damage logic.
+
+- [ ] Validate turret ammunition-only input, backpressure, firing/cooldown, conservation and demolition (10-case isolated regression).
+- [ ] Integrate turret with Build Mode and Production Debug HUD after regression.
+- [ ] Add automatic targeting, projectile/damage and ammo-dependent firing.
 - [ ] Add simple zombie enemy
 - [ ] Add navigation toward player structures
 - [ ] Add building health
@@ -385,4 +401,4 @@ Completed:
 
 **Accepted milestone (Chat 08.3G-3K, 2026-10-30):** Player-built physical belts, corners, variable-length connectors, uniform cargo pacing, shared grid and 1×1 Merger/Splitter are implemented on GitHub `main`. **All 20 final individual manual Godot test scenes passed**. The Splitter's live HUD recorded **13 routed items (5/4/4)**, the three-input Merger worked in gameplay, and the developer confirmed downstream backpressure/recovery and the complete ore-to-ingot factory chain. Exact live Merger per-lane counters were not captured, and safe retirement of legacy proximity scripts still requires a physical-only conservation test. Details: [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
-**Next after Chat 08 acceptance:** concentrate on the ammunition-fed production/defense loop and the First Night vertical slice, with universal slotted storage, cargo recovery, save/load, visual polish and power/fuel sequenced as appropriate.
+**Current next step (2026-10-31):** Ammunition manufacturing is operational in gameplay and has supplied 6 rounds to Storage. Validate the isolated ammunition-only turret and then integrate a buildable, ammo-fed turret into the First Night defense prototype. Enemy spawning, damage, slotted storage, cargo recovery, save/load and power/fuel are later increments.
