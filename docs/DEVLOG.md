@@ -1145,3 +1145,26 @@ This acceptance **does not** mean everything in the long-term logistics roadmap 
 4. Continue the original gameplay vision toward ammunition production, defensive supply and the zombie First Night vertical slice.
 
 **Documentation checkpoint:** `GAME_DESIGN.md`, `ARCHITECTURE.md`, `TROUBLESHOOTING.md`, `ROADMAP.md` and this log capture implementation and engineering lessons. This entry supersedes earlier *historical* statements that Merger/backpressure and full factory live verification were still pending.
+
+
+---
+
+## 2026-10-31 — Physical-Only Production, Ammunition Acceptance and First Turret Foundation
+
+### Verified by local Godot tests
+
+- `tests/conveyor_physical_only_conservation_test.tscn`: **9/9 passed**. A 500-unit finite ore deposit supplied a physical-only Extractor → Storage → Smelter → Storage route. Legacy proximity scripts were disabled during the test. After two ore were converted into one ingot, 498 ore + (1 ingot × 2 ore) equaled the initial 500 ore equivalents.
+- `tests/prototype_ammunition_press_test.tscn`: **9/9 passed**. The data-defined ammunition recipe accepts only Test Ingots, creates four Prototype Rounds per ingot, and protects finished rounds during output blockage and recovery. Conveyor export to warehouse and eight-round conservation were tested.
+- `tests/ammunition_press_build_mode_test.tscn`: **9/9 passed**. Slot 8, keyboard selection, highlighting, rotation, grid-aligned ports, connection cleanup and demolition safety all passed.
+- **Live main-game observation:** User supplied a screenshot with a physically connected manufacturing line and the selected final Test Storage HUD showing **6 Prototype Rounds / 200 capacity**. This verifies that manufactured ammunition arrived in normal storage during gameplay. Rounds are moved one at a time, so an intermediate storage count need not be divisible by the four-round recipe batch.
+
+### Safeguards and deferred scope
+
+- The older proximity transfer components still exist in the repository for compatibility, but their scene nodes are configured disabled. They were explicitly disabled during the physical-only conservation run. Do not remove their scripts merely because the new route works.
+- The Prototype Ammunition Press is production-ready as a **prototype**, not balanced or visually final. The current recipe is **1 Test Ingot → 4 Prototype Rounds over 2 seconds**; actual military recipes and resource economy remain design decisions.
+- New **isolated** 1×1 defensive turret foundation: `DefensiveTurretComponent`, ammunition-only `TurretAmmunitionPort`, `prototype_defensive_turret.tscn`, and `prototype_defensive_turret_test.tscn`. The first checkpoint verifies physical ammo receipt, one-round firing, cooldown, blocked/full magazines, resource conservation and protected demolition. **This newly committed turret test has not yet been run locally**, so it is not accepted as passed.
+- The turret is **not** in Build Mode yet and will not auto-shoot enemies. Targeting, projectiles, damage, zombie behavior and defense balance are follow-on features.
+
+### Next acceptance gate
+
+Run `res://tests/prototype_defensive_turret_test.tscn` with **F6** in Godot 4.6.2. Record the result and fix any isolated test issues before registering the turret in the main Build HUD. Preserve the existing conveyor, recipe and warehouse test suites.
