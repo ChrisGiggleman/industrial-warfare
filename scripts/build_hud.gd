@@ -44,6 +44,10 @@ extends CanvasLayer
 @onready var building_8_label: Label = (
 	$BuildPanel/PanelMargin/BuildInfo/Building8Label
 )
+
+@onready var building_9_label: Label = (
+	$BuildPanel/PanelMargin/BuildInfo/Building9Label
+)
 @onready var controls_label: Label = (
 	$BuildPanel/PanelMargin/BuildInfo/ControlsLabel
 )
@@ -90,6 +94,7 @@ extends CanvasLayer
 # Index 1 = Large Building (key 2)
 # Index 2 = Test Storage (key 3)
 # Index 7 = Ammunition Press (key 8)
+# Index 8 = Defensive Turret (key 9)
 
 func set_selected_building(index: int) -> void:
 
@@ -106,6 +111,7 @@ func set_selected_building(index: int) -> void:
 	building_6_label.modulate = normal_color
 	building_7_label.modulate = normal_color
 	building_8_label.modulate = normal_color
+	building_9_label.modulate = normal_color
 
 	# Remove selection markers before applying the active selection.
 	building_1_label.text = "  [1] Test Extractor"
@@ -116,6 +122,7 @@ func set_selected_building(index: int) -> void:
 	building_6_label.text = "  [6] Conveyor Merger"
 	building_7_label.text = "  [7] Conveyor Splitter"
 	building_8_label.text = "  [8] Ammunition Press"
+	building_9_label.text = "  [9] Defensive Turret"
 
 	# =============================================================================
 	# APPLY BUILDING SELECTION
@@ -157,6 +164,10 @@ func set_selected_building(index: int) -> void:
 	elif index == 7:
 		building_8_label.modulate = selected_color
 		building_8_label.text = "> [8] Ammunition Press"
+
+	elif index == 8:
+		building_9_label.modulate = selected_color
+		building_9_label.text = "> [9] Defensive Turret"
 
 # =============================================================================
 # DEMOLITION MODE DISPLAY
