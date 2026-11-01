@@ -29,7 +29,8 @@ func _ready() -> void:
 	var controller = world.get_node("WorldInteraction")
 	var hud = world.get_node("BuildHUD")
 	assert(controller != null and hud != null)
-	assert(controller.buildable_definitions.size() == 8)
+	# Verify the original eight slots still work after slot 9 is added.
+	assert(controller.buildable_definitions.size() == 9)
 
 	var expected_ids: Array[StringName] = [
 		&"test_extractor", &"test_building_large", &"test_storage",
