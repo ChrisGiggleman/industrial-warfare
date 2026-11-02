@@ -49,8 +49,8 @@ func _on_building_health_depleted(source: Node3D) -> void:
 	# Release any player selection before queue_free completes.
 	var world := get_parent() as Node3D
 	var interaction := world.get_node_or_null("WorldInteraction")
-	if is_instance_valid(interaction) and interaction.selected_object == source:
-		interaction._select_object(null)
+	if is_instance_valid(interaction) and interaction.get("selected_object") == source:
+		interaction.call("_select_object", null)
 
 	var hud := world.get_node_or_null("ProductionDebugHUD") as ProductionDebugHUD
 	if is_instance_valid(hud) and hud.selected_building == source:
