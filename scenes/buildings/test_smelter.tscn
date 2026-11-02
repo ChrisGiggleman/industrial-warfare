@@ -10,6 +10,8 @@
 [ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="7_vi7jt"]
 [ext_resource type="Script" uid="uid://vycgy0li3ymm" path="res://scripts/components/item_port_component.gd" id="9_jyll2"]
 
+[ext_resource type="Script" path="res://scripts/components/building_health_component.gd" id="health_component"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_8araf"]
 size = Vector3(2, 1, 2)
 
@@ -33,6 +35,9 @@ mesh = SubResource("BoxMesh_wugof")
 
 [node name="BuildingRuntime" type="Node" parent="." unique_id=1727936843]
 script = ExtResource("2_wugof")
+
+[node name="BuildingHealthComponent" type="Node" parent="."]
+script = ExtResource("health_component")
 
 [node name="InputInventory" type="Node" parent="." unique_id=1870243942]
 script = ExtResource("3_blcu8")
