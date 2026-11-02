@@ -1262,3 +1262,12 @@ The first moving enemy is deliberately **separate** from `prototype_zombie_targe
 - `tests/prototype_moving_zombie_test.tscn` contains nine isolated checks for idle behavior, excluding ghosts and conveyors, nearest structure selection, displacement and stopping distance, reacquisition after deletion, existing ammo-fed turret hits/cooldown, and immobility when defeated.
 
 **Not integrated in Main yet.** The movement code uses straight-line motion only; no NavigationAgent3D, collision avoidance, body-to-body collisions, enemy attacks, structure health, spawners or waves have been implemented. Run the nine-case F6 regression in Godot 4.6.2 before adding enemy motion to the live factory.
+
+
+### Moving-zombie foundation accepted; live-world integration pending
+
+The developer ran `res://tests/prototype_moving_zombie_test.tscn` in Godot 4.6.2 and supplied Output confirming **all 9/9 tests passed**. This verifies no-target idle behavior, excluding ghosts and conveyors, approaching and stopping 1.5 units from the nearest actual building, reacquisition when a structure is deleted, compatible ammo-fed turret damage/cooldown, and no motion after death.
+
+**Next implementation checkpoint:** The separate `PrototypeMovingZombie` is now instanced in `scenes/core/main.tscn` at **(8, 0, -7)**. The previously validated stationary `PrototypeZombieTarget` remains at **(-6, 0, -6)**. The new `res://tests/live_moving_zombie_integration_test.tscn` uses the actual Main scene and tests the absence of target/ignored ghosts, player-built storage approach, stopping distance, switching to an actual turret after storage removal, physical ammo delivery, three real hits, target death, HUD statistics, and conveyor cleanup.
+
+**Status:** This main-world change has been committed and repository-reviewed, but its 12-case integration regression has **not** yet run in local Godot. Do not claim it passes until the user's F6 confirmation. Live gameplay movement also still requires manual observation. This remains direct X/Z motion, with no obstacle avoidance, NavigationAgent3D, structure damage, automatic spawning, or wave systems.
