@@ -1376,3 +1376,12 @@ The developer clarified that the present `Disabled` status at zero HP is **only 
 **Engineering gates before enabling physical removal:** Explicitly disconnect ports, resolve machine inventories and cargo on destroyed belts without silent duplication, define recoverable drops/salvage/loss, verify neighbor belts remain intact, and handle target reassignment and blocked logistics safely. Existing 0-HP preservation tests remain regression fixtures for the transition, not a statement of the intended final destruction rules. Optional repair of damaged structures and rebuild/salvage of destroyed ones are separate design decisions.
 
 `GAME_DESIGN.md` and `ROADMAP.md` now document this requirement. No gameplay destruction code has been changed as part of this design clarification.
+
+
+### Upcoming UI milestone — Player-configurable build hotbar
+
+The developer requested that, after real building and conveyor destruction is implemented, the player should be able to open a menu of **unlocked** buildings and assign any of them to any number key. Example: **Defensive Turret → 1**, **Storage → 9**.
+
+The planned Build Catalog and nine-slot customizable hotbar are documented in `GAME_DESIGN.md` and Phase **1G** of `ROADMAP.md`. Unlocked buildings can be assigned, reordered or swapped without affecting the existing factory. Preferences should persist across sessions by stable `building_id` rather than the `buildable_definitions` array index. The future refactor must specifically eliminate the `selected_building_index == 4` Conveyor Belt logic before allowing arbitrary slot mappings, preserving the current belt placement and snapping regressions.
+
+**Status:** Design captured only. No UI, hotkey, progression, or save files have been modified. The immediate priority remains destruction of buildings and conveyor segments with safe cargo handling.
