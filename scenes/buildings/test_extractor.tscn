@@ -8,6 +8,8 @@
 [ext_resource type="Script" uid="uid://tclvudgfgeia" path="res://scripts/components/extractor_component.gd" id="6_nnmqk"]
 [ext_resource type="Script" uid="uid://vycgy0li3ymm" path="res://scripts/components/item_port_component.gd" id="7_ptejt"]
 
+[ext_resource type="Script" path="res://scripts/components/building_health_component.gd" id="health_component"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_01ywg"]
 size = Vector3(0.8, 1, 1.8)
 
@@ -34,6 +36,9 @@ mesh = SubResource("BoxMesh_xycqu")
 
 [node name="BuildingRuntime" type="Node" parent="." unique_id=315977768]
 script = ExtResource("2_5ceut")
+
+[node name="BuildingHealthComponent" type="Node" parent="."]
+script = ExtResource("health_component")
 
 [node name="InventoryComponent" type="Node" parent="." unique_id=153902443]
 script = ExtResource("3_4ie2m")
