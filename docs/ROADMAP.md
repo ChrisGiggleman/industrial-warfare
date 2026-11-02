@@ -346,6 +346,22 @@ Planned major systems:
 
 ---
 
+### 1G — Unlocked Building Catalog & Player-Customizable Build Hotbar (Planned)
+
+**Sequence:** Begin after the building/conveyor destruction milestone is safe and accepted in Godot. No UI/input code is changed yet.
+
+- [ ] Add a Build Catalog menu listing all unlocked `BuildingDefinition` entries, organized by building category; handle locked entries explicitly.
+- [ ] Replace hard-coded **1–9 → buildable_definitions array index** selection with configurable hotbar assignments. Support Turret on **1**, Storage on **9**, or any other unlocked combination.
+- [ ] Allow players to assign, swap, remove, and rearrange items in nine initial hotbar slots. Assigned number keys select the corresponding building while Build Mode is active.
+- [ ] Convert existing `selected_building_index == 4` Conveyor Belt special cases into identity- or capability-based behavior so reassigning the Conveyor Belt cannot break snapping, corners, or connection logic.
+- [ ] Drive the Build HUD from the assigned slot mapping and display the correct building names, selection highlights, and empty slots dynamically.
+- [ ] Persist slot choices by stable `BuildingDefinition.building_id` and restore them on restart; validate changes against building unlock state.
+- [ ] Add Godot regression coverage for slot customization, swaps, locked building refusal, controller/keyboard input, menu focus, saves/reloads, and previously passed conveyor tests.
+
+**Scope:** UI/input and persistence only. Keep the current fixed shortcut system in place until its replacement is separately tested.
+
+---
+
 ## Phase 2 — Zombie Colony Prototype
 
 **Goal:** Combine factory automation and defense into a playable scenario.
