@@ -21,6 +21,13 @@ func _ready() -> void:
 	var world := main.instantiate() as Node3D
 	assert(world != null)
 	add_child(world)
+	# Keep the original disabled-structure durability assertions
+	# isolated from new Main-world automatic removal.
+	var service := world.get_node(
+		"WorldDestructionService"
+	) as WorldDestructionService
+	assert(service != null)
+	service.destroy_on_zero_hp = false
 
 	var controller = world.get_node("WorldInteraction")
 	var hud := world.get_node("ProductionDebugHUD") as ProductionDebugHUD
