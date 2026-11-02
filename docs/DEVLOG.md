@@ -1385,3 +1385,17 @@ The developer requested that, after real building and conveyor destruction is im
 The planned Build Catalog and nine-slot customizable hotbar are documented in `GAME_DESIGN.md` and Phase **1G** of `ROADMAP.md`. Unlocked buildings can be assigned, reordered or swapped without affecting the existing factory. Preferences should persist across sessions by stable `building_id` rather than the `buildable_definitions` array index. The future refactor must specifically eliminate the `selected_building_index == 4` Conveyor Belt logic before allowing arbitrary slot mappings, preserving the current belt placement and snapping regressions.
 
 **Status:** Design captured only. No UI, hotkey, progression, or save files have been modified. The immediate priority remains destruction of buildings and conveyor segments with safe cargo handling.
+
+
+---
+
+## Step 09.18A — Destruction Cargo Recovery Preflight (2026-11-01)
+
+**Status: new isolated code committed, Godot validation pending.** No live factory destruction is enabled.
+
+- Added `scripts/components/destruction_cargo_recovery.gd` (`DestructionCargoRecovery`), a reusable inventory recovery helper that collects all descendant `InventoryComponent` instances exactly once, rejecting invalid item identities, missing sources, same-tree recovery targets, and recovery caches with insufficient total space.
+- Once preflight succeeds, resources move via the **existing** `InventoryComponent.transfer_to()` logic. This is item-generic (ore, ingots, ammunition and future `ItemDefinition` resources), and repeated calls on an emptied source are idempotent.
+- Added `res://tests/destruction_cargo_recovery_test.tscn` (12 checks). It covers capacity refusal without partial transfer, 7 ore + 4 rounds from Storage, recovery from the 2-buffer Ammunition Press, recovery from a cargo-bearing belt, correct local port/belt disconnection through the existing `_exit_tree` path, keeping neighboring belt cargo intact, and a final accounting of **19/19** recoverable units.
+- For this checkpoint, the recovery destination is an independent in-memory `InventoryComponent`, **not** yet a visible or pickable salvage crate. The test manually invokes removal only after escrow succeeds. Automatic damage, health-triggered world deletion, wreckage, belt health and enemy belt targeting remain unchanged.
+
+**Design reminder:** The final game destroys buildings and damaged conveyor segments. The temporary zero-HP Disabled state is a test safeguard only. First establish 100% recoverable test escrow (an accounting baseline); tune salvage/loss rates later when dedicated world drops exist. Do not expose player demolition or combat deletion through this new helper until Godot has validated it.
