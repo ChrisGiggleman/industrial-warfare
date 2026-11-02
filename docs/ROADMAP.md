@@ -337,7 +337,8 @@ Planned major systems:
 - [x] Confirm in regular gameplay that a moving zombie damages an Extractor to **0 / 100 HP**, with the building still present and **19 Test Ore** visible in its inventory (manual screenshot, 2026-11-01). The earlier 12/12 integration test specifically verified Storage stock and conveyor-link preservation; that was not independently visible in this latest screenshot.
 - [ ] Implement **actual building destruction at zero HP** (confirmed final gameplay requirement). Safely stop processing, disconnect local ports, remove the functioning building and leave placeholder wreckage; no silent item deletion or duplication.
 - [ ] Implement **damageable, destructible conveyor segments** that zombies can attack. Broken segments interrupt logistics; do not cascade-delete unrelated connected belts.
-- [ ] Define and test destruction-time inventory/belt cargo handling (drop, salvage, loss policy). Preserve valid cargo accounting across disconnections and remove-and-rebuild behavior.
+- [ ] Validate **lossless destruction cargo recovery** for Storage, multi-inventory manufacturing and cargo-bearing belts (`tests/destruction_cargo_recovery_test.tscn`: 12 checks committed, local F6 run pending). Current test escrow uses 100% recovery as a temporary safe default, **not** final salvage balance.
+- [ ] Add recoverable in-world salvage caches and controlled removal after successful recovery, then cover destroyed-item lifecycle and no-duplication across adjoining belts.
 - [ ] Decide optional repair of damaged surviving structures and rebuilding/salvage for destroyed structures; **0-HP permanent disabled state is not the intended final gameplay**.
 - [ ] Add basic defensive structure
 - [ ] Add player/factory survival test
