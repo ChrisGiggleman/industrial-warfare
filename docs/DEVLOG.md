@@ -1412,3 +1412,16 @@ The developer ran `res://tests/destruction_cargo_recovery_test.tscn` in Godot 4.
 - Added `tests/controlled_destruction_transaction_test.tscn` with **12 checks** for rejection cases, insufficient recovery capacity, warehouse-output and two-belt linking, source removal, immediate port disconnection, duplicate removal refusal, neighbor cargo preservation, separately destroying cargo-bearing belts, multi-buffer manufacturer recovery, invalid key refusal and exact **19-unit** final conservation.
 
 **Current boundary:** This is the first test-only transaction capable of genuinely queueing buildings and belts for removal. Live damage-to-destruction, enemy conveyor targeting, wreckage visuals and actual in-world salvage cache/pickups remain separate milestones. The 12-case scene requires an F6 pass before any live behavior is changed.
+
+
+### Step 09.18B — Controlled destruction accepted (12/12)
+
+The developer ran `res://tests/controlled_destruction_transaction_test.tscn` in local Godot 4.6.2, confirming **ALL 12 CONTROLLED DESTRUCTION TRANSACTION TESTS PASSED**. Validated invalid/preview rejection, insufficient salvage capacity preventing removal, immediate local port/belt disconnection, queued removal, duplicate refusal, neighboring belt cargo preservation, independent belt destruction, two-buffer Ammunition Press recovery, invalid item refusal, and **19/19** item accounting.
+
+### Step 09.18C — Main-world salvage placeholders (committed, F6 test pending)
+
+- Created `WorldSalvageCache` (`scripts/components/world_salvage_cache.gd`) and `scenes/logistics/world_salvage_cache.tscn`, a non-colliding placeholder wreckage mesh with a readable count and a dedicated unlimited `InventoryComponent`. Empty sites read `WRECKAGE`; salvaged sites read `SALVAGE: N`. The object is in `salvage_caches`, **not** `player_built`.
+- Added `WorldDestructionService` (`scripts/components/world_destruction_service.gd`) as a Main scene child. Its `try_destroy_with_salvage(source)` creates the cache as an independent sibling at the affected site, uses the previously tested `DestructionTransaction.try_destroy()`, and retains its cargo even after the source is freed. Failed transactions remove the empty placeholder immediately rather than leaving phantom salvage.
+- New `res://tests/world_salvage_destruction_test.tscn` uses the real Main scene and checks 12 cases for valid targets, junk/ghost exclusion, stocked storage with two connected belts, accurate 7-item salvage at a destroyed site, repeated deletion refusal, invalid manufacturer inventory refusal, two-buffer manufacturer salvage, individual adjacent belt destruction, empty wreckage, summed **15-item** conservation across five independent surviving world caches, and enemy/world safety.
+
+**Validation boundary:** Repository checks pending completion; **no local F6 run has passed yet**. Main has the inactive service but live zombies do not invoke it on zero HP. Salvage is a runtime in-world holder and visual placeholder, **not yet player-pickable or persisted to disk**, and 100% recovery remains prototype balancing. Conveyor HP, zombie belt targeting, damage-triggered removal, special wreckage FX and player salvage collection will be handled in later checkpoints.
