@@ -1280,3 +1280,12 @@ On **2026-11-01**, the developer ran `res://tests/live_moving_zombie_integration
 The test exercised the real Main scene: one moving zombie coexists with the original stationary target; with no player structures it remains still; construction preview ghosts and loose conveyors are ignored; the enemy travels 2 world units per second toward player-built Storage and stops 1.5 units from it; after Storage removal it acquires a placed turret; without ammunition the turret cannot fire; after physical conveyor connection three delivered Prototype Rounds produce three guarded hits, defeat the moving zombie, and preserve the static target. Dead enemies cease motion, and the turret's combat HUD and conveyor cleanup remain correct.
 
 **Next acceptance gate:** Manually launch the actual main game with F5, place a structure near the moving enemy at (8, 0, -7), and verify it visually approaches and stops. A later manual pass should supply a turret and observe the moving enemy's defeated state. This is still straight-line X/Z motion without navigation, obstacle avoidance, structure attacks, automatic waves, or projectiles.
+
+
+### Manual movement accepted — zombie approaches player-built Storage
+
+On **2026-11-01**, the developer supplied a gameplay screenshot showing the green **PrototypeMovingZombie** beside a placed Test Storage building, with its label **TARGET HP: 30 / 30**. The previously validated red stationary target is visible separately. The developer confirmed the zombie approached and stopped at Storage during live gameplay.
+
+This establishes manual visual acceptance of the moving-enemy approach and stop behavior. The exact 1.5-unit stopping distance is supported by earlier isolated and main-scene automated tests, rather than being measured from this screenshot. The moving zombie has not yet been visibly defeated in a live, player-controlled run.
+
+**Next validation:** In a fresh gameplay run or with the existing factory, place an ammunition-fed turret within 7 world units of the moving zombie and verify three hits, 30-to-0 HP, the **TARGET DEFEATED** label and no more firing at the defeated zombie. Keep the static target separate from that engagement. Do not infer navigation, zombie attacks, projectile simulation or building damage.
