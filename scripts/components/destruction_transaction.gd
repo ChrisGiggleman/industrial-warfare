@@ -8,9 +8,9 @@ class_name DestructionTransaction
 # Executes an authorized destruction/removal after source-owned cargo
 # can be recovered into an independent salvage inventory.
 #
-# This is not connected to zombie damage or player demolition yet.
-# A future controller will authorize removal only after the target
-# reaches zero HP (or after a separately validated demolition action).
+# The Main-world health service now authorizes building removal on
+# zero HP. Player demolition and zombie attacks against belts remain
+# separate systems until their destruction regressions pass.
 #
 # The caller must provide a recovery inventory that will remain alive
 # after the source disappears. No temporary cache is created here.
