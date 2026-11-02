@@ -1271,3 +1271,12 @@ The developer ran `res://tests/prototype_moving_zombie_test.tscn` in Godot 4.6.2
 **Next implementation checkpoint:** The separate `PrototypeMovingZombie` is now instanced in `scenes/core/main.tscn` at **(8, 0, -7)**. The previously validated stationary `PrototypeZombieTarget` remains at **(-6, 0, -6)**. The new `res://tests/live_moving_zombie_integration_test.tscn` uses the actual Main scene and tests the absence of target/ignored ghosts, player-built storage approach, stopping distance, switching to an actual turret after storage removal, physical ammo delivery, three real hits, target death, HUD statistics, and conveyor cleanup.
 
 **Status:** This main-world change has been committed and repository-reviewed, but its 12-case integration regression has **not** yet run in local Godot. Do not claim it passes until the user's F6 confirmation. Live gameplay movement also still requires manual observation. This remains direct X/Z motion, with no obstacle avoidance, NavigationAgent3D, structure damage, automatic spawning, or wave systems.
+
+
+### Main-scene moving-zombie integration accepted — 12/12 checks
+
+On **2026-11-01**, the developer ran `res://tests/live_moving_zombie_integration_test.tscn` in Godot 4.6.2 and supplied Output confirming **ALL 12 LIVE MOVING ZOMBIE INTEGRATION TESTS PASSED**.
+
+The test exercised the real Main scene: one moving zombie coexists with the original stationary target; with no player structures it remains still; construction preview ghosts and loose conveyors are ignored; the enemy travels 2 world units per second toward player-built Storage and stops 1.5 units from it; after Storage removal it acquires a placed turret; without ammunition the turret cannot fire; after physical conveyor connection three delivered Prototype Rounds produce three guarded hits, defeat the moving zombie, and preserve the static target. Dead enemies cease motion, and the turret's combat HUD and conveyor cleanup remain correct.
+
+**Next acceptance gate:** Manually launch the actual main game with F5, place a structure near the moving enemy at (8, 0, -7), and verify it visually approaches and stops. A later manual pass should supply a turret and observe the moving enemy's defeated state. This is still straight-line X/Z motion without navigation, obstacle avoidance, structure attacks, automatic waves, or projectiles.
