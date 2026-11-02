@@ -5,9 +5,10 @@ class_name ZombieMeleeComponent
 # ZOMBIE MELEE — PROTOTYPE SETTINGS
 # =============================================================================
 
-# This component is not attached to the playable zombie yet.
-# Targeting follows ZombieApproachComponent and only affects a
-# building with an explicit BuildingHealthComponent.
+# Attached to the prototype moving zombie in the playable world.
+# Targeting follows ZombieApproachComponent and only affects
+# structures carrying an explicit BuildingHealthComponent.
+# At zero HP, the structure and stored contents remain in place.
 
 @export var movement: ZombieApproachComponent
 @export_range(0.25, 5.0, 0.05) var attack_range: float = 1.55
