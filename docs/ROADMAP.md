@@ -314,7 +314,7 @@ Planned major systems:
 
 ### 1F — Enemy & Defense Prototype
 
-**Defense foundation accepted:** The 1×1 ammunition-fed turret has a physical input port, 40-round magazine, guarded firing transactions, and cooldown. Both the isolated ammo regression (**10/10**) and main-scene Build Mode slot **9** regression (**12/12**) passed locally in Godot 4.6.2. The Debug HUD displays magazine quantity, port connection, readiness, cooldown and shot count. **Live ammunition connection now accepted (2026-11-01):** A normal gameplay screenshot showed the turret's ammunition conveyor connected and its magazine holding **9 / 40 Prototype Rounds** with `Status: Ready`, `Cooldown: 0.00 s`, and `Fired Shots: 0`. The next isolated combat test adds nearest-hostile detection, ammo-gated instant-hit damage and a static prototype target. Live targeting and projectiles are not yet integrated.
+**Defense foundation accepted:** The 1×1 ammunition-fed turret has a physical input port, 40-round magazine, guarded firing transactions, and cooldown. Both the isolated ammo regression (**10/10**) and main-scene Build Mode slot **9** regression (**12/12**) passed locally in Godot 4.6.2. The Debug HUD displays magazine quantity, port connection, readiness, cooldown and shot count. **Live ammunition connection now accepted (2026-11-01):** A normal gameplay screenshot showed the turret's ammunition conveyor connected and its magazine holding **9 / 40 Prototype Rounds** with `Status: Ready`, `Cooldown: 0.00 s`, and `Fired Shots: 0`. Automated turret targeting and instant-hit damage are integrated and were verified with the stationary target in both Godot regression tests and live gameplay. Visible projectiles, line of sight and moving-zombie encounters remain separate improvements.
 
 - [x] Validate turret ammunition-only input, backpressure, firing/cooldown, conservation and demolition (**10/10** isolated regression).
 - [x] Validate turret Build Mode slot 9, HUD, port placement, ammo input and connection cleanup (**12/12** local Godot regression).
@@ -323,7 +323,7 @@ Planned major systems:
 - [x] Validate the main-scene turret/hostile dummy combat integration (**11/11 passed locally in Godot 4.6.2**).
 - [x] Validate automatic turret fire and visible target defeat during normal player-controlled gameplay (**TARGET DEFEATED** shown in user screenshot, 2026-11-01).
 - [x] Validate main-scene automatic targeting and ammunition-dependent instant-hit damage in the isolated integration test (**11/11**).
-- [ ] Confirm visible automatic targeting and damage in regular gameplay; visible projectile simulation remains a later step.
+- [x] Confirm the first regular-play combat victory against the stationary target (**TARGET DEFEATED** displayed); visible projectile simulation remains a later step.
 - [x] Validate isolated moving-zombie approach, structure reacquisition and turret compatibility (**9/9** in local Godot 4.6.2).
 - [ ] Validate moving zombie integration in the main game (**12-case regression committed; awaiting local Godot validation**). The stationary target stays unchanged.
 - [ ] Add navigation toward player structures
