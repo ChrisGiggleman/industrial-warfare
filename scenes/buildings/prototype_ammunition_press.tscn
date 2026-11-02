@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/prototype_ammunition_press_building.gd" id="1_select"]
 [ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/components/item_port_component.gd" id="5_port"]
 [ext_resource type="Script" path="res://scripts/data/production_recipe.gd" id="6_recipe"]
 [ext_resource type="Resource" path="res://data/recipes/prototype_ammunition_press.tres" id="7_ammo_recipe"]
+
+[ext_resource type="Script" path="res://scripts/components/building_health_component.gd" id="health_component"]
 
 [sub_resource type="BoxShape3D" id="PressShape"]
 size = Vector3(2, 1, 2)
@@ -37,6 +39,9 @@ mesh = SubResource("PressMesh")
 
 [node name="BuildingRuntime" type="Node" parent="."]
 script = ExtResource("2_runtime")
+
+[node name="BuildingHealthComponent" type="Node" parent="."]
+script = ExtResource("health_component")
 
 [node name="InputInventory" type="Node" parent="."]
 script = ExtResource("3_inventory")
