@@ -16,6 +16,7 @@
 [ext_resource type="Resource" path="res://data/buildings/prototype_ammunition_press.tres" id="12_ammo_press"]
 [ext_resource type="Resource" path="res://data/buildings/prototype_defensive_turret.tres" id="13_turret"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/prototype_zombie_target.tscn" id="14_target"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/prototype_moving_zombie.tscn" id="15_moving_zombie"]
 [ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
@@ -101,5 +102,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.2, 5)
 
 [node name="PrototypeZombieTarget" parent="." instance=ExtResource("14_target")]
 position = Vector3(-6, 0, -6)
+
+[node name="PrototypeMovingZombie" parent="." instance=ExtResource("15_moving_zombie")]
+position = Vector3(8, 0, -7)
 
 [editable path="BuildHUD"]
