@@ -1347,3 +1347,12 @@ The developer ran the updated `res://tests/zombie_building_melee_test.tscn` afte
 - Added `tests/live_zombie_melee_integration_test.tscn` with **12 Main-scene integration checks**. It tests the wired live zombie, empty/ghost targeting, stored ammo with a connected belt, range gating, first hit, cooldown, 10 exact hits taking 100-HP Storage to zero, no inventory or port loss, disabled-building retargeting, attacking a second structure, defeated-zombie immobility and health HUD updates.
 
 **Not yet locally tested:** The new 12-case Main-scene zombie melee integration. Before accepting this gameplay milestone, run the F6 regression, then manually verify health decreasing on a placed Storage building. A zero-HP building still remains in place and may continue production/transport; production shutdown, damage visuals, destruction, repairs, salvage, obstacle pathfinding and wave spawning remain future work.
+
+
+### Step 09.17A — Live zombie melee integration regression accepted (12/12)
+
+The developer ran `res://tests/live_zombie_melee_integration_test.tscn` in Godot 4.6.2 and supplied Output confirming **ALL 12 LIVE ZOMBIE MELEE INTEGRATION TESTS PASSED**.
+
+The real Main-scene zombie was verified to carry a wired melee component. The test confirmed no attacks without a structure, rejection of construction ghosts and conveyor belts, live Storage at 100 HP retaining seven Prototype Rounds and a connected belt, no premature hit outside range, 10 damage on reaching Storage, cooldown blocking extra hits, ten hits reaching exactly zero HP, inventory and port survival after defeat, target reassignment to a second intact building, and complete cessation of zombie movement and attacking after its own defeat.
+
+**Acceptance boundary:** Integration regression is passed; manual player-controlled F5 gameplay validation remains pending. The next check is to build and select Storage near the green moving zombie at (8, 0, -7), confirm the Debug HUD durability decreases by 10 HP per melee hit, and observe the structure remaining present at zero HP. Do not require a turret for this defensive-loss test, and do not claim production shutdown, repair, salvage, pathfinding or wave spawning from it.
