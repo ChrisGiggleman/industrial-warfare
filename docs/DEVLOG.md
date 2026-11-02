@@ -1307,3 +1307,17 @@ The developer supplied a normal-gameplay screenshot showing both the previously 
 - `tests/zombie_building_melee_test.tscn` has **12 isolated checks** covering no-target behavior, undamageable buildings, previews and conveyor filtering, valid structure detection, approaching/range rules, damage, cooldown, exact zero-HP clamping, stored-ammunition preservation, retargeting and dead-zombie attack prevention.
 
 **Safety/integration boundary:** Neither `scenes/enemies/prototype_moving_zombie.tscn` nor any player-buildable factory scene has had melee or BuildingHealth attached. Existing main-game behavior should remain non-destructive while the 12-case regression awaits local F6 validation. Player-facing building HP, combat destruction, salvage/recovery, obstacle navigation, zombie spawning and waves are still future increments.
+
+
+### Building-health foundation accepted — 12/12 local Godot checks
+
+The developer ran `res://tests/zombie_building_melee_test.tscn` in Godot 4.6.2 and provided output confirming **ALL 12 ISOLATED BUILDING HEALTH AND MELEE TESTS PASSED**. Tested exact melee distance and cooldown, one hit per interval, invalid targets, 25-HP overkill clamping, three saved ammunition units remaining inside a zero-HP storage unit, retargeting a healthy structure and zombie attack/movement stopping after death.
+
+### Step 09.16 — Factory-wide durability and shared HUD (committed, unverified)
+
+- Added `BuildingHealthComponent` directly to the eight player-buildable **structure** scenes: Extractor, Test Large, Storage, Smelter, Merger, Splitter, Ammunition Press and Defensive Turret. Each starts at 100 HP. Ordinary conveyor **segments** are not building-health targets and retain their current cargo logic.
+- Production Debug HUD now appends a standardized **BUILDING DURABILITY** block with current/max HP and Intact/Disabled status after the existing building-specific display. This preserves all production, inventory, magazine and recipe information.
+- Adapted `tests/zombie_building_melee_test.gd` so its special legacy **no-health** fixture explicitly removes the new default component, preserving that test's safety invariant, while its damageable fixtures edit the existing component rather than creating duplicate children.
+- Added `tests/building_health_integration_test.tscn`, an **11-case** acceptance test against all nine construction slots. It verifies one health component per structure, no health on belts, shared HUD output, stored cargo and connected-port survival at zero HP, zombies ignoring disabled Storage, and turret magazine/demolition safety.
+
+**Important:** Zero-HP status currently marks a structure as disabled for enemy targeting but does **not** yet automatically halt processing or transport. No building is destroyed, salvaged or removed, and no stored resources disappear. The live moving zombie still has no `ZombieMeleeComponent` attached. This integration must pass local Godot validation before real zombie attacks are enabled.
