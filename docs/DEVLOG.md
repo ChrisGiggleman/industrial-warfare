@@ -1365,3 +1365,14 @@ On **2026-11-01**, the developer reported placing a Test Extractor near the movi
 **Important observed gap:** The same screenshot still displayed `Status: Extracting` under the Extractor production section, despite durability being disabled. Operational shutdown at zero health is **not implemented yet**; the screenshot alone cannot establish whether additional ore was produced after reaching zero. The progress bar is not a health indicator.
 
 **Next design/implementation milestone:** Introduce health-aware operation gates for extraction, recipe processing, ammunition-fed turret firing, and building conveyor transfers. A disabled structure should stop operating without destroying resources, changing physical connections, or resetting partial progress. Design repair/reactivation separately and verify disabled behavior with isolated regression scenes before changing live systems. Automatic physical destruction, cargo salvage, repair interfaces, navigation, and wave spawning remain out of scope.
+
+
+### Game-design correction — Real structures and conveyors must be destructible
+
+The developer clarified that the present `Disabled` status at zero HP is **only a testing safeguard**. It must not become the final gameplay outcome. In the playable game, zombies should be able to destroy **both factory buildings and conveyor segments**.
+
+**Confirmed requirement:** A building at zero HP leaves normal operation and is destroyed through a controlled lifecycle; belts can be separately damaged and severed. Destroying a single building or conveyor does not erase the entire connected factory network. The game should show placeholder wreckage/debris until final art exists.
+
+**Engineering gates before enabling physical removal:** Explicitly disconnect ports, resolve machine inventories and cargo on destroyed belts without silent duplication, define recoverable drops/salvage/loss, verify neighbor belts remain intact, and handle target reassignment and blocked logistics safely. Existing 0-HP preservation tests remain regression fixtures for the transition, not a statement of the intended final destruction rules. Optional repair of damaged structures and rebuild/salvage of destroyed ones are separate design decisions.
+
+`GAME_DESIGN.md` and `ROADMAP.md` now document this requirement. No gameplay destruction code has been changed as part of this design clarification.
