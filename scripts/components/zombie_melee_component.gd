@@ -8,7 +8,8 @@ class_name ZombieMeleeComponent
 # Attached to the prototype moving zombie in the playable world.
 # Targeting follows ZombieApproachComponent and only affects
 # structures carrying an explicit BuildingHealthComponent.
-# At zero HP, the structure and stored contents remain in place.
+# In Main, zero-HP buildings can enter the guarded destruction and
+# world-salvage flow. Isolated test worlds may still keep them in place.
 
 @export var movement: ZombieApproachComponent
 @export_range(0.25, 5.0, 0.05) var attack_range: float = 1.55
