@@ -58,8 +58,8 @@ func find_nearest_structure() -> Node3D:
 		if not is_instance_valid(runtime):
 			continue
 
-		# Zero-health structures remain in the world for later salvage.
-		# Zombies should stop pursuing those disabled structures.
+		# Zero-health structures can remain temporarily if salvage
+		# preflight fails; ignore them while choosing the next target.
 		var durability := structure.get_node_or_null(
 			"BuildingHealthComponent"
 		) as BuildingHealthComponent
