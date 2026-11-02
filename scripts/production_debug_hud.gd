@@ -104,11 +104,40 @@ func _refresh_display() -> void:
 
 	if building_runtime != null:
 		_refresh_building_display(building_runtime)
+		_append_building_health()
 		return
 
 	info_label.text = (
 		"PRODUCTION DEBUG\n\n"
 		+ "Selected object has no debug data."
+	)
+
+
+# =============================================================================
+# BUILDING HEALTH — SHARED DURABILITY DISPLAY
+# =============================================================================
+
+# Append durability to all building displays, regardless of whether
+# the selected structure is a turret, splitter, storage or producer.
+# This never changes production, stored items or damage values.
+
+func _append_building_health() -> void:
+	if not is_instance_valid(selected_building) or info_label == null:
+		return
+
+	var durability := selected_building.get_node_or_null(
+		"BuildingHealthComponent"
+	) as BuildingHealthComponent
+	if not is_instance_valid(durability):
+		return
+
+	info_label.text += (
+		"\n\nBUILDING DURABILITY"
+		+ "\nHP: " + str(durability.current_health)
+		+ " / " + str(durability.max_health)
+		+ "\nStatus: " + (
+			"Intact" if durability.is_intact() else "Disabled"
+		)
 	)
 
 
