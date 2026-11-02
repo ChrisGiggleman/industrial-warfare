@@ -5,15 +5,56 @@ class_name WorldDestructionService
 # MAIN-WORLD DESTRUCTION — SALVAGE DESTINATION
 # =============================================================================
 
-# Keeps salvage outside destroyed buildings and belts. This service
-# does NOT watch health or trigger zombie destruction yet.
-# Its removal entrypoint is exercised by an isolated Main-scene test.
+# Keeps salvage outside destroyed buildings and belts. In the playable
+# world, a health-depleted building uses the same guarded transaction
+# as the already validated isolated salvage removal.
+# Conveyor HP and automatic belt destruction are separate milestones.
 
 const SALVAGE_SCENE: PackedScene = preload(
 	"res://scenes/logistics/world_salvage_cache.tscn"
 )
 
+@export var destroy_on_zero_hp: bool = true
+
 var successful_destructions: int = 0
+var failed_health_destructions: int = 0
+
+
+# =============================================================================
+# HEALTH DEPLETION — GUARDED LIVE BUILDING DESTRUCTION
+# =============================================================================
+
+# BuildingHealthComponent connects its health_depleted signal while
+# entering the Main scene tree. Legacy isolated tests can switch this
+# off without changing the result of manual damage assertions.
+
+func _on_building_health_depleted(source: Node3D) -> void:
+	if not destroy_on_zero_hp or not _is_valid_world_target(source):
+		return
+
+	var health := source.get_node_or_null(
+		"BuildingHealthComponent"
+	) as BuildingHealthComponent
+	if not is_instance_valid(health) or health.is_intact():
+		return
+
+	var cache := try_destroy_with_salvage(source)
+	if not is_instance_valid(cache):
+		# A failed salvage transaction does not delete the structure.
+		# It remains disabled at zero HP for recovery/retry later.
+		failed_health_destructions += 1
+		return
+
+	# The world still owns both objects until the end of this frame.
+	# Release any player selection before queue_free completes.
+	var world := get_parent() as Node3D
+	var interaction := world.get_node_or_null("WorldInteraction")
+	if is_instance_valid(interaction) and interaction.selected_object == source:
+		interaction._select_object(null)
+
+	var hud := world.get_node_or_null("ProductionDebugHUD") as ProductionDebugHUD
+	if is_instance_valid(hud) and hud.selected_building == source:
+		hud.clear_selection()
 
 
 # =============================================================================
