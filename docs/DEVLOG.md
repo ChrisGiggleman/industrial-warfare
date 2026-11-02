@@ -1399,3 +1399,16 @@ The planned Build Catalog and nine-slot customizable hotbar are documented in `G
 - For this checkpoint, the recovery destination is an independent in-memory `InventoryComponent`, **not** yet a visible or pickable salvage crate. The test manually invokes removal only after escrow succeeds. Automatic damage, health-triggered world deletion, wreckage, belt health and enemy belt targeting remain unchanged.
 
 **Design reminder:** The final game destroys buildings and damaged conveyor segments. The temporary zero-HP Disabled state is a test safeguard only. First establish 100% recoverable test escrow (an accounting baseline); tune salvage/loss rates later when dedicated world drops exist. Do not expose player demolition or combat deletion through this new helper until Godot has validated it.
+
+
+### Step 09.18A — Destruction cargo regression accepted (12/12)
+
+The developer ran `res://tests/destruction_cargo_recovery_test.tscn` in Godot 4.6.2 and supplied output confirming **ALL 12 DESTRUCTION CARGO RECOVERY TESTS PASSED**. After correcting the intentionally malformed inventory-key preflight in `destruction_cargo_recovery.gd`, both source and destination accounting passed, including all **19/19** ore, ingot and ammunition units recovered without duplication. The linked-belt test also confirmed surviving neighbors retain cargo and detach only the removed segment.
+
+### Step 09.18B — Controlled destruction transaction (code committed, Godot test pending)
+
+- Added `scripts/components/destruction_transaction.gd` (`DestructionTransaction`). It is a standalone helper **not wired into live zombie damage or Build Mode**. It accepts only real `player_built` buildings with `BuildingRuntime` or a `ConveyorSegment`; rejects preview ghosts, arbitrary nodes, queued sources and unattached recovery caches.
+- Its `try_destroy()` first checks complete salvage capacity and moves all source-owned inventory into a separately live `InventoryComponent`. On success it disables source processing, explicitly severs the source's reciprocal building-port or belt links, then queues **only that source** for deletion. Failed preflight leaves the structure and physical connections untouched.
+- Added `tests/controlled_destruction_transaction_test.tscn` with **12 checks** for rejection cases, insufficient recovery capacity, warehouse-output and two-belt linking, source removal, immediate port disconnection, duplicate removal refusal, neighbor cargo preservation, separately destroying cargo-bearing belts, multi-buffer manufacturer recovery, invalid key refusal and exact **19-unit** final conservation.
+
+**Current boundary:** This is the first test-only transaction capable of genuinely queueing buildings and belts for removal. Live damage-to-destruction, enemy conveyor targeting, wreckage visuals and actual in-world salvage cache/pickups remain separate milestones. The 12-case scene requires an F6 pass before any live behavior is changed.
