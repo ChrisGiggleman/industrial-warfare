@@ -1249,3 +1249,16 @@ Verified in the main scene: the stationary 30-HP target exists, slot 9 builds a 
 On **2026-11-01**, the developer supplied a screenshot from regular gameplay showing the ammunition-fed turret and its physical conveyor chain beside the stationary target whose health label reads **TARGET DEFEATED**. This confirms the first visual combat victory in the playable main world. The screenshot does not display the turret's shot counters; those 3-hit/30-HP values were separately confirmed by the **11/11** live-world integration regression.
 
 **Next step:** Add an isolated moving-enemy prototype. Keep the original stationary target and production systems unchanged. The first movement prototype may approach a selected player-built structure directly on the X/Z plane, but collision avoidance, pathfinding, building attacks, enemy spawning and wave logic remain separate unimplemented features.
+
+
+### New isolated milestone: moving-zombie foundation (not yet tested locally)
+
+The first moving enemy is deliberately **separate** from `prototype_zombie_target.tscn`, which remains the accepted stationary reference in the main playable scene.
+
+- `ZombieApproachComponent` finds the nearest real `player_built` structure with a `BuildingRuntime`, excluding construction previews and conveyors.
+- Walks in the X/Z plane at a temporary **2 units/second** and stops **1.5 units** from the structure center; large time steps are clamped to prevent overshoot.
+- Reacquires a valid target after the previous structure is removed. Stops permanently when its `CombatHealthComponent` reaches zero.
+- `scenes/enemies/prototype_moving_zombie.tscn` is a separate green placeholder with the existing combat health and label implementation.
+- `tests/prototype_moving_zombie_test.tscn` contains nine isolated checks for idle behavior, excluding ghosts and conveyors, nearest structure selection, displacement and stopping distance, reacquisition after deletion, existing ammo-fed turret hits/cooldown, and immobility when defeated.
+
+**Not integrated in Main yet.** The movement code uses straight-line motion only; no NavigationAgent3D, collision avoidance, body-to-body collisions, enemy attacks, structure health, spawners or waves have been implemented. Run the nine-case F6 regression in Godot 4.6.2 before adding enemy motion to the live factory.
