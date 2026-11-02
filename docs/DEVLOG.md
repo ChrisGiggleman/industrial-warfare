@@ -1242,3 +1242,10 @@ On **2026-11-01**, the developer ran `res://tests/live_turret_combat_integration
 Verified in the main scene: the stationary 30-HP target exists, slot 9 builds a turret containing automatic targeting, target distance gates firing, no-ammunition preserves health, a real conveyor attaches to the magazine port, each delivered round authorizes one 10-damage shot, cooldown prevents phantom hits, three rounds defeat the dummy without loss, defeated targets stop receiving hits, the target displays `TARGET DEFEATED`, combat counters update in the Production Debug HUD, and empty-turret removal does not break the existing conveyor.
 
 **Next checkpoint (not yet accepted):** Manual, player-controlled gameplay with an ammunition-fed turret near the static target at (-6, 0, -6). Verify that the target health label and turret HUD update while rounds are physically delivered and the dummy is defeated in the running main world. Do not count this as proof of moving zombies, projectile simulation, enemy attack AI or line-of-sight.
+
+
+### Follow-up acceptance: manual factory-powered combat
+
+On **2026-11-01**, the developer supplied a screenshot from regular gameplay showing the ammunition-fed turret and its physical conveyor chain beside the stationary target whose health label reads **TARGET DEFEATED**. This confirms the first visual combat victory in the playable main world. The screenshot does not display the turret's shot counters; those 3-hit/30-HP values were separately confirmed by the **11/11** live-world integration regression.
+
+**Next step:** Add an isolated moving-enemy prototype. Keep the original stationary target and production systems unchanged. The first movement prototype may approach a selected player-built structure directly on the X/Z plane, but collision avoidance, pathfinding, building attacks, enemy spawning and wave logic remain separate unimplemented features.
