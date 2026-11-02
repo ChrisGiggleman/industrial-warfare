@@ -78,8 +78,14 @@ static func can_recover_all(
 			return false
 
 		for key: Variant in inventory.items.keys():
-			var item := key as ItemDefinition
-			if item == null:
+			# Variant dictionary keys can contain malformed primitive values.
+			# Guard the type BEFORE casting: Godot rejects a String assigned
+			# to an ItemDefinition-typed variable at runtime.
+			if not (key is ItemDefinition):
+				return false
+
+			var item: ItemDefinition = key as ItemDefinition
+			if not is_instance_valid(item):
 				return false
 
 			var amount: int = int(inventory.items[key])
@@ -117,7 +123,15 @@ static func recover_all(
 	for inventory: InventoryComponent in owned:
 		var keys: Array = inventory.items.keys()
 		for key: Variant in keys:
-			var item := key as ItemDefinition
+			# Protect the transfer loop as well, even though the preflight
+			# has already validated every inventory key.
+			if not (key is ItemDefinition):
+				return false
+
+			var item: ItemDefinition = key as ItemDefinition
+			if not is_instance_valid(item):
+				return false
+
 			var amount: int = inventory.get_amount(item)
 			if amount <= 0:
 				continue
