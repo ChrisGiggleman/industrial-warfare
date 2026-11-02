@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/prototype_defensive_turret_building.gd" id="1_building"]
 [ext_resource type="Script" path="res://scripts/components/building_runtime.gd" id="2_runtime"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/components/turret_ammunition_port.gd" id="5_port"]
 [ext_resource type="Resource" path="res://data/items/prototype_ammunition.tres" id="6_rounds"]
 [ext_resource type="Script" path="res://scripts/components/turret_targeting_component.gd" id="7_targeting"]
+
+[ext_resource type="Script" path="res://scripts/components/building_health_component.gd" id="health_component"]
 
 [sub_resource type="BoxShape3D" id="TurretShape"]
 size = Vector3(1, 1, 1)
@@ -45,6 +47,9 @@ material_override = SubResource("TurretMaterial")
 
 [node name="BuildingRuntime" type="Node" parent="."]
 script = ExtResource("2_runtime")
+
+[node name="BuildingHealthComponent" type="Node" parent="."]
+script = ExtResource("health_component")
 
 [node name="AmmunitionInventory" type="Node" parent="."]
 script = ExtResource("3_inventory")
