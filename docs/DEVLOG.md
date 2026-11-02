@@ -1425,3 +1425,18 @@ The developer ran `res://tests/controlled_destruction_transaction_test.tscn` in 
 - New `res://tests/world_salvage_destruction_test.tscn` uses the real Main scene and checks 12 cases for valid targets, junk/ghost exclusion, stocked storage with two connected belts, accurate 7-item salvage at a destroyed site, repeated deletion refusal, invalid manufacturer inventory refusal, two-buffer manufacturer salvage, individual adjacent belt destruction, empty wreckage, summed **15-item** conservation across five independent surviving world caches, and enemy/world safety.
 
 **Validation boundary:** Repository checks pending completion; **no local F6 run has passed yet**. Main has the inactive service but live zombies do not invoke it on zero HP. Salvage is a runtime in-world holder and visual placeholder, **not yet player-pickable or persisted to disk**, and 100% recovery remains prototype balancing. Conveyor HP, zombie belt targeting, damage-triggered removal, special wreckage FX and player salvage collection will be handled in later checkpoints.
+
+
+### Step 09.18C — Main-world salvage regression accepted (12/12)
+
+The developer supplied Godot 4.6.2 output from `res://tests/world_salvage_destruction_test.tscn`: **ALL 12 MAIN-WORLD SALVAGE DESTRUCTION TESTS PASSED**. Validated five independent world-owned wreckage caches, empty wreckage and two cargo-bearing belts, rejection of duplicate/invalid deletion, uninterrupted surviving world nodes, and conservation of **15/15** initial item units after source removal.
+
+### Step 09.18D — Health-triggered Main-world building destruction (committed, F6 test pending)
+
+- `BuildingHealthComponent._ready()` now connects the existing `health_depleted` signal to the owning Main scene's `WorldDestructionService`, when present. Preview ghosts and independent isolated scenes remain excluded. No automatic removal is implemented for enemy targets or belts here.
+- `WorldDestructionService.destroy_on_zero_hp` defaults to **true** in Main. When health reaches zero, the service invokes its already-tested inventory recovery, reciprocal port cleanup, stopped-processing state and single-source queue for deletion. A world-owned cache with recovered items remains at the original site. An unsuccessful salvage transaction **never deletes source data**; it leaves a 0-HP structure in place and increments `failed_health_destructions` for later recovery/retry.
+- The service clears any `WorldInteraction` selection and `ProductionDebugHUD` selection referencing a successfully destroyed structure before frame-end freeing. Movement/target selection skips queued or dead structures and should reacquire intact targets.
+- The historical `building_health_integration_test.gd` (11 checks) and `live_zombie_melee_integration_test.gd` (12 checks) explicitly switch off automatic world destruction so their original zero-health-disabled safety contracts can still be tested independently.
+- New `res://tests/live_zombie_destruction_test.tscn` (**12 checks**, local Godot run pending) tests the Main scene, preview protection, real Storage with stocked adjacent belts, nine nonlethal hits, tenth-hit removal, salvage and HUD cleanup, local disconnections, surviving conveyor cargo, zombie reacquisition of another building, non-melee health depletion triggering the same path, invalid-inventory rollback and explicit recovery retry. Expected accounting: **12 recovered units across three wreckage caches + two surviving belt units**.
+
+**Validation boundary:** The code is committed but live F5 gameplay must wait until the new F6 regression passes. The final game also requires damageable belts, zombie belt targeting, salvage pickup/persistence, and improved wreckage presentation; none is claimed complete.
