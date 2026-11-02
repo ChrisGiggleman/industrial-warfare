@@ -15,11 +15,18 @@ func _storage(
 ) -> Node3D:
 	var building := scene.instantiate() as Node3D
 	assert(building != null)
+	# Normal factory scenes now include health by default.
+	# The no-health fixture explicitly removes it, preserving the
+	# original regression's undamageable-structure safety check.
+	var durability := building.get_node_or_null(
+		"BuildingHealthComponent"
+	) as BuildingHealthComponent
+	assert(durability != null)
 	if hit_points > 0:
-		var durability := BuildingHealthComponent.new()
-		durability.name = "BuildingHealthComponent"
 		durability.max_health = hit_points
-		building.add_child(durability)
+	else:
+		building.remove_child(durability)
+		durability.free()
 	parent.add_child(building)
 	building.global_position = position
 	return building
