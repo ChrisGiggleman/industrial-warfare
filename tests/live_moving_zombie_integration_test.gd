@@ -7,7 +7,8 @@ extends Node
 # Loads the real Main scene and validates the newly placed moving enemy.
 # Movement, turret cooldown, targeting and conveyor transport are advanced
 # explicitly to avoid timing-sensitive assertions.
-# This test does not implement pathfinding or zombie building attacks.
+# Melee is disabled in this historical regression; live zombie attacks
+# are verified by the separate live melee integration scene.
 
 
 func _deliver_ammunition(
@@ -57,6 +58,10 @@ func _ready() -> void:
 	)
 	assert(movement != null and health != null and static_health != null)
 	movement.set_physics_process(false)
+	# The original integration suite deliberately excludes structure damage.
+	var melee := moving.get_node("MeleeComponent") as ZombieMeleeComponent
+	assert(melee != null and melee.movement == movement)
+	melee.set_physics_process(false)
 	assert(health.current_health == 30 and static_health.current_health == 30)
 	assert(movement.find_nearest_structure() == null)
 	movement._physics_process(1.0)
