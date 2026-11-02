@@ -26,6 +26,12 @@ static func can_destroy(
 ) -> bool:
 	if not is_instance_valid(source):
 		return false
+	# Salvage must be a live, separately owned inventory, never a
+	# temporary unattached buffer that disappears with the source.
+	if not is_instance_valid(recovery_inventory):
+		return false
+	if not recovery_inventory.is_inside_tree():
+		return false
 	if not source.is_inside_tree() or source.is_queued_for_deletion():
 		return false
 	if not source.is_in_group("player_built"):
