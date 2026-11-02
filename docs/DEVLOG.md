@@ -1332,3 +1332,18 @@ Verified all nine build slots remain registered; exactly eight non-belt structur
 The teardown message `Extractor has no resource node` occurs after the tests and does not indicate an assertion failure.
 
 **Next regression gate:** Re-run `res://tests/zombie_building_melee_test.tscn` (12 checks) with its modified no-health fixture now that the regular Storage scene includes health. This new re-run is pending; do not enable `ZombieMeleeComponent` on the live moving zombie until confirmed. Zero HP currently preserves inventory and links but does not automatically halt production or implement destruction, repair, or salvage.
+
+
+### Step 09.16B — Adjusted isolated melee re-test accepted (12/12)
+
+The developer ran the updated `res://tests/zombie_building_melee_test.tscn` after all eight non-belt structures gained their 100-HP component. The Godot 4.6.2 screenshot shows **ALL 12 ISOLATED BUILDING HEALTH AND MELEE TESTS PASSED**, confirming the no-health fixture, melee distance and cooldown, damage clamp, resource preservation, retargeting and prevention of further attacks from defeated zombies remain correct.
+
+### Step 09.17 — Live structure attacks integrated (local acceptance pending)
+
+- Attached `ZombieMeleeComponent` to `scenes/enemies/prototype_moving_zombie.tscn` with an exported NodePath to its existing MovementComponent. The live moving zombie now has **10 melee damage**, a **1.0-second** attack interval, and a **1.55-world-unit** attack range.
+- The component only deals damage to the currently approached, intact `BuildingHealthComponent` target. Its attack routine never deletes the building, inventory, resource items or physical conveyors.
+- Updated the historical isolated melee test to reuse the scene's built-in melee component instead of injecting a duplicate.
+- Updated `prototype_moving_zombie_test.gd` and `live_moving_zombie_integration_test.gd` to disable the new melee process during their deterministic movement-only assertions, preserving their original scopes.
+- Added `tests/live_zombie_melee_integration_test.tscn` with **12 Main-scene integration checks**. It tests the wired live zombie, empty/ghost targeting, stored ammo with a connected belt, range gating, first hit, cooldown, 10 exact hits taking 100-HP Storage to zero, no inventory or port loss, disabled-building retargeting, attacking a second structure, defeated-zombie immobility and health HUD updates.
+
+**Not yet locally tested:** The new 12-case Main-scene zombie melee integration. Before accepting this gameplay milestone, run the F6 regression, then manually verify health decreasing on a placed Storage building. A zero-HP building still remains in place and may continue production/transport; production shutdown, damage visuals, destruction, repairs, salvage, obstacle pathfinding and wave spawning remain future work.
