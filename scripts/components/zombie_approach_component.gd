@@ -58,6 +58,14 @@ func find_nearest_structure() -> Node3D:
 		if not is_instance_valid(runtime):
 			continue
 
+		# Zero-health structures remain in the world for later salvage.
+		# Zombies should stop pursuing those disabled structures.
+		var durability := structure.get_node_or_null(
+			"BuildingHealthComponent"
+		) as BuildingHealthComponent
+		if is_instance_valid(durability) and not durability.is_intact():
+			continue
+
 		var distance_squared: float = Vector2(
 			structure.global_position.x - mover.global_position.x,
 			structure.global_position.z - mover.global_position.z
@@ -97,6 +105,14 @@ func _physics_process(delta: float) -> void:
 		or current_target.is_queued_for_deletion()
 	):
 		current_target = null
+
+	# Ignore a formerly valid target after its health reaches zero.
+	if is_instance_valid(current_target):
+		var target_health := current_target.get_node_or_null(
+			"BuildingHealthComponent"
+		) as BuildingHealthComponent
+		if is_instance_valid(target_health) and not target_health.is_intact():
+			current_target = null
 
 	if current_target == null and automatic_target_selection:
 		current_target = find_nearest_structure()
