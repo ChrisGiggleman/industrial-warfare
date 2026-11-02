@@ -1289,3 +1289,21 @@ On **2026-11-01**, the developer supplied a gameplay screenshot showing the gree
 This establishes manual visual acceptance of the moving-enemy approach and stop behavior. The exact 1.5-unit stopping distance is supported by earlier isolated and main-scene automated tests, rather than being measured from this screenshot. The moving zombie has not yet been visibly defeated in a live, player-controlled run.
 
 **Next validation:** In a fresh gameplay run or with the existing factory, place an ammunition-fed turret within 7 world units of the moving zombie and verify three hits, 30-to-0 HP, the **TARGET DEFEATED** label and no more firing at the defeated zombie. Keep the static target separate from that engagement. Do not infer navigation, zombie attacks, projectile simulation or building damage.
+
+
+---
+
+## 2026-11-01 — Moving-Zombie Combat Accepted; Isolated Structure-Damage Foundation
+
+### Accepted normal gameplay
+
+The developer supplied a normal-gameplay screenshot showing both the previously validated stationary target and the moving zombie with separate **TARGET DEFEATED** labels. The developer confirmed that the green moving zombie immediately approached a newly placed turret, which then defeated it using factory-supplied ammunition. This accepts the first moving-hostile victory in regular gameplay. The image does not show live shot counts; existing deterministic regressions separately verified three real 10-damage hits per 30-HP target.
+
+### Building health and melee implementation (not yet locally validated)
+
+- `BuildingHealthComponent` introduces 100 default HP, actual-damage accounting, a single zero-HP signal, and guarded damage application. **At zero HP, the building is kept in the scene**: no inventory, resources, or conveyor connections are silently deleted.
+- `ZombieMeleeComponent` allows one attack per configured interval (temporary 10 damage/1 second) only when a living zombie is within physical melee range and `ZombieApproachComponent` reports `At Structure`. It requires an explicit health-enabled building, ignores previews, conveyors, invalid targets and cooldown violations, and stops attacking when the zombie is defeated.
+- `ZombieApproachComponent` now ignores a health-enabled building whose health has reached zero and reacquires another valid structure. Buildings without the health component retain their existing movement-target behavior for backward compatibility, but are not damageable by the new melee component.
+- `tests/zombie_building_melee_test.tscn` has **12 isolated checks** covering no-target behavior, undamageable buildings, previews and conveyor filtering, valid structure detection, approaching/range rules, damage, cooldown, exact zero-HP clamping, stored-ammunition preservation, retargeting and dead-zombie attack prevention.
+
+**Safety/integration boundary:** Neither `scenes/enemies/prototype_moving_zombie.tscn` nor any player-buildable factory scene has had melee or BuildingHealth attached. Existing main-game behavior should remain non-destructive while the 12-case regression awaits local F6 validation. Player-facing building HP, combat destruction, salvage/recovery, obstacle navigation, zombie spawning and waves are still future increments.
