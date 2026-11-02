@@ -1321,3 +1321,14 @@ The developer ran `res://tests/zombie_building_melee_test.tscn` in Godot 4.6.2 a
 - Added `tests/building_health_integration_test.tscn`, an **11-case** acceptance test against all nine construction slots. It verifies one health component per structure, no health on belts, shared HUD output, stored cargo and connected-port survival at zero HP, zombies ignoring disabled Storage, and turret magazine/demolition safety.
 
 **Important:** Zero-HP status currently marks a structure as disabled for enemy targeting but does **not** yet automatically halt processing or transport. No building is destroyed, salvaged or removed, and no stored resources disappear. The live moving zombie still has no `ZombieMeleeComponent` attached. This integration must pass local Godot validation before real zombie attacks are enabled.
+
+
+### Step 09.16A — Factory-wide durability integration accepted
+
+On **2026-11-01**, the developer ran `res://tests/building_health_integration_test.tscn` locally in Godot 4.6.2 and supplied output confirming **ALL 11 BUILDING HEALTH INTEGRATION TESTS PASSED**.
+
+Verified all nine build slots remain registered; exactly eight non-belt structures each have one initialized 100-HP component; ordinary conveyors do not gain building HP; all eight building Debug HUD views show durability; Storage inventory and physical output port references persist through damage and zero HP; zombies skip disabled Storage; a loaded turret keeps its ammunition, HUD and demolition safety; construction ghosts are not targeted.
+
+The teardown message `Extractor has no resource node` occurs after the tests and does not indicate an assertion failure.
+
+**Next regression gate:** Re-run `res://tests/zombie_building_melee_test.tscn` (12 checks) with its modified no-health fixture now that the regular Storage scene includes health. This new re-run is pending; do not enable `ZombieMeleeComponent` on the live moving zombie until confirmed. Zero HP currently preserves inventory and links but does not automatically halt production or implement destruction, repair, or salvage.
