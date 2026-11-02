@@ -54,8 +54,9 @@ func _ready() -> void:
 	var movement := zombie.get_node("MovementComponent") as ZombieApproachComponent
 	var zombie_health := zombie.get_node("HealthComponent") as CombatHealthComponent
 	var melee := zombie.get_node("MeleeComponent") as ZombieMeleeComponent
-	assert(melee != null and melee.movement == movement)
 	root.add_child(zombie)
+	# Resolve exported sibling-node reference after the scene enters the tree.
+	assert(melee != null and melee.movement == movement)
 	movement.set_physics_process(false)
 	melee.set_physics_process(false)
 
