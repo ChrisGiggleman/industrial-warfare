@@ -71,6 +71,10 @@ func _ready() -> void:
 	) as InventoryComponent
 	assert(inventory.add_item(ore, 7) == 7)
 	assert(inventory.add_item(ammo, 4) == 4)
+	var unattached_recovery := InventoryComponent.new()
+	assert(not DestructionTransaction.can_destroy(storage, unattached_recovery))
+	assert(not DestructionTransaction.try_destroy(storage, unattached_recovery))
+	unattached_recovery.free()
 	var limited := InventoryComponent.new()
 	limited.max_capacity = 10
 	world.add_child(limited)
@@ -104,6 +108,7 @@ func _ready() -> void:
 	assert(DestructionTransaction.can_destroy(storage, recovery))
 	assert(DestructionTransaction.try_destroy(storage, recovery))
 	assert(storage.is_queued_for_deletion())
+	assert(storage.process_mode == Node.PROCESS_MODE_DISABLED)
 	assert(inventory.get_total_amount() == 0)
 	assert(recovery.get_amount(ore) == 7)
 	assert(recovery.get_amount(ammo) == 4)
