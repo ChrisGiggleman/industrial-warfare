@@ -37,6 +37,13 @@ func _ready() -> void:
 	var world := main_scene.instantiate() as Node3D
 	assert(world != null)
 	add_child(world)
+	# Historical regression explicitly verifies the non-destructive
+	# zero-HP fixture; the new live destruction path has its own suite.
+	var service := world.get_node(
+		"WorldDestructionService"
+	) as WorldDestructionService
+	assert(service != null)
+	service.destroy_on_zero_hp = false
 
 	var moving := world.get_node("PrototypeMovingZombie") as Node3D
 	var stationary := world.get_node("PrototypeZombieTarget") as Node3D
