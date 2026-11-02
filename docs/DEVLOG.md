@@ -1440,3 +1440,12 @@ The developer supplied Godot 4.6.2 output from `res://tests/world_salvage_destru
 - New `res://tests/live_zombie_destruction_test.tscn` (**12 checks**, local Godot run pending) tests the Main scene, preview protection, real Storage with stocked adjacent belts, nine nonlethal hits, tenth-hit removal, salvage and HUD cleanup, local disconnections, surviving conveyor cargo, zombie reacquisition of another building, non-melee health depletion triggering the same path, invalid-inventory rollback and explicit recovery retry. Expected accounting: **12 recovered units across three wreckage caches + two surviving belt units**.
 
 **Validation boundary:** The code is committed but live F5 gameplay must wait until the new F6 regression passes. The final game also requires damageable belts, zombie belt targeting, salvage pickup/persistence, and improved wreckage presentation; none is claimed complete.
+
+
+### Step 09.18D — Zombie-triggered building destruction accepted (12/12)
+
+On **2026-11-02**, the developer ran `res://tests/live_zombie_destruction_test.tscn` in Godot 4.6.2. All **12/12** integration checks passed (PASS A–L; screenshot provided). The tested Main scene automatically listened for building health depletion. A live moving zombie struck a selected, stocked Storage structure: its tenth hit took HP to zero and queued actual deletion. The world-owned salvage held seven Storage items and the selection/HUD cleared; both neighboring conveyor belts stayed intact and retained their cargo. The zombie subsequently targeted and damaged another healthy building, whose depletion through a separate damage call used the same destruction transaction. A deliberately malformed inventory failed salvage safely, leaving a 0-HP structure available for later retry; the recovery was then completed. End-of-test accounting: **12 units stored across three wreckage caches plus two units on the surviving belts**.
+
+**Next acceptance gate:** Player-controlled **F5** test, not yet confirmed. Build a real Extractor or Storage near the prototype moving zombie (avoid placing a defensive turret nearby), observe the final 0-HP attack physically removing the structure, verify wreckage remains with the correct `WRECKAGE` or `SALVAGE: N` placeholder, and ensure the selection HUD clears cleanly.
+
+**Still pending:** zombie damage to conveyor segments, isolated belt health/destruction tests, recoverable player pickups, save/load of salvage, production-chain hardening, final wreckage FX, and progression toward the customizable build catalog/hotbar.
