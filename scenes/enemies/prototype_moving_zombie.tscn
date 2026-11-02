@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/combat_health_component.gd" id="1_health"]
 [ext_resource type="Script" path="res://scripts/components/prototype_zombie_target_visual.gd" id="2_visual"]
 [ext_resource type="Script" path="res://scripts/components/zombie_approach_component.gd" id="3_approach"]
+[ext_resource type="Script" path="res://scripts/components/zombie_melee_component.gd" id="4_melee"]
 
 [sub_resource type="CapsuleMesh" id="ZombieMesh"]
 radius = 0.35
@@ -28,6 +29,13 @@ max_health = 30
 script = ExtResource("3_approach")
 move_speed = 2.0
 stopping_distance = 1.5
+
+[node name="MeleeComponent" type="Node" parent="." node_paths=PackedStringArray("movement")]
+script = ExtResource("4_melee")
+movement = NodePath("../MovementComponent")
+attack_range = 1.55
+attack_damage = 10
+attack_interval = 1.0
 
 [node name="HealthLabel" type="Label3D" parent="."]
 position = Vector3(0, 2.0, 0)
