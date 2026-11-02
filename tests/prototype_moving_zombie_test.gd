@@ -56,6 +56,10 @@ func _ready() -> void:
 	var movement := zombie.get_node("MovementComponent") as ZombieApproachComponent
 	assert(health != null and movement != null)
 	movement.set_physics_process(false)
+	# This suite advances approach and turret fire manually, not melee.
+	var melee := zombie.get_node("MeleeComponent") as ZombieMeleeComponent
+	assert(melee != null)
+	melee.set_physics_process(false)
 	assert(zombie.is_in_group("hostile_targets"))
 	assert(health.current_health == 30)
 	assert(is_equal_approx(movement.move_speed, 2.0))
