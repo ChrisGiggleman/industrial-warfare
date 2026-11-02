@@ -254,6 +254,21 @@ The goal is for factory decisions and combat decisions to influence each other.
 
 ---
 
+## Destructible Factory Structures and Logistics
+
+**Final gameplay requirement (confirmed 2026-11-01):** Zombie attacks can destroy both factory buildings and physical conveyor segments. The current zero-HP `Disabled` state is a temporary non-destructive development safeguard, **not** the intended permanent gameplay outcome.
+
+- **Buildings at zero HP:** Trigger a guarded destruction lifecycle, stop their operations, remove their functioning structure from gameplay, and leave appropriate wreckage/debris or visual effects when available.
+- **Belts and logistics components:** Conveyor sections have their own damageable state and can be targeted and destroyed by enemies. A broken section interrupts cargo routing and ammunition supply.
+- **Local failure, not network-wide deletion:** Destroying a building or belt disconnects affected physical links; it does not automatically erase the rest of the connected conveyor network. Only directly attacked or explicitly affected pieces are destroyed.
+- **Resources and cargo:** Define consistent destruction-time inventory handling (recoverable drops, salvage, loss, or mixtures) before enabling real deletion. Maintain item-conservation and no-duplication guarantees for surviving/recoverable materials, even when production is interrupted.
+- **Visual goal:** Industrial wreckage, broken belts, debris, smoke and optional salvage visuals consistent with the dark post-apocalyptic art direction. Placeholder visuals are acceptable during systems development.
+- **Repair/rebuild:** A player may rebuild or salvage destroyed sites; repair of surviving/damaged structures is a separate design decision, not a requirement to preserve 0-HP buildings.
+
+**Implementation order:** Keep the current no-delete tests as fixtures, implement damageable belts and a safe destruction transaction with explicit cargo handling, then replace `Disabled` with the final destruction flow once isolated and end-to-end regressions pass. No destructive deletion is currently implemented.
+
+---
+
 ## First Night Vertical Slice
 
 The First Night vertical slice is the first target for a complete playable experience.
