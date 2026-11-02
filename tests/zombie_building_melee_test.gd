@@ -4,8 +4,9 @@ extends Node
 # BUILDING HEALTH AND ISOLATED ZOMBIE MELEE REGRESSION
 # =============================================================================
 
-# Uses real Storage and moving-zombie scenes with test-only components.
-# Main-game structures and zombies do not receive melee damage yet.
+# Uses real Storage and moving-zombie scenes with controlled physics.
+# The live zombie now includes melee; this isolated test manually advances
+# its built-in component without changing the running main world.
 
 func _storage(
 	parent: Node3D,
@@ -52,10 +53,8 @@ func _ready() -> void:
 	assert(zombie != null)
 	var movement := zombie.get_node("MovementComponent") as ZombieApproachComponent
 	var zombie_health := zombie.get_node("HealthComponent") as CombatHealthComponent
-	var melee := ZombieMeleeComponent.new()
-	melee.name = "MeleeComponent"
-	melee.movement = movement
-	zombie.add_child(melee)
+	var melee := zombie.get_node("MeleeComponent") as ZombieMeleeComponent
+	assert(melee != null and melee.movement == movement)
 	root.add_child(zombie)
 	movement.set_physics_process(false)
 	melee.set_physics_process(false)
