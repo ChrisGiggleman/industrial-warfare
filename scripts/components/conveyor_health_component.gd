@@ -5,9 +5,9 @@ class_name ConveyorHealthComponent
 # CONVEYOR HEALTH — DAMAGEABLE STRAIGHT AND CORNER SEGMENTS
 # =============================================================================
 
-# All belt shapes can take damage independently. Live zombie targeting
-# and automatic zero-HP belt destruction are enabled in a later step,
-# after cargo preservation and neighbor disconnection are tested.
+# Each belt shape takes damage independently. In Main, a depleted
+# conveyor can enter the tested cargo recovery and destruction service.
+# Standalone worlds without a service remain non-destructive.
 
 @export_range(1, 100000, 1) var max_health: int = 50
 
@@ -23,6 +23,34 @@ signal health_depleted
 
 func _ready() -> void:
 	current_health = max_health
+	_connect_world_destruction()
+
+
+# =============================================================================
+# WORLD DESTRUCTION — OPTIONAL CONVEYOR DEPLETION LISTENER
+# =============================================================================
+
+func _connect_world_destruction() -> void:
+	var source := get_parent() as ConveyorSegment
+	if not is_instance_valid(source):
+		return
+	if not source.is_in_group("player_built"):
+		return
+	if source.is_in_group("construction_preview"):
+		return
+
+	var ancestor: Node = source.get_parent()
+	while is_instance_valid(ancestor):
+		var service := ancestor.get_node_or_null(
+			"WorldDestructionService"
+		) as WorldDestructionService
+		if is_instance_valid(service):
+			health_depleted.connect(
+				service._on_conveyor_health_depleted.bind(source)
+			)
+			return
+
+		ancestor = ancestor.get_parent()
 
 
 # =============================================================================
