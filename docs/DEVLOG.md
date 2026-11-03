@@ -1531,3 +1531,10 @@ Before calling full building-and-conveyor destruction complete and moving into t
 3. **Destructive recovery** — `live_zombie_destruction_test.tscn`, `controlled_destruction_transaction_test.tscn`, `world_salvage_destruction_test.tscn`, `live_zombie_conveyor_destruction_test.tscn`. Existing focused conveyor HUD and 50-HP durability suites already passed and can be revisited if any regression fails.
 
 **Status:** The new F5 HUD demonstration is accepted. These historical reruns have **not yet been confirmed** after the latest combat/UI changes. Do not mark regression rounds as passed until local Godot results are supplied.
+
+
+### Step 09.18 — Final regression Round 1 accepted, Round 2 pending
+
+The developer confirmed that all **four movement and combat test suites passed locally in Godot 4.6.2** on 2026-11-02. These covered the prototype moving zombie, main-world moving zombie, isolated building melee and main-world melee integration. The existing building-only test fixtures therefore remain compatible with recent enemy conveyor targeting and movement-arrival adjustments.
+
+**Next gate — Round 2 factory and physical logistics:** Run the three existing scenes for physical-only resource conservation (**9 checks**), ammunition production building placement (**9 checks**), and defensive building placement (**12 checks**), for a total of **30 checks**. These round-two reruns are pending; do not mark them passed without local results. Round 3 will cover destruction and salvage recovery. No gameplay code was changed for this documentation checkpoint.
