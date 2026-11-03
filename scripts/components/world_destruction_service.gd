@@ -8,13 +8,15 @@ class_name WorldDestructionService
 # Keeps salvage outside destroyed buildings and belts. In the playable
 # world, a health-depleted building uses the same guarded transaction
 # as the already validated isolated salvage removal.
-# Conveyor HP and automatic belt destruction are separate milestones.
+# Conveyor health uses the same recovered-cargo transaction; removing
+# one damaged segment never cascades deletion into adjacent belts.
 
 const SALVAGE_SCENE: PackedScene = preload(
 	"res://scenes/logistics/world_salvage_cache.tscn"
 )
 
 @export var destroy_on_zero_hp: bool = true
+@export var destroy_conveyors_on_zero_hp: bool = true
 
 var successful_destructions: int = 0
 var failed_health_destructions: int = 0
@@ -53,6 +55,46 @@ func _on_building_health_depleted(source: Node3D) -> void:
 		interaction.call("_select_object", null)
 
 	var hud := world.get_node_or_null("ProductionDebugHUD") as ProductionDebugHUD
+	if is_instance_valid(hud) and hud.selected_building == source:
+		hud.clear_selection()
+
+
+# =============================================================================
+# CONVEYOR DEPLETION — GUARDED BELT DESTRUCTION
+# =============================================================================
+
+# The ConveyorHealthComponent emits once on reaching zero HP.
+# This signal is handled independently from building health so
+# legacy conveyor durability tests can turn off only belt deletion.
+
+func _on_conveyor_health_depleted(source: ConveyorSegment) -> void:
+	if not destroy_conveyors_on_zero_hp:
+		return
+	if not _is_valid_world_target(source):
+		return
+
+	var health := source.get_node_or_null(
+		"ConveyorHealthComponent"
+	) as ConveyorHealthComponent
+	if not is_instance_valid(health) or health.is_intact():
+		return
+
+	var cache := try_destroy_with_salvage(source)
+	if not is_instance_valid(cache):
+		# Never delete carried items or disconnected network parts on
+		# a failed salvage transaction. Allow an explicit future retry.
+		failed_health_destructions += 1
+		return
+
+	# Do not leave a destroyed selected belt referenced by the world UI.
+	var world := get_parent() as Node3D
+	var interaction := world.get_node_or_null("WorldInteraction")
+	if is_instance_valid(interaction) and interaction.get("selected_object") == source:
+		interaction.call("_select_object", null)
+
+	var hud := world.get_node_or_null(
+		"ProductionDebugHUD"
+	) as ProductionDebugHUD
 	if is_instance_valid(hud) and hud.selected_building == source:
 		hud.clear_selection()
 
