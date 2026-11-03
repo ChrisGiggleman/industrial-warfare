@@ -1514,3 +1514,20 @@ On **2026-11-02**, the developer showed two distinct **WRECKAGE** placeholders n
 On **2026-11-02**, the developer ran `res://tests/conveyor_health_hud_test.tscn` in Godot 4.6.2 and supplied output confirming **ALL 12 CONVEYOR HEALTH HUD TESTS PASSED** (PASS A–L). The local run verified a clean initial HUD, selection and 50/50-HP display across straight and both corner segments, changes to displayed HP after damage, live inventory quantities and item names, connected building/downstream/previous-belt input-output labels, hidden production progress for belts, selected-belt removal clearing HUD/selection, cargo preserved in wreckage, and reselecting the surviving downstream belt.
 
 **Next acceptance:** In regular F5 gameplay, select an intact belt with a zombie approaching and verify the Production Debug HUD changes from **HP: 50 / 50** through 10-HP decrements, then clears when that belt is destroyed. This manual check has **not yet been provided**. Afterward, run a final historical regression set for movement, melee, building destruction, conveyor logistics and cargo conservation, including the new arrival tolerance and both types of damageable targets. Preserve the planned unlocked-building catalog and customizable quickbar as the next major UI phase once the destruction milestone is accepted.
+
+
+### Step 09.18F5 — Conveyor durability HUD confirmed in player-controlled F5 gameplay
+
+On **2026-11-02**, the developer submitted a screenshot of the actual F5 game showing a **yellow-selected intact conveyor** next to the moving green zombie. The Production Debug HUD showed **Conveyor Durability: HP 40 / 50, Status: Intact**, **Cargo: Empty, Capacity: 0 / 1**, and **Input: Disconnected, Output: Disconnected**. This confirms the new selected-belt HUD displays a partially damaged live conveyor; the missing-health-display issue is resolved. The screenshot also shows multiple earlier wreckage caches from destroyed conveyors. Automatic selection/HUD clearing on final destruction is separately covered by the passing **12/12** HUD regression and prior F5 wreckage observation.
+
+Minor future UI polish: selected belt's runtime node name currently appears as a Godot-generated label such as `@Node3D@10`; show an intuitive building/belt type or user-facing name in a later UI pass, without changing the working combat or cargo flows.
+
+### Step 09.18 — Final historical regression gates (planned)
+
+Before calling full building-and-conveyor destruction complete and moving into the **customizable Build Catalog/hotbar**, rerun representative Godot scenes in three manageable rounds:
+
+1. **Movement and combat** — `prototype_moving_zombie_test.tscn`, `live_moving_zombie_integration_test.tscn`, `zombie_building_melee_test.tscn`, `live_zombie_melee_integration_test.tscn`. These must remain compatible with the new `target_conveyors` flag and 0.001-unit arrival tolerance.
+2. **Factory/physical logistics** — `conveyor_physical_only_conservation_test.tscn`, `ammunition_press_build_mode_test.tscn`, and `defensive_turret_build_mode_test.tscn` (additional belt connection tests as needed), guarding item conservation and core construction.
+3. **Destructive recovery** — `live_zombie_destruction_test.tscn`, `controlled_destruction_transaction_test.tscn`, `world_salvage_destruction_test.tscn`, `live_zombie_conveyor_destruction_test.tscn`. Existing focused conveyor HUD and 50-HP durability suites already passed and can be revisited if any regression fails.
+
+**Status:** The new F5 HUD demonstration is accepted. These historical reruns have **not yet been confirmed** after the latest combat/UI changes. Do not mark regression rounds as passed until local Godot results are supplied.
