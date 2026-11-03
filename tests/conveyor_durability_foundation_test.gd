@@ -53,6 +53,9 @@ func _ready() -> void:
 	) as WorldDestructionService
 	var moving := world.get_node("PrototypeMovingZombie") as Node3D
 	assert(service != null and moving != null)
+	# This historical suite explicitly verifies that belt depletion
+	# remains non-destructive until a manual removal transaction.
+	service.destroy_conveyors_on_zero_hp = false
 	(moving.get_node("MovementComponent") as ZombieApproachComponent).set_physics_process(false)
 	(moving.get_node("MeleeComponent") as ZombieMeleeComponent).set_physics_process(false)
 	print("PASS A: Main scene and existing destruction service remain available")
