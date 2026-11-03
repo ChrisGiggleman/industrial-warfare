@@ -1476,3 +1476,10 @@ The developer supplied local Godot 4.6.2 output for `res://tests/conveyor_durabi
 - New `res://tests/live_zombie_conveyor_destruction_test.tscn` (**12 assertions groups, pending local Godot F6**) exercises Main-world live zombie belt preference, preview exclusion, physical Storage→belt→belt connections, melee range and cooldown, a fifth 10-HP hit destroying an occupied straight belt, local disconnection and neighboring cargo preservation, retargeting and damaging another straight belt, invalid cargo fail-closed recovery with manual retry, and destroying both corner shapes with salvage conservation.
 
 **Validation boundary:** Code has been committed but Godot and live player-controlled F5 gameplay have not yet validated the new belt-targeting behavior. Existing wreckage remains an uncollectable runtime placeholder. Do not regard the customizable build hotbar as implemented; it remains planned after the destruction milestone.
+
+
+### Step 09.18F2 — Diagonal belt arrival regression fix (pending local re-test)
+
+The first local F6 run of `res://tests/live_zombie_conveyor_destruction_test.tscn` stopped at the PASS I retargeting arrival assertion (line 166 in the initial revision): a moving zombie had selected the second intact conveyor after destroying its upstream neighbor, but `movement_status` had not yet become `At Structure`. This occurred **after** the test's initial destruction and salvage checks. Root cause is suspected floating-point drift at the diagonal 1.5-unit stopping boundary, not proven until local re-test.
+
+Updated `ZombieApproachComponent` to treat movement within **0.001 world units** above stopping distance as arrived; the move distance and combat range are unchanged. Updated PASS I to allow up to four normal 0.1-second movement ticks to settle and to print zombie position, selected target and movement status if the assertion still fails. No changes were made to inventory transfer, source deletion, damage, or belt geometry. The full 12-case run and relevant historical movement regressions remain **unverified after this correction**.
