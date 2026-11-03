@@ -956,9 +956,9 @@ The **core building and conveyor destruction milestone has been accepted** after
 - `configure()` registers definitions; all current prototype items are unlocked by default. `set_unlocked()` excludes a locked building from the hotbar without changing structures already built.
 - `assign()` moves an equipped building to another slot and swaps displaced assignments if both are in the hotbar; `clear_slot()` leaves an empty shortcut. Catalog browsing and keyboard selection will use these APIs later.
 - `to_save_data()` and `restore_save_data()` produce and validate versioned JSON-compatible data with string IDs. The method **does not write files**; persistence and profile management remain future work. Restoration rejects malformed documents and drops unknown, locked or duplicate IDs without corrupting valid slots.
-- `res://tests/build_hotbar_configuration_test.tscn` contains the isolated **12-case Godot regression, local test pending**.
-- **Not wired yet:** `WorldInteraction` currently selects definitions by array index. Its many `selected_building_index == 4` checks depend on Conveyor Belt in build slot 5 and must be changed to a stable definition/type check **before arbitrary key assignments are activated**. `build_hud.gd` also has fixed per-slot labels.
-- The planned sequence is isolated configuration acceptance → conveyor-identity refactor with legacy connection regressions → dynamic Build HUD + number-key routing → unlocked catalog UI → user-file persistence.
+- `res://tests/build_hotbar_configuration_test.tscn` has passed the isolated **12/12 Godot regression**, confirming swaps, unlocked-only assignments, and stable-ID configuration payloads.
+- **Phase 1G2 in progress:** `WorldInteraction` still uses array indices for active selection and fixed 1–9 input. However, its 22 previously slot-5-dependent conveyor branches now call `_is_conveyor_selected()`, which compares the selected definition's stable `building_id` with `conveyor_belt`. `res://tests/conveyor_building_identity_test.tscn` tests reordered definition arrays and special corner previews; its 12-case local Godot run is pending. `build_hud.gd` still contains fixed labels.
+- The planned sequence is **completed model acceptance** → **pending conveyor-identity F6 test and legacy connection regressions** → dynamic Build HUD + number-key routing → unlocked catalog UI → user-file persistence.
 
 This layer is intentionally independent from the active runtime until the above compatibility tests pass.
 
