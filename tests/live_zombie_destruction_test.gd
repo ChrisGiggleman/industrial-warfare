@@ -71,6 +71,8 @@ func _ready() -> void:
 		and hud != null and interaction != null
 	)
 	movement.set_physics_process(false)
+	# Preserve building-only targeting for this historical regression.
+	movement.target_conveyors = false
 	melee.set_physics_process(false)
 	print("PASS A: Main enables the real health-depletion destruction service")
 
