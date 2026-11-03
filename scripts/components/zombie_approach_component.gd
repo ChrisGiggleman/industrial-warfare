@@ -13,6 +13,11 @@ class_name ZombieApproachComponent
 @export var automatic_target_selection: bool = true
 @export var target_conveyors: bool = false
 
+# A snapped approach can land a fraction of a millimeter beyond the
+# stopping boundary because Vector3 arithmetic uses floating point.
+# Treat that position as arrived without changing how far the zombie walks.
+const ARRIVAL_EPSILON: float = 0.001
+
 # =============================================================================
 # MOVEMENT STATE
 # =============================================================================
@@ -148,7 +153,7 @@ func _physics_process(delta: float) -> void:
 	)
 	var distance: float = direction.length()
 
-	if distance <= stopping_distance:
+	if distance <= stopping_distance + ARRIVAL_EPSILON:
 		movement_status = "At Structure"
 		return
 
