@@ -140,28 +140,28 @@ func _refresh_conveyor_display(conveyor: ConveyorSegment) -> void:
 
 	var display: String = (
 		"PRODUCTION DEBUG"
-		+ "\\n\\nConveyor: " + str(conveyor.name)
-		+ "\\nType: Conveyor Belt"
+		+ "\n\nConveyor: " + str(conveyor.name)
+		+ "\nType: Conveyor Belt"
 	)
 
 	if is_instance_valid(health):
 		display += (
-			"\\n\\nCONVEYOR DURABILITY"
-			+ "\\nHP: " + str(health.current_health)
+			"\n\nCONVEYOR DURABILITY"
+			+ "\nHP: " + str(health.current_health)
 			+ " / " + str(health.max_health)
-			+ "\\nStatus: " + (
+			+ "\nStatus: " + (
 				"Intact" if health.is_intact() else "Destroyed"
 			)
 		)
 	else:
-		display += "\\n\\nCONVEYOR DURABILITY\\nUnavailable"
+		display += "\n\nCONVEYOR DURABILITY\nUnavailable"
 
-	display += "\\n\\nCARGO STATUS"
+	display += "\n\nCARGO STATUS"
 	if is_instance_valid(cargo):
 		var total: int = cargo.get_total_amount()
-		display += "\\nCapacity: " + str(total) + " / " + str(cargo.max_capacity)
+		display += "\nCapacity: " + str(total) + " / " + str(cargo.max_capacity)
 		if total == 0:
-			display += "\\nCargo: Empty"
+			display += "\nCargo: Empty"
 		else:
 			for key: Variant in cargo.items.keys():
 				if not (key is ItemDefinition):
@@ -172,11 +172,11 @@ func _refresh_conveyor_display(conveyor: ConveyorSegment) -> void:
 				var quantity: int = cargo.get_amount(item)
 				if quantity > 0:
 					display += (
-						"\\nCargo: " + item.display_name
+						"\nCargo: " + item.display_name
 						+ " x" + str(quantity)
 					)
 	else:
-		display += "\\nCargo inventory unavailable"
+		display += "\nCargo inventory unavailable"
 
 	var input_status: String = "Disconnected"
 	if is_instance_valid(conveyor.input_building_port):
@@ -191,9 +191,9 @@ func _refresh_conveyor_display(conveyor: ConveyorSegment) -> void:
 		output_status = "Next conveyor"
 
 	display += (
-		"\\n\\nPHYSICAL CONNECTIONS"
-		+ "\\nInput: " + input_status
-		+ "\\nOutput: " + output_status
+		"\n\nPHYSICAL CONNECTIONS"
+		+ "\nInput: " + input_status
+		+ "\nOutput: " + output_status
 	)
 	info_label.text = display
 
