@@ -345,11 +345,11 @@ Planned major systems:
 - [ ] Polish the conveyor HUD's automatically generated scene name (e.g. `@Node3D@10`) into a readable belt type/label during the planned UI pass.
 - [x] Final regression Round 1 — moving enemy/combat compatibility: `prototype_moving_zombie_test.tscn`, `live_moving_zombie_integration_test.tscn`, `zombie_building_melee_test.tscn`, `live_zombie_melee_integration_test.tscn`. (all four suites passed locally in Godot 4.6.2, 2026-11-02).
 - [x] Final regression Round 2 — factory/logistics compatibility: `conveyor_physical_only_conservation_test.tscn` (**9/9**), `ammunition_press_build_mode_test.tscn` (**9/9**), `defensive_turret_build_mode_test.tscn` (**12/12**). **All 30/30 checks passed in local Godot 4.6.2** (confirmed 2026-11-02).
-- [ ] Final regression Round 3 — destructive recovery/selection: `live_zombie_destruction_test.tscn`, `controlled_destruction_transaction_test.tscn`, `world_salvage_destruction_test.tscn`, and `live_zombie_conveyor_destruction_test.tscn` (**4 scenes, 48 checks**, pending the final local Godot rerun; HUD already passed 12/12 and F5 selection validation).
+- [x] Final regression Round 3 — destructive recovery/selection: `live_zombie_destruction_test.tscn`, `controlled_destruction_transaction_test.tscn`, `world_salvage_destruction_test.tscn`, and `live_zombie_conveyor_destruction_test.tscn` (**all 4 scenes and all 48/48 checks passed locally in Godot 4.6.2, confirmed 2026-11-02**).
 - [x] Validate **lossless destruction cargo recovery** for Storage, multi-inventory manufacturing and cargo-bearing belts (`tests/destruction_cargo_recovery_test.tscn`: **12/12 passed locally in Godot 4.6.2**). Current test escrow uses 100% recovery as a temporary safe default, **not** final salvage balance.
 - [x] Validate **controlled source removal after escrow** using `tests/controlled_destruction_transaction_test.tscn` (**12/12 passed locally in Godot 4.6.2**). Confirmed queued deletion, stopped processing, safe reciprocal disconnection, salvage capacity refusal, and unaffected neighboring belts.
 - [x] Validate **Main-world surviving salvage placeholders** through `tests/world_salvage_destruction_test.tscn` (**12/12 passed locally in Godot 4.6.2**; 15/15 source items retained in five independent world caches). These caches are runtime-only and not yet player-pickable.
-- [ ] After F5 conveyor destruction and historical regressions pass, review salvage pickup/storage persistence and balancing. Existing wreckage caches cannot yet be collected or saved between sessions; the customizable build catalog/hotbar remains the next planned major UI milestone.
+- [ ] Future follow-up: implement player collection and save/load persistence for wreckage salvage, plus resource-loss balancing. Current caches remain runtime-only; the accepted destruction milestone delivers lossless in-world salvage and safe removal, not pickup/persistence.
 - [ ] Decide optional repair of damaged surviving structures and rebuilding/salvage for destroyed structures; **0-HP permanent disabled state is not the intended final gameplay**.
 - [ ] Add basic defensive structure
 - [ ] Add player/factory survival test
@@ -358,10 +358,11 @@ Planned major systems:
 
 ---
 
-### 1G — Unlocked Building Catalog & Player-Customizable Build Hotbar (Planned)
+### 1G — Unlocked Building Catalog & Player-Customizable Build Hotbar (In Progress)
 
-**Sequence:** Begin after the building/conveyor destruction milestone is safe and accepted in Godot. No UI/input code is changed yet.
+**Phase entry:** Step 09.18 building/conveyor destruction has passed three final regression rounds and F5 gameplay validation. Custom hotbar work is now underway. The first component is a standalone assignment model; no live key routing or menu UI has been modified yet.
 
+- [ ] **Phase 1G1 — Stable-ID hotbar foundation:** Validate `BuildHotbarConfiguration` against nine real definitions: default 1–9, assigning/swapping Turret to 1 and Storage to 9, clearing slots, unlock guards, JSON-compatible save data, malformed save rejection and reordering safety (`res://tests/build_hotbar_configuration_test.tscn`, **12 checks committed; local F6 pending**).
 - [ ] Add a Build Catalog menu listing all unlocked `BuildingDefinition` entries, organized by building category; handle locked entries explicitly.
 - [ ] Replace hard-coded **1–9 → buildable_definitions array index** selection with configurable hotbar assignments. Support Turret on **1**, Storage on **9**, or any other unlocked combination.
 - [ ] Allow players to assign, swap, remove, and rearrange items in nine initial hotbar slots. Assigned number keys select the corresponding building while Build Mode is active.
@@ -370,7 +371,7 @@ Planned major systems:
 - [ ] Persist slot choices by stable `BuildingDefinition.building_id` and restore them on restart; validate changes against building unlock state.
 - [ ] Add Godot regression coverage for slot customization, swaps, locked building refusal, controller/keyboard input, menu focus, saves/reloads, and previously passed conveyor tests.
 
-**Scope:** UI/input and persistence only. Keep the current fixed shortcut system in place until its replacement is separately tested.
+**Scope:** UI/input and persistence only. The catalog model is not yet wired to the playable game; keep the current fixed shortcut system in place until placement, HUD and saving are individually validated. The accepted destruction milestone remains unchanged.
 
 ---
 
