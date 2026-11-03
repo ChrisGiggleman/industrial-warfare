@@ -11,6 +11,7 @@ class_name ZombieApproachComponent
 @export_range(0.1, 20.0, 0.1) var move_speed: float = 2.0
 @export_range(0.25, 5.0, 0.05) var stopping_distance: float = 1.5
 @export var automatic_target_selection: bool = true
+@export var target_conveyors: bool = false
 
 # =============================================================================
 # MOVEMENT STATE
@@ -24,11 +25,10 @@ var movement_status: String = "Idle"
 # FIND NEAREST BUILT STRUCTURE
 # =============================================================================
 
-# Intentionally ignores:
-# - conveyor segments and their transport cargo
-# - preview ghosts
-# - non-buildings, such as resource deposits
-# - deleted or unfinished structures
+# Targets healthy player-built structures and (when explicitly enabled)
+# healthy conveyor segments. Ignores previews, resource deposits,
+# deleted objects and depleted structures. Existing isolated movement
+# regressions keep target_conveyors disabled.
 
 func find_nearest_structure() -> Node3D:
 	if not is_inside_tree() or not get_parent() is Node3D:
@@ -48,23 +48,31 @@ func find_nearest_structure() -> Node3D:
 			or not structure.is_inside_tree()
 			or structure.is_queued_for_deletion()
 			or structure.is_in_group("construction_preview")
-			or structure is ConveyorSegment
 		):
 			continue
 
-		var runtime := structure.get_node_or_null(
-			"BuildingRuntime"
-		) as BuildingRuntime
-		if not is_instance_valid(runtime):
-			continue
+		if structure is ConveyorSegment:
+			if not target_conveyors:
+				continue
+			var belt_health := structure.get_node_or_null(
+				"ConveyorHealthComponent"
+			) as ConveyorHealthComponent
+			if not is_instance_valid(belt_health) or not belt_health.is_intact():
+				continue
+		else:
+			var runtime := structure.get_node_or_null(
+				"BuildingRuntime"
+			) as BuildingRuntime
+			if not is_instance_valid(runtime):
+				continue
 
-		# Zero-health structures can remain temporarily if salvage
-		# preflight fails; ignore them while choosing the next target.
-		var durability := structure.get_node_or_null(
-			"BuildingHealthComponent"
-		) as BuildingHealthComponent
-		if is_instance_valid(durability) and not durability.is_intact():
-			continue
+			# If recovery preflight fails, a zero-HP building may remain
+			# temporarily in place; never attack it again.
+			var durability := structure.get_node_or_null(
+				"BuildingHealthComponent"
+			) as BuildingHealthComponent
+			if is_instance_valid(durability) and not durability.is_intact():
+				continue
 
 		var distance_squared: float = Vector2(
 			structure.global_position.x - mover.global_position.x,
@@ -106,13 +114,25 @@ func _physics_process(delta: float) -> void:
 	):
 		current_target = null
 
-	# Ignore a formerly valid target after its health reaches zero.
+	# Discard targets deleted by salvage or left at zero HP after
+	# a failed recovery, including conveyor segments.
 	if is_instance_valid(current_target):
-		var target_health := current_target.get_node_or_null(
-			"BuildingHealthComponent"
-		) as BuildingHealthComponent
-		if is_instance_valid(target_health) and not target_health.is_intact():
-			current_target = null
+		if current_target is ConveyorSegment:
+			var belt_health := current_target.get_node_or_null(
+				"ConveyorHealthComponent"
+			) as ConveyorHealthComponent
+			if (
+				not target_conveyors
+				or not is_instance_valid(belt_health)
+				or not belt_health.is_intact()
+			):
+				current_target = null
+		else:
+			var target_health := current_target.get_node_or_null(
+				"BuildingHealthComponent"
+			) as BuildingHealthComponent
+			if is_instance_valid(target_health) and not target_health.is_intact():
+				current_target = null
 
 	if current_target == null and automatic_target_selection:
 		current_target = find_nearest_structure()
