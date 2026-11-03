@@ -271,7 +271,7 @@ The goal is for factory decisions and combat decisions to influence each other.
 
 ## Unlocked Building Catalog and Customizable Build Hotbar
 
-**Planned after the building and conveyor destruction milestone.** The fixed prototype shortcuts are temporary. Players should open a **Build Catalog** showing their unlocked buildings and assign any available building to whichever quick-build number they prefer.
+**Phase 1G now in progress, following completion of the core destruction milestone.** The existing fixed prototype shortcuts remain active while we implement and test a replacement. Players will open a **Build Catalog** showing unlocked buildings and assign any available building to whichever quick-build number they prefer.
 
 - **Hotbar:** Nine initial configurable slots, activated by number keys **1–9** while Build Mode is active. These keys select slots, not permanently defined building types.
 - **Unlocked catalog:** Browse buildings across categories such as Extraction, Manufacturing, Storage, Logistics, and Defense. Locked content may be shown separately for progression, but cannot be equipped or placed until unlocked.
@@ -282,7 +282,7 @@ The goal is for factory decisions and combat decisions to influence each other.
 - **Refactor requirement:** Present code uses number-key-to-array-index routing and has some special-case Conveyor Belt logic based on index **4**. Before swapping slots, migrate these checks to building identity/type or declared capabilities; changing the hotbar must never change snapping, belt corners, or demolition rules.
 - **Testing:** Verify every custom assignment, swaps, empty slots, locked-building refusal, keyboard selection, Build HUD updates, rotation, ghost placement, saving/reloading, and non-regression of belt-specific behaviors.
 
-This is a planned UI and input architecture feature, **not implemented yet**. The current hard-coded 1–9 layout remains until a separate Godot regression suite validates the replacement.
+**Current implementation:** A standalone `BuildHotbarConfiguration` data model supports all nine slots, stable building IDs, default mappings, moving/swapping assignments, clearing slots, unlock guards, and versioned JSON-compatible save/restore payloads. Its 12-case F6 regression is **pending local Godot validation**. The user-facing catalog, new input routing, dynamic HUD and actual file persistence **are not yet implemented**. Fixed Build Mode shortcuts remain active until their replacement passes dedicated regressions.
 
 ---
 
