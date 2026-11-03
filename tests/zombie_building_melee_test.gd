@@ -58,6 +58,8 @@ func _ready() -> void:
 	# Resolve exported sibling-node reference after the scene enters the tree.
 	assert(melee != null and melee.movement == movement)
 	movement.set_physics_process(false)
+	# Preserve building-only targeting for this historical regression.
+	movement.target_conveyors = false
 	melee.set_physics_process(false)
 
 	assert(zombie_health.current_health == 30)
