@@ -162,7 +162,22 @@ func _ready() -> void:
 	movement._physics_process(0.1)
 	assert(movement.current_target == second)
 	movement._physics_process(10.0)
-	movement._physics_process(0.1)
+	# The second target approaches diagonally after the first belt
+	# vanishes. Allow a few ordinary physics ticks to settle any
+	# sub-millimeter floating-point drift at the stop boundary.
+	for settle_tick: int in range(4):
+		movement._physics_process(0.1)
+		if movement.movement_status == "At Structure":
+			break
+	if movement.movement_status != "At Structure":
+		print(
+			"ARRIVAL DIAGNOSTIC | Target: ", movement.current_target,
+			" | Status: ", movement.movement_status,
+			" | Zombie: ", moving.global_position,
+			" | Belt: ", second.global_position,
+			" | Stop distance: ", movement.stopping_distance
+		)
+	assert(movement.current_target == second)
 	assert(movement.movement_status == "At Structure")
 	melee._physics_process(1.01)
 	var second_hp := second.get_node(
