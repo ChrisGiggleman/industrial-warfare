@@ -67,6 +67,8 @@ func _ready() -> void:
 	assert(is_equal_approx(melee.attack_interval, 1.0))
 	assert(zombie_hp.current_health == 30)
 	movement.set_physics_process(false)
+	# Preserve building-only targeting for this historical regression.
+	movement.target_conveyors = false
 	melee.set_physics_process(false)
 	print("PASS A: Main zombie has correctly wired live melee; static dummy retained")
 
