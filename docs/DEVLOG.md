@@ -1538,3 +1538,16 @@ Before calling full building-and-conveyor destruction complete and moving into t
 The developer confirmed that all **four movement and combat test suites passed locally in Godot 4.6.2** on 2026-11-02. These covered the prototype moving zombie, main-world moving zombie, isolated building melee and main-world melee integration. The existing building-only test fixtures therefore remain compatible with recent enemy conveyor targeting and movement-arrival adjustments.
 
 **Next gate — Round 2 factory and physical logistics:** Run the three existing scenes for physical-only resource conservation (**9 checks**), ammunition production building placement (**9 checks**), and defensive building placement (**12 checks**), for a total of **30 checks**. These round-two reruns are pending; do not mark them passed without local results. Round 3 will cover destruction and salvage recovery. No gameplay code was changed for this documentation checkpoint.
+
+
+### Step 09.18 — Final regression Round 2 accepted (30/30)
+
+On **2026-11-02**, the developer confirmed that all three factory/logistics regression suites passed again in local Godot 4.6.2. `conveyor_physical_only_conservation_test.tscn` passed **9/9**, `ammunition_press_build_mode_test.tscn` passed **9/9**, and `defensive_turret_build_mode_test.tscn` passed **12/12**, totaling **30/30** checks. Physical resource accounting, ammunition-press build logic and turret build/connection safeguards therefore remain compatible with the new zombie building/conveyor destruction changes.
+
+### Step 09.18 — Final regression Round 3 (pending)
+
+The final destruction and salvage verification uses four existing Godot F6 scenes, each containing 12 checks (**48 checks total**): `live_zombie_destruction_test.tscn`, `controlled_destruction_transaction_test.tscn`, `world_salvage_destruction_test.tscn`, and `live_zombie_conveyor_destruction_test.tscn`.
+
+Confirm lossless building/belt destruction, nearby conveyor survival, independent world wreckage caches, guarded recovery refusal and retry, live zombie targeting and conveyor breakage. The focused conveyor health HUD has already passed 12/12 and has F5 gameplay evidence, so rerun it only if a new regression affects selection or UI.
+
+**Status:** Rounds 1 and 2 are accepted; Round 3 is not yet rerun after the latest changes. Do not call the overall destruction milestone closed until the local results arrive. Customizable Building Catalog/1–9 hotbar is scheduled next.
