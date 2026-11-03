@@ -90,6 +90,12 @@ func _refresh_display() -> void:
 		_show_no_selection()
 		return
 
+	# Belt segments do not carry BuildingRuntime, so handle them
+	# before the building/resource display branches.
+	if selected_building is ConveyorSegment:
+		_refresh_conveyor_display(selected_building as ConveyorSegment)
+		return
+
 	var resource_node_runtime: ResourceNodeRuntime = (
 		selected_building.get_node_or_null("ResourceNodeRuntime") as ResourceNodeRuntime
 	)
@@ -111,6 +117,85 @@ func _refresh_display() -> void:
 		"PRODUCTION DEBUG\n\n"
 		+ "Selected object has no debug data."
 	)
+
+
+# =============================================================================
+# CONVEYOR DEBUG — DURABILITY, CARGO AND CONNECTIONS
+# =============================================================================
+
+# Display health and physical logistics for any selected conveyor:
+# straight, left corner or right corner. Read only; never changes
+# carried items, connections, or durability.
+
+func _refresh_conveyor_display(conveyor: ConveyorSegment) -> void:
+	if info_label == null or not is_instance_valid(conveyor):
+		return
+
+	var health := conveyor.get_node_or_null(
+		"ConveyorHealthComponent"
+	) as ConveyorHealthComponent
+	var cargo := conveyor.get_node_or_null(
+		"CargoInventory"
+	) as InventoryComponent
+
+	var display: String = (
+		"PRODUCTION DEBUG"
+		+ "\\n\\nConveyor: " + str(conveyor.name)
+		+ "\\nType: Conveyor Belt"
+	)
+
+	if is_instance_valid(health):
+		display += (
+			"\\n\\nCONVEYOR DURABILITY"
+			+ "\\nHP: " + str(health.current_health)
+			+ " / " + str(health.max_health)
+			+ "\\nStatus: " + (
+				"Intact" if health.is_intact() else "Destroyed"
+			)
+		)
+	else:
+		display += "\\n\\nCONVEYOR DURABILITY\\nUnavailable"
+
+	display += "\\n\\nCARGO STATUS"
+	if is_instance_valid(cargo):
+		var total: int = cargo.get_total_amount()
+		display += "\\nCapacity: " + str(total) + " / " + str(cargo.max_capacity)
+		if total == 0:
+			display += "\\nCargo: Empty"
+		else:
+			for key: Variant in cargo.items.keys():
+				if not (key is ItemDefinition):
+					continue
+				var item := key as ItemDefinition
+				if not is_instance_valid(item):
+					continue
+				var quantity: int = cargo.get_amount(item)
+				if quantity > 0:
+					display += (
+						"\\nCargo: " + item.display_name
+						+ " x" + str(quantity)
+					)
+	else:
+		display += "\\nCargo inventory unavailable"
+
+	var input_status: String = "Disconnected"
+	if is_instance_valid(conveyor.input_building_port):
+		input_status = "Building port"
+	elif is_instance_valid(conveyor.previous_segment):
+		input_status = "Previous conveyor"
+
+	var output_status: String = "Disconnected"
+	if is_instance_valid(conveyor.output_building_port):
+		output_status = "Building port"
+	elif is_instance_valid(conveyor.next_segment):
+		output_status = "Next conveyor"
+
+	display += (
+		"\\n\\nPHYSICAL CONNECTIONS"
+		+ "\\nInput: " + input_status
+		+ "\\nOutput: " + output_status
+	)
+	info_label.text = display
 
 
 # =============================================================================
