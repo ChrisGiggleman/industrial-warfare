@@ -58,6 +58,8 @@ func _ready() -> void:
 	)
 	assert(movement != null and health != null and static_health != null)
 	movement.set_physics_process(false)
+	# Preserve building-only targeting for this historical regression.
+	movement.target_conveyors = false
 	# The original integration suite deliberately excludes structure damage.
 	var melee := moving.get_node("MeleeComponent") as ZombieMeleeComponent
 	assert(melee != null and melee.movement == movement)
