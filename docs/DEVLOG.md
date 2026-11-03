@@ -1551,3 +1551,20 @@ The final destruction and salvage verification uses four existing Godot F6 scene
 Confirm lossless building/belt destruction, nearby conveyor survival, independent world wreckage caches, guarded recovery refusal and retry, live zombie targeting and conveyor breakage. The focused conveyor health HUD has already passed 12/12 and has F5 gameplay evidence, so rerun it only if a new regression affects selection or UI.
 
 **Status:** Rounds 1 and 2 are accepted; Round 3 is not yet rerun after the latest changes. Do not call the overall destruction milestone closed until the local results arrive. Customizable Building Catalog/1–9 hotbar is scheduled next.
+
+
+### Step 09.18 — Destruction milestone accepted after final Round 3 (48/48)
+
+On **2026-11-02**, the developer confirmed the four final destruction and salvage test suites all passed again in local Godot 4.6.2, **48/48 checks**. These covered Main-scene zombie building destruction, guarded transactions, persistent-in-scene salvage/wreckage, and zombie conveyor/corner destruction. With Round 1 (all four movement/combat suites) and Round 2 (**30/30 factory/logistics checks**) already passed, the **core building and conveyor destruction milestone is complete**.
+
+Acceptance includes automatic zombie damage to 100-HP buildings and 50-HP belt segments, local disconnection, destroyed source removal, world wreckage placeholders and lossless inventory/cargo accounting. Manual F5 gameplay previously confirmed building and conveyor wreckage and the selected conveyor's **40/50 HP** display.
+
+Deferred systems: player-pickable salvage, persistence between saves, destruction balancing, final debris effects, more advanced zombie navigation and waves. These do not invalidate the accepted foundation.
+
+### Phase 1G1 — Stable building IDs and configurable hotbar model (committed; F6 pending)
+
+- Existing `WorldInteraction` uses nine Build Mode slots indexed into `buildable_definitions`; the Build HUD hardcodes all nine labels, and numerous specialized Conveyor Belt branches compare `selected_building_index == 4`. Changing keys prematurely would break logistics, so live input/UI remains unchanged at this step.
+- Added `scripts/components/build_hotbar_configuration.gd` with `BuildHotbarConfiguration`, an independent nine-slot assignment model. Catalog items are keyed by stable `BuildingDefinition.building_id`; all nine prototype buildings start unlocked until the progression system exists.
+- The model supports default ordering, catalog enumeration, lookup by slot, swapping existing assignments, clearing and replacing slots, locking/unlocking with safe unequip, and JSON-compatible save/restore payloads (versioned ID strings). Restoration rejects malformed payloads and ignores missing, duplicated or currently locked IDs. No file is written on disk yet.
+- Added `res://tests/build_hotbar_configuration_test.tscn` with **12 checks awaiting local Godot validation**, including Turret → key 1, Storage → key 9, moving the belt out of slot 5, restoring a JSON snapshot after catalog reordering, unlock restrictions and malformed save safety.
+- **Next:** Pass the isolated F6 test. Then replace the 4-index Conveyor Belt assumptions with definition identity/type in a separate regression, connect configurable slot selection to the existing Build HUD, and add the unlocked-building menu and disk persistence. The current playable factory and combat systems remain unchanged.
