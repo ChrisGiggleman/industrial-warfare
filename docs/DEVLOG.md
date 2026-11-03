@@ -1449,3 +1449,15 @@ On **2026-11-02**, the developer ran `res://tests/live_zombie_destruction_test.t
 **Next acceptance gate:** Player-controlled **F5** test, not yet confirmed. Build a real Extractor or Storage near the prototype moving zombie (avoid placing a defensive turret nearby), observe the final 0-HP attack physically removing the structure, verify wreckage remains with the correct `WRECKAGE` or `SALVAGE: N` placeholder, and ensure the selection HUD clears cleanly.
 
 **Still pending:** zombie damage to conveyor segments, isolated belt health/destruction tests, recoverable player pickups, save/load of salvage, production-chain hardening, final wreckage FX, and progression toward the customizable build catalog/hotbar.
+
+
+### Step 09.18E — Zombie destruction verified in real gameplay
+
+On **2026-11-02**, the developer ran regular F5 gameplay and showed a green moving zombie next to a visible **WRECKAGE** placeholder where its attacked player structure had been. The previous structure was no longer visible; the Production Debug HUD was not showing it. This is the accepted player-controlled destruction/wreckage milestone. The screenshot shows an **empty wreckage** placeholder; stored material recovery and preservation of neighboring conveyors were verified separately by the passing 12-case regressions.
+
+### Step 09.18F1 — Conveyor durability across all belt geometries (committed; local validation pending)
+
+- Added `scripts/components/conveyor_health_component.gd` (`ConveyorHealthComponent`). Every belt starts at **50 HP**, accepts clamped positive damage, emits a single depletion signal at zero, and ignores repeated hits after depletion. It does **not** itself remove a belt or trigger attacks yet.
+- Attached the component to all three physical belt scene shapes used by `ConveyorPieceSelector`: `conveyor_straight.tscn`, `conveyor_corner.tscn` (right), and `conveyor_corner_left.tscn`. Both corner scenes now include an independent one-item `CargoInventory` for safe future salvage/recovery. These added corner buffers do **not** add transport timers or alter the established belt-transfer mechanism.
+- Added `res://tests/conveyor_durability_foundation_test.tscn` (**12 checks pending local F6 validation**): Main scene compatibility, straight/right/left durability and buffer counts, ghost safety, physically attached Storage and two straight belts, invalid/partial/overkill damage, exactly-once depletion signaling, no automatic removal, malformed cargo fail-closed behavior, explicit zero-HP straight-belt destruction and neighbor preservation, cargo-bearing right-corner and empty left-corner salvage, and final accounting of two recovered units plus one live neighboring belt unit.
+- **Scope boundary:** Automatic destruction on belt HP depletion and zombie targeting/melee against belts are NOT enabled in Step 09.18F1. Existing player demolition checks remain unchanged. The next checkpoint will wire belt targeting and guarded destruction only after the separate health regression passes.
