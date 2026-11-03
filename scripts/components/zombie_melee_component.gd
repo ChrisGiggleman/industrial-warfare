@@ -6,10 +6,10 @@ class_name ZombieMeleeComponent
 # =============================================================================
 
 # Attached to the prototype moving zombie in the playable world.
-# Targeting follows ZombieApproachComponent and only affects
-# structures carrying an explicit BuildingHealthComponent.
-# In Main, zero-HP buildings can enter the guarded destruction and
-# world-salvage flow. Isolated test worlds may still keep them in place.
+# Targeting follows ZombieApproachComponent. Buildings use
+# BuildingHealthComponent; targeted belts use ConveyorHealthComponent.
+# A Main-world depletion signal activates the guarded salvage service.
+# Isolated regression worlds may disable belt targeting and destruction.
 
 @export var movement: ZombieApproachComponent
 @export_range(0.25, 5.0, 0.05) var attack_range: float = 1.55
@@ -59,7 +59,6 @@ func _physics_process(delta: float) -> void:
 		or target.is_queued_for_deletion()
 		or not target.is_in_group("player_built")
 		or target.is_in_group("construction_preview")
-		or target is ConveyorSegment
 	):
 		attack_status = "No Structure"
 		return
@@ -68,16 +67,35 @@ func _physics_process(delta: float) -> void:
 		attack_status = "Approaching"
 		return
 
-	var runtime := target.get_node_or_null("BuildingRuntime") as BuildingRuntime
-	var health := target.get_node_or_null(
-		"BuildingHealthComponent"
-	) as BuildingHealthComponent
-	if not is_instance_valid(runtime) or not is_instance_valid(health):
-		attack_status = "Undamageable"
-		return
-	if not health.is_intact():
-		attack_status = "Structure Disabled"
-		return
+	var building_health: BuildingHealthComponent = null
+	var conveyor_health: ConveyorHealthComponent = null
+
+	if target is ConveyorSegment:
+		if not movement.target_conveyors:
+			attack_status = "No Structure"
+			return
+		conveyor_health = target.get_node_or_null(
+			"ConveyorHealthComponent"
+		) as ConveyorHealthComponent
+		if not is_instance_valid(conveyor_health):
+			attack_status = "Undamageable"
+			return
+		if not conveyor_health.is_intact():
+			attack_status = "Structure Disabled"
+			return
+	else:
+		var runtime := target.get_node_or_null(
+			"BuildingRuntime"
+		) as BuildingRuntime
+		building_health = target.get_node_or_null(
+			"BuildingHealthComponent"
+		) as BuildingHealthComponent
+		if not is_instance_valid(runtime) or not is_instance_valid(building_health):
+			attack_status = "Undamageable"
+			return
+		if not building_health.is_intact():
+			attack_status = "Structure Disabled"
+			return
 
 	var offset := Vector2(
 		target.global_position.x - mover.global_position.x,
@@ -95,9 +113,13 @@ func _physics_process(delta: float) -> void:
 		attack_status = "Cooldown"
 		return
 
-	# The health component decides how much damage actually applies.
-	# It never frees the building or its stored materials.
-	var dealt: int = health.take_damage(attack_damage)
+	# Health components clamp damage and signal the world salvage service.
+	# The service owns the recovery and removal transaction.
+	var dealt: int = 0
+	if is_instance_valid(conveyor_health):
+		dealt = conveyor_health.take_damage(attack_damage)
+	else:
+		dealt = building_health.take_damage(attack_damage)
 	if dealt <= 0:
 		attack_status = "Structure Disabled"
 		return
