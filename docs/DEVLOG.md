@@ -1492,3 +1492,18 @@ On **2026-11-02**, the developer reran `res://tests/live_zombie_conveyor_destruc
 The accepted run validated: Main-world belt targeting and guarded destruction; construction-preview exclusion; connected Storage → first belt → second belt with cargo; approach/range gating and 10-HP melee; one-second attack cooldown; fifth hit destroying a 50-HP straight belt; local connection severing and preservation of Storage/neighbor belt stock; retargeting the next straight belt; invalid cargo blocking deletion until recovery retry; and zombie-triggered removal of a loaded right-corner and empty left-corner belt. Final item accounting: **one salvaged ore, one salvaged ingot, one salvaged ammunition round, plus three ore still stored in the surviving Storage**.
 
 **Remaining acceptance:** Player-controlled F5 demonstration of conveyor destruction, wreckage, and intact adjacent conveyor pieces. After F5, rerun the relevant historical movement, melee, building destruction, and conveyor logistics regressions because enemy targeting and arrival tolerance changed. Do not treat salvage collection, save/load, or the planned customizable build catalog/hotbar as complete.
+
+
+### Step 09.18F3 — Conveyor destruction observed in playable F5 world
+
+On **2026-11-02**, the developer showed two distinct **WRECKAGE** placeholders near the moving green zombie in regular gameplay, confirming player-placed conveyor destruction now produces visible wreckage. The Production Debug HUD said **No object selected**, consistent with the selected destroyed segment being removed. Cargo preservation and intact neighboring belt behavior had previously passed the 12-case integration regression, but cannot be inferred independently from this screenshot.
+
+**User-reported UI gap:** Clicking an intact conveyor did not reveal its health. Root cause in `ProductionDebugHUD._refresh_display()`: it only handled resource-node and BuildingRuntime branches; `ConveyorSegment` objects have neither, so their HP was not displayed. The empty-selection label after destruction is expected.
+
+### Step 09.18F4 — Conveyor durability, cargo and connection HUD (code committed; F6 pending)
+
+- `scripts/production_debug_hud.gd` now checks for `ConveyorSegment` before resource nodes and buildings. The shared HUD renders the selected belt's identity, **HP current / maximum**, **Intact / Destroyed**, actual `CargoInventory` count and item display names, plus physical input/output link status (building port, previous/next conveyor, disconnected).
+- The change is read-only; no conveyor transport, collision, melee, durability, or damage/destruction code was modified. Existing non-conveyor HUD displays keep their original paths. The activity progress bar remains hidden for conveyors.
+- Added `res://tests/conveyor_health_hud_test.tscn` (**12 checks; local Godot 4.6.2 verification pending**), covering WorldInteraction selection, all three belt shapes, dynamic HP and cargo changes, building/neighbor belt links, HUD progress visibility, automatic clearing of selection upon damage-triggered belt destruction, salvage accounting, and reselecting the intact next segment.
+
+**Next:** Run the new HUD test scene in Godot, fix any resulting errors, then verify by F5 selecting an intact belt and watching its displayed HP change while the zombie attacks. Before closing the destruction milestone, rerun important legacy logistics/movement/combat regressions. The customizable Build Catalog/hotbar remains the next planned major UI feature.
