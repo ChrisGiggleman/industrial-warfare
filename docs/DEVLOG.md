@@ -1568,3 +1568,16 @@ Deferred systems: player-pickable salvage, persistence between saves, destructio
 - The model supports default ordering, catalog enumeration, lookup by slot, swapping existing assignments, clearing and replacing slots, locking/unlocking with safe unequip, and JSON-compatible save/restore payloads (versioned ID strings). Restoration rejects malformed payloads and ignores missing, duplicated or currently locked IDs. No file is written on disk yet.
 - Added `res://tests/build_hotbar_configuration_test.tscn` with **12 checks awaiting local Godot validation**, including Turret → key 1, Storage → key 9, moving the belt out of slot 5, restoring a JSON snapshot after catalog reordering, unlock restrictions and malformed save safety.
 - **Next:** Pass the isolated F6 test. Then replace the 4-index Conveyor Belt assumptions with definition identity/type in a separate regression, connect configurable slot selection to the existing Build HUD, and add the unlocked-building menu and disk persistence. The current playable factory and combat systems remain unchanged.
+
+
+### Phase 1G1 — Stable-ID hotbar model accepted (12/12)
+
+The developer supplied local Godot 4.6.2 output confirming **ALL 12 BUILD HOTBAR CONFIGURATION FOUNDATION TESTS PASSED** on 2026-11-02. The test verified all nine unique building IDs, unchanged default slots, Turret → 1 and Storage → 9 swaps, moved/cleared Conveyor Belt assignments, unlock guards, stable-ID JSON-compatible snapshots and restores after catalog reordering, and malformed/duplicate/locked ID rejection without changing live Build Mode.
+
+### Phase 1G2 — Conveyor tool identity migration (code committed; F6 pending)
+
+The existing `scripts/world_interaction.gd` contained **22** comparisons of `selected_building_index == 4` or `!= 4` governing conveyor-specific snap previews, corner discovery, bridge/offset placement, debug keys H/J/K and ghost-scene overrides. They all now call the shared `_is_conveyor_selected()` helper, which tests `_get_selected_building_definition().building_id == &"conveyor_belt"`. The helper avoids relying on the definition's current array position or assigned quick-build number. No changes were made to actual conveyor transport/snapping algorithms, Build HUD labels, current numeric input routing, or physical placement geometry.
+
+Added `res://tests/conveyor_building_identity_test.tscn` (**12 checks pending local Godot 4.6.2 validation**). This uses an isolated Main scene to verify default Conveyor Belt selection and both left/right ghost-scene overrides, rejected overrides when Turret is selected, all nine original building identities, hotbar data-model assignment independently from Main, and a simulated catalog reordering that puts Conveyor Belt at index **0** and Test Extractor at index **4**. It then proves corners still preview at index 0, the old index 4 cannot trigger conveyor previews, invalid selections remain harmless, and the original catalog/ghost cleanup still work.
+
+**Regression boundary:** This is an identity-only refactor. Arbitrary number-key remapping and user-facing Build Catalog are **not enabled** until this F6 test and related physical conveyor placement regressions pass. Continue respecting the current 1–9 Build HUD labels and existing construction controls.
