@@ -947,6 +947,23 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 **Safety:** Do not delete established proximity logic until item conservation can be verified with physical movement alone; a working ore-to-ingot chain does not by itself prove the absence of parallel transfers. Do not classify a Merger with a full output buffer as broken simply because one input temporarily stops. Core acceptance evidence and deferred robustness checks are recorded in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
+## Player Build Hotbar — Initial Stable-ID Configuration Layer (Phase 1G1)
+
+The **core building and conveyor destruction milestone has been accepted** after the latest 48/48 final-regression checks. Build hotbar customization is now being introduced separately from the working placement/logistics system.
+
+- `res://scripts/components/build_hotbar_configuration.gd` provides a `RefCounted` configuration model with **nine slots (zero-based 0–8, player keys 1–9)**.
+- The catalog is made from the actual `BuildingDefinition` assets. Stable `building_id` values identify assignments independently of `buildable_definitions` array order.
+- `configure()` registers definitions; all current prototype items are unlocked by default. `set_unlocked()` excludes a locked building from the hotbar without changing structures already built.
+- `assign()` moves an equipped building to another slot and swaps displaced assignments if both are in the hotbar; `clear_slot()` leaves an empty shortcut. Catalog browsing and keyboard selection will use these APIs later.
+- `to_save_data()` and `restore_save_data()` produce and validate versioned JSON-compatible data with string IDs. The method **does not write files**; persistence and profile management remain future work. Restoration rejects malformed documents and drops unknown, locked or duplicate IDs without corrupting valid slots.
+- `res://tests/build_hotbar_configuration_test.tscn` contains the isolated **12-case Godot regression, local test pending**.
+- **Not wired yet:** `WorldInteraction` currently selects definitions by array index. Its many `selected_building_index == 4` checks depend on Conveyor Belt in build slot 5 and must be changed to a stable definition/type check **before arbitrary key assignments are activated**. `build_hud.gd` also has fixed per-slot labels.
+- The planned sequence is isolated configuration acceptance → conveyor-identity refactor with legacy connection regressions → dynamic Build HUD + number-key routing → unlocked catalog UI → user-file persistence.
+
+This layer is intentionally independent from the active runtime until the above compatibility tests pass.
+
+---
+
 ## Architectural Principles
 
 Industrial Warfare currently follows these rules:
