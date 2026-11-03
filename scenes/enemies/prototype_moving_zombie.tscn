@@ -29,6 +29,7 @@ max_health = 30
 script = ExtResource("3_approach")
 move_speed = 2.0
 stopping_distance = 1.5
+target_conveyors = true
 
 [node name="MeleeComponent" type="Node" parent="." node_paths=PackedStringArray("movement")]
 script = ExtResource("4_melee")
