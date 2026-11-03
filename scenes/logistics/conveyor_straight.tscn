@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://b848eeek7sxio" path="res://scripts/components/conveyor_transport_timer.gd" id="5_7h0dl"]
 [ext_resource type="Script" uid="uid://llkuuwsdiqr7" path="res://scripts/components/conveyor_cargo_visual.gd" id="6_yn77f"]
 
+[ext_resource type="Script" path="res://scripts/components/conveyor_health_component.gd" id="health_belt"]
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tgi11"]
 albedo_color = Color(0.39215687, 0.46666667, 0.5137255, 1)
 metallic = 0.2
@@ -52,6 +53,11 @@ collision_mask = 0
 [node name="InteractionHitbox" type="CollisionShape3D" parent="InteractionHitbox" unique_id=906461124]
 transform = Transform3D(0.9999756, 0, 0.00698126, 0, 1, 0, -0.00698126, 0, 0.9999756, 0, 0.3, 0)
 shape = SubResource("BoxShape3D_j1hak")
+
+
+[node name="ConveyorHealthComponent" type="Node" parent="."]
+script = ExtResource("health_belt")
+max_health = 50
 
 [node name="CargoInventory" type="Node" parent="." unique_id=1909112333]
 script = ExtResource("3_l8fw3")
