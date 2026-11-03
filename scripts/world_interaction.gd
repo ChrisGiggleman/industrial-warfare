@@ -368,7 +368,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Read-only diagnosis of the conveyor under the mouse and its
 		# nearest building input. No connections are modified.
 		if (
-			selected_building_index == 4
+			_is_conveyor_selected()
 			and event is InputEventKey
 			and event.pressed
 			and not event.echo
@@ -389,7 +389,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Does not modify the factory.
 
 		if (
-			selected_building_index == 4
+			_is_conveyor_selected()
 			and event is InputEventKey
 			and event.pressed
 			and not event.echo
@@ -407,7 +407,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Keep the command before primary_action and the final return.
 
 		if (
-			selected_building_index == 4
+			_is_conveyor_selected()
 			and event is InputEventKey
 			and event.pressed
 			and not event.echo
@@ -812,6 +812,26 @@ func _get_selected_building_definition() -> BuildingDefinition:
 		return null
 
 	return buildable_definitions[selected_building_index]
+
+# =============================================================================
+# CONVEYOR TOOL — SELECTED BUILDING IDENTITY
+# =============================================================================
+
+# Conveyor snapping, corner placement, bridging and connection tools
+# depend on this building's identity rather than the number key or
+# its position in the buildable-definitions catalog.
+#
+# Keep selected_building_index as the active definition index during
+# this migration; the customizable hotbar will map slots to definitions
+# in its own separate milestone.
+
+func _is_conveyor_selected() -> bool:
+	var definition: BuildingDefinition = _get_selected_building_definition()
+	return (
+		is_instance_valid(definition)
+		and definition.building_id == &"conveyor_belt"
+	)
+
 
 # =============================================================================
 # SELECTED BUILDING SCENE
@@ -1440,7 +1460,7 @@ func _update_placement_preview() -> void:
 			var corner_candidate: Dictionary = {}
 
 			if (
-				selected_building_index == 4
+				_is_conveyor_selected()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
 				corner_candidate = (
@@ -1509,7 +1529,7 @@ func _update_placement_preview() -> void:
 
 			var receiver_candidate: Dictionary = {}
 			if (
-				selected_building_index == 4
+				_is_conveyor_selected()
 				and missing_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
@@ -1533,7 +1553,7 @@ func _update_placement_preview() -> void:
 			# =============================================================================
 			var source_candidate: Dictionary = {}
 			if (
-				selected_building_index == 4
+				_is_conveyor_selected()
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
@@ -1559,7 +1579,7 @@ func _update_placement_preview() -> void:
 
 			var terminal_candidate: Dictionary = {}
 			if (
-				selected_building_index == 4
+				_is_conveyor_selected()
 				and missing_corner_preview.is_empty()
 				and not Input.is_physical_key_pressed(KEY_SHIFT)
 			):
@@ -1584,7 +1604,7 @@ func _update_placement_preview() -> void:
 
 			var gap_candidate: Dictionary = {}
 			if (
-				selected_building_index == 4
+				_is_conveyor_selected()
 				and missing_corner_preview.is_empty()
 				and receiver_corner_preview.is_empty()
 				and source_corner_preview.is_empty()
@@ -3041,7 +3061,7 @@ func _try_place_object() -> void:
 	# being committed after Shift is pressed.
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and Input.is_physical_key_pressed(KEY_SHIFT)
 	):
 		_update_placement_preview()
@@ -3051,7 +3071,7 @@ func _try_place_object() -> void:
 	# =============================================================================
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not terminal_corner_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3084,7 +3104,7 @@ func _try_place_object() -> void:
 	# =============================================================================
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not gap_connector_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3123,7 +3143,7 @@ func _try_place_object() -> void:
 	# COMMIT SOURCE CORNER ON CLICK
 	# =============================================================================
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not source_corner_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3156,7 +3176,7 @@ func _try_place_object() -> void:
 	# A queued mouse event can arrive after the last preview update.
 	# Require the target to remain under the current pointer.
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not receiver_corner_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3172,7 +3192,7 @@ func _try_place_object() -> void:
 	# A selected straight receiver already occupies this tile.
 	# Connect in place; do NOT instantiate another belt.
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not receiver_corner_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3210,7 +3230,7 @@ func _try_place_object() -> void:
 	# Shift continues to bypass automatic corner snapping.
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and not missing_corner_preview.is_empty()
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -3267,7 +3287,7 @@ func _try_place_object() -> void:
 	# One concise message makes it clear whether the
 	# new object will be physically connected or placed freely.
 
-	if selected_building_index == 4 and placement_ghost is ConveyorSegment:
+	if _is_conveyor_selected() and placement_ghost is ConveyorSegment:
 
 		if (
 			is_instance_valid(conveyor_bridge_source)
@@ -3315,7 +3335,7 @@ func _try_place_object() -> void:
 	# Straight conveyors retain their normal placement rules.
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and conveyor_preview_scene != null
 		and conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
 	):
@@ -3363,7 +3383,7 @@ func _try_place_object() -> void:
 
 		if (
 			not placement_ghost is ConveyorSegment
-			or selected_building_index != 4
+			or not _is_conveyor_selected()
 			or conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
 			or not is_instance_valid(conveyor_bridge_source)
 			or not is_instance_valid(conveyor_bridge_destination)
@@ -3672,7 +3692,7 @@ func _try_place_object() -> void:
 			return
 
 		if (
-			selected_building_index != 4
+			not _is_conveyor_selected()
 			or conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
 			or is_instance_valid(conveyor_snap_source)
 			or is_instance_valid(conveyor_building_snap_port)
@@ -3794,7 +3814,7 @@ func _try_place_object() -> void:
 	# Other building types retain their normal scene.
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and placement_ghost is ConveyorSegment
 		and conveyor_preview_scene != null
 	):
@@ -4083,7 +4103,7 @@ func _try_place_object() -> void:
 
 	
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and new_object is ConveyorSegment
 		and not Input.is_physical_key_pressed(KEY_SHIFT)
 	):
@@ -4210,7 +4230,7 @@ func _create_placement_ghost(
 	# OPTIONAL CONVEYOR SCENE OVERRIDE
 	# =============================================================================
 
-	# Only the Conveyor Belt tool (index 4 / key 5)
+	# Only the Conveyor Belt tool (identified by building_id)
 	# may replace its default scene with an alternate
 	# conveyor shape.
 	#
@@ -4218,7 +4238,7 @@ func _create_placement_ghost(
 	# normal BuildingDefinition scenes.
 
 	if (
-		selected_building_index == 4
+		_is_conveyor_selected()
 		and scene_override != null
 	):
 
