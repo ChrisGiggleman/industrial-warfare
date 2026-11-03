@@ -1507,3 +1507,10 @@ On **2026-11-02**, the developer showed two distinct **WRECKAGE** placeholders n
 - Added `res://tests/conveyor_health_hud_test.tscn` (**12 checks; local Godot 4.6.2 verification pending**), covering WorldInteraction selection, all three belt shapes, dynamic HP and cargo changes, building/neighbor belt links, HUD progress visibility, automatic clearing of selection upon damage-triggered belt destruction, salvage accounting, and reselecting the intact next segment.
 
 **Next:** Run the new HUD test scene in Godot, fix any resulting errors, then verify by F5 selecting an intact belt and watching its displayed HP change while the zombie attacks. Before closing the destruction milestone, rerun important legacy logistics/movement/combat regressions. The customizable Build Catalog/hotbar remains the next planned major UI feature.
+
+
+### Step 09.18F4 — Conveyor health and cargo HUD accepted (12/12)
+
+On **2026-11-02**, the developer ran `res://tests/conveyor_health_hud_test.tscn` in Godot 4.6.2 and supplied output confirming **ALL 12 CONVEYOR HEALTH HUD TESTS PASSED** (PASS A–L). The local run verified a clean initial HUD, selection and 50/50-HP display across straight and both corner segments, changes to displayed HP after damage, live inventory quantities and item names, connected building/downstream/previous-belt input-output labels, hidden production progress for belts, selected-belt removal clearing HUD/selection, cargo preserved in wreckage, and reselecting the surviving downstream belt.
+
+**Next acceptance:** In regular F5 gameplay, select an intact belt with a zombie approaching and verify the Production Debug HUD changes from **HP: 50 / 50** through 10-HP decrements, then clears when that belt is destroyed. This manual check has **not yet been provided**. Afterward, run a final historical regression set for movement, melee, building destruction, conveyor logistics and cargo conservation, including the new arrival tolerance and both types of damageable targets. Preserve the planned unlocked-building catalog and customizable quickbar as the next major UI phase once the destruction milestone is accepted.
