@@ -56,6 +56,8 @@ func _ready() -> void:
 	var movement := zombie.get_node("MovementComponent") as ZombieApproachComponent
 	assert(health != null and movement != null)
 	movement.set_physics_process(false)
+	# Preserve building-only targeting for this historical regression.
+	movement.target_conveyors = false
 	# This suite advances approach and turret fire manually, not melee.
 	var melee := zombie.get_node("MeleeComponent") as ZombieMeleeComponent
 	assert(melee != null)
