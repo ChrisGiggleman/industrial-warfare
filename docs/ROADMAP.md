@@ -362,11 +362,11 @@ Planned major systems:
 
 **Phase entry:** Step 09.18 building/conveyor destruction has passed three final regression rounds and F5 gameplay validation. Custom hotbar work is now underway. The first component is a standalone assignment model; no live key routing or menu UI has been modified yet.
 
-- [ ] **Phase 1G1 — Stable-ID hotbar foundation:** Validate `BuildHotbarConfiguration` against nine real definitions: default 1–9, assigning/swapping Turret to 1 and Storage to 9, clearing slots, unlock guards, JSON-compatible save data, malformed save rejection and reordering safety (`res://tests/build_hotbar_configuration_test.tscn`, **12 checks committed; local F6 pending**).
+- [x] **Phase 1G1 — Stable-ID hotbar foundation:** `res://tests/build_hotbar_configuration_test.tscn` passed **12/12** locally in Godot 4.6.2 (2026-11-02). Covers defaults, Turret → key 1, Storage → key 9, swaps, empty/locked slots, JSON payloads and catalog reordering.
 - [ ] Add a Build Catalog menu listing all unlocked `BuildingDefinition` entries, organized by building category; handle locked entries explicitly.
 - [ ] Replace hard-coded **1–9 → buildable_definitions array index** selection with configurable hotbar assignments. Support Turret on **1**, Storage on **9**, or any other unlocked combination.
 - [ ] Allow players to assign, swap, remove, and rearrange items in nine initial hotbar slots. Assigned number keys select the corresponding building while Build Mode is active.
-- [ ] Convert existing `selected_building_index == 4` Conveyor Belt special cases into identity- or capability-based behavior so reassigning the Conveyor Belt cannot break snapping, corners, or connection logic.
+- [ ] **Phase 1G2 — Stable conveyor identity:** Replaced **22 hard-coded slot-5 comparisons** in `scripts/world_interaction.gd` with `_is_conveyor_selected()` checking `BuildingDefinition.building_id == "conveyor_belt"`. Run `res://tests/conveyor_building_identity_test.tscn` (**12 checks committed; local F6 pending**) to confirm straight/corner ghost behavior survives moving conveyor definition from index 4 to index 0. Then rerun critical conveyor corner/snap regressions before activating configurable 1–9 selection.
 - [ ] Drive the Build HUD from the assigned slot mapping and display the correct building names, selection highlights, and empty slots dynamically.
 - [ ] Persist slot choices by stable `BuildingDefinition.building_id` and restore them on restart; validate changes against building unlock state.
 - [ ] Add Godot regression coverage for slot customization, swaps, locked building refusal, controller/keyboard input, menu focus, saves/reloads, and previously passed conveyor tests.
