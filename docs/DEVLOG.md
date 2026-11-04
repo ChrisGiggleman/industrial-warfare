@@ -1581,3 +1581,17 @@ The existing `scripts/world_interaction.gd` contained **22** comparisons of `sel
 Added `res://tests/conveyor_building_identity_test.tscn` (**12 checks pending local Godot 4.6.2 validation**). This uses an isolated Main scene to verify default Conveyor Belt selection and both left/right ghost-scene overrides, rejected overrides when Turret is selected, all nine original building identities, hotbar data-model assignment independently from Main, and a simulated catalog reordering that puts Conveyor Belt at index **0** and Test Extractor at index **4**. It then proves corners still preview at index 0, the old index 4 cannot trigger conveyor previews, invalid selections remain harmless, and the original catalog/ghost cleanup still work.
 
 **Regression boundary:** This is an identity-only refactor. Arbitrary number-key remapping and user-facing Build Catalog are **not enabled** until this F6 test and related physical conveyor placement regressions pass. Continue respecting the current 1–9 Build HUD labels and existing construction controls.
+
+
+### Phase 1G2 — Stable conveyor identity regression accepted (12/12; 2026-11-04)
+
+The developer supplied a Godot 4.6.2 screenshot confirming **ALL 12 CONVEYOR BUILDING IDENTITY TESTS PASSED**. The migration from 22 `selected_building_index == 4` / `!= 4` branches to the stable `building_id == &"conveyor_belt"` helper preserved straight, left-corner and right-corner placement ghosts. Tests also passed when Conveyor Belt occupied catalog index 0 and Extractor occupied the former index 4, including guards against using conveyor previews on non-conveyor types. The original catalog and placement cleanup remained intact.
+
+The messages `Extractor has no resource node` appeared **after** the success sentinel and are expected for temporary Extractor instances/ghosts in an isolated test without a deposit; they do not overturn the 12 passed assertions.
+
+Before activating hotbar remapping, rerun eight relevant historical Godot F6 scenes (no code changes in this checkpoint), arranged in two focused groups:
+
+- **Round A (37 checks):** `conveyor_building_placement_snap_test.tscn` (8), `conveyor_receiver_auto_snap_test.tscn` (11), `conveyor_source_corner_auto_snap_test.tscn` (10), `conveyor_terminal_building_corner_test.tscn` (8). These protect building input/output snaps and in-place source, receiver and terminal corner conversions.
+- **Round B (43 checks):** `conveyor_missing_corner_placement_test.tscn` (9), `conveyor_dual_ended_bridge_test.tscn` (11), `conveyor_fractional_bridge_test.tscn` (12), `conveyor_offset_corner_bridge_test.tscn` (11). These protect missing corners and short, full-length and offset connectors.
+
+**Status:** 1G2 identity regression accepted, historical targeted rounds **pending local Godot reruns (80 checks)**. The active numeric input layout and Build HUD remain fixed. The UI/catalog work follows these passes, with persistent hotbar save/load and eventual unlock progression still unimplemented.
