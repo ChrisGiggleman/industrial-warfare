@@ -1595,3 +1595,12 @@ Before activating hotbar remapping, rerun eight relevant historical Godot F6 sce
 - **Round B (43 checks):** `conveyor_missing_corner_placement_test.tscn` (9), `conveyor_dual_ended_bridge_test.tscn` (11), `conveyor_fractional_bridge_test.tscn` (12), `conveyor_offset_corner_bridge_test.tscn` (11). These protect missing corners and short, full-length and offset connectors.
 
 **Status:** 1G2 identity regression accepted, historical targeted rounds **pending local Godot reruns (80 checks)**. The active numeric input layout and Build HUD remain fixed. The UI/catalog work follows these passes, with persistent hotbar save/load and eventual unlock progression still unimplemented.
+
+
+### Phase 1G2 — Targeted conveyor regression Round A accepted (37/37; 2026-11-04)
+
+The developer confirmed that **all four** historical building-port snapping and conveyor-corner F6 scenes passed in Godot 4.6.2 after the 22-branch conveyor identity refactor. The results were: `conveyor_building_placement_snap_test.tscn` **8/8**, `conveyor_receiver_auto_snap_test.tscn` **11/11**, `conveyor_source_corner_auto_snap_test.tscn` **10/10**, and `conveyor_terminal_building_corner_test.tscn` **8/8**, for **37/37**. This confirms those established building-port and corner behaviors remain compatible with selecting Conveyor Belt by `building_id`.
+
+**Next gate — Round B (43 checks; pending local F6):** `conveyor_missing_corner_placement_test.tscn` (9), `conveyor_dual_ended_bridge_test.tscn` (11), `conveyor_fractional_bridge_test.tscn` (12), and `conveyor_offset_corner_bridge_test.tscn` (11). All four scenes are verified present on GitHub main, but **have not yet been rerun** after this refactor.
+
+No production code or hotbar input behavior was modified in this documentation checkpoint. Once Round B passes, proceed incrementally with actual configurable numeric key selection and the dynamic Build HUD, preserving the full conveyor placement/snap pipeline.
