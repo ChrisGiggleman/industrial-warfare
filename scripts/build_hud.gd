@@ -1,5 +1,18 @@
 extends CanvasLayer
 
+@onready var visual_hotbar: PanelContainer = $VisualHotbar
+@onready var build_panel: PanelContainer = $BuildPanel
+
+
+func _ready() -> void:
+	build_panel.visibility_changed.connect(_sync_visual_visibility)
+	_sync_visual_visibility()
+	_refresh_hotbar_labels()
+
+
+func _sync_visual_visibility() -> void:
+	visual_hotbar.visible = build_panel.visible
+
 
 # =============================================================================
 # HUD REFERENCES
@@ -155,6 +168,11 @@ func _refresh_hotbar_labels() -> void:
 		label_node.text = (
 			"> " if selected else "  "
 		) + "[" + str(slot_index + 1) + "] " + slot_name
+
+	if is_instance_valid(visual_hotbar):
+		visual_hotbar.render_slots(
+			hotbar_configuration, selected_hotbar_slot, selected_color
+		)
 
 
 # =============================================================================
