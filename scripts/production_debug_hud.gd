@@ -90,8 +90,12 @@ func _refresh_display() -> void:
 		_show_no_selection()
 		return
 
-	# Belt segments do not carry BuildingRuntime, so handle them
-	# before the building/resource display branches.
+	# Wreckage and conveyor segments have no BuildingRuntime, so
+	# handle them before the building/resource display branches.
+	if selected_building is WorldSalvageCache:
+		_refresh_salvage_display(selected_building as WorldSalvageCache)
+		return
+
 	if selected_building is ConveyorSegment:
 		_refresh_conveyor_display(selected_building as ConveyorSegment)
 		return
@@ -117,6 +121,63 @@ func _refresh_display() -> void:
 		"PRODUCTION DEBUG\n\n"
 		+ "Selected object has no debug data."
 	)
+
+
+# =============================================================================
+# WRECKAGE DEBUG — STORED SALVAGE AND SAFE CLEANUP
+# =============================================================================
+
+# Wreckage can be inspected like a building. Empty caches can be
+# cleared in Demolition Mode, but a stocked cache remains protected
+# until a separate player-controlled collection system exists.
+
+func _refresh_salvage_display(cache: WorldSalvageCache) -> void:
+	if info_label == null or not is_instance_valid(cache):
+		return
+
+	var inventory_component: InventoryComponent = cache.inventory
+	if not is_instance_valid(inventory_component):
+		info_label.text = "PRODUCTION DEBUG\n\nWreckage inventory unavailable"
+		return
+
+	var total: int = inventory_component.get_total_amount()
+	var display_text: String = (
+		"PRODUCTION DEBUG"
+		+ "\n\nObject: Wreckage"
+		+ "\nType: Salvage Cache"
+		+ "\nStatus: " + (
+			"Empty" if total == 0 else "Contains Resources"
+		)
+		+ "\n\nRECOVERED MATERIALS"
+		+ "\nTotal Items: " + str(total)
+	)
+
+	if inventory_component.items.is_empty():
+		display_text += "\nNone"
+	else:
+		for key: Variant in inventory_component.items.keys():
+			if not (key is ItemDefinition):
+				display_text += "\nUnknown inventory entry (protected)"
+				continue
+			var item: ItemDefinition = key as ItemDefinition
+			if not is_instance_valid(item):
+				display_text += "\nInvalid item reference (protected)"
+				continue
+			var quantity: int = inventory_component.get_amount(item)
+			if quantity > 0:
+				display_text += (
+					"\n" + item.display_name
+					+ ": " + str(quantity)
+				)
+
+	display_text += "\n\nWRECKAGE CLEANUP"
+	if cache.can_clear_safely():
+		display_text += "\nEmpty: can remove in Demolition Mode"
+	else:
+		display_text += (
+			"\nProtected: recover contents before cleanup"
+		)
+	info_label.text = display_text
 
 
 # =============================================================================
