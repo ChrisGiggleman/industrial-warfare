@@ -1626,3 +1626,12 @@ The first local `res://tests/build_hotbar_keyboard_integration_test.tscn` run st
 Replaced both name-based assertions (default key 9 and remapped key 1) with `_is_turret_preview()`, checking the active building ID, actual packed-scene path, `TurretComponent` type, and `construction_preview` group. No production code, HUD logic, keyboard routing, inventory, or conveyor placement was changed in this correction.
 
 **Status:** Test-only correction committed; **full 12/12 local rerun pending**. Do not mark 1G3 accepted until the Godot result is supplied.
+
+
+### Phase 1G3 — Live build hotbar keyboard/HUD regression accepted (12/12)
+
+The developer reran `res://tests/build_hotbar_keyboard_integration_test.tscn` in local Godot 4.6.2 and supplied output showing **ALL 12 BUILD HOTBAR KEYBOARD INTEGRATION TESTS PASSED**. The previously failing Turret preview assertion now checks actual scene/component identity instead of the unstable auto-generated runtime node name. All A–L checks passed: default hotbar layout and labels, keys 5 and 9, remapping Turret to key 1, Storage to key 9, Conveyor Belt to key 4 (including both corner previews), key 5 becoming Smelter, inert empty slots, unlock restrictions, default reset and Build Mode cleanup.
+
+The `Extractor has no resource node` diagnostic was emitted after the success sentinel, as expected for temporary prototype Extractor instances without a deposit.
+
+**Next acceptance:** Manual F5 smoke test of the default number-key layout and dynamic Build HUD. Player-created remappings cannot yet be tested through the F5 UI because the unlocked Build Catalog/editor is still pending. Phase 1G4 will provide those controls, followed by a remapped F5 acceptance test and persistent hotbar file storage. No production code was changed during this results checkpoint.
