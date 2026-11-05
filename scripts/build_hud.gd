@@ -91,11 +91,12 @@ var selected_hotbar_slot: int = 0
 
 
 func _slot_labels() -> Array[Label]:
-	return [
+	var labels: Array[Label] = [
 		building_1_label, building_2_label, building_3_label,
 		building_4_label, building_5_label, building_6_label,
 		building_7_label, building_8_label, building_9_label
 	]
+	return labels
 
 
 func set_hotbar_configuration(configuration: BuildHotbarConfiguration) -> void:
