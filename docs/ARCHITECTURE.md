@@ -947,20 +947,21 @@ The bar reads gameplay-owned timers and statuses; the HUD **never moves resource
 
 **Safety:** Do not delete established proximity logic until item conservation can be verified with physical movement alone; a working ore-to-ingot chain does not by itself prove the absence of parallel transfers. Do not classify a Merger with a full output buffer as broken simply because one input temporarily stops. Core acceptance evidence and deferred robustness checks are recorded in [CHAT_08_FINAL_REGRESSION.md](CHAT_08_FINAL_REGRESSION.md).
 
-## Player Build Hotbar — Initial Stable-ID Configuration Layer (Phase 1G1)
+## Player Build Hotbar — Stable IDs, Configurable Keys and HUD (Phases 1G1–1G3)
 
 The **core building and conveyor destruction milestone has been accepted** after the latest 48/48 final-regression checks. Build hotbar customization is now being introduced separately from the working placement/logistics system.
 
 - `res://scripts/components/build_hotbar_configuration.gd` provides a `RefCounted` configuration model with **nine slots (zero-based 0–8, player keys 1–9)**.
 - The catalog is made from the actual `BuildingDefinition` assets. Stable `building_id` values identify assignments independently of `buildable_definitions` array order.
 - `configure()` registers definitions; all current prototype items are unlocked by default. `set_unlocked()` excludes a locked building from the hotbar without changing structures already built.
-- `assign()` moves an equipped building to another slot and swaps displaced assignments if both are in the hotbar; `clear_slot()` leaves an empty shortcut. Catalog browsing and keyboard selection will use these APIs later.
+- `assign()` moves an equipped building to another slot and swaps displaced assignments if both are in the hotbar; `clear_slot()` leaves an empty shortcut. `WorldInteraction` now exposes `assign_hotbar_slot()`, `clear_hotbar_slot()` and `set_hotbar_unlocked()` for future catalog controls.
 - `to_save_data()` and `restore_save_data()` produce and validate versioned JSON-compatible data with string IDs. The method **does not write files**; persistence and profile management remain future work. Restoration rejects malformed documents and drops unknown, locked or duplicate IDs without corrupting valid slots.
 - `res://tests/build_hotbar_configuration_test.tscn` has passed the isolated **12/12 Godot regression**, confirming swaps, unlocked-only assignments, and stable-ID configuration payloads.
-- **Phase 1G2 in progress:** `WorldInteraction` still uses array indices for active selection and fixed 1–9 input. However, its 22 previously slot-5-dependent conveyor branches now call `_is_conveyor_selected()`, which compares the selected definition's stable `building_id` with `conveyor_belt`. `res://tests/conveyor_building_identity_test.tscn` tests reordered definition arrays and special corner previews; its 12-case local Godot run is pending. `build_hud.gd` still contains fixed labels.
-- The planned sequence is **completed model acceptance** → **pending conveyor-identity F6 test and legacy connection regressions** → dynamic Build HUD + number-key routing → unlocked catalog UI → user-file persistence.
+- **Phase 1G2 accepted:** All 22 previously slot-5-dependent conveyor branches call `_is_conveyor_selected()` and compare the selected definition's stable ID with `conveyor_belt`. The isolated identity regression passed **12/12**, followed by **80/80** port/corner/gap/bridge regressions. Conveyor transport and placement geometry remain unchanged.
+- **Phase 1G3 implemented, F6 pending:** `WorldInteraction` creates a default `BuildHotbarConfiguration` at startup. The 1–9 input resolves slot → stable building ID → actual `buildable_definitions` index before entering the existing construction pipeline. `selected_building_index` retains its internal definition-index meaning, protecting old placement logic and test interfaces. `BuildHUD` renders labels from the active mapping, highlights the selected hotbar slot, and marks blank slots `Empty`. The old shortcuts remain the default, as the configurable keyboard scene has not yet passed local testing.
+- The planned sequence is **completed model and conveyor-identity acceptance** → **pending 1G3 keyboard/HUD F6 test** → F5 remapped-belt placement acceptance → unlocked catalog UI → user-file persistence.
 
-This layer is intentionally independent from the active runtime until the above compatibility tests pass.
+Hotbar assignments now feed the active Build Mode input and HUD, but the player cannot yet edit them from an in-game menu, nor save them between sessions. The 1G3 test is still required before treating the live integration as accepted.
 
 ---
 
