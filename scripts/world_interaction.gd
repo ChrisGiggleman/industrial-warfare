@@ -66,6 +66,12 @@ var selected_object: Node = null
 # Build Mode state.
 var placement_mode_active: bool = false
 var selected_building_index: int = 0
+
+# Player quick-build keys are assigned by stable building_id, not the
+# selected definition's array index. The index remains the internal
+# placement target to preserve all existing snapping algorithms.
+var build_hotbar: BuildHotbarConfiguration = null
+
 var current_placement_position: Vector3 = Vector3.ZERO
 var placement_is_valid: bool = false
 var placement_rotation_degrees: float = 0.0
@@ -223,8 +229,17 @@ var demolition_hover_target: Node = null
 # Build Mode begins disabled, so the Build HUD starts hidden.
 
 func _ready() -> void:
+	build_hotbar = BuildHotbarConfiguration.new()
+	build_hotbar.configure(buildable_definitions)
+	build_hotbar.reset_to_default()
+
 	if build_hud_panel != null:
 		build_hud_panel.visible = false
+
+	# BuildHUD is another child of Main and can enter _ready after this
+	# controller. Sync after siblings are ready; direct selection and
+	# edit calls also refresh the HUD immediately when it is ready.
+	call_deferred("_sync_build_hotbar_hud")
 
 
 # =============================================================================
@@ -291,71 +306,33 @@ func _unhandled_input(event: InputEvent) -> void:
 
 			return
 
-		if event.is_action_pressed("select_building_1"):
-			_select_building(0)
-			return
-
-		if event.is_action_pressed("select_building_2"):
-			_select_building(1)
-			return
-
-		if event.is_action_pressed("select_building_3"):
-			_select_building(2)
-			return
-
-		if event.is_action_pressed("select_building_4"):
-			_select_building(3)
-			return
-
-		if event.is_action_pressed("select_building_5"):
-			_select_building(4)
-			return
-
-		# A new logistics building occupies slot 6.
-		if (
-			event is InputEventKey
-			and event.pressed
-			and not event.echo
-			and (event.physical_keycode == KEY_6 or event.keycode == KEY_6)
-		):
-			_select_building(5)
-			return
-
-		# 1x1 Splitter in build slot 7
-		if (
-			event is InputEventKey
-			and event.pressed
-			and not event.echo
-			and (event.physical_keycode == KEY_7 or event.keycode == KEY_7)
-		):
-			_select_building(6)
-			return
-
 		# =============================================================================
-		# AMMUNITION PRESS — BUILD SLOT 8
+		# PLAYER QUICK-BUILD KEYS — CONFIGURABLE 1–9
 		# =============================================================================
 
-		if (
-			event is InputEventKey
-			and event.pressed
-			and not event.echo
-			and (event.physical_keycode == KEY_8 or event.keycode == KEY_8)
-		):
-			_select_building(7)
-			return
-			
-		# =============================================================================
-		# DEFENSIVE TURRET — BUILD SLOT 9
-		# =============================================================================
-
-		if (
-			event is InputEventKey
-			and event.pressed
-			and not event.echo
-			and (event.physical_keycode == KEY_9 or event.keycode == KEY_9)
-		):
-			_select_building(8)
-			return
+		# The first five controls retain their InputMap actions. Later
+		# slots keep the existing physical key behavior until the full
+		# keybinding menu is introduced. The selected slot now resolves
+		# by building_id, not by array position.
+		for slot_index: int in range(BuildHotbarConfiguration.SLOT_COUNT):
+			if slot_index < 5:
+				var action := StringName(
+					"select_building_" + str(slot_index + 1)
+				)
+				if event.is_action_pressed(action):
+					_select_hotbar_slot(slot_index)
+					return
+			elif (
+				event is InputEventKey
+				and event.pressed
+				and not event.echo
+				and (
+					event.physical_keycode == KEY_1 + slot_index
+					or event.keycode == KEY_1 + slot_index
+				)
+			):
+				_select_hotbar_slot(slot_index)
+				return
 
 		if event.is_action_pressed("rotate_placement"):
 			_rotate_placement()
@@ -764,11 +741,7 @@ func _toggle_placement_mode() -> void:
 		if build_hud_panel != null:
 			build_hud_panel.visible = true
 
-		if build_hud != null and build_hud.has_method("set_selected_building"):
-			build_hud.call(
-				"set_selected_building",
-				selected_building_index
-			)
+		_sync_build_hotbar_hud()
 
 		if build_hud != null and build_hud.has_method("set_demolition_mode"):
 			build_hud.call("set_demolition_mode", false)
@@ -812,6 +785,100 @@ func _get_selected_building_definition() -> BuildingDefinition:
 		return null
 
 	return buildable_definitions[selected_building_index]
+
+# =============================================================================
+# BUILD HOTBAR — CONFIGURABLE SHORTCUT ROUTING
+# =============================================================================
+
+# The hotbar slot chooses a stable building_id. Internally the old
+# definition index remains the active placement selection so existing
+# conveyor and factory snapping code needs no special-case changes.
+
+func _find_definition_index(identity: StringName) -> int:
+	for index: int in range(buildable_definitions.size()):
+		var definition: BuildingDefinition = buildable_definitions[index]
+		if is_instance_valid(definition) and definition.building_id == identity:
+			return index
+	return -1
+
+
+func _select_hotbar_slot(slot_index: int) -> bool:
+	if build_hotbar == null:
+		return false
+	var definition: BuildingDefinition = build_hotbar.get_definition(
+		slot_index
+	)
+	if not is_instance_valid(definition):
+		# Empty or locked keys are intentionally inert.
+		return false
+
+	var definition_index: int = _find_definition_index(
+		definition.building_id
+	)
+	if definition_index < 0:
+		return false
+
+	_select_building(definition_index)
+	return true
+
+
+func assign_hotbar_slot(slot_index: int, identity: StringName) -> bool:
+	if build_hotbar == null or not build_hotbar.assign(slot_index, identity):
+		return false
+	_on_hotbar_assignment_changed()
+	return true
+
+
+func clear_hotbar_slot(slot_index: int) -> bool:
+	if build_hotbar == null or not build_hotbar.clear_slot(slot_index):
+		return false
+	_on_hotbar_assignment_changed()
+	return true
+
+
+func _on_hotbar_assignment_changed() -> void:
+	# If the current building is no longer assigned, select the first
+	# available shortcut or leave Build Mode without a placement ghost.
+	var selected: BuildingDefinition = _get_selected_building_definition()
+	var selected_id: StringName = &""
+	if is_instance_valid(selected):
+		selected_id = selected.building_id
+
+	if (
+		build_hotbar != null
+		and build_hotbar.find_slot(selected_id) < 0
+	):
+		var replaced: bool = false
+		for slot_index: int in range(BuildHotbarConfiguration.SLOT_COUNT):
+			var next_definition := build_hotbar.get_definition(slot_index)
+			if is_instance_valid(next_definition):
+				_select_building(
+					_find_definition_index(next_definition.building_id)
+				)
+				replaced = true
+				break
+		if not replaced:
+			selected_building_index = -1
+			if placement_mode_active:
+				_destroy_placement_ghost()
+
+	_sync_build_hotbar_hud()
+
+
+func _sync_build_hotbar_hud() -> void:
+	if not is_instance_valid(build_hud) or not build_hud.is_node_ready():
+		return
+	if build_hud.has_method("set_hotbar_configuration"):
+		build_hud.call("set_hotbar_configuration", build_hotbar)
+
+	var active_slot: int = -1
+	var selected: BuildingDefinition = _get_selected_building_definition()
+	if is_instance_valid(selected) and build_hotbar != null:
+		active_slot = build_hotbar.find_slot(selected.building_id)
+
+	if build_hud.has_method("set_selected_building"):
+		build_hud.call("set_selected_building", active_slot)
+
 
 # =============================================================================
 # CONVEYOR TOOL — SELECTED BUILDING IDENTITY
@@ -879,11 +946,7 @@ func _select_building(index: int) -> void:
 	if placement_mode_active and not demolition_mode_active:
 		_create_placement_ghost()
 
-	if build_hud != null and build_hud.has_method("set_selected_building"):
-		build_hud.call(
-			"set_selected_building",
-			selected_building_index
-		)
+	_sync_build_hotbar_hud()
 
 	print(
 		"Selected building: ",
