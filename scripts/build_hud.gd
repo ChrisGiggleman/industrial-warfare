@@ -170,7 +170,7 @@ func _refresh_hotbar_labels() -> void:
 		) + "[" + str(slot_index + 1) + "] " + slot_name
 
 	if is_instance_valid(visual_hotbar):
-		visual_hotbar.render_slots(
+		visual_hotbar.call("render_slots",
 			hotbar_configuration, selected_hotbar_slot, selected_color
 		)
 
