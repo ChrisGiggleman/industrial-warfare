@@ -6,6 +6,29 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-04 — Phase 1G5: Visual Hotbar UI, Checkpoint 1
+
+### Architecture
+- Reused the existing nine-slot `BuildHotbarConfiguration` stable-ID model, WorldInteraction shortcut routing, and Building Catalog.
+- Added `scripts/ui/build_hotbar_visual.gd` as a presentation-only view attached to `VisualHotbar` in the existing `build_hud.tscn`.
+- Moved the visible build shortcuts into nine bottom-centered horizontal tiles. The previous text slot labels remain hidden but continue to update for existing regression compatibility.
+- Each tile includes shortcut number, generated placeholder graphic, compact name, selection border, and tooltip.
+- Icon textures are cached by building ID. Catalog swaps, empty assignments, locked buildings, selection changes, and Restore Defaults redraw the view via existing HUD synchronization.
+- Build Mode visibility follows the original BuildPanel. No changes to placement, conveyors, combat, or save/load architecture.
+
+### Testing
+- New runnable scene: `res://tests/build_hotbar_visual_test.tscn` (six regression groups).
+- Re-run `res://tests/build_hotbar_keyboard_integration_test.tscn` and `res://tests/build_hotbar_configuration_test.tscn` to check existing behavior.
+- Manual checklist: enter Build Mode, inspect all nine icons, press 1–9, open M catalog and swap a selection, clear a slot, restore defaults, exit Build Mode, verify placement and conveyor corner behavior.
+- **Verification status:** Code committed to GitHub. Godot runtime/regression tests await execution on the local Godot 4.6.2 installation.
+
+### Deferred
+- Production artwork and locked-tile research presentation.
+- Per-saved-game assignments, which must be integrated with the main save/load design.
+
+---
+
+
 ## 2026-10-11 — Project Foundation
 
 ### Engine and Project
