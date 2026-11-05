@@ -965,6 +965,19 @@ Hotbar assignments now feed the active Build Mode input and HUD, but the player 
 
 ---
 
+## Wreckage Inspection and Protected Cleanup (Step 09.18G)
+
+World salvage from destroyed buildings/conveyors remains owned by `WorldSalvageCache` under Main, and its `InventoryComponent` is separate from the removed source.
+
+- Wreckage is `selectable` but **not** `player_built`. Its `SelectableBody` uses collision layer 2 for ray-based inspection and demolition targeting without joining the layer-3 placement-blocker mask.
+- `WorldInteraction._select_under_mouse()` uses the existing `selectable` ancestor search; `WorldSalvageCache.set_selected()` renders yellow selection, while `ProductionDebugHUD` reports item identities and quantities.
+- Demolition uses the existing raycast and `WorldInteraction._try_clear_salvage_cache()`. Only **strictly empty** caches may be removed. If the cache holds any inventory entries (even malformed entries), cleanup fails and leaves the cache and cargo unchanged.
+- Empty caches show red demolition hover; stocked caches show protected amber hover and an info message explaining why cleanup is blocked. Selecting a cache does not interfere with the producer/conveyor HUD branches.
+- The standalone `res://tests/wreckage_selection_cleanup_test.tscn` regression covers Layer-2 collisions, selection, HUD contents, empty cleanup, guarded stocked salvage and independent transfer-based conservation; local Godot run is **pending**.
+- **Future:** player-controlled recovery or pickup, insertion into storage, and persistence. There is no current player salvage-transfer action, and no destructive shortcut that silently erases stored materials.
+
+---
+
 ## Architectural Principles
 
 Industrial Warfare currently follows these rules:
