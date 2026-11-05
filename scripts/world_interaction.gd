@@ -1041,7 +1041,10 @@ func _update_demolition_hover() -> void:
 		var current_node: Node = collider
 
 		while current_node != null:
-			if current_node.is_in_group("player_built"):
+			if (
+				current_node.is_in_group("player_built")
+				or current_node is WorldSalvageCache
+			):
 				new_target = current_node
 				break
 
@@ -1134,6 +1137,12 @@ func _try_demolish_under_mouse() -> void:
 
 	
 	while current_node != null:
+		if current_node is WorldSalvageCache:
+			_try_clear_salvage_cache(
+				current_node as WorldSalvageCache
+			)
+			return
+
 		if current_node.is_in_group("player_built"):
 
 			# =============================================================================
@@ -1187,6 +1196,37 @@ func _try_demolish_under_mouse() -> void:
 		current_node = current_node.get_parent()
 
 	print("Target cannot be demolished")
+
+# =============================================================================
+# WRECKAGE CLEANUP — EMPTY CACHES ONLY
+# =============================================================================
+
+# Invoked by the normal demolition raycast when it hits wreckage.
+# Never queue_free() a cache that still holds recovered resources.
+# Salvage collection will get its own explicit player action later.
+
+func _try_clear_salvage_cache(cache: WorldSalvageCache) -> bool:
+	if not is_instance_valid(cache):
+		return false
+	if not cache.is_inside_tree():
+		return false
+	if not cache.is_in_group("salvage_caches"):
+		return false
+	if not cache.can_clear_safely():
+		print(
+			"Wreckage cleanup blocked: Recover stored materials first."
+		)
+		return false
+
+	if selected_object == cache:
+		_select_object(null)
+	if demolition_hover_target == cache:
+		demolition_hover_target = null
+
+	cache.queue_free()
+	print("Cleared empty wreckage")
+	return true
+
 
 # =============================================================================
 # PLACEMENT ROTATION
