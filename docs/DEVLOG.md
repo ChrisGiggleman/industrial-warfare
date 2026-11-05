@@ -1635,3 +1635,19 @@ The developer reran `res://tests/build_hotbar_keyboard_integration_test.tscn` in
 The `Extractor has no resource node` diagnostic was emitted after the success sentinel, as expected for temporary prototype Extractor instances without a deposit.
 
 **Next acceptance:** Manual F5 smoke test of the default number-key layout and dynamic Build HUD. Player-created remappings cannot yet be tested through the F5 UI because the unlocked Build Catalog/editor is still pending. Phase 1G4 will provide those controls, followed by a remapped F5 acceptance test and persistent hotbar file storage. No production code was changed during this results checkpoint.
+
+
+### Phase 1G3 — Default-key highlights confirmed in F5; wreckage interaction gap found
+
+On **2026-11-04**, the developer confirmed the **1–9 shortcut highlights switch correctly** during regular F5 gameplay. The associated screenshot showed a functioning factory, enemies and surviving wreckage, including a `SALVAGE: 15` cache. The exact individual key mappings were covered separately by the accepted 12/12 keyboard integration suite. Phase 1G3 is accepted.
+
+**Usability report:** Wreckage could not be clicked, highlighted, inspected or cleaned up. This is due to the original `WorldSalvageCache` scene having only a mesh/label/inventory, with no physics selection collider or selectable group. The debug HUD also lacked a salvage-specific display. The project requires safe cleanup without silently discarding recovered resources.
+
+### Step 09.18G — Wreckage selection, inventory info and protected cleanup (committed; F6 pending)
+
+- Added `selectable` group membership and a **Layer-2-only StaticBody3D collision box** to `world_salvage_cache.tscn`. It does not use the factory placement-blocker physics layer and is never added to `player_built`, so zombie structure targeting and normal conveyor placement rules are unchanged.
+- `WorldSalvageCache` now implements `set_selected()` and `set_demolition_hover()` with yellow inspection highlighting, red empty-wreckage demolition hover and amber protected-stock hover. The new `can_clear_safely()` check requires the inventory dictionary to be truly empty; it refuses malformed/unknown inventory contents and does not use only the reported total.
+- The `ProductionDebugHUD` now detects selected wreckage independently of building/conveyor components, displays **Total Items**, the actual stored item names and quantities and a clear `Protected: recover contents before cleanup` or `Empty: can remove in Demolition Mode` instruction. It remains read-only.
+- `WorldInteraction` includes WorldSalvageCache in demolition targeting and exposes `_try_clear_salvage_cache()`: only empty wreckage can be queued for removal. If selected, its HUD and selection clear immediately; stocked wreckage is never deleted or drained by the demolition action.
+- New `res://tests/wreckage_selection_cleanup_test.tscn` contains **12 isolated Main-world integration checks pending local F6 validation**. These cover salvage ownership and groups, selection-layer raycast, highlighting/HUD, progress-bar absence, empty cleanup, cargo-bearing wreckage item inspection and protection, malformed contents refusal, a simulated lossless inventory transfer into an independent test container and cleanup only afterward, with **10/10** transferred resources preserved.
+- **Scope boundary:** This checkpoint does **not** implement salvage pickup, inventory transfer from the player's hand, storage access through the world, or saving salvage between sessions. A stocked salvage cache remains protected from player demolition until a dedicated collection/recovery interaction exists. The planned in-game Build Catalog resumes after this safety checkpoint passes.
