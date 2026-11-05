@@ -26,6 +26,30 @@ func _slot_label(hud: Node, slot_number: int) -> Label:
 	) as Label
 
 
+# =============================================================================
+# TURRET PREVIEW — CHECK COMPONENT AND SOURCE SCENE
+# =============================================================================
+
+# Rapid changes of Build Mode selections can leave the old preview
+# queued for deletion until the end of a frame. Godot can auto-rename
+# the replacement scene root, so Node.name is not a stable identity.
+
+func _is_turret_preview(controller: Node) -> bool:
+	var ghost := controller.placement_ghost as Node3D
+	var definition: BuildingDefinition = (
+		controller._get_selected_building_definition()
+	)
+	if not is_instance_valid(ghost) or not is_instance_valid(definition):
+		return false
+	return (
+		not ghost.is_queued_for_deletion()
+		and ghost.scene_file_path == definition.building_scene.resource_path
+		and definition.building_id == &"prototype_defensive_turret"
+		and ghost.get_node_or_null("TurretComponent") is DefensiveTurretComponent
+		and ghost.is_in_group("construction_preview")
+	)
+
+
 func _ready() -> void:
 	print("\n===== CONFIGURABLE BUILD HOTBAR KEYBOARD INTEGRATION =====")
 
@@ -70,7 +94,7 @@ func _ready() -> void:
 	_press_build_key(controller, KEY_9)
 	assert(controller.selected_building_index == 8)
 	assert(not controller._is_conveyor_selected())
-	assert(controller.placement_ghost.name.begins_with("PrototypeDefensiveTurret"))
+	assert(_is_turret_preview(controller))
 	assert(_slot_label(hud, 9).text == "> [9] Defensive Turret")
 	print("PASS D: Existing key 9 selects Defensive Turret with correct ghost")
 
@@ -85,7 +109,7 @@ func _ready() -> void:
 	_press_build_key(controller, KEY_1)
 	assert(controller.selected_building_index == 8)
 	assert(controller._get_selected_building_definition().building_id == &"prototype_defensive_turret")
-	assert(controller.placement_ghost.name.begins_with("PrototypeDefensiveTurret"))
+	assert(_is_turret_preview(controller))
 	assert(_slot_label(hud, 1).modulate == hud.selected_color)
 	print("PASS F: Actual key 1 now selects Turret through its stable ID")
 
