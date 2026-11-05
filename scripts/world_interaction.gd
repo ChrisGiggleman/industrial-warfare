@@ -836,6 +836,13 @@ func clear_hotbar_slot(slot_index: int) -> bool:
 	return true
 
 
+func set_hotbar_unlocked(identity: StringName, allowed: bool) -> bool:
+	if build_hotbar == null or not build_hotbar.set_unlocked(identity, allowed):
+		return false
+	_on_hotbar_assignment_changed()
+	return true
+
+
 func _on_hotbar_assignment_changed() -> void:
 	# If the current building is no longer assigned, select the first
 	# available shortcut or leave Build Mode without a placement ghost.
