@@ -282,7 +282,7 @@ The goal is for factory decisions and combat decisions to influence each other.
 - **Refactor complete:** The 22 formerly index-4-based conveyor branches now identify Conveyor Belt by stable `building_id`. Its identity regression passed **12/12**, with **80/80** additional targeted conveyor placement tests passed. Live slot selection now resolves stable IDs before passing the actual definition index to existing placement code (1G3 testing pending).
 - **Testing:** Verify every custom assignment, swaps, empty slots, locked-building refusal, keyboard selection, Build HUD updates, rotation, ghost placement, saving/reloading, and non-regression of belt-specific behaviors.
 
-**Current implementation:** `BuildHotbarConfiguration` passed **12/12** model tests. Live Build Mode keys 1–9 and dynamic slot labels now resolve stable IDs, including empty/locked slot behavior, while preserving legacy default mappings. The new keyboard/HUD integration is awaiting its **12-case local Godot F6 regression**; it is **not yet user-validated**. The user-facing catalog and actual disk persistence are **not implemented yet**.
+**Current implementation:** `BuildHotbarConfiguration` passed **12/12** model tests. Live Build Mode keys 1–9 and dynamic slot labels now resolve stable IDs, including empty/locked slot behavior, while preserving legacy default mappings. The keyboard/HUD integration passed its **12-case local Godot F6 regression**, including remapped Turret/Storage/Conveyor selection and correct HUD labels. The user-facing catalog and actual disk persistence are **not implemented yet**.
 
 ---
 
