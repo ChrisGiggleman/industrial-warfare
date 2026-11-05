@@ -19,6 +19,8 @@ func _ready() -> void:
 	(zombie.get_node("MovementComponent") as ZombieApproachComponent).set_physics_process(false)
 	(zombie.get_node("MeleeComponent") as ZombieMeleeComponent).set_physics_process(false)
 	var hotbar: BuildHotbarConfiguration = controller.build_hotbar
+	# WorldInteraction initializes the HUD through a deferred sibling sync.
+	await get_tree().process_frame
 
 	var panels: Array = visual.get("slot_panels")
 	var icons: Array = visual.get("slot_icons")
