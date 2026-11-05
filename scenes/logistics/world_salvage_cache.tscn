@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/world_salvage_cache.gd" id="1_cache"]
 [ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="2_inventory"]
@@ -6,12 +6,23 @@
 [sub_resource type="BoxMesh" id="SalvageMesh"]
 size = Vector3(0.65, 0.45, 0.65)
 
-[node name="WorldSalvageCache" type="Node3D" groups=["salvage_caches"]]
+[sub_resource type="BoxShape3D" id="SalvageCollision"]
+size = Vector3(0.65, 0.45, 0.65)
+
+[node name="WorldSalvageCache" type="Node3D" groups=["salvage_caches", "selectable"]]
 script = ExtResource("1_cache")
 
 [node name="WreckagePlaceholder" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.25, 0)
 mesh = SubResource("SalvageMesh")
+
+[node name="SelectableBody" type="StaticBody3D" parent="."]
+position = Vector3(0, 0.25, 0)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SelectableBody"]
+shape = SubResource("SalvageCollision")
 
 [node name="InventoryComponent" type="Node" parent="."]
 script = ExtResource("2_inventory")
