@@ -271,7 +271,7 @@ The goal is for factory decisions and combat decisions to influence each other.
 
 ## Unlocked Building Catalog and Customizable Build Hotbar
 
-**Phase 1G now in progress, following completion of the core destruction milestone.** The existing fixed prototype shortcuts remain active while we implement and test a replacement. Players will open a **Build Catalog** showing unlocked buildings and assign any available building to whichever quick-build number they prefer.
+**Phase 1G now in progress, following completion of the core destruction milestone.** The nine in-game shortcut keys now read a configurable stable-ID assignment model (Phase 1G3, **Godot validation pending**). The old mappings remain the defaults. Players will eventually open a **Build Catalog** showing unlocked buildings and assign any available building to whichever quick-build number they prefer.
 
 - **Hotbar:** Nine initial configurable slots, activated by number keys **1–9** while Build Mode is active. These keys select slots, not permanently defined building types.
 - **Unlocked catalog:** Browse buildings across categories such as Extraction, Manufacturing, Storage, Logistics, and Defense. Locked content may be shown separately for progression, but cannot be equipped or placed until unlocked.
@@ -279,10 +279,10 @@ The goal is for factory decisions and combat decisions to influence each other.
 - **Examples:** Defensive Turret can be assigned to **1**, Test Storage to **9**, Conveyor Belt to another slot, etc. Players can reorder the hotbar without moving or changing existing factory structures.
 - **Persistent preferences:** Save the hotbar mapping between sessions. Store references by stable `BuildingDefinition.building_id`, not by array position or scene index. Revalidate assignments when available unlocks or definitions change.
 - **Input safety:** Build Mode, rotation, demolition, and menu controls remain distinct from slot keys. The catalog interface must not trigger world placement while open.
-- **Refactor requirement:** Present code uses number-key-to-array-index routing and has some special-case Conveyor Belt logic based on index **4**. Before swapping slots, migrate these checks to building identity/type or declared capabilities; changing the hotbar must never change snapping, belt corners, or demolition rules.
+- **Refactor complete:** The 22 formerly index-4-based conveyor branches now identify Conveyor Belt by stable `building_id`. Its identity regression passed **12/12**, with **80/80** additional targeted conveyor placement tests passed. Live slot selection now resolves stable IDs before passing the actual definition index to existing placement code (1G3 testing pending).
 - **Testing:** Verify every custom assignment, swaps, empty slots, locked-building refusal, keyboard selection, Build HUD updates, rotation, ghost placement, saving/reloading, and non-regression of belt-specific behaviors.
 
-**Current implementation:** A standalone `BuildHotbarConfiguration` data model supports all nine slots, stable building IDs, default mappings, moving/swapping assignments, clearing slots, unlock guards, and versioned JSON-compatible save/restore payloads. Its 12-case F6 regression is **pending local Godot validation**. The user-facing catalog, new input routing, dynamic HUD and actual file persistence **are not yet implemented**. Fixed Build Mode shortcuts remain active until their replacement passes dedicated regressions.
+**Current implementation:** `BuildHotbarConfiguration` passed **12/12** model tests. Live Build Mode keys 1–9 and dynamic slot labels now resolve stable IDs, including empty/locked slot behavior, while preserving legacy default mappings. The new keyboard/HUD integration is awaiting its **12-case local Godot F6 regression**; it is **not yet user-validated**. The user-facing catalog and actual disk persistence are **not implemented yet**.
 
 ---
 
