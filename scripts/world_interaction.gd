@@ -286,6 +286,10 @@ func _process(_delta: float) -> void:
 #   Right Click = Exit Build Mode
 
 func _unhandled_input(event: InputEvent) -> void:
+	if build_hud != null and build_hud.has_method("is_catalog_open"):
+		if build_hud.call("is_catalog_open"):
+			return
+
 	if event.is_action_pressed("toggle_placement_mode"):
 		_toggle_placement_mode()
 		return
@@ -875,6 +879,8 @@ func _on_hotbar_assignment_changed() -> void:
 func _sync_build_hotbar_hud() -> void:
 	if not is_instance_valid(build_hud) or not build_hud.is_node_ready():
 		return
+	if build_hud.has_method("set_hotbar_controller"):
+		build_hud.call("set_hotbar_controller", self)
 	if build_hud.has_method("set_hotbar_configuration"):
 		build_hud.call("set_hotbar_configuration", build_hotbar)
 
