@@ -78,96 +78,83 @@ extends CanvasLayer
 
 
 # =============================================================================
-# BUILDING SELECTION DISPLAY
+# BUILD HOTBAR — ASSIGNED BUILDINGS AND SELECTED SLOT
 # =============================================================================
 
-# Updates the building selection labels whenever the player
-# changes the currently selected building.
-#
-# Selected building:
-# - Highlighted in gold.
-# - Receives the ">" selection marker.
-#
-# Building indexes match the WorldInteraction buildable_definitions array.
-#
-# Index 0 = Test Extractor (key 1)
-# Index 1 = Large Building (key 2)
-# Index 2 = Test Storage (key 3)
-# Index 7 = Ammunition Press (key 8)
-# Index 8 = Defensive Turret (key 9)
+# Display data comes from stable building IDs, not array positions.
+# The initial nine prototype mappings preserve the familiar HUD labels.
+# A future Build Catalog will use set_hotbar_configuration() whenever
+# the player edits assignments or unlocks new structures.
+
+var hotbar_configuration: BuildHotbarConfiguration = null
+var selected_hotbar_slot: int = 0
+
+
+func _slot_labels() -> Array[Label]:
+	return [
+		building_1_label, building_2_label, building_3_label,
+		building_4_label, building_5_label, building_6_label,
+		building_7_label, building_8_label, building_9_label
+	]
+
+
+func set_hotbar_configuration(configuration: BuildHotbarConfiguration) -> void:
+	hotbar_configuration = configuration
+	_refresh_hotbar_labels()
+
 
 func set_selected_building(index: int) -> void:
-
-	# =============================================================================
-	# RESET BUILDING LABELS
-	# =============================================================================
-
-	# Restore all build-slot labels to their normal colors.
-	building_1_label.modulate = normal_color
-	building_2_label.modulate = normal_color
-	building_3_label.modulate = normal_color
-	building_4_label.modulate = normal_color
-	building_5_label.modulate = normal_color
-	building_6_label.modulate = normal_color
-	building_7_label.modulate = normal_color
-	building_8_label.modulate = normal_color
-	building_9_label.modulate = normal_color
-
-	# Remove selection markers before applying the active selection.
-	building_1_label.text = "  [1] Test Extractor"
-	building_2_label.text = "  [2] Large Building"
-	building_3_label.text = "  [3] Test Storage"
-	building_4_label.text = "  [4] Test Smelter"
-	building_5_label.text = "  [5] Conveyor Belt"
-	building_6_label.text = "  [6] Conveyor Merger"
-	building_7_label.text = "  [7] Conveyor Splitter"
-	building_8_label.text = "  [8] Ammunition Press"
-	building_9_label.text = "  [9] Defensive Turret"
-
-	# =============================================================================
-	# APPLY BUILDING SELECTION
-	# =============================================================================
-
-	# Building slot 1.
-	if index == 0:
-		building_1_label.modulate = selected_color
-		building_1_label.text = "> [1] Test Extractor"
-
-	# Building slot 2.
-	elif index == 1:
-		building_2_label.modulate = selected_color
-		building_2_label.text = "> [2] Large Building"
-
-	# Building slot 3: Test Storage.
-	elif index == 2:
-		building_3_label.modulate = selected_color
-		building_3_label.text = "> [3] Test Storage"
-
-	# Building Slot 4: Test Smelter.
-	elif index == 3:
-		building_4_label.modulate = selected_color
-		building_4_label.text = "> [4] Test Smelter"
-
-	elif index == 4:
-		building_5_label.modulate = selected_color
-		building_5_label.text = "> [5] Conveyor Belt"
-
-	elif index == 5:
-		building_6_label.modulate = selected_color
-		building_6_label.text = "> [6] Conveyor Merger"
-
-	elif index == 6:
-		building_7_label.modulate = selected_color
-		building_7_label.text = "> [7] Conveyor Splitter"
+	# index now means the hotbar slot (zero-based), NOT the selected
+	# definition's position in WorldInteraction.buildable_definitions.
+	selected_hotbar_slot = index
+	_refresh_hotbar_labels()
 
 
-	elif index == 7:
-		building_8_label.modulate = selected_color
-		building_8_label.text = "> [8] Ammunition Press"
+func _player_facing_name(definition: BuildingDefinition) -> String:
+	if not is_instance_valid(definition):
+		return "Empty"
+	if definition.building_id == &"test_building_large":
+		return "Large Building"
+	var label_name: String = definition.display_name
+	if label_name.begins_with("Prototype "):
+		label_name = label_name.trim_prefix("Prototype ")
+	return label_name
 
-	elif index == 8:
-		building_9_label.modulate = selected_color
-		building_9_label.text = "> [9] Defensive Turret"
+
+func _refresh_hotbar_labels() -> void:
+	if not is_node_ready():
+		return
+
+	var labels: Array[Label] = _slot_labels()
+	for slot_index: int in range(labels.size()):
+		var label_node: Label = labels[slot_index]
+		if not is_instance_valid(label_node):
+			continue
+
+		var slot_name: String = "Empty"
+		if hotbar_configuration != null:
+			slot_name = _player_facing_name(
+				hotbar_configuration.get_definition(slot_index)
+			)
+		else:
+			# Legacy fallback for a HUD instance without a controller.
+			var names: Array[String] = [
+				"Test Extractor", "Large Building", "Test Storage",
+				"Test Smelter", "Conveyor Belt", "Conveyor Merger",
+				"Conveyor Splitter", "Ammunition Press",
+				"Defensive Turret"
+			]
+			slot_name = names[slot_index]
+
+		var selected: bool = (
+			slot_index == selected_hotbar_slot
+			and slot_name != "Empty"
+		)
+		label_node.modulate = selected_color if selected else normal_color
+		label_node.text = (
+			"> " if selected else "  "
+		) + "[" + str(slot_index + 1) + "] " + slot_name
+
 
 # =============================================================================
 # DEMOLITION MODE DISPLAY
