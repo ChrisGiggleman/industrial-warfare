@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://dsxh4hqlf0w3c" path="res://scripts/build_hud.gd" id="1_6aewd"]
 
+[ext_resource type="Script" path="res://scripts/ui/build_hotbar_visual.gd" id="2_visual"]
+
 [node name="BuildHUD" type="CanvasLayer" unique_id=1882342599]
 script = ExtResource("1_6aewd")
-
-[ext_resource type="Script" path="res://scripts/ui/build_hotbar_visual.gd" id="2_visual"]
 
 [node name="BuildPanel" type="PanelContainer" parent="." unique_id=1408663429]
 anchors_preset = 2
