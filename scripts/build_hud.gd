@@ -335,6 +335,15 @@ func _refresh_build_catalog() -> void:
 	var available: Array[BuildingDefinition] = (
 		hotbar_configuration.get_unlocked_catalog()
 	)
+	var categories: Array[String] = []
+	for definition: BuildingDefinition in available:
+		var category_name: String = str(definition.category)
+		if category_name.is_empty():
+			category_name = "General"
+		if not categories.has(category_name):
+			categories.append(category_name)
+	categories.sort()
+
 	for slot_index: int in range(BuildHotbarConfiguration.SLOT_COUNT):
 		var line := HBoxContainer.new()
 		catalog_rows.add_child(line)
@@ -352,12 +361,19 @@ func _refresh_build_catalog() -> void:
 		selector.set_item_metadata(0, "")
 		var chosen: int = 0
 		var current_id: StringName = hotbar_configuration.get_id(slot_index)
-		for definition: BuildingDefinition in available:
-			var item_index: int = selector.item_count
-			selector.add_item(_player_facing_name(definition))
-			selector.set_item_metadata(item_index, str(definition.building_id))
-			if definition.building_id == current_id:
-				chosen = item_index
+		for category_name: String in categories:
+			selector.add_separator(category_name)
+			for definition: BuildingDefinition in available:
+				var definition_category: String = str(definition.category)
+				if definition_category.is_empty():
+					definition_category = "General"
+				if definition_category != category_name:
+					continue
+				var item_index: int = selector.item_count
+				selector.add_item(_player_facing_name(definition))
+				selector.set_item_metadata(item_index, str(definition.building_id))
+				if definition.building_id == current_id:
+					chosen = item_index
 		selector.select(chosen)
 		selector.item_selected.connect(
 			_on_catalog_slot_selected.bind(slot_index, selector)
