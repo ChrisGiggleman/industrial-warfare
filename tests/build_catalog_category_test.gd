@@ -30,11 +30,11 @@ func _ready() -> void:
 		if selector.get_item_metadata(index) == "prototype_defensive_turret":
 			turret_index = index
 		if known_categories.has(label):
-			assert(selector.is_item_disabled(index))
+			assert(selector.is_item_separator(index))
 			found_categories.append(label)
 	assert(found_categories.size() >= 3)
 	assert(turret_index >= 0)
-	print("PASS A: Catalog groups unlocked definitions under disabled category headings")
+	print("PASS A: Catalog groups unlocked definitions under nonselectable category headings")
 
 	hud.call("_on_catalog_slot_selected", turret_index, 0, selector)
 	assert(controller.build_hotbar.get_id(0) == &"prototype_defensive_turret")
