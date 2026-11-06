@@ -380,6 +380,18 @@ Planned major systems:
 
 ---
 
+### Phase 1G6 — Building Catalog Expansion (Checkpoint 1)
+
+- [x] Organize unlocked Building Catalog dropdown options by `BuildingDefinition.category` without altering stable-ID assignments.
+- [x] Add `tests/build_catalog_category_test.tscn` to check grouped entries, assignment swaps, and Restore Defaults.
+- [ ] Validate category regression in Godot 4.6.2 and verify the M menu visually in normal F5 gameplay.
+- [ ] Evaluate future building expansion only after reviewing vertical-slice priorities. Splitter and Merger physical routing are already implemented.
+- [ ] Keep unlock/research progression and per-save settings with future main save/load architecture.
+
+**Status: Code checkpoint committed; local test pending.**
+
+---
+
 ## Phase 2 — Zombie Colony Prototype
 
 **Goal:** Combine factory automation and defense into a playable scenario.
