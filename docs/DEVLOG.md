@@ -6,6 +6,17 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-05 — Phase 1G6: Building Catalog Expansion, Checkpoint 1
+
+- Reviewed existing `BuildingDefinition.category` values, hotbar stable-ID assignment model, and implemented 1×1 Splitter/Merger routing components.
+- Organized each Building Catalog slot dropdown by existing unlocked building categories, with nonselectable category separators. Empty option, assignment metadata, swapping, and Restore Defaults retain their original behavior.
+- Added `res://tests/build_catalog_category_test.tscn` to validate grouping, selecting a grouped building, hotbar redraw, and restoring defaults.
+- This is a **catalog presentation improvement only**. No new manufacturing recipes, logistics functionality, save files, or progression systems are introduced.
+- **Validation pending:** Run the new test scene in local Godot 4.6.2, followed by a regular F5 catalog check.
+
+---
+
+
 ## 2026-11-04 — Phase 1G5: Visual Hotbar UI, Checkpoint 1
 
 ### Architecture
