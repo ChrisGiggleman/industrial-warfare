@@ -12,7 +12,7 @@ The development log intentionally summarizes completed milestones rather than re
 - Organized each Building Catalog slot dropdown by existing unlocked building categories, with nonselectable category separators. Empty option, assignment metadata, swapping, and Restore Defaults retain their original behavior.
 - Added `res://tests/build_catalog_category_test.tscn` to validate grouping, selecting a grouped building, hotbar redraw, and restoring defaults.
 - This is a **catalog presentation improvement only**. No new manufacturing recipes, logistics functionality, save files, or progression systems are introduced.
-- **Validation pending:** Run the new test scene in local Godot 4.6.2, followed by a regular F5 catalog check.
+- **Validation complete (2026-11-06):** Godot 4.6.2 category regression passed all **3/3** checks. Player confirmed that the in-game M menu works and dropdown entries are grouped by building category. Checkpoint 1 accepted.
 
 ---
 
