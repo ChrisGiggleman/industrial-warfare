@@ -22,6 +22,14 @@ The development log intentionally summarizes completed milestones rather than re
 - Manual checklist: enter Build Mode, inspect all nine icons, press 1–9, open M catalog and swap a selection, clear a slot, restore defaults, exit Build Mode, verify placement and conveyor corner behavior.
 - **Verification status:** Code committed to GitHub. Godot runtime/regression tests await execution on the local Godot 4.6.2 installation.
 
+
+### Manual Validation and Layout Follow-up (2026-11-05)
+- Godot 4.6.2 visual hotbar regression: all six checks passed on the local machine.
+- In-game screenshot confirmed the nine centered tiles, selected highlight, and customized assignment order.
+- Manual conveyor/corner placement confirmed working by the player.
+- Corrected BuildPanel's anchor preset to bottom-left (with explicit horizontal anchors) to address controls clipping at the left edge.
+- **Pending:** verify left-side control panel positioning after pulling this final layout correction. No gameplay systems or save/load behavior changed.
+
 ### Deferred
 - Production artwork and locked-tile research presentation.
 - Per-saved-game assignments, which must be integrated with the main save/load design.
