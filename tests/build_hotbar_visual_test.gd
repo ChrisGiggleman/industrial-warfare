@@ -13,8 +13,16 @@ func _ready() -> void:
 	add_child(world)
 
 	var controller = world.get_node("WorldInteraction")
-	var hud = world.get_node("BuildHUD")
-	var visual = hud.get_node("VisualHotbar")
+	var hud = world.get_node_or_null("BuildHUD")
+	assert(hud != null, "BuildHUD failed to load; inspect build_hud.tscn resource declarations and Godot parser errors.")
+	if hud == null:
+		push_error("Visual hotbar test cannot continue: BuildHUD is missing.")
+		return
+	var visual = hud.get_node_or_null("VisualHotbar")
+	assert(visual != null, "VisualHotbar is missing from the BuildHUD scene.")
+	if visual == null:
+		push_error("Visual hotbar test cannot continue: VisualHotbar is missing.")
+		return
 	var zombie := world.get_node("PrototypeMovingZombie") as Node3D
 	(zombie.get_node("MovementComponent") as ZombieApproachComponent).set_physics_process(false)
 	(zombie.get_node("MeleeComponent") as ZombieMeleeComponent).set_physics_process(false)
