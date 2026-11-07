@@ -11,7 +11,7 @@ The development log intentionally summarizes completed milestones rather than re
 - User confirmed all **4/4 construction footprint and port** checks passed in Godot 4.6.2.
 - Reviewed existing `ConveyorBuildingSnap`, `ConveyorTransportTimer`, `ConveyorTransportComponent`, and `ItemPortComponent`; retained the existing physical movement mechanisms.
 - Added `tests/timed_storage_conveyor_delivery_test.tscn`: completed Storage accepts an aligned conveyor input, transports one Test Ore into Storage, preserves total source/belt/destination inventory, and cleans up connections on disconnect.
-- Live gameplay logic remains unchanged. **New six-check scene pending local Godot validation.** Advanced connection reservation during construction is a separate follow-up.
+- Live gameplay logic remains unchanged. **All 6/6 checks passed locally in Godot 4.6.2 on 2026-11-07**, including physical connection, item delivery, conservation and disconnection. Advanced connection reservation during construction is a separate follow-up.
 
 ---
 
