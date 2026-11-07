@@ -6,6 +6,17 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-06 — Zombie-Planet Demo Focus and Construction Lifecycle Foundation
+
+- Confirmed the immediate vertical slice: one zombie world with persistent factory growth, ammunition-fed defenses, and turret/wall-led territorial expansion. Planet-hopping and alternate enemy factions remain long-term campaign goals.
+- Added `scripts/components/construction_lifecycle.gd`: isolated planned/constructing/complete state transitions, required duration, progress, remaining work, optional worker multiplier, and one-time completion signal.
+- Added `tests/construction_lifecycle_test.gd` and `tests/construction_lifecycle_test.tscn` covering six construction-state and timing regression groups.
+- The model is intentionally **not yet wired into live placement**: current buildings remain instantly constructed until isolated tests pass and gameplay-system shutdown/activation rules are implemented and validated.
+- No main-scene, conveyor, hotbar, production, combat, or salvage behavior was changed. The construction test requires execution in Godot 4.6.2.
+
+---
+
+
 ## 2026-11-05 — Phase 1G6: Building Catalog Expansion, Checkpoint 1
 
 - Reviewed existing `BuildingDefinition.category` values, hotbar stable-ID assignment model, and implemented 1×1 Splitter/Merger routing components.
