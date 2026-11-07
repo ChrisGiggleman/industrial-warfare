@@ -10,7 +10,7 @@ The development log intentionally summarizes completed milestones rather than re
 
 - Added `scenes/core/factory_testing_sandbox.tscn` for interruption-free factory testing. The green moving zombie remains visible but its processing is disabled, so it does not walk or melee attack in this scene.
 - Enabled timed Test Storage construction in the sandbox. Normal `scenes/core/main.tscn` is unchanged and retains active zombie behavior and its existing construction settings.
-- Added `tests/factory_testing_sandbox_test.tscn` with three tests checking disabled sandbox zombie, normal Main behavior, and retained build HUD/catalog. Godot verification is pending.
+- Added `tests/factory_testing_sandbox_test.tscn` with three tests checking disabled sandbox zombie, normal Main behavior, and retained build HUD/catalog. **3/3 passed** locally in Godot 4.6.2 (2026-11-07). Player additionally confirmed the sandbox runs as intended with the green zombie inactive.
 - Run the sandbox scene directly with **F6**; run the normal Main scene using **F5**. Since this is a separate scene copy, synchronize it if Main receives future gameplay or scene changes.
 
 ---
