@@ -6,6 +6,20 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+### Timed Storage World Integration — Opt-in Validation
+
+- [x] Local Godot passed all **4/4** isolated ConstructionSite tests on 2026-11-06; combined with lifecycle **6/6**.
+- [x] Added an opt-in `WorldInteraction` path for **standalone Test Storage** to place a ConstructionSite instead of an immediate building; ordinary placement defaults remain unchanged.
+- [x] Added `tests/timed_storage_placement_test.tscn` with four checks for the controller integration, site footprint, timed activation and rejection of unsupported definitions.
+- [ ] Run the new regression in Godot 4.6.2 before enabling timed placement in the main world.
+- [ ] Integrate the specialized conveyor-attached placement path and confirm no early inventory/port transfer.
+- [ ] Enable construction sites in normal F5 gameplay after passing new tests, then manually test progress, location, rotation, collisions and completion.
+
+**Status:** Opt-in world integration committed; new Godot checks pending.
+
+---
+
+
 ## Zombie-Planet Playable Demo — Active Development Focus (2026-11-06)
 
 - [x] Confirm **one zombie-planet demo** as the immediate scope; other factions, worlds, and interplanetary launches are later campaign features.
