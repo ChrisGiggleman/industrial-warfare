@@ -6,6 +6,13 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+### Timed Storage Controller Integration — Local Validation (2026-11-06)
+
+- Godot confirmed **4/4** world-controller integration checks passed (default instant placement, nonoperational site, activation at 100%, invalid-definition rejection).
+- Next validation is a controlled F5 session with `WorldInteraction.enable_timed_storage_construction` enabled temporarily in the Main scene Inspector. Keep the default false until regular placement and downstream conveyor cases are regression-tested.
+- Only standalone Test Storage placement is supported; snapped-to-belt Storage still takes the original immediate-connection route.
+
+
 ## 2026-11-06 — Construction Site and World Integration Follow-up
 
 - Local Godot **4/4 ConstructionSite** checks passed, confirming footprint, pending state, delayed real Storage, preserved transform and ports.
