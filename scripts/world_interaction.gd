@@ -44,6 +44,11 @@ const SELECTION_COLLISION_MASK: int = 2
 # Each definition contains the data describing a buildable structure.
 @export var buildable_definitions: Array[BuildingDefinition] = []
 
+# Opt-in construction integration. Disabled until the isolated placement
+# regression passes; Main gameplay and existing test suites remain unchanged.
+@export var enable_timed_storage_construction: bool = false
+@export_range(0.1, 120.0, 0.1) var storage_construction_seconds: float = 8.0
+
 # Legacy scene list retained temporarily while the placement system is
 # migrated to BuildingDefinition resources.
 # @export var buildable_scenes: Array[PackedScene] = []
@@ -3165,6 +3170,29 @@ func _find_perpendicular_corner_candidate(
 #   - no valid buildable scene is selected
 
 
+# =============================================================================
+# TIMED STORAGE CONSTRUCTION — TESTABLE SITE CREATION
+# =============================================================================
+
+func _place_timed_storage_site(
+	definition: BuildingDefinition, placement_transform: Transform3D
+) -> ConstructionSite:
+	if not is_instance_valid(definition):
+		return null
+	if definition.building_id != &"test_storage":
+		return null
+	var scene_root := get_tree().current_scene as Node3D
+	if not is_instance_valid(scene_root):
+		return null
+	var site := ConstructionSite.new()
+	if not site.setup(definition, storage_construction_seconds):
+		site.free()
+		return null
+	scene_root.add_child(site)
+	site.global_transform = placement_transform
+	return site
+
+
 func _try_place_object() -> void:
 	
 
@@ -3484,6 +3512,36 @@ func _try_place_object() -> void:
 		return
 
 	
+	# =============================================================================
+	# TIMED STORAGE CONSTRUCTION — OPT-IN FREE PLACEMENT
+	# =============================================================================
+	# Preserve the specialized port-snapping path until delayed connections
+	# have their own tests. Only standalone Storage uses a construction site.
+
+	var selected_definition_for_site: BuildingDefinition = (
+		_get_selected_building_definition()
+	)
+	if (
+		enable_timed_storage_construction
+		and is_instance_valid(selected_definition_for_site)
+		and selected_definition_for_site.building_id == &"test_storage"
+		and not is_instance_valid(building_placement_snap_belt)
+		and not is_instance_valid(building_placement_snap_port)
+	):
+		if not _is_placement_clear():
+			print("Storage construction blocked: footprint occupied.")
+			return
+		var construction_site := _place_timed_storage_site(
+			selected_definition_for_site,
+			Transform3D(
+				Basis(Vector3.UP, deg_to_rad(placement_rotation_degrees)),
+				current_placement_position
+			)
+		)
+		if not is_instance_valid(construction_site):
+			print("Storage construction failed: site unavailable.")
+		return
+
 	# =============================================================================
 	# PERMANENT TWO-ENDED CONVEYOR BRIDGE PLACEMENT
 	# =============================================================================
