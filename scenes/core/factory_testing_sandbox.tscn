@@ -1,0 +1,115 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bac2eqfgd7hsh" path="res://scripts/selectable_object.gd" id="1_2dmjg"]
+[ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_44pk5"]
+[ext_resource type="Script" uid="uid://c3sckria1ahv7" path="res://scripts/camera_controller.gd" id="1_fgbdc"]
+[ext_resource type="Script" uid="uid://dcv31fgeqtpub" path="res://scripts/world_interaction.gd" id="2_i4cec"]
+[ext_resource type="Resource" uid="uid://dqdqus3owmjqn" path="res://data/buildings/test_extractor.tres" id="5_jpx65"]
+[ext_resource type="Resource" uid="uid://dhg1mmhl7hwe6" path="res://data/buildings/test_building_large.tres" id="6_fu2j5"]
+[ext_resource type="PackedScene" uid="uid://bc4bw8kjtmn7g" path="res://scenes/ui/build_hud.tscn" id="6_jvmw0"]
+[ext_resource type="Resource" uid="uid://iqyp8norj0qi" path="res://data/buildings/test_storage.tres" id="7_fu2j5"]
+[ext_resource type="Resource" uid="uid://dk5s6rt0h1u0n" path="res://data/buildings/test_smelter.tres" id="8_ocd3q"]
+[ext_resource type="PackedScene" uid="uid://dcdrdn55bn320" path="res://scenes/ui/production_debug_hud.tscn" id="8_phv0v"]
+[ext_resource type="Resource" uid="uid://rw6ixvl0u5qp" path="res://data/buildings/conveyor_belt.tres" id="9_5xrq8"]
+[ext_resource type="Resource" path="res://data/buildings/conveyor_merger.tres" id="10_merger"]
+[ext_resource type="Resource" path="res://data/buildings/conveyor_splitter.tres" id="11_splitter"]
+[ext_resource type="Resource" path="res://data/buildings/prototype_ammunition_press.tres" id="12_ammo_press"]
+[ext_resource type="Resource" path="res://data/buildings/prototype_defensive_turret.tres" id="13_turret"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/prototype_zombie_target.tscn" id="14_target"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/prototype_moving_zombie.tscn" id="15_moving_zombie"]
+[ext_resource type="Script" path="res://scripts/components/world_destruction_service.gd" id="16_world_destruction"]
+[ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
+size = Vector2(20, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fgbdc"]
+size = Vector3(20, 0.1, 20)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6rktp"]
+
+[sub_resource type="Sky" id="Sky_fgbdc"]
+sky_material = SubResource("ProceduralSkyMaterial_6rktp")
+
+[sub_resource type="Environment" id="Environment_i4cec"]
+background_mode = 2
+sky = SubResource("Sky_fgbdc")
+
+[sub_resource type="BoxMesh" id="BoxMesh_6rktp"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_i4cec"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2dmjg"]
+albedo_color = Color(0.14117648, 0.96862745, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2dmjg"]
+size = Vector3(1, 0.04, 1)
+
+[node name="Main" type="Node3D" unique_id=284048942]
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=715106593]
+mesh = SubResource("PlaneMesh_6rktp")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=1370250130]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground/StaticBody3D" unique_id=514861447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("BoxShape3D_fgbdc")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1549780858]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1776571605]
+environment = SubResource("Environment_i4cec")
+
+[node name="ReferenceCube" type="MeshInstance3D" parent="." unique_id=2141545394 node_paths=PackedStringArray("selection_mesh") groups=["selectable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_6rktp")
+script = ExtResource("1_2dmjg")
+selection_mesh = NodePath(".")
+
+[node name="ReferenceCubeBody" type="StaticBody3D" parent="ReferenceCube" unique_id=716075544]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ReferenceCube/ReferenceCubeBody" unique_id=1793247131]
+shape = SubResource("BoxShape3D_i4cec")
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=1468734782]
+script = ExtResource("1_fgbdc")
+move_speed = 16.0
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=789918748]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 10)
+current = true
+
+[node name="WorldDestructionService" type="Node" parent="."]
+script = ExtResource("16_world_destruction")
+
+[node name="WorldInteraction" type="Node" parent="." unique_id=1182234064 node_paths=PackedStringArray("camera", "build_hud_panel", "build_hud", "production_debug_hud")]
+script = ExtResource("2_i4cec")
+camera = NodePath("../CameraRig/Camera3D")
+build_hud_panel = NodePath("../BuildHUD/BuildPanel")
+build_hud = NodePath("../BuildHUD")
+production_debug_hud = NodePath("../ProductionDebugHUD")
+enable_timed_storage_construction = true
+buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5"), ExtResource("8_ocd3q"), ExtResource("9_5xrq8"), ExtResource("10_merger"), ExtResource("11_splitter"), ExtResource("12_ammo_press"), ExtResource("13_turret")])
+
+[node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
+material_override = SubResource("StandardMaterial3D_2dmjg")
+mesh = SubResource("BoxMesh_2dmjg")
+
+[node name="BuildHUD" parent="." unique_id=1882342599 instance=ExtResource("6_jvmw0")]
+
+[node name="ProductionDebugHUD" parent="." unique_id=60506702 instance=ExtResource("8_phv0v")]
+
+[node name="TestOreDeposit" parent="." unique_id=191589997 instance=ExtResource("9_jpx65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.2, 5)
+
+[node name="PrototypeZombieTarget" parent="." instance=ExtResource("14_target")]
+position = Vector3(-6, 0, -6)
+
+[node name="PrototypeMovingZombie" parent="." instance=ExtResource("15_moving_zombie")]
+position = Vector3(8, 0, -7)
+process_mode = 4
+
+[editable path="BuildHUD"]
