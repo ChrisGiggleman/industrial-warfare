@@ -6,12 +6,21 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+### Timed Storage Manual F5 Acceptance — Next Step
+
+- [x] Controller integration `tests/timed_storage_placement_test.tscn` **4/4 checks passed locally** (2026-11-06).
+- [ ] In Godot Main scene, temporarily enable `WorldInteraction.enable_timed_storage_construction` in the Inspector (default intentionally remains false for existing regression compatibility).
+- [ ] Place free-standing Test Storage with shortcut 3, confirm an 8-second progress display and reserved footprint, then inspect completed Storage inventory and ports.
+- [ ] Verify ordinary conveyor placement is unaffected. Storage directly snapped to an existing belt remains on the old immediate-placement path until a separate delayed port-connection integration is tested.
+- [ ] Restore the Inspector flag to disabled after this focused acceptance test to retain the established baseline.
+
+
 ### Timed Storage World Integration — Opt-in Validation
 
 - [x] Local Godot passed all **4/4** isolated ConstructionSite tests on 2026-11-06; combined with lifecycle **6/6**.
 - [x] Added an opt-in `WorldInteraction` path for **standalone Test Storage** to place a ConstructionSite instead of an immediate building; ordinary placement defaults remain unchanged.
 - [x] Added `tests/timed_storage_placement_test.tscn` with four checks for the controller integration, site footprint, timed activation and rejection of unsupported definitions.
-- [ ] Run the new regression in Godot 4.6.2 before enabling timed placement in the main world.
+- [x] Run the new regression in Godot 4.6.2 (**4/4 passed**). Main-world timed placement remains deliberately opt-in pending F5 inspection.
 - [ ] Integrate the specialized conveyor-attached placement path and confirm no early inventory/port transfer.
 - [ ] Enable construction sites in normal F5 gameplay after passing new tests, then manually test progress, location, rotation, collisions and completion.
 
