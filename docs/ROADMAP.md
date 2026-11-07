@@ -6,6 +6,21 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Planned Storage Conveyor Reservation — Checkpoint 1 (2026-11-07)
+
+- [x] Add non-operational `PlannedInputPort` / `PlannedOutputPort` marker geometry copied from the future building's actual scene.
+- [x] Implement optional physical-belt reservation and revalidation of endpoint geometry when construction finishes.
+- [x] Add `tests/planned_storage_conveyor_test.tscn` covering six checks: geometry, reservation exclusivity, waiting cargo, completion connection, conserved unloading, and rejection of moved belts.
+- [ ] Run the six-check Godot regression and address any issues.
+- [ ] Wire Build Mode preview/click handling to planned markers without bypassing existing collision and conveyor corner rules.
+- [ ] Validate live blueprint-to-conveyor construction and demolition/salvage behavior.
+- [ ] Only then consider enabling planned connections in the normal zombie-planet demo.
+
+**Status:** Isolated reservation logic committed; manual in-game placement around unfinished Storage is not yet available. No WorldInteraction placement changes in this checkpoint.
+
+---
+
+
 ## Timed Storage — Conveyor Delivery Compatibility (2026-11-07)
 
 - [x] `construction_footprint_ports_test.tscn`: **4/4 passed locally**; unfinished sites reserve the physics footprint and expose no inventory/port.
