@@ -51,6 +51,7 @@ func _build_placeholder() -> void:
 	body.collision_mask = 0
 	add_child(body)
 	_collision = CollisionShape3D.new()
+	_collision.name = "CollisionShape3D"
 	_collision.shape = shape
 	_collision.position.y = 0.3
 	body.add_child(_collision)
