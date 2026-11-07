@@ -12,7 +12,9 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Define fortified perimeter expansion, shared ammunition/construction resource economy, RTS command view, optional player drone, and worker construction drones as design directions.
 - [x] Add isolated `ConstructionLifecycle` with planned / constructing / complete states, progress, work multiplier, and safe one-time completion event.
 - [x] Add `res://tests/construction_lifecycle_test.tscn` with six focused timing and transition checks.
-- [ ] Execute all six construction lifecycle tests in Godot 4.6.2 and resolve any failures.
+- [x] Execute all six construction lifecycle tests in Godot 4.6.2 (**6/6 passed**, user-confirmed).
+- [x] Add isolated `ConstructionSite` prototype that reserves a footprint and replaces itself with a real Test Storage building at completion.
+- [x] Add `tests/construction_site_test.tscn` for four storage-activation checks (**awaiting local Godot run**).
 - [ ] Integrate construction sites with a **single simple building** before generalizing to all structures and conveyor placement variants.
 - [ ] Reserve build footprints while unfinished; prevent production, port transfers, and combat until completion.
 - [ ] Add construction progress UI and regression checks for placement, demolition, health, logistics and selection.
