@@ -13,7 +13,7 @@ var target_definition: BuildingDefinition
 var lifecycle: ConstructionLifecycle = ConstructionLifecycle.new()
 var footprint: Vector2i = Vector2i.ONE
 var _collision: CollisionShape3D
-var _progress_bar: ProgressBar
+var _progress_label: Label3D
 var _completed_building: Node3D
 
 
@@ -38,8 +38,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	lifecycle.advance(delta)
-	if is_instance_valid(_progress_bar):
-		_progress_bar.value = lifecycle.get_progress() * 100.0
+	if is_instance_valid(_progress_label):
+		_progress_label.text = "CONSTRUCTING %d%%" % int(round(lifecycle.get_progress() * 100.0))
 
 
 func _build_placeholder() -> void:
@@ -69,15 +69,13 @@ func _build_placeholder() -> void:
 
 	var label := Label3D.new()
 	label.name = "ConstructionLabel"
-	label.text = "CONSTRUCTING"
+	label.text = "CONSTRUCTING 0%"
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.position = Vector3(0.0, 1.0, 0.0)
 	label.font_size = 28
 	label.pixel_size = 0.008
 	add_child(label)
-
-	# World-space progress text is intentionally separate from debug HUD.
-	_progress_bar = null
+	_progress_label = label
 
 
 func get_progress() -> float:
