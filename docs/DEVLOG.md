@@ -6,6 +6,17 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Construction Footprint and Port Readiness
+
+- Accepted testing sandbox: 3/3 Godot checks and player confirmation of a nonattacking zombie in F6 sandbox play.
+- Reviewed `ConstructionSite`, `ItemPortComponent`, and the existing 3D placement blocker mask.
+- Added `tests/construction_footprint_ports_test.tscn` to verify the unfinished site's physical overlap, absence of inventory/ports during construction, and real Storage inventory/ports on completion.
+- No game-system modifications: this test establishes the prerequisite for safe delayed conveyor connection. The next checkpoint will validate connecting physical belts and moving actual items.
+- **Validation pending:** Four new Godot checks, then subsequent logistics tests.
+
+---
+
+
 ## 2026-11-07 — Safe Factory Testing Sandbox
 
 - Added `scenes/core/factory_testing_sandbox.tscn` for interruption-free factory testing. The green moving zombie remains visible but its processing is disabled, so it does not walk or melee attack in this scene.
