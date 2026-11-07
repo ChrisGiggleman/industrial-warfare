@@ -6,12 +6,22 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Planned Conveyor Preview Discovery
+
+- Six planned-reservation regression checks passed in local Godot 4.6.2, including cargo conservation, deferred port connection, and rejection of a moved belt.
+- Added `PlannedConveyorPortFinder`, a preview-only candidate finder that applies search radius, player-selected conveyor heading, reserved-port restrictions, and construction-state validation.
+- Added `tests/planned_conveyor_port_finder_test.tscn` with five focused discovery checks. **Pending local Godot verification.**
+- Existing `WorldInteraction` placement remains unchanged. The next stage will integrate preview and click routing after the finder test passes.
+
+---
+
+
 ## 2026-11-07 — Planned Port Reservation Foundation
 
 - Added marker-only planned Storage port geometry, matching completed building port transforms while keeping unfinished sites free of operational `ItemPortComponent` instances or inventories.
 - Added optional `ConstructionSite.reserve_conveyor()` plus `get_planned_belt_transform()`; reservations do not move or transfer cargo. Upon completion, each reserved belt is connected only if the existing strict `ConveyorSegment.try_connect_building_port()` validation still passes.
 - Added six focused checks in `res://tests/planned_storage_conveyor_test.tscn` for early isolation, one-item holding, delayed connection, conserved delivery, and moved-belt refusal.
-- **Local Godot verification pending.** Player-facing Build Mode snapping around blueprints is deferred pending this isolated regression; existing production, hotbar, combat, and Main scene scripts are unchanged.
+- **Local Godot verification: 6/6 planned-reservation tests passed on 2026-11-07.** Player-facing Build Mode snapping around blueprints is deferred pending the next isolated discovery regression; existing production, hotbar, combat, and Main scene scripts are unchanged.
 
 ---
 
