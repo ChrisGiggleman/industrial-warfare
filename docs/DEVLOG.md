@@ -11,6 +11,8 @@ The development log intentionally summarizes completed milestones rather than re
 - Confirmed the immediate vertical slice: one zombie world with persistent factory growth, ammunition-fed defenses, and turret/wall-led territorial expansion. Planet-hopping and alternate enemy factions remain long-term campaign goals.
 - Added `scripts/components/construction_lifecycle.gd`: isolated planned/constructing/complete state transitions, required duration, progress, remaining work, optional worker multiplier, and one-time completion signal.
 - Added `tests/construction_lifecycle_test.gd` and `tests/construction_lifecycle_test.tscn` covering six construction-state and timing regression groups.
+- The lifecycle model passed **all 6/6** local Godot regression checks (user-confirmed screenshot).
+- Added `ConstructionSite` prototype and `tests/construction_site_test.tscn` to demonstrate a timed, reserved Storage footprint and delayed creation of an operational Storage building. This is isolated test-only integration pending Godot verification; main Build Mode is unchanged.
 - The model is intentionally **not yet wired into live placement**: current buildings remain instantly constructed until isolated tests pass and gameplay-system shutdown/activation rules are implemented and validated.
 - No main-scene, conveyor, hotbar, production, combat, or salvage behavior was changed. The construction test requires execution in Godot 4.6.2.
 
