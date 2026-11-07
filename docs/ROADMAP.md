@@ -11,7 +11,7 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] `construction_footprint_ports_test.tscn`: **4/4 passed locally**; unfinished sites reserve the physics footprint and expose no inventory/port.
 - [x] Add `tests/timed_storage_conveyor_delivery_test.tscn` covering site completion, a physically snapped conveyor, one ore delivery, item conservation, and disconnection cleanup.
 - [x] Run `timed_storage_conveyor_delivery_test.tscn` in Godot 4.6.2: **6/6 passed** (2026-11-07), including actual cargo delivery and conservation.
-- [ ] Verify player-built conveyor connection in F6 sandbox to completed timed Storage.
+- [x] Verify player-built conveyor connection in F6 sandbox to completed timed Storage: user screenshot shows **11 Prototype Rounds / 200** in completed Test Storage, HP **100/100**, with adjacent physical conveyor chain (2026-11-07).
 - [ ] Later: design delayed building-to-existing-belt snapping, to avoid premature connections before construction completes.
 
 **This checkpoint adds a regression scene, not new live snapping logic.**
