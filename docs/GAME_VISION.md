@@ -199,3 +199,21 @@ A proposed mechanic moves from **Open Question** to **Confirmed Direction** only
 ---
 
 *This document captures design intent, not an implementation claim. Update it only when the vision or an agreed design principle changes, and keep implementation status in the roadmap, architecture, and devlog.*
+
+
+## Zombie-Planet Demo and Campaign Direction — 2026-11-06
+
+**Near-term scope:** Build one persistent, playable zombie-planet demo before implementing additional worlds or factions. The player uses an overhead RTS camera to establish a base, manufacture ammunition and construction materials, supply defenses through physical logistics, and expand fortified territory against zombie hordes. The first demo needs a bounded objective and a repeatable defense/expansion loop.
+
+**Long-term campaign:** Conquer a planet, establish a lasting industrial foothold, and eventually launch to another planet with a different hostile faction (e.g. insects, machines, or human opponents). This is **not** a roguelike reset loop; interplanetary progression and replayability are future milestones.
+
+**Territory rule:** Construction alone does not secure territory. Defensive positions must be completed, supplied, and able to repel enemies. Expansion should proceed by advancing turret/wall lines and the connected industrial supply network.
+
+**Shared war economy:** Manufactured materials compete between ammunition for survival, construction supplies for expansion, and eventually research. Materials must move physically rather than teleporting through an allocation menu. A future construction logistics phase will require material deliveries.
+
+**Player presence:** Retain overhead RTS command controls. Plan an optional controllable floating AI drone that scouts, assists with repairs and salvage, and operates within fuel/range limitations. Base or forward stations recharge it. Zero fuel may trigger a recoverable crash and timed hub redeployment; details remain open and are not in the initial construction prototype.
+
+**Construction:** Placement eventually creates a non-operational blueprint/construction site with a reserved footprint and a time-based completion transition. Later, limited worker drones launch from a main hub, accelerate work, and can be upgraded through research. Unfinished structures must not run production, transfer cargo, or shoot; damaged construction, salvage, material costs, and completion visuals require independent integration tests.
+
+**Delivery sequence:** Isolated lifecycle timing → placeable construction-site integration → main hub and worker assistance → construction-material delivery → drone and perimeter gameplay → self-contained first zombie-night demo. Keep existing placement, corner snapping, logistics, combat, and salvage tests passing throughout.
+
