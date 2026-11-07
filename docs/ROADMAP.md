@@ -6,6 +6,20 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Construction and Conveyor Compatibility — Footprint Checkpoint (2026-11-07)
+
+- [x] Confirm factory testing sandbox accepted (3/3 test checks and manual stationary-zombie verification).
+- [x] Inspect ConstructionSite collision reservation and Storage port activation on completion.
+- [x] Add `tests/construction_footprint_ports_test.tscn` validating placement layer, actual Godot overlap detection, absent premature inventory/ports, and final inventory/ports.
+- [ ] Execute new 4-check physics-world regression in Godot 4.6.2.
+- [ ] Test physical conveyor endpoint connection and cargo conservation after timed construction completes; no automatic reconnection is implemented in this checkpoint.
+- [ ] Enable timed construction for conveyor-attached buildings only after those logistics checks pass.
+
+**Checkpoint:** Regression scene committed; local execution pending. Main game and sandbox behavior unchanged.
+
+---
+
+
 ## Factory Testing Sandbox — Temporary Developer Convenience
 
 - [x] Add `res://scenes/core/factory_testing_sandbox.tscn` as a separate developer-only copy of the current Main scene, with `PrototypeMovingZombie.process_mode = DISABLED`.
