@@ -11,7 +11,7 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Add `res://scenes/core/factory_testing_sandbox.tscn` as a separate developer-only copy of the current Main scene, with `PrototypeMovingZombie.process_mode = DISABLED`.
 - [x] Enable timed Storage construction only in this sandbox; `main.tscn` keeps the zombie active and its original construction flag unchanged.
 - [x] Add `res://tests/factory_testing_sandbox_test.tscn` with three focused settings-isolation checks.
-- [ ] Run the regression (F6) and verify the sandbox gameplay (F6): green zombie stays stationary, building and conveyor tests are uninterrupted.
+- [x] Run sandbox regression (F6): **3/3 checks passed** in Godot 4.6.2 (2026-11-07). Player confirmed in-game sandbox operates with the green zombie inactive; construction and conveyor compatibility testing can proceed without combat interruptions.
 - [ ] Reconcile the temporary sandbox scene if the main prototype scene changes in future checkpoints.
 
 **The sandbox is an isolated development aid, not a permanent combat or zombie AI change.**
