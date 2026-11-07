@@ -3181,7 +3181,7 @@ func _place_timed_storage_site(
 		return null
 	if definition.building_id != &"test_storage":
 		return null
-	var scene_root := get_tree().current_scene as Node3D
+	var scene_root := get_parent() as Node3D
 	if not is_instance_valid(scene_root):
 		return null
 	var site := ConstructionSite.new()
