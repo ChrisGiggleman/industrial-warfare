@@ -6,6 +6,24 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Zombie-Planet Playable Demo — Active Development Focus (2026-11-06)
+
+- [x] Confirm **one zombie-planet demo** as the immediate scope; other factions, worlds, and interplanetary launches are later campaign features.
+- [x] Define fortified perimeter expansion, shared ammunition/construction resource economy, RTS command view, optional player drone, and worker construction drones as design directions.
+- [x] Add isolated `ConstructionLifecycle` with planned / constructing / complete states, progress, work multiplier, and safe one-time completion event.
+- [x] Add `res://tests/construction_lifecycle_test.tscn` with six focused timing and transition checks.
+- [ ] Execute all six construction lifecycle tests in Godot 4.6.2 and resolve any failures.
+- [ ] Integrate construction sites with a **single simple building** before generalizing to all structures and conveyor placement variants.
+- [ ] Reserve build footprints while unfinished; prevent production, port transfers, and combat until completion.
+- [ ] Add construction progress UI and regression checks for placement, demolition, health, logistics and selection.
+- [ ] Create the central hub and worker assistance behavior; then implement material-consuming construction.
+- [ ] Add expandable defensive walls, waves and a bounded victory/lose condition for the zombie demo.
+
+**Checkpoint status:** Standalone lifecycle committed; runtime validation and live-world integration pending. No live building placement behavior changed.
+
+---
+
+
 ## Phase 0 — Foundation
 
 **Goal:** Establish a clean and maintainable technical base.
