@@ -47,6 +47,8 @@ const SELECTION_COLLISION_MASK: int = 2
 # Opt-in construction integration. Disabled until the isolated placement
 # regression passes; Main gameplay and existing test suites remain unchanged.
 @export var enable_timed_storage_construction: bool = false
+# Developer-only: enable planned belt snapping in the factory sandbox.
+@export var enable_planned_storage_conveyor_snap: bool = false
 @export_range(0.1, 120.0, 0.1) var storage_construction_seconds: float = 8.0
 
 # Legacy scene list retained temporarily while the placement system is
@@ -182,6 +184,7 @@ var conveyor_snap_before: bool = false
 # is explicitly committed in a later step.
 
 var conveyor_building_snap_port: ItemPortComponent = null
+var planned_conveyor_preview: Dictionary = {}
 
 # =============================================================================
 # BUILDING-TO-CONVEYOR PLACEMENT SNAP STATE
@@ -1761,6 +1764,7 @@ func _update_placement_preview() -> void:
 			conveyor_snap_source = null
 			conveyor_snap_before = false
 			conveyor_building_snap_port = null
+			planned_conveyor_preview.clear()
 			building_placement_snap_belt = null
 			building_placement_snap_port = null
 			conveyor_corner_snap_source = null
@@ -1893,12 +1897,36 @@ func _update_placement_preview() -> void:
 						)
 
 				# =============================================================================
+				# PLANNED STORAGE PORT — SANDBOX OPT-IN
+				# =============================================================================
+
+				if (
+					enable_planned_storage_conveyor_snap
+					and conveyor_preview_scene == ConveyorPieceSelector.STRAIGHT_SCENE
+					and not is_instance_valid(conveyor_bridge_source)
+					and not is_instance_valid(conveyor_building_snap_port)
+				):
+					planned_conveyor_preview = (
+						PlannedConveyorPortFinder.find_nearest_preview(
+							ghost_belt,
+							mouse_grid_position,
+							CONVEYOR_BUILDING_PORT_SEARCH_RADIUS
+						)
+					)
+					if not planned_conveyor_preview.is_empty():
+						placement_ghost.global_transform = (
+							planned_conveyor_preview["transform"]
+						)
+						current_placement_position = placement_ghost.global_position
+
+				# =============================================================================
 				# THIRD: EXISTING CONVEYOR ENDPOINT
 				# =============================================================================
 
 				if (
 					not is_instance_valid(conveyor_bridge_source)
 					and not is_instance_valid(conveyor_building_snap_port)
+					and planned_conveyor_preview.is_empty()
 				):
 
 					var belt_preview: Dictionary = (
@@ -2766,6 +2794,46 @@ func _is_placement_clear() -> bool:
 					neighbor_body.get_rid()
 				)
 
+	# Planned Storage snap may touch only its intended construction site.
+	# Revalidate exact transform and directed endpoint geometry before
+	# excluding that one reserved footprint body from collision queries.
+	if not planned_conveyor_preview.is_empty():
+		if not enable_planned_storage_conveyor_snap:
+			return false
+		if not placement_ghost is ConveyorSegment:
+			return false
+		var site := planned_conveyor_preview.get("site") as ConstructionSite
+		if not is_instance_valid(site) or site.is_queued_for_deletion():
+			return false
+		var input_side: bool = bool(planned_conveyor_preview.get("input_side", true))
+		var fresh := site.get_planned_belt_transform(
+			placement_ghost as ConveyorSegment, input_side
+		)
+		if fresh.is_empty():
+			return false
+		if not placement_ghost.global_transform.is_equal_approx(
+			fresh["transform"]
+		):
+			return false
+		if is_instance_valid(site.get_reserved_conveyor(input_side)):
+			return false
+		var marker := site.get_planned_port(input_side)
+		var endpoint := placement_ghost.get_node_or_null(
+			"OutputEndpoint" if input_side else "InputEndpoint"
+		) as Marker3D
+		var outgoing: Marker3D = endpoint if input_side else marker
+		var incoming: Marker3D = marker if input_side else endpoint
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(
+			outgoing, incoming, ConveyorSegment.CONNECTION_GAP
+		):
+			return false
+		var reserved_body := site.get_node_or_null(
+			"ReservedFootprint"
+		) as PhysicsBody3D
+		if not is_instance_valid(reserved_body):
+			return false
+		snap_exclusions.append(reserved_body.get_rid())
+
 	# =============================================================================
 	# CHECK PLACEMENT COLLISIONS
 	# =============================================================================
@@ -3191,6 +3259,33 @@ func _place_timed_storage_site(
 	scene_root.add_child(site)
 	site.global_transform = placement_transform
 	return site
+
+
+# =============================================================================
+# COMMIT A PLANNED STORAGE BELT
+# =============================================================================
+
+func _commit_planned_storage_belt(
+	site: ConstructionSite, input_side: bool,
+	placement_transform: Transform3D
+) -> ConveyorSegment:
+	if not enable_planned_storage_conveyor_snap:
+		return null
+	if not is_instance_valid(site) or site.is_queued_for_deletion():
+		return null
+	var root := get_parent() as Node3D
+	if root == null:
+		return null
+	var scene := ConveyorPieceSelector.STRAIGHT_SCENE
+	var belt := scene.instantiate() as ConveyorSegment
+	if belt == null:
+		return null
+	root.add_child(belt)
+	belt.global_transform = placement_transform
+	if not site.reserve_conveyor(belt, input_side):
+		belt.queue_free()
+		return null
+	return belt
 
 
 func _try_place_object() -> void:
@@ -3996,6 +4091,35 @@ func _try_place_object() -> void:
 
 	
 	# =============================================================================
+	# PLANNED STORAGE BELT PLACEMENT — SANDBOX OPT-IN
+	# =============================================================================
+	# Revalidate the selected site and current cursor before committing.
+	# The belt remains physically disconnected until construction completes.
+
+	if not planned_conveyor_preview.is_empty():
+		if not enable_planned_storage_conveyor_snap:
+			return
+		if not placement_ghost is ConveyorSegment:
+			return
+		if not _is_placement_clear():
+			print("Planned Storage belt blocked: Collision or reservation changed.")
+			return
+		var site := planned_conveyor_preview.get("site") as ConstructionSite
+		if not is_instance_valid(site):
+			return
+		var input_side: bool = bool(
+			planned_conveyor_preview.get("input_side", true)
+		)
+		var belt := _commit_planned_storage_belt(
+			site, input_side, placement_ghost.global_transform
+		)
+		if belt == null:
+			print("Planned Storage belt connection was not reserved.")
+		else:
+			print("PLANNED STORAGE BELT RESERVED | ", belt.global_position)
+		return
+
+	# =============================================================================
 	# PERMANENT BUILDING-TO-CONVEYOR SNAP PLACEMENT
 	# =============================================================================
 
@@ -4523,6 +4647,7 @@ func _destroy_placement_ghost() -> void:
 	conveyor_snap_source = null
 	conveyor_snap_before = false
 	conveyor_building_snap_port = null
+	planned_conveyor_preview.clear()
 	building_placement_snap_belt = null
 	building_placement_snap_port = null
 	conveyor_corner_snap_source = null
