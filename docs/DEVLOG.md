@@ -11,6 +11,7 @@ The development log intentionally summarizes completed milestones rather than re
 - Godot confirmed **4/4** world-controller integration checks passed (default instant placement, nonoperational site, activation at 100%, invalid-definition rejection).
 - Next validation is a controlled F5 session with `WorldInteraction.enable_timed_storage_construction` enabled temporarily in the Main scene Inspector. Keep the default false until regular placement and downstream conveyor cases are regression-tested.
 - Only standalone Test Storage placement is supported; snapped-to-belt Storage still takes the original immediate-connection route.
+- Manual F5 evidence (2026-11-06): blue construction site shown at 47%, then completed Storage building with IN/OUT port markers. Timed standalone build activation accepted visually; automated checks 14/14 passed across three scenes. Actual port cargo transfer after construction and site/conveyor collision compatibility remain future checks.
 
 
 ## 2026-11-06 — Construction Site and World Integration Follow-up
