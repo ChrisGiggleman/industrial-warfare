@@ -6,6 +6,19 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Factory Testing Sandbox — Temporary Developer Convenience
+
+- [x] Add `res://scenes/core/factory_testing_sandbox.tscn` as a separate developer-only copy of the current Main scene, with `PrototypeMovingZombie.process_mode = DISABLED`.
+- [x] Enable timed Storage construction only in this sandbox; `main.tscn` keeps the zombie active and its original construction flag unchanged.
+- [x] Add `res://tests/factory_testing_sandbox_test.tscn` with three focused settings-isolation checks.
+- [ ] Run the regression (F6) and verify the sandbox gameplay (F6): green zombie stays stationary, building and conveyor tests are uninterrupted.
+- [ ] Reconcile the temporary sandbox scene if the main prototype scene changes in future checkpoints.
+
+**The sandbox is an isolated development aid, not a permanent combat or zombie AI change.**
+
+---
+
+
 ### Timed Storage Manual F5 Acceptance — Next Step
 
 - [x] Controller integration `tests/timed_storage_placement_test.tscn` **4/4 checks passed locally** (2026-11-06).
