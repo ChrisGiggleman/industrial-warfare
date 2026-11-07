@@ -6,6 +6,16 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Safe Factory Testing Sandbox
+
+- Added `scenes/core/factory_testing_sandbox.tscn` for interruption-free factory testing. The green moving zombie remains visible but its processing is disabled, so it does not walk or melee attack in this scene.
+- Enabled timed Test Storage construction in the sandbox. Normal `scenes/core/main.tscn` is unchanged and retains active zombie behavior and its existing construction settings.
+- Added `tests/factory_testing_sandbox_test.tscn` with three tests checking disabled sandbox zombie, normal Main behavior, and retained build HUD/catalog. Godot verification is pending.
+- Run the sandbox scene directly with **F6**; run the normal Main scene using **F5**. Since this is a separate scene copy, synchronize it if Main receives future gameplay or scene changes.
+
+---
+
+
 ### Timed Storage Controller Integration — Local Validation (2026-11-06)
 
 - Godot confirmed **4/4** world-controller integration checks passed (default instant placement, nonoperational site, activation at 100%, invalid-definition rejection).
