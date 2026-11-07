@@ -11,12 +11,23 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Add non-operational `PlannedInputPort` / `PlannedOutputPort` marker geometry copied from the future building's actual scene.
 - [x] Implement optional physical-belt reservation and revalidation of endpoint geometry when construction finishes.
 - [x] Add `tests/planned_storage_conveyor_test.tscn` covering six checks: geometry, reservation exclusivity, waiting cargo, completion connection, conserved unloading, and rejection of moved belts.
-- [ ] Run the six-check Godot regression and address any issues.
+- [x] Run the six-check Godot regression: **6/6 passed** in Godot 4.6.2 (2026-11-07).
 - [ ] Wire Build Mode preview/click handling to planned markers without bypassing existing collision and conveyor corner rules.
 - [ ] Validate live blueprint-to-conveyor construction and demolition/salvage behavior.
 - [ ] Only then consider enabling planned connections in the normal zombie-planet demo.
 
-**Status:** Isolated reservation logic committed; manual in-game placement around unfinished Storage is not yet available. No WorldInteraction placement changes in this checkpoint.
+**Status:** Reservation logic passed local tests. Preview finder is now committed for separate regression; manual in-game placement around unfinished Storage is not yet available.
+
+### Planned-port discovery checkpoint
+
+- [x] Add `PlannedConveyorPortFinder`, a separate read-only preview finder for planned Storage input/output markers.
+- [x] Add `res://tests/planned_conveyor_port_finder_test.tscn`, checking rotated geometry, snap range, requested belt direction, reserved port exclusivity, and completed-site exclusion.
+- [ ] Run the five-check Godot discovery test.
+- [ ] Integrate finder into the normal Build Mode preview/click path **only after** test acceptance, preserving corner and collision logic.
+
+**No player-facing snap changes at this checkpoint.**
+
+ No WorldInteraction placement changes in this checkpoint.
 
 ---
 
