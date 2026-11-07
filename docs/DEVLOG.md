@@ -6,6 +6,16 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-06 — Construction Site and World Integration Follow-up
+
+- Local Godot **4/4 ConstructionSite** checks passed, confirming footprint, pending state, delayed real Storage, preserved transform and ports.
+- Added opt-in `WorldInteraction.enable_timed_storage_construction` (default false) and `storage_construction_seconds` to stage the first standalone Storage construction in the live controller. Existing Main and conveyor snap placement remain unchanged by default.
+- Added `tests/timed_storage_placement_test.tscn` for world-controller integration checks; these have **not** been run locally yet.
+- Next: pass the test, validate automatic placement and safe activation, then enable timed construction in F5.
+
+---
+
+
 ## 2026-11-06 — Zombie-Planet Demo Focus and Construction Lifecycle Foundation
 
 - Confirmed the immediate vertical slice: one zombie world with persistent factory growth, ammunition-fed defenses, and turret/wall-led territorial expansion. Planet-hopping and alternate enemy factions remain long-term campaign goals.
