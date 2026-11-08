@@ -13,7 +13,7 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Pass the raw `hit_position` instead, preserving original building-port direction and hard-snap transform validation.
 - [x] Expand `planned_conveyor_port_finder_test.tscn` to **7 checks** including fractional cursor proximity.
 - [x] Run updated finder regression **7/7** and Build Mode integration regression **6/6** in Godot 4.6.2 (player-confirmed screenshots, 2026-11-07).
-- [ ] Recheck hard-snapping in the F6 factory sandbox with a new unfinished Storage blueprint.
+- [x] Recheck hard-snapping in the F6 factory sandbox with a new unfinished Storage blueprint: **player confirmed snapping works** (2026-11-07).
 - [ ] If still not snapping, inspect preview precedence and camera-hit targeting before adjusting collision safety or connection logic.
 
 **No modifications to completed building connectivity, cargo transport, or Main scene construction settings.**
@@ -51,7 +51,7 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Add `PlannedConveyorPortFinder`, a separate read-only preview finder for planned Storage input/output markers.
 - [x] Add `res://tests/planned_conveyor_port_finder_test.tscn`, checking rotated geometry, snap range, requested belt direction, reserved port exclusivity, and completed-site exclusion.
 - [x] Run the five-check Godot discovery test: **5/5 passed** (2026-11-07).
-- [x] Integrate the finder with an **opt-in sandbox-only** Build Mode preview/click route, keeping existing corner and collision checks.\n- [x] Add `tests/planned_storage_build_mode_test.tscn` with six checks for controller reservation, cargo conservation and Main scene isolation.\n- [x] Run the six-check sandbox Build Mode integration test in Godot 4.6.2: **6/6 passed** (2026-11-07).\n- [ ] Manually test planned-port snapping with F6 in the factory sandbox; verify preview color, belt direction, completion and cargo transfer.
+- [x] Integrate the finder with an **opt-in sandbox-only** Build Mode preview/click route, keeping existing corner and collision checks.\n- [x] Add `tests/planned_storage_build_mode_test.tscn` with six checks for controller reservation, cargo conservation and Main scene isolation.\n- [x] Run the six-check sandbox Build Mode integration test in Godot 4.6.2: **6/6 passed** (2026-11-07).\n- [ ] Finish manual acceptance for both planned input/output ports, belt direction, completion and cargo transfer; **visual hard-snapping confirmed** in F6 sandbox.
 
 **No player-facing snap changes at this checkpoint.**
 
