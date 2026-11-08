@@ -22,8 +22,8 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 - [x] Add `PlannedConveyorPortFinder`, a separate read-only preview finder for planned Storage input/output markers.
 - [x] Add `res://tests/planned_conveyor_port_finder_test.tscn`, checking rotated geometry, snap range, requested belt direction, reserved port exclusivity, and completed-site exclusion.
-- [ ] Run the five-check Godot discovery test.
-- [ ] Integrate finder into the normal Build Mode preview/click path **only after** test acceptance, preserving corner and collision logic.
+- [x] Run the five-check Godot discovery test: **5/5 passed** (2026-11-07).
+- [x] Integrate the finder with an **opt-in sandbox-only** Build Mode preview/click route, keeping existing corner and collision checks.\n- [x] Add `tests/planned_storage_build_mode_test.tscn` with six checks for controller reservation, cargo conservation and Main scene isolation.\n- [ ] Run the new six-check sandbox Build Mode integration test in Godot 4.6.2.\n- [ ] Manually test planned-port snapping with F6 in the factory sandbox; verify preview color, belt direction, completion and cargo transfer.
 
 **No player-facing snap changes at this checkpoint.**
 
