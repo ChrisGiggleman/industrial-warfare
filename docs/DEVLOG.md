@@ -12,7 +12,7 @@ The development log intentionally summarizes completed milestones rather than re
 - Added `WorldInteraction.enable_planned_storage_conveyor_snap` (default **false**), a separate planned Storage preview target and safe collision handling for the intended reserved-footprint body.
 - Implemented opt-in straight-belt placement that reserves the aligned construction-site port. It does not form an operational connection until the real Storage becomes available.
 - Enabled the feature only in `factory_testing_sandbox.tscn`; `main.tscn` remains unchanged.
-- Added `tests/planned_storage_build_mode_test.tscn` with six isolated world-integration checks. **Local Godot verification pending**; manual player placement and corner/selection regressions follow after this test.
+- Added `tests/planned_storage_build_mode_test.tscn` with six isolated world-integration checks. **Local Godot verification passed: 6/6 checks** (2026-11-07); manual player placement and corner/selection regressions follow.
 - No changes made to the existing conveyor transport algorithms, zombie combat, or main game save architecture.
 
 ---
