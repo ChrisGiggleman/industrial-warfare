@@ -53,11 +53,25 @@ static func find_nearest_preview(
 			).normalized()
 			if requested_forward.dot(proposed_forward) < 0.98:
 				continue
-			var offset := Vector2(
+			# Accept either the intended belt center or its planned port.
+			# Players naturally aim at the visible building endpoint, which
+			# may be a full belt-length away from the new belt's origin.
+			# Keep the same tight radius and heading check to avoid
+			# attracting unrelated neighboring conveyor lanes.
+			var marker := site.get_planned_port(input_side)
+			if marker == null:
+				continue
+			var to_origin := Vector2(
 				mouse_world_position.x - target.origin.x,
 				mouse_world_position.z - target.origin.z
 			)
-			var distance_squared: float = offset.length_squared()
+			var to_port := Vector2(
+				mouse_world_position.x - marker.global_position.x,
+				mouse_world_position.z - marker.global_position.z
+			)
+			var distance_squared: float = minf(
+				to_origin.length_squared(), to_port.length_squared()
+			)
 			if distance_squared >= best_distance_squared:
 				continue
 			best_distance_squared = distance_squared
