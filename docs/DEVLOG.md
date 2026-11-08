@@ -6,6 +6,16 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Planned Conveyor Ghost Snap Follow-up
+
+- Manual sandbox testing confirmed the conveyor can reserve a planned connection and connect at construction completion, but the preview ghost did not snap when positioned over the blueprint.
+- Root cause investigated: finder compared mouse-to-belt-origin only, even though players aim at the planned Storage port itself. Updated finder to accept proximity to **either** planned port or intended belt origin, preserving the strict heading/radius checks.
+- Added a specific port-cursor scenario to `tests/planned_conveyor_port_finder_test.tscn`, now six checks.
+- **Pending local F6 validation:** planned-port finder and sandbox Build Mode integration regression, followed by in-game ghost snapping, adjacent-lane, and rotation checks.
+
+---
+
+
 ## 2026-11-07 — Sandbox Planned Conveyor Build Mode Integration
 
 - Confirmed **5/5** `PlannedConveyorPortFinder` discovery checks passed in Godot 4.6.2.
