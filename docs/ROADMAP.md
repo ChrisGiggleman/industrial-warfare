@@ -12,7 +12,7 @@ The current goal is to build a small, playable vertical slice before expanding i
 - [x] Trace live WorldInteraction preview: planned finder incorrectly received integer-snapped `mouse_grid_position`, despite fractional building-port placement.
 - [x] Pass the raw `hit_position` instead, preserving original building-port direction and hard-snap transform validation.
 - [x] Expand `planned_conveyor_port_finder_test.tscn` to **7 checks** including fractional cursor proximity.
-- [ ] Run updated 7-check finder regression and 6-check Build Mode integration regression.
+- [x] Run updated finder regression **7/7** and Build Mode integration regression **6/6** in Godot 4.6.2 (player-confirmed screenshots, 2026-11-07).
 - [ ] Recheck hard-snapping in the F6 factory sandbox with a new unfinished Storage blueprint.
 - [ ] If still not snapping, inspect preview precedence and camera-hit targeting before adjusting collision safety or connection logic.
 
