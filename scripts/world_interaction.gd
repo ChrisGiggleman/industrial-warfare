@@ -1909,7 +1909,7 @@ func _update_placement_preview() -> void:
 					planned_conveyor_preview = (
 						PlannedConveyorPortFinder.find_nearest_preview(
 							ghost_belt,
-							mouse_grid_position,
+							hit_position,
 							CONVEYOR_BUILDING_PORT_SEARCH_RADIUS
 						)
 					)
