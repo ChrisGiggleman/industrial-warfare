@@ -1,5 +1,37 @@
 # Industrial Warfare — Development Roadmap
 
+---
+
+## Active Next Phase — Universal Construction, Blueprint Planning, Power (2026-11-08)
+
+**Playable target:** One persistent zombie-planet demo, advancing the supplied defensive perimeter. Other planets/factions remain future expansion content.
+
+### Acceptance before broader implementation
+
+- [x] Timed Storage foundation, planned conveyor reservation, and delayed physical connection validated previously.
+- [x] Planned conveyor finder **7/7** and Build Mode integration **6/6** passed in Godot 4.6.2; user confirmed live ghost hard-snapping to unfinished Storage.
+- [ ] Complete **both planned Storage input/output** manual snaps, belt direction/90-degree corners, cargo conservation after completion, demolition/salvage safety, and established conveyor regression suites.
+- [ ] Confirm local Git working tree and sandbox scene changes are reconciled before broad edits.
+
+### Shared architecture design
+
+- [ ] Review `BuildingDefinition`, `ConstructionLifecycle`, `ConstructionSite`, `WorldInteraction`, `FactoryGrid`, logistics ports, and existing destruction.
+- [ ] Specify blueprint intent vs authorized queued work vs constructing vs operational; decide material and power gating, pausing, cancellation, footprint reservation and serialization boundaries.
+- [ ] Specify hub power supply, relay connectivity, electrical coverage, and separate defense and drone-support areas *before* finalizing the universal construction model.
+- [ ] Specify three candidate power-pole levels, increasing coverage and slow/medium/fast charging (exact numeric balancing deferred).
+
+### Incremental implementation (not yet complete)
+
+- [ ] Generalize construction jobs/timers for buildings and fast-to-build conveyors; block unfinished production, cargo, turrets and wall collision as operational defenses.
+- [ ] Add Blueprint Mode with safe preplanning, port markers, cancellation, authorization and queueing.
+- [ ] Implement Main Hub initial power and connected pole/relay coverage, then generation/consumption and tiered drone recharge.
+- [ ] Add worker drones, material-consuming construction, physical supply priorities and powered turret/wall expansion.
+- [ ] Finish a small playable zombie horde defense-and-expansion demonstration; reserve other worlds, enemy factions, and interplanetary travel for after the first slice.
+
+**Scope guard:** Keep Main scene and validated logistics/combat systems stable. Use opt-in features and Godot F6 regression suites. No disconnected save system.
+
+---
+
 This roadmap tracks the major development stages for Industrial Warfare.
 
 The current goal is to build a small, playable vertical slice before expanding into larger systems.
