@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-11-08 — Bidirectional Planned Storage Conveyor Regression Accepted
+
+**Local test:** `res://tests/planned_storage_bidirectional_conveyor_test.tscn`  
+**Outcome:** **8/8 PASS** in Godot 4.6.2, confirmed by player-provided Output panel screenshot.
+
+- Rotated unfinished Storage exposes planned input/output markers without active ports or inventories.
+- Independent planned input and output conveyor reservations remain exclusive and inactive until Storage construction completes.
+- Completion establishes reciprocal physical port connections; subsequent inbound delivery and outbound loading conserve all three seeded item units.
+- Unrouted cargo remains buffered and protected from player demolition; detaching the outbound port preserves the remaining input link and cargo.
+- These are scripted, code-driven test assertions; the actual in-game cursor snapping, 90-degree turns, and demolition interactions around unfinished Storage still require manual F6 acceptance.
+- A separate design proposal for universal construction jobs, blueprint planning and connected power infrastructure is in `docs/CONSTRUCTION_AND_POWER_ARCHITECTURE.md`.
+- No gameplay runtime implementation changed during this regression acceptance; main game remains unaffected.
+
+**Next gate:** Manual input/output hard-snap and corner checks in the zombie-free Factory Testing Sandbox, followed by broader logistics and salvage regressions before universal construction implementation.
+
+---
+
+
 ## 2026-11-08 — Next-Phase Design Checkpoint and Handoff
 
 **Status:** Design documentation only. No new runtime gameplay implementation in this checkpoint.
