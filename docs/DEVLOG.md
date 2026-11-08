@@ -12,7 +12,7 @@ The development log intentionally summarizes completed milestones rather than re
 - Reviewed the live `WorldInteraction` preview and identified that `PlannedConveyorPortFinder` was called with a grid-rounded cursor world position. Storage port geometry may be fractional, which can push the rounded search position outside the strict snap radius.
 - Updated planned-port preview discovery to receive the original `hit_position` from the ground raycast; the finder retains its direction and radius checks and the actual snap transform is unchanged.
 - Extended the planned finder regression to seven checks, including a fractional raw cursor hit near a planned port.
-- **Pending user validation:** updated finder 7/7, WorldInteraction test 6/6, then manual F6 yellow-ghost hard-snap verification.
+- **Automated validation passed:** updated finder **7/7** and WorldInteraction test **6/6** in Godot 4.6.2 (player-confirmed screenshots, 2026-11-07). **Manual F6 yellow-ghost hard-snap verification is still pending.**
 
 ---
 
