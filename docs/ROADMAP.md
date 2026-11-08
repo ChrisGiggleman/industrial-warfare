@@ -10,10 +10,13 @@
 
 - [x] Timed Storage foundation, planned conveyor reservation, and delayed physical connection validated previously.
 - [x] Planned conveyor finder **7/7** and Build Mode integration **6/6** passed in Godot 4.6.2; user confirmed live ghost hard-snapping to unfinished Storage.
+- [x] Planned Storage bidirectional conveyor regression **8/8 passed** in Godot 4.6.2 (user-provided Output screenshot, 2026-11-08). Confirms rotated planned markers, two exclusive reservations, inactive precompletion flow, completion activation, input/output cargo conservation, occupied-belt demolition protection, and safe output disconnection. This is programmatic geometry/transport validation, not manual Build Mode acceptance.
 - [ ] Complete **both planned Storage input/output** manual snaps, belt direction/90-degree corners, cargo conservation after completion, demolition/salvage safety, and established conveyor regression suites.
 - [ ] Confirm local Git working tree and sandbox scene changes are reconciled before broad edits.
 
 ### Shared architecture design
+
+Design specification drafted in [CONSTRUCTION_AND_POWER_ARCHITECTURE.md](CONSTRUCTION_AND_POWER_ARCHITECTURE.md) (2026-11-08). Review/acceptance and runtime implementation remain separate checkpoints.
 
 - [ ] Review `BuildingDefinition`, `ConstructionLifecycle`, `ConstructionSite`, `WorldInteraction`, `FactoryGrid`, logistics ports, and existing destruction.
 - [ ] Specify blueprint intent vs authorized queued work vs constructing vs operational; decide material and power gating, pausing, cancellation, footprint reservation and serialization boundaries.
