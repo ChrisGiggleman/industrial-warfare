@@ -6,6 +6,21 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Blueprint Conveyor Ghost Hard-Snap — Cursor Coordinate Correction (2026-11-07)
+
+- [x] Player verified delayed connection works, but yellow conveyor placement ghost does **not** visibly hard-snap to an unfinished Storage blueprint.
+- [x] Trace live WorldInteraction preview: planned finder incorrectly received integer-snapped `mouse_grid_position`, despite fractional building-port placement.
+- [x] Pass the raw `hit_position` instead, preserving original building-port direction and hard-snap transform validation.
+- [x] Expand `planned_conveyor_port_finder_test.tscn` to **7 checks** including fractional cursor proximity.
+- [ ] Run updated 7-check finder regression and 6-check Build Mode integration regression.
+- [ ] Recheck hard-snapping in the F6 factory sandbox with a new unfinished Storage blueprint.
+- [ ] If still not snapping, inspect preview precedence and camera-hit targeting before adjusting collision safety or connection logic.
+
+**No modifications to completed building connectivity, cargo transport, or Main scene construction settings.**
+
+---
+
+
 ## Planned Storage — Visible Port Snapping Correction (2026-11-07)
 
 - [x] Manual F6 testing confirmed a reserved conveyor connects once Storage is complete, but the placement ghost does **not reliably snap** when aimed at the unfinished Storage.
