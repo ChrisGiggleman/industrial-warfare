@@ -1,5 +1,47 @@
 # Industrial Warfare — Game Vision & Design Principles
 
+---
+
+## Blueprint Construction, Power, and Drone Support — Design Agreement (2026-11-08)
+
+These rules are approved gameplay directions, **not yet fully implemented**. The first playable target remains a single zombie-planet factory-defense demo. Additional planets and factions remain later campaign content rather than roguelike resets.
+
+### Universal Construction and Planning
+
+- All player-built structures—including conveyor straights/corners, splitter/merger buildings, production machines, walls, turrets, relays, and power stations—should eventually take construction time. Short belts should complete far faster than complex machines or defenses.
+- Keep **Planning** separate from **Construction Authorization**. Blueprint Mode may reserve layout and accurate planned port geometry instantly without consuming items, transferring cargo, producing power, blocking zombies as a completed wall, or attacking.
+- An authorized construction job waits for required power/coverage, materials, and available workers before progressing. Construction time and material costs come from a common building definition / construction-job architecture, not one-off timers per building type.
+- Planned and completed conveyor endpoints must preserve direction, snapping, collision, and resource conservation. A reserved connection is never an operational transfer path until both structures are complete.
+- Players can plan beyond secured territory, but cannot activate factories or claim territory merely by placing holograms. A powered network, worker reach, and a defensible supplied frontier determine practical construction and control.
+- Do not implement independent persistent blueprint/save data before the game's unified save/load architecture is designed.
+
+### Electrical Network and Construction Reach
+
+- The **Main Hub** provides modest bootstrap power and a small starting construction area. **Power Stations** generate electricity; **Power Poles / Relays** distribute it through connected links.
+- A disconnected relay must not energize structures or charge drones. Coverage indicates electrical/service reach, not automatic safety or territorial control.
+- Power supply, defensive protection, and drone service/charging coverage are related but distinct systems. A powered outpost exposed to zombies remains vulnerable.
+- Blueprints may be prepared outside active coverage, but construction jobs remain pending until connected infrastructure and other requirements reach them.
+- The first demo may use simple network connectivity / capacity rules before adding power generation rates, loads, brownouts, and redundancy. No magical resource or power teleportation.
+
+### Tiered Power Poles and Drone Charging
+
+- Power-pole upgrades should support **different coverage footprints and charging rates** as well as later throughput/capacity improvements.
+- Candidate progression: **Basic Power Pole** (small range, slow charging), **Advanced Power Pole** (medium range/charging), **Industrial Power Relay** (large range, fast charging). Exact ranges, power budgets, charge rates, and simultaneous-drone limits are **TBD for balancing**.
+- Charging requires a connected, adequately supplied grid; multiple active drones or insufficient electricity may constrain effective charge rates.
+- A future player-controlled AI drone can scout beyond coverage using battery reserves; supported charging areas and forward stations extend its operational reach. Low-battery warnings, auto-return, crash/recovery, and hub redeployment are future mechanics.
+- A future **Main Hub worker-drone fleet** will build authorized structures, with research affecting worker counts, speed, operating area, and power needs. Worker-drones and the directly controlled AI drone have distinct roles.
+
+### First Demo Scope and Implementation Order
+
+1. Finish timed-Storage planned input/output, belt direction/corner, construction completion, cargo and demolition regressions in the zombie-free factory-testing sandbox.
+2. Review existing `ConstructionLifecycle`, `ConstructionSite`, building definitions, grid footprint and port systems; design a shared blueprint / job state machine and power-coverage interfaces before broad rollout.
+3. Introduce universal planned-site and construction-job foundations with per-building durations; test conveyors carefully and retain all logistics invariants.
+4. Add Blueprint Mode: plan, cancel, inspect, authorize, queue; no operational benefits before completion.
+5. Add Main Hub / power-pole coverage foundation, then stations/consumption/charging tiers, and later worker and player drone mechanics.
+6. Implement ammunition-versus-construction-material logistics, powered defensive perimeter expansion, zombie waves, and a bounded first-planet demo objective.
+
+---
+
 > **Document role:** The long-term creative and gameplay north star for Industrial Warfare.  
 > **Established:** 2026-10-21, consolidating the original Chat 00 concept and design decisions through Chat 07.  
 > **Status:** Living design reference — not a claim that all described features are implemented.  
