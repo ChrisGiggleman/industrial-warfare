@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-08 — Manual Opposite-Direction Corner and Buffered Ammunition
+
+**Evidence:** Player screenshot and explicit confirmation that the opposite 90-degree conveyor layout works in the Godot 4.6.2 Factory Testing Sandbox.
+
+- The completed Storage and neighboring belts remain visually aligned with arrows following the turns.
+- The selected conveyor's Production Debug HUD shows `Input: Previous conveyor`, `Output: Building port`, and `Cargo: Prototype Rounds x1`. This confirms it has received a buffered ammunition item and remains physically linked to a building port.
+- This image does not yet prove the item emptied into Storage or establish end-to-end inventory conservation; those remain a focused follow-up.
+- Both manual right-turn and opposite-turn physical connection checks are accepted. The known automated bidirectional Storage regression remains **8/8 PASS**.
+- No gameplay code modified. Before universal construction rollout, finish corner cargo/conservation and demolition/salvage safety regressions.
+
+**Next local regression:** `res://tests/conveyor_corner_cargo_test.tscn` (8 scripted assertions), followed by cargo demolition and salvage safety scenes.
+
+---
+
 ## 2026-11-08 — Manual Outgoing Conveyor Right-Turn Preservation
 
 **Evidence:** Player screenshot from the Godot 4.6.2 Factory Testing Sandbox after Storage completion.
