@@ -1,5 +1,38 @@
 # Industrial Warfare — Development Log
 
+---
+
+## 2026-11-08 — Next-Phase Design Checkpoint and Handoff
+
+**Status:** Design documentation only. No new runtime gameplay implementation in this checkpoint.
+
+### Accepted construction progress
+
+- Timed Storage, unfinished footprint collisions, port activation, physical cargo delivery, and inventory conservation passed dedicated Godot regressions and manual sandbox testing in prior checkpoints.
+- Planned Storage conveyor discovery **7/7** and sandbox Build Mode integration **6/6** passed in Godot 4.6.2. User confirmed the conveyor placement ghost now hard-snaps to unfinished Storage.
+- Reserved conveyors activate their physical building connection when construction completes. Both planned input/output, corners, demolition, and full conveyor regression acceptance remain follow-up work, rather than assumed complete.
+- Factory Testing Sandbox retains the green zombie disabled for uninterrupted construction checks; Main gameplay behavior remains a separate baseline.
+
+### New design decisions
+
+- All placed structures, **including every conveyor segment**, should eventually be time-built, with lightweight belts significantly faster than machines or defensive works. Current live implementation remains staged and not universal.
+- Add **Blueprint Planning Mode** so players can preplan layouts and port alignments, then authorize construction separately. Holograms reserve plans but cannot operate or claim territory.
+- Introduce a Main Hub with initial emergency power, Power Stations to generate electricity, and linked Power Poles/Relays to extend electrical and construction coverage.
+- Power, defended territory, and drone-service reach are different concepts. A powered location is not automatically safe.
+- Plan three upgrade tiers of poles with increasing coverage and **different drone charging rates** (slow, medium, fast); final numerical balance and power constraints require later design.
+- The player-operated AI drone can eventually scout beyond grid support using limited battery and return for recharging; later worker drones from the hub construct authorized structures with speed/capacity research upgrades.
+- Keep shared industrial materials as real physical logistics competing between ammunition, expansion construction, and eventually research.
+- Preserve one zombie-planet playable demo as the near-term objective. Planetary conquest and multiple hostile factions are long-term campaign/replayability goals, not a roguelike reset mechanic.
+
+### Next engineering sequence
+
+1. Close remaining construction/conveyor regression cases (both planned ports, turns, selection, removal and resource conservation).
+2. Review current scripts/scenes and design universal blueprint/construction jobs together with power-coverage rules.
+3. Implement small opt-in checkpoints for universal construction, preplanning, grid coverage, and later drones/material costs, with local Godot validation between milestones.
+4. Continue using GitHub `main` as the reviewed checkpoint branch and avoid independent save/load architecture.
+
+---
+
 This document tracks meaningful development milestones, design decisions, technical changes, testing, troubleshooting, and showcase-ready progress.
 
 The development log intentionally summarizes completed milestones rather than recording every individual edit.
