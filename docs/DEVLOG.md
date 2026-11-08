@@ -6,6 +6,18 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Sandbox Planned Conveyor Build Mode Integration
+
+- Confirmed **5/5** `PlannedConveyorPortFinder` discovery checks passed in Godot 4.6.2.
+- Added `WorldInteraction.enable_planned_storage_conveyor_snap` (default **false**), a separate planned Storage preview target and safe collision handling for the intended reserved-footprint body.
+- Implemented opt-in straight-belt placement that reserves the aligned construction-site port. It does not form an operational connection until the real Storage becomes available.
+- Enabled the feature only in `factory_testing_sandbox.tscn`; `main.tscn` remains unchanged.
+- Added `tests/planned_storage_build_mode_test.tscn` with six isolated world-integration checks. **Local Godot verification pending**; manual player placement and corner/selection regressions follow after this test.
+- No changes made to the existing conveyor transport algorithms, zombie combat, or main game save architecture.
+
+---
+
+
 ## 2026-11-07 — Planned Conveyor Preview Discovery
 
 - Six planned-reservation regression checks passed in local Godot 4.6.2, including cargo conservation, deferred port connection, and rejection of a moved belt.
