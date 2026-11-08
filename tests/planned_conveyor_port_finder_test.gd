@@ -44,17 +44,33 @@ func _ready() -> void:
 	belt.global_transform = target["transform"]
 	print("PASS C: Finder honors the player's requested conveyor direction")
 
+	# The mouse is often aimed at the port on the blueprint rather than
+	# at the center of the belt that will be created next to it.
+	var planned_input := site.get_planned_port(true)
+	assert(planned_input != null)
+	var aimed_at_port := PlannedConveyorPortFinder.find_nearest_preview(
+		belt, planned_input.global_position
+	)
+	assert(aimed_at_port.get("site") == site)
+	assert(bool(aimed_at_port.get("input_side", false)))
+	assert(
+		(aimed_at_port["transform"] as Transform3D).is_equal_approx(
+			target["transform"]
+		)
+	)
+	print("PASS D: Cursor on visible blueprint port offers correct conveyor snap")
+
 	assert(site.reserve_conveyor(belt, true))
 	assert(PlannedConveyorPortFinder.find_nearest_preview(
 		belt, target["transform"].origin
 	).is_empty())
 	assert(belt.output_building_port == null)
-	print("PASS D: Reserved port cannot offer another preview or transfer")
+	print("PASS E: Reserved port cannot offer another preview or transfer")
 
 	site.lifecycle.advance(10.0)
 	assert(PlannedConveyorPortFinder.find_nearest_preview(
 		belt, target["transform"].origin
 	).is_empty())
-	print("PASS E: Completed construction is no longer a planned snap target")
+	print("PASS F: Completed construction is no longer a planned snap target")
 
-	print("ALL 5 PLANNED CONVEYOR PORT DISCOVERY CHECKS PASSED")
+	print("ALL 6 PLANNED CONVEYOR PORT DISCOVERY CHECKS PASSED")
