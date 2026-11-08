@@ -6,6 +6,19 @@ The current goal is to build a small, playable vertical slice before expanding i
 
 ---
 
+## Planned Storage — Visible Port Snapping Correction (2026-11-07)
+
+- [x] Manual F6 testing confirmed a reserved conveyor connects once Storage is complete, but the placement ghost does **not reliably snap** when aimed at the unfinished Storage.
+- [x] Extend `PlannedConveyorPortFinder` to accept the cursor near either the planned port or the proposed belt origin, retaining direction filtering and original tight search radius.
+- [x] Expand `planned_conveyor_port_finder_test.tscn` to six checks, including cursor directly over planned input.
+- [ ] Run 6-check finder regression and existing 6-check sandbox Build Mode integration test.
+- [ ] Verify actual ghost moves/snaps to unfinished Storage port before click in F6 sandbox, without affecting parallel belts, corners, or R rotation.
+
+**Status:** Discovery adjustment committed; local Godot validation pending.
+
+---
+
+
 ## Planned Storage Conveyor Reservation — Checkpoint 1 (2026-11-07)
 
 - [x] Add non-operational `PlannedInputPort` / `PlannedOutputPort` marker geometry copied from the future building's actual scene.
