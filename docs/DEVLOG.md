@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-11-08 — Manual Outgoing Conveyor Right-Turn Preservation
+
+**Evidence:** Player screenshot from the Godot 4.6.2 Factory Testing Sandbox after Storage completion.
+
+- The Storage construction placeholder is replaced by the real building, with a visibly continuous outgoing conveyor route that turns 90 degrees.
+- The selected conveyor directly next to the completed Storage shows `Input: Building port` and `Output: Next conveyor` in Production Debug, confirming its existing building connection and first downstream physical link survived construction.
+- The selected belt reports HP 50/50 and empty cargo; this screenshot is not proof that cargo has traversed the corner or that every downstream link is connected.
+- No gameplay source changes were necessary. The reverse/left-turn, corner transport, and player demolition/salvage checks remain open.
+
+**Next gate:** Build the opposite-direction turn from a new Storage output route and verify the same two HUD fields after completion, then continue cargo conservation and destruction testing.
+
+---
+
 ## 2026-11-08 — Manual Planned Storage Input/Output Acceptance
 
 **Evidence:** Three player-provided Factory Testing Sandbox screenshots from Godot 4.6.2.
