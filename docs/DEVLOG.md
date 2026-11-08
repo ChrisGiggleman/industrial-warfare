@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-11-08 — Manual Planned Storage Input/Output Acceptance
+
+**Evidence:** Three player-provided Factory Testing Sandbox screenshots from Godot 4.6.2.
+
+- At 6% construction, Storage remains a translucent reserved footprint with conveyor segments placed at both planned ends and their yellow direction arrows visually aligned.
+- After Storage completed, the output-side conveyor Production Debug HUD displayed `Input: Building port` and `Output: Disconnected`, confirming its input is physically linked to Storage output.
+- The input-side conveyor Production Debug HUD displayed `Input: Disconnected` and `Output: Building port`, confirming its output is physically linked to Storage input.
+- Combined with the preceding automated bidirectional regression **8/8**, this accepts visible planned-port bidirectional reservation and postconstruction physical connection.
+- These screenshots do **not** establish a new manual ore/ammunition transport-conservation result. Left/right corner paths, cargo, demolition and salvage interactions remain to validate before universal construction rollout.
+- The Factory Testing Sandbox and Main gameplay scripts remain unchanged.
+
+**Next gate:** Manual left/right corner paths near the completed Storage, then focused existing Godot corner regression scenes.
+
+---
+
 ## 2026-11-08 — Bidirectional Planned Storage Conveyor Regression Accepted
 
 **Local test:** `res://tests/planned_storage_bidirectional_conveyor_test.tscn`  
