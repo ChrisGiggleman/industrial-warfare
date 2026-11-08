@@ -60,17 +60,34 @@ func _ready() -> void:
 	)
 	print("PASS D: Cursor on visible blueprint port offers correct conveyor snap")
 
+	# A fractional mouse position should be evaluated directly, before
+	# WorldInteraction rounds it to the ordinary conveyor grid.
+	# This is particularly important for half-tile building ports.
+	var aimed_fractional: Vector3 = planned_input.global_position + Vector3(
+		0.12, 0.0, -0.12
+	)
+	var fractional_choice := PlannedConveyorPortFinder.find_nearest_preview(
+		belt, aimed_fractional
+	)
+	assert(fractional_choice.get("site") == site)
+	assert(
+		(fractional_choice["transform"] as Transform3D).is_equal_approx(
+			target["transform"]
+		)
+	)
+	print("PASS E: Fractional cursor near blueprint port resolves exact belt transform")
+
 	assert(site.reserve_conveyor(belt, true))
 	assert(PlannedConveyorPortFinder.find_nearest_preview(
 		belt, target["transform"].origin
 	).is_empty())
 	assert(belt.output_building_port == null)
-	print("PASS E: Reserved port cannot offer another preview or transfer")
+	print("PASS F: Reserved port cannot offer another preview or transfer")
 
 	site.lifecycle.advance(10.0)
 	assert(PlannedConveyorPortFinder.find_nearest_preview(
 		belt, target["transform"].origin
 	).is_empty())
-	print("PASS F: Completed construction is no longer a planned snap target")
+	print("PASS G: Completed construction is no longer a planned snap target")
 
-	print("ALL 6 PLANNED CONVEYOR PORT DISCOVERY CHECKS PASSED")
+	print("ALL 7 PLANNED CONVEYOR PORT DISCOVERY CHECKS PASSED")
