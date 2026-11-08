@@ -6,6 +6,17 @@ The development log intentionally summarizes completed milestones rather than re
 
 ---
 
+## 2026-11-07 — Planned Conveyor Hard-Snap Follow-up
+
+- Player confirmed construction-site reservations connect automatically at 100%, but the yellow conveyor ghost does not hard-snap to the unfinished Storage site.
+- Reviewed the live `WorldInteraction` preview and identified that `PlannedConveyorPortFinder` was called with a grid-rounded cursor world position. Storage port geometry may be fractional, which can push the rounded search position outside the strict snap radius.
+- Updated planned-port preview discovery to receive the original `hit_position` from the ground raycast; the finder retains its direction and radius checks and the actual snap transform is unchanged.
+- Extended the planned finder regression to seven checks, including a fractional raw cursor hit near a planned port.
+- **Pending user validation:** updated finder 7/7, WorldInteraction test 6/6, then manual F6 yellow-ghost hard-snap verification.
+
+---
+
+
 ## 2026-11-07 — Planned Conveyor Ghost Snap Follow-up
 
 - Manual sandbox testing confirmed the conveyor can reserve a planned connection and connect at construction completion, but the preview ghost did not snap when positioned over the blueprint.
