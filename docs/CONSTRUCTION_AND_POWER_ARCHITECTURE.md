@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, and the original four compatibility scenes **23/23 passed** in Godot 4.6.2 (2026-11-08). Per-definition construction durations are staged for a 12-check F6 regression. No universal Build Mode, Main-scene or power-grid integration has been enabled.  
+**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, original compatibility scenes **23/23 passed**, and per-definition durations **12/12 passed** in Godot 4.6.2 (2026-11-08). Sandbox-only building Blueprint Planning controls are staged for a 12-check F6 regression. Main scene and power-grid implementation remain unchanged.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -104,6 +104,19 @@ The existing `ConstructionSite` now provides `setup_with_job(definition, duratio
 - `ConstructionSite.setup_with_definition_job()` reads the timing directly from the selected definition and rejects invalid/nonpositive values. It delegates to the previously validated opt-in `setup_with_job()` path; the original `setup(definition, duration)` and sandbox `storage_construction_seconds` remain unchanged.
 - `res://tests/building_construction_duration_test.tscn` adds a **12-check F6 regression** for all duration assets, blueprint inactivity, gating, pausing, real activation, multiport structures and legacy construction behavior. **Developer execution remains pending.**
 - Do not connect these durations into normal `WorldInteraction` until Gate D1 passes and blueprint collision/reservation/authorizing interactions are independently validated.
+
+---
+
+### Gate D2 — Sandbox-only building Blueprint Planning Mode
+
+The Factory Testing Sandbox opts into a first **building-only** interactive planning phase through `WorldInteraction.enable_blueprint_planning`. Normal Main scene remains opt-out. Press P while in Build Mode to switch to a blue BLUEPRINT MODE (TEST) HUD; left click reserves a non-operational building plan; E authorizes the plan under the cursor; X cancels it. Build Mode continues to use the existing B, R, demolition toggle, and configurable hotbar controls.
+
+- The plan owns a `ConstructionSite` (reserved collision footprint, translucent placeholder, and marker geometry), using the validated definition-driven `ConstructionJob`; no real building inventories, turret damage, or producer components appear before job completion.
+- Placement checks both `FactoryGrid` rotated-footprint alignment and intersections with other construction-site reservations, then queries completed-object collision layers. Same-frame duplicate plans are rejected independent of physics synchronization.
+- Construction-site authorization does **not** directly generate power/materials/worker capacity. The sandbox-only `blueprint_sandbox_debug_requirements` option explicitly bypasses all three availability gates for interactive testing, and is off by default everywhere. Main has neither blueprint control nor this override enabled.
+- Planned building ghosts do **not** snap to live conveyor ports until a real deferred-port reservation transaction is implemented. Blueprint conveyor segments are deferred until endpoint, corner and graph consistency tests; the normal physical conveyor placement system remains unchanged when P mode is off.
+- `res://tests/blueprint_sandbox_mode_test.tscn` contains **12 isolated checks; developer F6 validation pending**. Manual mouse hit-testing, UI behavior, cancellation and legacy factory logistics must be verified separately.
+- Future planning batches should authorize selected jobs rather than treating construction as instant; per-building materials, power coverage and drone work will replace the temporary readiness override after their own independent regressions.
 
 ---
 
