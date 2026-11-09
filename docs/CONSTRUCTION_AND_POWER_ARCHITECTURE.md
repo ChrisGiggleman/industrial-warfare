@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** Architecture proposal with an **isolated ConstructionJob foundation committed for Godot validation** (2026-11-08). No live construction-site or power-grid integration has been enabled.  
+**Status:** ConstructionJob foundation **validated 14/14 in Godot 4.6.2** (2026-11-08). Opt-in universal ConstructionSite integration **staged for 15-check F6 validation**. No live Build Mode, Main scene or power-grid integration has been enabled.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -70,7 +70,7 @@ Do not consume materials merely because the player draws a blueprint. Future mat
 
 ### Gate B implementation checkpoint — isolated construction job
 
-`scripts/components/construction_job.gd` is now committed as a `RefCounted` policy wrapper around `ConstructionLifecycle`; `tests/construction_job_test.tscn` is the corresponding **14-check local F6 regression, pending developer execution**.
+`scripts/components/construction_job.gd` is now committed as a `RefCounted` policy wrapper around `ConstructionLifecycle`; `tests/construction_job_test.tscn` is the corresponding **14-check local F6 regression, passed 14/14 in Godot 4.6.2**.
 
 - Its public state machine is `PLANNED → QUEUED → CONSTRUCTING ↔ PAUSED → COMPLETE`, plus `CANCELLED` from any nonterminal state. `authorize()` is the only way out of `PLANNED`.
 - Power, materials, and workers are separate externally supplied **availability flags**. Each required flag defaults to false (fail-closed), and `get_wait_reasons()` reports the missing requirements. The future power grid, material transfer, and worker fleet must validate their availability truthfully.
@@ -79,7 +79,22 @@ Do not consume materials merely because the player draws a blueprint. Future mat
 - Cancellation **does not return materials or free a world footprint in this isolated class**, because neither is owned by it. The later construction-site integration must handle safe cancellation transactions, port reservation cleanup, material salvage and collision ownership.
 - None of these scripts currently activates scene objects or connects physical conveyors. Main, WorldInteraction, Production Debug, and factory transport remain unchanged.
 
-Do not mark Gate B validated or move this job into world placement until the new F6 scene passes.
+Gate B passed its 14-check Godot test. Integration is now staged behind the opt-in site path described below; do not enable it in WorldInteraction until the new site and legacy regression scenes pass.
+
+---
+
+### Gate C implementation checkpoint — opt-in job-driven sites
+
+The existing `ConstructionSite` now provides `setup_with_job(definition, duration, requires_power, requires_materials, requires_workers)`. This configures a `ConstructionJob` while retaining the original `setup()` and its automatically starting `ConstructionLifecycle` for proven timed-Storage placement. The branch is selected when the site enters the scene tree; existing Main and Factory Testing Sandbox scenes do not call the new path.
+
+- An unapproved job site stays `PLANNED` with a reserved collision footprint and **no operational child inventory, machine, turret, or conveyor**. Progress labels distinguish planned, queued, constructing, and paused.
+- The planned-site marker builder copies all direct building `ItemPortComponent` nodes, including multiple named merger/splitter ports. For belts it also copies `InputEndpoint` and `OutputEndpoint`, without creating a real cargo buffer, timer or movable inventory.
+- `accepts_planned_connections()` centralizes allowed reservation states. Legacy sites accept while constructing; job-driven sites accept while planned, queued, constructing or paused. Existing strict geometry alignment and connection-on-completion checks are retained.
+- When the job emits completion, the site instantiates its real `BuildingDefinition.building_scene` at the stored transform, initializes `BuildingRuntime` when present, revalidates pending physical belt links, and retires the placeholder. For a conveyor definition this creates its actual `ConveyorSegment` transport components **only after completion**.
+- Cancelling the isolated job retires an inventory-free site. **Before physical materials are ever delivered to jobs**, extend cancellation to a guarded material-salvage transaction; do not allow cargo-bearing site cancellation using this temporary path.
+- `res://tests/universal_construction_site_test.tscn` contains 15 targeted checks for these contracts, **pending developer F6 validation**. Afterward rerun pre-existing construction, planned-port discovery, reservation and Build Mode tests to rule out regressions.
+
+**Scope limitation:** This does **not** yet automatically snap blueprint belts to other blueprint belts, implement physical blueprint conveyor graph reservation, assign build durations through `BuildingDefinition`, create worker drones, or apply actual power/material costs. These need separately tested follow-up checkpoints.
 
 ---
 
