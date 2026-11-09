@@ -11,3 +11,4 @@ description = "Distributes one incoming conveyor across three independent output
 category = &"Logistics"
 building_scene = ExtResource("1_scene")
 footprint_tiles = Vector2i(1, 1)
+construction_seconds = 5.0
