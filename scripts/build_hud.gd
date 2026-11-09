@@ -205,6 +205,22 @@ func set_demolition_mode(active: bool) -> void:
 
 
 # =============================================================================
+# BLUEPRINT PLANNING — SANDBOX-ONLY HUD
+# =============================================================================
+# The player can distinguish non-operational plans from instant placement.
+# Main gameplay does not enable this mode; no save-system state is written.
+
+func set_blueprint_mode(active: bool) -> void:
+	if not active:
+		set_demolition_mode(false)
+		return
+	build_title.text = "BLUEPRINT MODE (TEST)"
+	build_title.modulate = Color(0.35, 0.75, 1.0)
+	controls_label.text = "LMB Plan | E Authorize | X Cancel"
+	cancel_label.text = "P - Build Mode | RMB - Exit"
+
+
+# =============================================================================
 # BUILD CATALOG — PLAYER HOTBAR ASSIGNMENT EDITOR
 # =============================================================================
 
