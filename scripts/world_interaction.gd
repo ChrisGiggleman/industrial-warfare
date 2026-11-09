@@ -51,6 +51,12 @@ const SELECTION_COLLISION_MASK: int = 2
 @export var enable_planned_storage_conveyor_snap: bool = false
 @export_range(0.1, 120.0, 0.1) var storage_construction_seconds: float = 8.0
 
+# Sandbox-only: building Blueprint Mode is isolated from Main.
+# Debug availability is a test override, not generated electrical power,
+# delivered materials or actual construction drones.
+@export var enable_blueprint_planning: bool = false
+@export var blueprint_sandbox_debug_requirements: bool = false
+
 # Legacy scene list retained temporarily while the placement system is
 # migrated to BuildingDefinition resources.
 # @export var buildable_scenes: Array[PackedScene] = []
@@ -72,6 +78,7 @@ var selected_object: Node = null
 
 # Build Mode state.
 var placement_mode_active: bool = false
+var blueprint_mode_active: bool = false
 var selected_building_index: int = 0
 
 # Player quick-build keys are assigned by stable building_id, not the
@@ -317,6 +324,24 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 
 			return
+
+		# =============================================================================
+		# BLUEPRINT PLANNING — SANDBOX-ONLY KEYBOARD COMMANDS
+		# =============================================================================
+		# P switches normal placement vs. non-operational planning.
+		# E authorizes the site under the pointer; X cancels it.
+		if enable_blueprint_planning and event is InputEventKey:
+			if event.pressed and not event.echo:
+				var key: Key = event.physical_keycode
+				if key == KEY_P:
+					_toggle_blueprint_mode()
+					return
+				if key == KEY_E:
+					_authorize_blueprint_site(_blueprint_site_under_mouse())
+					return
+				if key == KEY_X:
+					_cancel_blueprint_site(_blueprint_site_under_mouse())
+					return
 
 		# =============================================================================
 		# PLAYER QUICK-BUILD KEYS — CONFIGURABLE 1–9
@@ -762,6 +787,7 @@ func _toggle_placement_mode() -> void:
 
 	else:
 		demolition_mode_active = false
+		blueprint_mode_active = false
 		placement_is_valid = false
 
 		_clear_demolition_hover()
@@ -995,6 +1021,7 @@ func _toggle_demolition_mode() -> void:
 	demolition_mode_active = not demolition_mode_active
 
 	if demolition_mode_active:
+		blueprint_mode_active = false
 		_clear_demolition_hover()
 		_destroy_placement_ghost()
 		placement_is_valid = false
@@ -3239,6 +3266,201 @@ func _find_perpendicular_corner_candidate(
 
 
 # =============================================================================
+# BLUEPRINT PLANNING — SANDBOX-ONLY BUILDING PHASE
+# =============================================================================
+# A plan is a non-operational ConstructionSite whose ConstructionJob remains
+# PLANNED until explicitly authorized. All controls are disabled in Main.
+# Conveyor blueprints need independent directional graph tests before use.
+
+func _toggle_blueprint_mode() -> bool:
+	if not enable_blueprint_planning or not placement_mode_active:
+		return false
+	if demolition_mode_active:
+		return false
+	blueprint_mode_active = not blueprint_mode_active
+	if is_instance_valid(build_hud) and build_hud.has_method(
+		"set_blueprint_mode"
+	):
+		build_hud.call("set_blueprint_mode", blueprint_mode_active)
+	print(
+		"BLUEPRINT MODE: ",
+		"PLAN (buildings only)" if blueprint_mode_active else "OFF"
+	)
+	return true
+
+
+func _blueprint_site_under_mouse() -> ConstructionSite:
+	if not enable_blueprint_planning or not is_instance_valid(camera):
+		return null
+	var cursor := get_viewport().get_mouse_position()
+	var ray_origin := camera.project_ray_origin(cursor)
+	var ray_end := ray_origin + camera.project_ray_normal(cursor) * ray_length
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
+	query.collision_mask = SELECTION_COLLISION_MASK
+	query.collide_with_areas = true
+	var result := get_viewport().world_3d.direct_space_state.intersect_ray(query)
+	if result.is_empty():
+		return null
+	var node := result.get("collider") as Node
+	while is_instance_valid(node):
+		if node is ConstructionSite:
+			return node as ConstructionSite
+		node = node.get_parent()
+	return null
+
+
+func _is_managed_blueprint(site: ConstructionSite) -> bool:
+	return (
+		enable_blueprint_planning
+		and is_instance_valid(site)
+		and not site.is_queued_for_deletion()
+		and site.get_parent() == get_parent()
+		and site.job != null
+	)
+
+
+func _authorize_blueprint_site(site: ConstructionSite) -> bool:
+	if not _is_managed_blueprint(site):
+		return false
+	if not site.job.authorize():
+		return false
+	if blueprint_sandbox_debug_requirements:
+		# Explicit factory-testing override. Do not enable in Main:
+		# the actual power graph, delivered cargo and drone capacity
+		# must eventually set these three availability values.
+		site.job.set_availability(true, true, true)
+		print("BLUEPRINT DEBUG: Requirements bypassed in testing sandbox")
+	print("BLUEPRINT AUTHORIZED: ", site.target_definition.display_name)
+	return true
+
+
+func _cancel_blueprint_site(site: ConstructionSite) -> bool:
+	if not _is_managed_blueprint(site):
+		return false
+	if not site.job.cancel():
+		return false
+	print("BLUEPRINT CANCELLED")
+	return true
+
+
+func _blueprint_placement_clear(
+	definition: BuildingDefinition, placement: Transform3D
+) -> bool:
+	if not is_instance_valid(definition):
+		return false
+	if not is_instance_valid(definition.building_scene):
+		return false
+	if definition.building_id == &"conveyor_belt":
+		return false
+	if definition.footprint_tiles.x <= 0 or definition.footprint_tiles.y <= 0:
+		return false
+
+	var right: Vector3 = placement.basis.x.normalized()
+	var turns: int = roundi(
+		rad_to_deg(atan2(-right.z, right.x)) / ROTATION_STEP_DEGREES
+	)
+	var footprint := FactoryGrid.rotated_footprint(
+		definition.footprint_tiles, turns
+	)
+	var origin := FactoryGrid.snap_building_origin(
+		placement.origin, footprint
+	)
+	if Vector2(origin.x - placement.origin.x, origin.z - placement.origin.z).length() > 0.02:
+		return false
+
+	# Explicit site overlap guard handles placements in the same physics
+	# frame and protects footprints before the physics server catches up.
+	for node: Node in get_tree().get_nodes_in_group("construction_sites"):
+		if not node is ConstructionSite:
+			continue
+		var other := node as ConstructionSite
+		if other.is_queued_for_deletion():
+			continue
+		var other_right: Vector3 = other.global_transform.basis.x.normalized()
+		var other_turns: int = roundi(
+			rad_to_deg(atan2(-other_right.z, other_right.x))
+			/ ROTATION_STEP_DEGREES
+		)
+		var other_size := FactoryGrid.rotated_footprint(
+			other.footprint, other_turns
+		)
+		if (
+			absf(other.global_position.x - placement.origin.x)
+				< float(other_size.x + footprint.x) * 0.5 - 0.02
+			and absf(other.global_position.z - placement.origin.z)
+				< float(other_size.y + footprint.y) * 0.5 - 0.02
+		):
+			return false
+
+	# Existing completed structures and obstacle bodies also block plans.
+	# A small inset allows two adjacent tile footprints to share an edge.
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(
+		float(footprint.x) - 0.04,
+		0.56,
+		float(footprint.y) - 0.04
+	)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(
+		Basis.IDENTITY,
+		placement.origin + Vector3.UP * 0.3
+	)
+	query.collision_mask = PLACEMENT_BLOCKER_COLLISION_MASK
+	var obstacles := get_viewport().world_3d.direct_space_state.intersect_shape(
+		query, 1
+	)
+	return obstacles.is_empty()
+
+
+func _create_blueprint_site(
+	definition: BuildingDefinition, placement: Transform3D
+) -> ConstructionSite:
+	if not enable_blueprint_planning:
+		return null
+	if not buildable_definitions.has(definition):
+		return null
+	if not _blueprint_placement_clear(definition, placement):
+		return null
+	var scene_root := get_parent() as Node3D
+	if not is_instance_valid(scene_root):
+		return null
+	var site := ConstructionSite.new()
+	if not site.setup_with_definition_job(definition):
+		site.free()
+		return null
+	scene_root.add_child(site)
+	site.global_transform = placement
+	return site
+
+
+func _commit_blueprint_from_preview() -> void:
+	if not is_instance_valid(placement_ghost):
+		return
+	var definition := _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return
+	if _is_conveyor_selected():
+		print("BLUEPRINT: Conveyor planning awaits directional topology gate.")
+		return
+	if is_instance_valid(building_placement_snap_belt):
+		print("BLUEPRINT: Port-linked planning awaits connection reservation gate.")
+		return
+	_update_placement_preview()
+	if not placement_is_valid or not _is_placement_clear():
+		print("BLUEPRINT: Footprint blocked or preview invalid.")
+		return
+	var site := _create_blueprint_site(
+		definition, placement_ghost.global_transform
+	)
+	if not is_instance_valid(site):
+		print("BLUEPRINT: Placement rejected by footprint reservation.")
+		return
+	print("BLUEPRINT PLANNED: ", definition.display_name,
+		" | P toggle | E authorize | X cancel")
+
+
+# =============================================================================
 # TIMED STORAGE CONSTRUCTION — TESTABLE SITE CREATION
 # =============================================================================
 
@@ -3289,7 +3511,12 @@ func _commit_planned_storage_belt(
 
 
 func _try_place_object() -> void:
-	
+	# Blueprint clicks never enter legacy conveyor/building placement paths.
+	# The prototype plans non-conveyor buildings first; physical belt graph
+	# reservations and corner geometry are a separate validation gate.
+	if enable_blueprint_planning and blueprint_mode_active:
+		_commit_blueprint_from_preview()
+		return
 
 	# =============================================================================
 	# MANUAL CONVEYOR PLACEMENT — SHIFT OVERRIDE
