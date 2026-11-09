@@ -93,6 +93,8 @@ build_hud = NodePath("../BuildHUD")
 production_debug_hud = NodePath("../ProductionDebugHUD")
 enable_timed_storage_construction = true
 enable_planned_storage_conveyor_snap = true
+enable_blueprint_planning = true
+blueprint_sandbox_debug_requirements = true
 buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), ExtResource("6_fu2j5"), ExtResource("7_fu2j5"), ExtResource("8_ocd3q"), ExtResource("9_5xrq8"), ExtResource("10_merger"), ExtResource("11_splitter"), ExtResource("12_ammo_press"), ExtResource("13_turret")])
 
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
