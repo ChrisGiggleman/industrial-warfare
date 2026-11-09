@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-11-09 — Blueprint Cancellation and Footprint Reuse Manually Accepted
+
+**Evidence:** Developer screenshot of a translucent `PLANNED 0%` Storage site in Godot 4.6.2 and explicit confirmation that all six manual steps passed in the Factory Testing Sandbox.
+
+- Successfully placed an unauthorised blueprint while Blueprint Mode was active.
+- Attempted another Storage blueprint on the same footprint and confirmed that the duplicate was rejected.
+- Hovered the original site and pressed **X** to cancel; the unfinished reservation disappeared.
+- Successfully placed a new plan on the previously reserved footprint.
+- Combined with the preceding seven-step cursor/E authorization test and the scripted Blueprint Mode suite **12/12**, the non-conveyor building Blueprint Planning interactions are now accepted in the sandbox.
+- This acceptance confirms player-reported overlap/cancellation outcomes; the screenshot independently shows the blueprint placeholder and `PLANNED 0%` label. No new power generation, worker drones, physical material delivery, conveyor-blueprint topology, or main-game save system was introduced.
+- **Next compatibility gate:** Re-run `res://tests/planned_storage_build_mode_test.tscn` (**6 checks**) and `res://tests/conveyor_corner_cargo_test.tscn` (**8 checks**) on the current branch. Earlier results predate the Blueprint Mode controller edits.
+- **Future gate:** Design directional planned-conveyor graph reservation, activation/corner semantics and cancellation before enabling conveyor Blueprint Mode. Keep the normal Build Mode and Main scene unchanged until this is validated.
+
+---
+
 ## 2026-11-09 — Manual Blueprint Storage Authorization Accepted
 
 **Manual Godot F6 evidence:** Developer explicitly confirmed all seven Factory Testing Sandbox instructions completed successfully.
