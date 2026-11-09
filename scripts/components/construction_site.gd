@@ -60,6 +60,36 @@ func setup_with_job(
 	return true
 
 
+# =============================================================================
+# DEFINITION-DRIVEN JOB SETUP — OPT-IN
+# =============================================================================
+# The authoritative duration belongs to the buildable definition, not the
+# WorldInteraction hotbar slot. Legacy setup() calls are unaffected.
+# Final materials and power requirements will be supplied by later services.
+
+func setup_with_definition_job(
+	definition: BuildingDefinition,
+	requires_power: bool = true,
+	requires_materials: bool = true,
+	requires_workers: bool = true
+) -> bool:
+	if not is_instance_valid(definition):
+		return false
+	if (
+		not is_finite(definition.construction_seconds)
+		or definition.construction_seconds <= 0.0
+	):
+		return false
+
+	return setup_with_job(
+		definition,
+		definition.construction_seconds,
+		requires_power,
+		requires_materials,
+		requires_workers
+	)
+
+
 func _ready() -> void:
 	add_to_group("construction_sites")
 	_build_placeholder()
