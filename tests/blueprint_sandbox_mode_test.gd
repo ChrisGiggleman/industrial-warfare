@@ -18,9 +18,12 @@ func _ready() -> void:
 	controller.set_process(false)
 	assert(controller.enable_blueprint_planning)
 	assert(controller.blueprint_sandbox_debug_requirements)
-	var defaults := load("res://scripts/world_interaction.gd").new()
-	assert(not defaults.enable_blueprint_planning)
-	assert(not defaults.blueprint_sandbox_debug_requirements)
+	var defaults_script := load("res://scripts/world_interaction.gd") as GDScript
+	assert(defaults_script != null)
+	var defaults := defaults_script.new() as Node
+	assert(defaults != null)
+	assert(not defaults.get("enable_blueprint_planning"))
+	assert(not defaults.get("blueprint_sandbox_debug_requirements"))
 	defaults.free()
 	print("PASS A: Building Blueprint Mode and debug override are opt-in only")
 
