@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-08 — Sandbox Blueprint Planning Scripted Regression Passed (12/12)
+
+**Godot evidence:** Player-provided screenshot of `res://tests/blueprint_sandbox_mode_test.tscn` showing `ALL 12 SANDBOX BLUEPRINT PLANNING TESTS PASSED` in Godot 4.6.2 (PASS A-L).
+
+- Sandbox-only Blueprint Mode and explicit readiness override remain opt-in. Main scene defaults are unchanged.
+- The script verified P toggle and HUD, rotated Storage plan geometry, footprint/off-grid rejection, unsupported belt fail-closed behavior, queued work with missing resources, progress pausing, completed real Storage activation, defensive-plan cancellation and test-only authorization override.
+- The screenshot also shows `Extractor has no resource node` after the passing checks. This is an existing placement validation diagnostic, not a failed check; investigate only if manual blueprint interaction is affected.
+- These scripted checks directly invoke the controller methods rather than exercising mouse ray targeting or real E/X keyboard input. Manual cursor-driven plan, authorize and cancel testing is now the next acceptance gate.
+- **No code change was necessary to record this pass.** Before directional conveyor blueprints, confirm manual interaction and rerun key legacy Build Mode/cargo checks. Keep all new features sandbox-only until independently validated.
+
+---
+
 ## 2026-11-08 — Sandbox Blueprint Planning Mode (Building Phase) Staged
 
 **Status:** New opt-in implementation and `res://tests/blueprint_sandbox_mode_test.tscn` committed, **12 checks pending local Godot F6**. No Main scene activation.
