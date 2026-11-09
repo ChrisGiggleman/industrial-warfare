@@ -11,6 +11,8 @@ signal building_completed(building: Node3D)
 @export var construction_duration: float = 5.0
 var target_definition: BuildingDefinition
 var lifecycle: ConstructionLifecycle = ConstructionLifecycle.new()
+# Opt-in job policy. Null preserves the proven timed-Storage lifecycle.
+var job: ConstructionJob = null
 var footprint: Vector2i = Vector2i.ONE
 var _collision: CollisionShape3D
 var _progress_label: Label3D
@@ -30,19 +32,87 @@ func setup(definition: BuildingDefinition, duration: float = 5.0) -> bool:
 	return true
 
 
+# =============================================================================
+# UNIVERSAL JOB-DRIVEN CONSTRUCTION — OPT-IN
+# =============================================================================
+# Does not change the original setup() or existing sandbox placement path.
+# Call before add_child(). The job keeps the blueprint inactive until the
+# player authorizes construction and future services satisfy its gates.
+
+func setup_with_job(
+	definition: BuildingDefinition,
+	duration: float,
+	requires_power: bool = true,
+	requires_materials: bool = true,
+	requires_workers: bool = true
+) -> bool:
+	if is_inside_tree() or target_definition != null or job != null:
+		return false
+	if not setup(definition, duration):
+		return false
+
+	var pending := ConstructionJob.new()
+	if not pending.configure(
+		duration, requires_power, requires_materials, requires_workers
+	):
+		return false
+	job = pending
+	return true
+
+
 func _ready() -> void:
 	add_to_group("construction_sites")
 	_build_placeholder()
 	_build_planned_ports()
-	lifecycle.construction_completed.connect(_finish_construction)
-	if target_definition != null:
-		lifecycle.start()
+	if job != null:
+		job.job_completed.connect(_finish_construction)
+		job.job_cancelled.connect(_cancel_job_site)
+	else:
+		lifecycle.construction_completed.connect(_finish_construction)
+		if target_definition != null:
+			lifecycle.start()
+	_refresh_progress_label()
 
 
 func _process(delta: float) -> void:
-	lifecycle.advance(delta)
-	if is_instance_valid(_progress_label):
-		_progress_label.text = "CONSTRUCTING %d%%" % int(round(lifecycle.get_progress() * 100.0))
+	if job != null:
+		job.advance(delta)
+	else:
+		lifecycle.advance(delta)
+	_refresh_progress_label()
+
+
+func _refresh_progress_label() -> void:
+	if not is_instance_valid(_progress_label):
+		return
+	if job == null:
+		_progress_label.text = "CONSTRUCTING %d%%" % int(round(get_progress() * 100.0))
+		return
+
+	var status: String = ""
+	match job.state:
+		ConstructionJob.State.PLANNED:
+			status = "PLANNED"
+		ConstructionJob.State.QUEUED:
+			status = "QUEUED"
+		ConstructionJob.State.CONSTRUCTING:
+			status = "CONSTRUCTING"
+		ConstructionJob.State.PAUSED:
+			status = "PAUSED"
+		ConstructionJob.State.COMPLETE:
+			status = "COMPLETE"
+		ConstructionJob.State.CANCELLED:
+			status = "CANCELLED"
+	_progress_label.text = "%s %d%%" % [
+		status, int(round(get_progress() * 100.0))
+	]
+
+
+func _cancel_job_site() -> void:
+	# The isolated job owns no delivered items. Future cancellation of
+	# stocked sites must perform a guarded material recovery transaction.
+	_reserved_belts.clear()
+	queue_free()
 
 
 func _build_placeholder() -> void:
@@ -95,13 +165,19 @@ func _build_planned_ports() -> void:
 	var prototype := target_definition.building_scene.instantiate() as Node3D
 	if prototype == null:
 		return
-	for name: String in ["InputPort", "OutputPort"]:
-		var source := prototype.get_node_or_null(name) as ItemPortComponent
-		if source == null:
+	# Copy every direct building item port, including multi-input mergers
+	# and multi-output splitters. Also copy both conveyor endpoints.
+	# Marker geometry cannot expose inventory or activate transport.
+	for child: Node in prototype.get_children():
+		if not child is Marker3D:
+			continue
+		if not child is ItemPortComponent and child.name not in [
+			&"InputEndpoint", &"OutputEndpoint"
+		]:
 			continue
 		var marker := Marker3D.new()
-		marker.name = "Planned" + name
-		marker.transform = source.transform
+		marker.name = "Planned" + str(child.name)
+		marker.transform = (child as Marker3D).transform
 		add_child(marker)
 	prototype.free()
 
@@ -112,12 +188,23 @@ func get_planned_port(input_side: bool) -> Marker3D:
 	) as Marker3D
 
 
+func accepts_planned_connections() -> bool:
+	if job != null:
+		return job.state in [
+			ConstructionJob.State.PLANNED,
+			ConstructionJob.State.QUEUED,
+			ConstructionJob.State.CONSTRUCTING,
+			ConstructionJob.State.PAUSED
+		]
+	return lifecycle.state == ConstructionLifecycle.State.CONSTRUCTING
+
+
 func get_planned_belt_transform(
 	belt: ConveyorSegment, input_side: bool
 ) -> Dictionary:
 	if not is_instance_valid(belt) or not belt.is_inside_tree():
 		return {}
-	if lifecycle.state != ConstructionLifecycle.State.CONSTRUCTING:
+	if not accepts_planned_connections():
 		return {}
 	var marker := get_planned_port(input_side)
 	var endpoint := belt.get_node_or_null(
@@ -143,7 +230,7 @@ func get_planned_belt_transform(
 func reserve_conveyor(
 	belt: ConveyorSegment, input_side: bool
 ) -> bool:
-	if lifecycle.state != ConstructionLifecycle.State.CONSTRUCTING:
+	if not accepts_planned_connections():
 		return false
 	if not is_instance_valid(belt) or not belt.is_inside_tree():
 		return false
@@ -199,6 +286,8 @@ func _connect_reserved_belts(building: Node3D) -> void:
 
 
 func get_progress() -> float:
+	if job != null:
+		return job.get_progress()
 	return lifecycle.get_progress()
 
 
@@ -207,6 +296,10 @@ func is_completed() -> bool:
 
 
 func _finish_construction() -> void:
+	if is_queued_for_deletion() or is_completed():
+		return
+	if job != null and not job.is_complete():
+		return
 	if not is_instance_valid(target_definition):
 		return
 	var instance := target_definition.building_scene.instantiate()
