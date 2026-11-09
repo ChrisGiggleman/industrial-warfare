@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-11-09 — Manual Blueprint Storage Authorization Accepted
+
+**Manual Godot F6 evidence:** Developer explicitly confirmed all seven Factory Testing Sandbox instructions completed successfully.
+
+- Entered Build Mode with **B**, selected Storage with **3**, and toggled the distinct **BLUEPRINT MODE (TEST)** interface with **P**.
+- Left-clicked an open area to create a translucent Storage plan displaying `PLANNED 0%`.
+- Hovered the planned site and pressed **E**; construction began and progressed to a completed real Storage after the definition-defined duration.
+- This verifies actual cursor/keyboard interaction for blueprint placement and authorization beyond the earlier **12/12** scripted test.
+- **Not yet manually accepted:** Hover + **X** to cancel a new unbuilt blueprint; duplicate/overlapping placement rejection and safe replacement after cancellation. These are the next targeted tests.
+- No gameplay changes were made during this acceptance checkpoint; Main remains opt-out, and the sandbox debug requirements bypass is still a testing aid rather than actual grid/material/worker implementation.
+
+---
+
 ## 2026-11-08 — Sandbox Blueprint Planning Scripted Regression Passed (12/12)
 
 **Godot evidence:** Player-provided screenshot of `res://tests/blueprint_sandbox_mode_test.tscn` showing `ALL 12 SANDBOX BLUEPRINT PLANNING TESTS PASSED` in Godot 4.6.2 (PASS A-L).
