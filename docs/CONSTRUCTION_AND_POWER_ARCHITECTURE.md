@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob foundation **validated 14/14 in Godot 4.6.2** (2026-11-08). Opt-in universal ConstructionSite integration **staged for 15-check F6 validation**. No live Build Mode, Main scene or power-grid integration has been enabled.  
+**Status:** ConstructionJob foundation **14/14 passed** and opt-in universal ConstructionSite integration **15/15 passed** in Godot 4.6.2 (2026-11-08). Legacy compatibility regressions remain pending; no universal Build Mode, Main-scene or power-grid integration has been enabled.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -92,7 +92,7 @@ The existing `ConstructionSite` now provides `setup_with_job(definition, duratio
 - `accepts_planned_connections()` centralizes allowed reservation states. Legacy sites accept while constructing; job-driven sites accept while planned, queued, constructing or paused. Existing strict geometry alignment and connection-on-completion checks are retained.
 - When the job emits completion, the site instantiates its real `BuildingDefinition.building_scene` at the stored transform, initializes `BuildingRuntime` when present, revalidates pending physical belt links, and retires the placeholder. For a conveyor definition this creates its actual `ConveyorSegment` transport components **only after completion**.
 - Cancelling the isolated job retires an inventory-free site. **Before physical materials are ever delivered to jobs**, extend cancellation to a guarded material-salvage transaction; do not allow cargo-bearing site cancellation using this temporary path.
-- `res://tests/universal_construction_site_test.tscn` contains 15 targeted checks for these contracts, **pending developer F6 validation**. Afterward rerun pre-existing construction, planned-port discovery, reservation and Build Mode tests to rule out regressions.
+- `res://tests/universal_construction_site_test.tscn` passed all **15/15** checks in the developer's local Godot 4.6.2 run. The next gate is rerunning legacy construction, planned-port discovery, reservation and Build Mode regressions for compatibility.
 
 **Scope limitation:** This does **not** yet automatically snap blueprint belts to other blueprint belts, implement physical blueprint conveyor graph reservation, assign build durations through `BuildingDefinition`, create worker drones, or apply actual power/material costs. These need separately tested follow-up checkpoints.
 
