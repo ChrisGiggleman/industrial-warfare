@@ -16,7 +16,8 @@
 - [x] **Manual opposite-direction / left-turn route accepted** (2026-11-08): user confirmed the layout works; screenshot shows a completed Storage, directional conveyor corner routing, and a selected incoming belt with `Input: Previous conveyor`, `Output: Building port`, and `Cargo: Prototype Rounds x1`. This confirms a buffered ammunition item on an attached conveyor, not yet a measured end-to-end inventory delivery or conservation total.
 - [x] **Automated conveyor corner cargo regression 8/8 passed** in Godot 4.6.2 (player Output screenshot, 2026-11-08): in-place right corner preserves cargo/timer, right and rotated-left corners forward items, blocked output retains cargo and later resumes, and all three item types are conserved across the scripted test. This is standalone corner logistics validation, not yet a manual complete Storage receipt/accounting check.
 - [x] **Conveyor cargo demolition safety 6/6 passed** in Godot 4.6.2 (user Output screenshot, 2026-11-08): empty conveyors allow demolition; occupied conveyors are protected; blocked removal preserves cargo; unloading restores eligibility; malformed cargo buffers fail safely; item-type-independent protection and conservation confirmed.
-- [ ] Verify manual corner-to-completed-Storage receipt and end-to-end item accounting; run wreckage selection/cleanup and remaining safety regressions before broad construction rollout.
+- [x] **Wreckage selection and cleanup 12/12 passed** in Godot 4.6.2 (user Output screenshot, 2026-11-08): selectable Layer-2 wreckage, live HUD inspection, empty cleanup, protected stocked caches, guarded material transfer, and conservation of ten recovered units all passed.
+- [ ] Manual corner-to-completed-Storage receipt and end-to-end item accounting remain acceptance work for the larger sandbox. Avoid interpreting isolated cargo tests as a complete live factory conservation audit.
 - [ ] Confirm local Git working tree and sandbox scene changes are reconciled before broad edits.
 
 ### Shared architecture design
@@ -30,6 +31,8 @@ Design specification drafted in [CONSTRUCTION_AND_POWER_ARCHITECTURE.md](CONSTRU
 
 ### Incremental implementation (not yet complete)
 
+- [x] **Gate B, isolated job foundation committed for F6 validation:** `scripts/components/construction_job.gd` and `tests/construction_job_test.tscn` (14 scripted checks, **not yet run by the developer**). Encapsulates PLANNED / QUEUED / CONSTRUCTING / PAUSED / COMPLETE / CANCELLED, authorization, external readiness flags, retained progress, guarded cancellation and one-time completion. It never activates scenes, supplies power or consumes materials.
+- [ ] Run `res://tests/construction_job_test.tscn` in Godot 4.6.2 and verify **14/14** before integrating the job with any construction site.
 - [ ] Generalize construction jobs/timers for buildings and fast-to-build conveyors; block unfinished production, cargo, turrets and wall collision as operational defenses.
 - [ ] Add Blueprint Mode with safe preplanning, port markers, cancellation, authorization and queueing.
 - [ ] Implement Main Hub initial power and connected pole/relay coverage, then generation/consumption and tiered drone recharge.
