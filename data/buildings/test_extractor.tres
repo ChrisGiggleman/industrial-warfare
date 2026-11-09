@@ -11,4 +11,5 @@ description = "Prototype resource extractor that collects resources from nearby 
 category = &"Extraction"
 building_scene = ExtResource("1_ki6ym")
 footprint_tiles = Vector2i(1, 2)
+construction_seconds = 12.0
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
