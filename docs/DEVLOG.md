@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-11-08 — Legacy Construction Compatibility Complete (23/23)
+
+**Godot 4.6.2 evidence:** Two new developer screenshots show `planned_conveyor_port_finder_test.tscn` passed **7/7** and `planned_storage_build_mode_test.tscn` passed **6/6** after universal-site integration.
+
+- Finder still handles rotated unfinished Storage ports, range/direction filtering, fractional cursor placement and reserved/exhausted ports.
+- Factory Testing Sandbox alone enables planned snapping; the Build Mode controller still reserves belts without precompletion cargo flow, receives cargo after activation without duplication, and leaves Main scene defaults unchanged.
+- Together with Round 1 (Construction Site 4/4 and Planned Storage Conveyor 6/6), all **23/23 legacy compatibility checks passed** on the opt-in construction-site branch.
+
+### Gate D1 — Per-Definition Construction Durations (staged for validation)
+
+- `BuildingDefinition` now includes editable `construction_seconds` for universal jobs, with positive values assigned to all nine existing buildable resources. These are provisional balance values, not final pacing.
+- Timings: straight belt 2s; merger/splitter 5s; Storage 10s; extractor 12s; turret 15s; smelter 16s; ammunition press 18s; large prototype 20s.
+- New `ConstructionSite.setup_with_definition_job()` reads the resource duration and rejects zero/negative/nonfinite durations. Existing `setup()` and sandbox Storage's configurable duration are untouched.
+- `res://tests/building_construction_duration_test.tscn` adds **12 focused F6 checks**, including resource data, planned inactivity, queued power requirements, pause/resume, live Storage completion, delayed conveyor activation, logistics blueprints and legacy behavior.
+- **Not yet validated in Godot.** Do not enable this new path in `WorldInteraction` or Main until the developer confirms 12/12.
+- Blueprint Planning Mode, materials, power network, drones and full main save/load remain later independent checkpoints.
+
+---
+
 ## 2026-11-08 — Legacy Construction Compatibility Round 1 Passed (10/10)
 
 **Godot 4.6.2 evidence:** The developer provided Output screenshots for the two original regression scenes after opt-in universal-site changes.
