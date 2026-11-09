@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-11-08 — Construction Job Validated; Universal Site Opt-In Staged
+
+**Godot validation:** Developer screenshot confirms `res://tests/construction_job_test.tscn` passed **14/14** in Godot 4.6.2, covering planned authorization, queued blockers, power loss, worker gating, pause/resume, work multiplier, cancellation, and exactly-once completion.
+
+### Gate C implementation (pending developer F6 validation)
+
+- Added `ConstructionSite.setup_with_job()` as an opt-in path, keeping the original `setup()` + auto-starting `ConstructionLifecycle` unchanged.
+- The new job-driven path reserves the world footprint and exposes only non-operational blueprint markers until authorized work finishes. It pauses and resumes progress according to the `ConstructionJob` supplied requirement flags, and cancellation queues the empty site for retirement.
+- Planned geometry now copies all direct `ItemPortComponent` children, supporting multiport mergers and splitters; directional conveyor `InputEndpoint` and `OutputEndpoint` markers are also copied without instantiating a live conveyor cargo buffer or timer.
+- `PlannedConveyorPortFinder` now checks `ConstructionSite.accepts_planned_connections()`, which preserves legacy Storage behavior while allowing future planned/queued job-site reservations.
+- Successful job completion creates the actual building or conveyor once, retaining final world transform, existing runtime components, and strict physical port link validation for any reserved completed belts.
+- New `res://tests/universal_construction_site_test.tscn` contains **15 focused assertions** for Storage, conveyor, merger, planned-port reservations, inactive cargo, queue/power pause, completion, conservation, and cancellation. **Not yet run in Godot.**
+- No `WorldInteraction` or Main scene construction path was enabled. The job's power/material/worker inputs are test-provided availability values; no grid, drones, material delivery or standalone save system was introduced.
+
+**Test order:** New universal site F6 scene, then legacy construction site and planned conveyor finder/Build Mode regression scenes. Manual end-to-end corner-to-Storage inventory accounting remains separate acceptance work.
+
+---
+
 ## 2026-11-08 — Salvage Regression Accepted and Construction Job Gate B Staged
 
 **Validated in Godot 4.6.2:** Player screenshot reports `ALL 12 WRECKAGE SELECTION AND CLEANUP TESTS PASSED` for `res://tests/wreckage_selection_cleanup_test.tscn`.
