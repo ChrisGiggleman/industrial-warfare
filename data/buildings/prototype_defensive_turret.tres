@@ -11,3 +11,4 @@ description = "An ammunition-fed defensive building with a physical input port. 
 category = &"Defense"
 building_scene = ExtResource("2_scene")
 footprint_tiles = Vector2i(1, 1)
+construction_seconds = 15.0
