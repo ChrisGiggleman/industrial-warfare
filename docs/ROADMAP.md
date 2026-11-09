@@ -31,9 +31,10 @@ Design specification drafted in [CONSTRUCTION_AND_POWER_ARCHITECTURE.md](CONSTRU
 
 ### Incremental implementation (not yet complete)
 
-- [x] **Gate B, isolated job foundation committed for F6 validation:** `scripts/components/construction_job.gd` and `tests/construction_job_test.tscn` (14 scripted checks, **not yet run by the developer**). Encapsulates PLANNED / QUEUED / CONSTRUCTING / PAUSED / COMPLETE / CANCELLED, authorization, external readiness flags, retained progress, guarded cancellation and one-time completion. It never activates scenes, supplies power or consumes materials.
-- [ ] Run `res://tests/construction_job_test.tscn` in Godot 4.6.2 and verify **14/14** before integrating the job with any construction site.
-- [ ] Generalize construction jobs/timers for buildings and fast-to-build conveyors; block unfinished production, cargo, turrets and wall collision as operational defenses.
+- [x] **Gate B — isolated ConstructionJob foundation 14/14 passed** in Godot 4.6.2 (user screenshot, 2026-11-08). Validated blueprint authorization, queued blockers, retained work through pause/resume, safe cancellation, one-time completion, work modifiers and explicit zero-duration test exceptions. No operational power, material delivery or worker service exists yet.
+- [x] **Gate C foundation staged, awaiting Godot validation:** existing `ConstructionSite` now has opt-in `setup_with_job()` while legacy `setup()` retains timed Storage behavior. Sites copy all direct building ports and conveyor endpoint markers, remain non-operational during PLANNED / QUEUED / CONSTRUCTING / PAUSED, activate real building/conveyor scenes after job completion, and retire on cancellation. Planned-port finder accepts these opt-in sites. New `res://tests/universal_construction_site_test.tscn` has **15 checks, NOT YET RUN**.
+- [ ] Run 15-check universal construction-site F6 test, then rerun legacy `construction_site_test.tscn`, `planned_storage_conveyor_test.tscn`, `planned_conveyor_port_finder_test.tscn` and `planned_storage_build_mode_test.tscn` for compatibility.
+- [ ] Extend universal job/site integration to live, opt-in Build Mode only after regressions; implement per-building construction times and non-operational planned conveyors before enabling any universal feature in Main.
 - [ ] Add Blueprint Mode with safe preplanning, port markers, cancellation, authorization and queueing.
 - [ ] Implement Main Hub initial power and connected pole/relay coverage, then generation/consumption and tiered drone recharge.
 - [ ] Add worker drones, material-consuming construction, physical supply priorities and powered turret/wall expansion.
