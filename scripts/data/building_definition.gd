@@ -50,3 +50,14 @@ class_name BuildingDefinition
 # Rotation automatically swaps dimensions when needed.
 
 @export var footprint_tiles: Vector2i = Vector2i.ONE
+
+
+# =============================================================================
+# UNIVERSAL CONSTRUCTION DURATION
+# =============================================================================
+# Duration for authorized construction jobs created from this definition.
+# This is early gameplay balancing; finished buildings and the existing
+# sandbox-only timed Storage route retain their current behavior.
+# Blueprint plans reserve geometry without starting this timer.
+
+@export_range(0.1, 600.0, 0.1) var construction_seconds: float = 10.0
