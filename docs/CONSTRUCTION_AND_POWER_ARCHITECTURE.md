@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob foundation **14/14 passed** and opt-in universal ConstructionSite integration **15/15 passed** in Godot 4.6.2 (2026-11-08). Legacy compatibility regressions remain pending; no universal Build Mode, Main-scene or power-grid integration has been enabled.  
+**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, and the original four compatibility scenes **23/23 passed** in Godot 4.6.2 (2026-11-08). Per-definition construction durations are staged for a 12-check F6 regression. No universal Build Mode, Main-scene or power-grid integration has been enabled.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -95,6 +95,15 @@ The existing `ConstructionSite` now provides `setup_with_job(definition, duratio
 - `res://tests/universal_construction_site_test.tscn` passed all **15/15** checks in the developer's local Godot 4.6.2 run. The next gate is rerunning legacy construction, planned-port discovery, reservation and Build Mode regressions for compatibility.
 
 **Scope limitation:** This does **not** yet automatically snap blueprint belts to other blueprint belts, implement physical blueprint conveyor graph reservation, assign build durations through `BuildingDefinition`, create worker drones, or apply actual power/material costs. These need separately tested follow-up checkpoints.
+
+---
+
+### Gate D1 implementation checkpoint — construction duration metadata
+
+- `BuildingDefinition.construction_seconds` is an authorable positive float specifying the universal job duration for each buildable definition. All nine current prototype definitions now have initial values; 2 seconds for a straight conveyor and 10–20 seconds for larger production and defensive structures. This is provisional balancing, not a final difficulty specification.
+- `ConstructionSite.setup_with_definition_job()` reads the timing directly from the selected definition and rejects invalid/nonpositive values. It delegates to the previously validated opt-in `setup_with_job()` path; the original `setup(definition, duration)` and sandbox `storage_construction_seconds` remain unchanged.
+- `res://tests/building_construction_duration_test.tscn` adds a **12-check F6 regression** for all duration assets, blueprint inactivity, gating, pausing, real activation, multiport structures and legacy construction behavior. **Developer execution remains pending.**
+- Do not connect these durations into normal `WorldInteraction` until Gate D1 passes and blueprint collision/reservation/authorizing interactions are independently validated.
 
 ---
 
