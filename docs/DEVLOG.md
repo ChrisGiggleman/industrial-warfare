@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-08 — Per-Definition Construction Durations Validated (12/12)
+
+**Godot evidence:** User Output screenshot for `res://tests/building_construction_duration_test.tscn` showing all twelve assertions passed in Godot 4.6.2.
+
+- All nine buildable definitions carry positive, independently editable duration metadata.
+- Storage blueprint stays inactive until authorized and requirements are available; loss of power pauses its ten-second timer without losing progress.
+- A conveyor blueprint is only endpoint geometry until its two-second build ends, when actual cargo and transport components are instantiated.
+- Merger and splitter metadata remain distinct from machines; ammunition press waits for workers.
+- The original manual-duration Storage path was explicitly verified unchanged.
+
+**Next gate:** Introduce sandbox-only, opt-in Blueprint Planning controls using the existing construction-site and job abstractions. Begin with non-conveyor building placement, authorization and cancellation. Physical planned-belt topology is separately gated. Do not enable power/material/worker debug overrides in Main.
+
+---
+
 ## 2026-11-08 — Legacy Construction Compatibility Complete (23/23)
 
 **Godot 4.6.2 evidence:** Two new developer screenshots show `planned_conveyor_port_finder_test.tscn` passed **7/7** and `planned_storage_build_mode_test.tscn` passed **6/6** after universal-site integration.
