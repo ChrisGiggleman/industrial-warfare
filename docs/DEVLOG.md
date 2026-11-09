@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-11-08 — Universal Construction Site Integration Validated (15/15)
+
+**Godot evidence:** The developer supplied an Output panel screenshot for `res://tests/universal_construction_site_test.tscn` showing **PASS A–O** and `ALL 15 UNIVERSAL CONSTRUCTION SITE TESTS PASSED` in Godot 4.6.2.
+
+- Optional `ConstructionSite.setup_with_job()` began as a blueprint with an occupied footprint and without an operational inventory.
+- Planned Storage reserved a physical belt without connecting or consuming its cargo. Unpowered queued jobs made no progress; authorized work could pause/resume while retaining progress and cargo.
+- Finishing the job activated one real Storage building and its reserved port; waiting Test Ore entered the completed inventory without duplication or loss.
+- Conveyor blueprints exposed directional markers without cargo or transport components; completing the short job created an actual working conveyor.
+- Multiport merger blueprints preserved input/output markers; cancelling planned, queued and paused work prevented live entity activation.
+- The test validates **isolated opt-in sites**, not live WorldInteraction/Blueprint Mode or a physical power grid.
+
+**Compatibility gate (still pending):** rerun the legacy `construction_site_test.tscn` (4 checks), `planned_storage_conveyor_test.tscn` (6), `planned_conveyor_port_finder_test.tscn` (7), and `planned_storage_build_mode_test.tscn` (6), in that order. No new gameplay code was committed in response to this test result.
+
+---
+
 ## 2026-11-08 — Construction Job Validated; Universal Site Opt-In Staged
 
 **Godot validation:** Developer screenshot confirms `res://tests/construction_job_test.tscn` passed **14/14** in Godot 4.6.2, covering planned authorization, queued blockers, power loss, worker gating, pause/resume, work multiplier, cancellation, and exactly-once completion.
