@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-11-08 — Salvage Regression Accepted and Construction Job Gate B Staged
+
+**Validated in Godot 4.6.2:** Player screenshot reports `ALL 12 WRECKAGE SELECTION AND CLEANUP TESTS PASSED` for `res://tests/wreckage_selection_cleanup_test.tscn`.
+
+- Wreckage is selectable through its intended Layer-2 hitbox and reports content through the shared HUD.
+- Empty wreckage cleanup preserves unrelated world objects. Stocked wreckage remains protected until its materials are recovered safely.
+- Ten recovered resources remained conserved when the cache became clearable.
+- This completes the focused corner cargo **8/8**, conveyor demolition **6/6**, and wreckage cleanup **12/12** regression sequence: **26/26 checks**, each run separately in local Godot.
+
+**Next implementation checkpoint — isolated, not yet Godot validated:**
+
+- New `scripts/components/construction_job.gd` wraps the existing `ConstructionLifecycle` and adds blueprint authorization, queueing, requirement blockers, pauses, resumes, cancellations, and one-time completion.
+- New `res://tests/construction_job_test.tscn` contains **14 targeted assertions**, covering all job states, gate loss/recovery, work multiplier, idempotence, cancellation and an explicit instant prototype exception.
+- No changes to existing live construction sites, WorldInteraction, conveyor logistics, demolition services, zombie gameplay or the save architecture. Power/material/worker flags are **read-only external availability snapshots supplied by future services**, not implemented networks or resource deliveries.
+- **Pending:** Developer runs the 14-check F6 scene before any scene/world integration. A manual item-counted corner-to-completed-Storage receipt test also remains separate acceptance work.
+
+---
+
 ## 2026-11-08 — Conveyor Demolition Safety Regression Accepted (6/6)
 
 **Local Godot evidence:** Player-provided Output screenshot for `res://tests/conveyor_cargo_demolition_test.tscn` on Godot 4.6.2, showing `ALL 6 DEMOLITION SAFETY TESTS PASSED` and all original resources conserved.
