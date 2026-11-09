@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-08 — Sandbox Blueprint Planning Mode (Building Phase) Staged
+
+**Status:** New opt-in implementation and `res://tests/blueprint_sandbox_mode_test.tscn` committed, **12 checks pending local Godot F6**. No Main scene activation.
+
+- Added `WorldInteraction.enable_blueprint_planning` (false by default) and `blueprint_sandbox_debug_requirements` (false by default). Both are explicitly enabled only in `factory_testing_sandbox.tscn`. This test override is not a real power supply, material-delivery system or construction-drone service.
+- In the sandbox's Build Mode, **P** toggles building Blueprint Planning Mode, **LMB** plans a non-operational building footprint, **E** authorizes the blueprint under the cursor, and **X** cancels it. Existing **B**, **R**, **Delete**, configurable 1–9 hotbar and normal Build Mode remain in place.
+- Planned structures use the validated opt-in `ConstructionSite.setup_with_definition_job()` and the new `BuildingDefinition.construction_seconds` data. Spatial rules reject overlapping plans and off-grid origins, with physics queries protecting existing built obstacles.
+- A blueprint does not produce resources or fire weapons; completion alone creates the real operational scene. The HUD distinguishes BLUEPRINT MODE (TEST), planned/queued/constructing/paused labels, and displays the user controls.
+- This first interactive phase intentionally rejects placing blueprint conveyor segments and does not permit a planned building ghost to snap to a live conveyor without a deferred-port reservation. Those functions need further topology and safe connection regressions, not premature activation.
+- Test suite **A–L** checks opt-in isolation, UI toggle, rotated footprint, occupancy, fail-closed invalid objects, no-service queuing, pause/resume, delayed real Storage activation, cancellation protection and sandbox-only explicit readiness override.
+- Before expanding to blueprint conveyors or making this the default build path, the developer must run the 12-check F6 scene, manually verify the actual cursor interaction, and recheck old placement and cargo paths.
+
+---
+
 ## 2026-11-08 — Per-Definition Construction Durations Validated (12/12)
 
 **Godot evidence:** User Output screenshot for `res://tests/building_construction_duration_test.tscn` showing all twelve assertions passed in Godot 4.6.2.
