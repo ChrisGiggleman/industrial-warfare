@@ -2131,6 +2131,12 @@ func _update_placement_preview() -> void:
 		_clear_gap_connector_preview()
 		placement_is_valid = false
 
+	# Conveyor blueprints need their own endpoint and corner reservations.
+	# A red ghost communicates that this test phase cannot place them yet.
+	if enable_blueprint_planning and blueprint_mode_active:
+		if _is_conveyor_selected():
+			placement_is_valid = false
+
 	if ghost_material != null:
 		if placement_is_valid:
 				ghost_material.albedo_color = Color(
