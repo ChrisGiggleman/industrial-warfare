@@ -10,4 +10,5 @@ display_name = "Conveyor Belt"
 description = "Directional conveyor segment for physical factory logistics."
 category = &"Logistics"
 building_scene = ExtResource("1_6sg68")
+construction_seconds = 2.0
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
