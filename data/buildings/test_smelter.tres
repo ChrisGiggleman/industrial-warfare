@@ -11,4 +11,5 @@ description = "Prototype manufacturing building that converts Test Ore into Test
 category = &"Production"
 building_scene = ExtResource("1_xi8yq")
 footprint_tiles = Vector2i(2, 2)
+construction_seconds = 16.0
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
