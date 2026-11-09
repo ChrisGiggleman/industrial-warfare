@@ -32,7 +32,9 @@ static func find_nearest_preview(
 		var site := node as ConstructionSite
 		if site == null or site.is_queued_for_deletion():
 			continue
-		if site.lifecycle.state != ConstructionLifecycle.State.CONSTRUCTING:
+		# Legacy sites remain eligible only while constructing. Job-driven
+		# blueprints may reserve geometry while planned, queued or paused.
+		if not site.accepts_planned_connections():
 			continue
 
 		for input_side: bool in [true, false]:
