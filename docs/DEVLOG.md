@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-08 — Legacy Construction Compatibility Round 1 Passed (10/10)
+
+**Godot 4.6.2 evidence:** The developer provided Output screenshots for the two original regression scenes after opt-in universal-site changes.
+
+- `res://tests/construction_site_test.tscn`: **4/4 PASS**, confirming site footprint reservation, no premature Storage activation, completed Storage identity/rotation/inventory and real ports, and retirement of the placeholder.
+- `res://tests/planned_storage_conveyor_test.tscn`: **6/6 PASS**, confirming rotated planned marker geometry, exclusive belt reservation, blocked cargo before completion, later physical connection, cargo conservation, and safe rejection of moved belts.
+- **Total: 10/10 checks passed after universal site integration.** No live gameplay code was changed following these results.
+
+**Round 2 remains pending:** `res://tests/planned_conveyor_port_finder_test.tscn` (**7 checks**) and `res://tests/planned_storage_build_mode_test.tscn` (**6 checks**). These must pass on the current branch before moving to universal construction in Build Mode.
+
+---
+
 ## 2026-11-08 — Universal Construction Site Integration Validated (15/15)
 
 **Godot evidence:** The developer supplied an Output panel screenshot for `res://tests/universal_construction_site_test.tscn` showing **PASS A–O** and `ALL 15 UNIVERSAL CONSTRUCTION SITE TESTS PASSED` in Godot 4.6.2.
