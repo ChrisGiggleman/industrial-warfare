@@ -2023,7 +2023,12 @@ func _update_placement_preview() -> void:
 			# checks occupied endpoints, and preserves the
 			# player's selected building rotation.
 
-			if not placement_ghost is ConveyorSegment:
+			if (
+				not placement_ghost is ConveyorSegment
+				and not (
+					enable_blueprint_planning and blueprint_mode_active
+				)
+			):
 
 				var selected_footprint: Vector2i = Vector2i.ZERO
 				var placement_definition: BuildingDefinition = (
@@ -3443,10 +3448,12 @@ func _commit_blueprint_from_preview() -> void:
 	if _is_conveyor_selected():
 		print("BLUEPRINT: Conveyor planning awaits directional topology gate.")
 		return
+	# Refresh before evaluating the snap/collision state. A mouse movement
+	# since the last rendered frame must never commit a stale blueprint.
+	_update_placement_preview()
 	if is_instance_valid(building_placement_snap_belt):
 		print("BLUEPRINT: Port-linked planning awaits connection reservation gate.")
 		return
-	_update_placement_preview()
 	if not placement_is_valid or not _is_placement_clear():
 		print("BLUEPRINT: Footprint blocked or preview invalid.")
 		return
