@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-08 — Conveyor Demolition Safety Regression Accepted (6/6)
+
+**Local Godot evidence:** Player-provided Output screenshot for `res://tests/conveyor_cargo_demolition_test.tscn` on Godot 4.6.2, showing `ALL 6 DEMOLITION SAFETY TESTS PASSED` and all original resources conserved.
+
+- Empty belts allow guarded player demolition; occupied belts refuse it while retaining their cargo.
+- Successfully unloaded belts become eligible again; invalid cargo configuration is rejected.
+- Generic item types receive the same protection as ore.
+- These scripted checks do not prove live click interaction with stocked world salvage; that separate test remains pending.
+- No runtime gameplay code changed at this checkpoint.
+
+**Next test gate:** `res://tests/wreckage_selection_cleanup_test.tscn` (12 expected assertions), before isolated universal construction job implementation.
+
+---
+
 ## 2026-11-08 — Corner Cargo Regression Accepted (8/8)
 
 **Local Godot 4.6.2 evidence:** Player-provided Output panel screenshot for `res://tests/conveyor_corner_cargo_test.tscn`, reporting `ALL 8 CORNER CARGO TESTS PASSED`.
