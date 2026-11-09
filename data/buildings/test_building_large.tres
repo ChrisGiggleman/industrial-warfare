@@ -10,4 +10,5 @@ display_name = "Test Building Large"
 description = "Large prototype building used to test larger construction footprints and building gameplay systems."
 category = &"Prototype"
 building_scene = ExtResource("1_vqxk8")
+construction_seconds = 20.0
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
