@@ -11,3 +11,4 @@ description = "Manufactures Prototype Rounds from Test Ingots through physical i
 category = &"Production"
 building_scene = ExtResource("2_scene")
 footprint_tiles = Vector2i(2, 2)
+construction_seconds = 18.0
