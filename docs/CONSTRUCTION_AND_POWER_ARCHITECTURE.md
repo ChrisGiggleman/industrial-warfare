@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, original compatibility scenes **23/23 passed**, and per-definition durations **12/12 passed** in Godot 4.6.2 (2026-11-08). Sandbox-only building Blueprint Planning controls are staged for a 12-check F6 regression. Main scene and power-grid implementation remain unchanged.  
+**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, original compatibility suites **23/23 passed**, per-definition durations **12/12 passed**, and sandbox building Blueprint Mode **12/12 passed** in Godot 4.6.2. Building Blueprint Mode also passed seven manual placement/authorization steps and six manual cancellation/overlap steps (2026-11-09). The two current-branch conveyor compatibility suites are pending rerun; conveyor blueprint connectivity, Main scene and power grid remain unimplemented.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -117,6 +117,23 @@ The Factory Testing Sandbox opts into a first **building-only** interactive plan
 - Planned building ghosts do **not** snap to live conveyor ports until a real deferred-port reservation transaction is implemented. Blueprint conveyor segments are deferred until endpoint, corner and graph consistency tests; the normal physical conveyor placement system remains unchanged when P mode is off.
 - `res://tests/blueprint_sandbox_mode_test.tscn` contains **12 isolated checks; developer F6 validation pending**. Manual mouse hit-testing, UI behavior, cancellation and legacy factory logistics must be verified separately.
 - Future planning batches should authorize selected jobs rather than treating construction as instant; per-building materials, power coverage and drone work will replace the temporary readiness override after their own independent regressions.
+
+---
+
+### Gate E proposal — directional conveyor blueprints (not implemented)
+
+**Prerequisite:** Confirm the current-branch existing `planned_storage_build_mode_test.tscn` (6 checks) and `conveyor_corner_cargo_test.tscn` (8 checks) still pass after the Blueprint Mode edits. This is a hard test gate, not inferred from previous regressions.
+
+1. **Plan identity:** A conveyor plan records the chosen piece geometry (straight, 90-degree left, or 90-degree right), its rotation and exact `FactoryGrid`/endpoint transform, a stable per-site ID, and optional links to planned or completed neighbors. It stays a non-operational `ConstructionSite` without `CargoInventory`, transport timer, or `ConveyorSegment` links.
+2. **Two-phase connection graph:** A dedicated planned-connection registry reserves `output → input` intent for both real and planned endpoints. Enforce matching directions, proximity/rotation, one exclusive claimant per required endpoint and collision-safe footprint occupancy. A reservation must never grant an active cargo route.
+3. **Activation order independence:** When a job completes, instantiate the appropriate existing real conveyor scene once and then attempt only eligible link commitments whose other endpoint is completed. If the neighbor is still a blueprint, retain a pending reservation until that neighbor completes. Revalidate exact geometry and vacancy at the time each physical link is made; if invalid, remain safely disconnected rather than stealing a port or losing cargo.
+4. **Shape-specific handling:** Keep existing `ConveyorCornerConversion` and `ConveyorPieceSelector` semantics intact. Planned left/right corners must preserve directional arrows and occupancy; do not model a corner as an arbitrary straight belt that magically changes after it starts moving cargo.
+5. **Cancellation and destruction:** Cancelling a plan releases its own footprint and both pending endpoint claims without deleting an operational neighbor or item. Completed conveyors continue to use the validated `can_demolish_safely()` and salvage rules. Later physical delivery of construction materials needs a transactional refund/salvage policy before cancelling stocked construction sites.
+6. **Player controls:** Reuse B/P/1–9/R/E/X for preview, plan, authorize and cancel in the sandbox only, but do not intercept normal working conveyor Build Mode when P is off. A planned belt must visibly distinguish direction and status from a live belt.
+
+**Recommended checkpoint sequence:** E1 tests one planned straight piece and its delayed 2-second activation with no cargo before completion; E2 tests a planned Storage + two planned straight ports, including either completion order and conserved item counts; E3 tests left/right corner planned chains and blocked downstream transport; E4 tests cancellation/footprint reuse and a batch authorization path. Add UI/cursor tests at each step before enabling planned belts in Main.
+
+**No live power grid:** The existing sandbox readiness override remains a deliberately explicit testing shortcut. All normal power/material/worker readiness remains fail-closed until real services are built.
 
 ---
 
