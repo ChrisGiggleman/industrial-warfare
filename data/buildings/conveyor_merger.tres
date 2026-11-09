@@ -11,3 +11,4 @@ description = "Combines three independently buffered incoming conveyor lines int
 category = &"Logistics"
 building_scene = ExtResource("1_scene")
 footprint_tiles = Vector2i(1, 1)
+construction_seconds = 5.0
