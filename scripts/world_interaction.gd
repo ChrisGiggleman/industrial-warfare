@@ -332,7 +332,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# E authorizes the site under the pointer; X cancels it.
 		if enable_blueprint_planning and event is InputEventKey:
 			if event.pressed and not event.echo:
-				var key: Key = event.physical_keycode
+				var key: int = event.physical_keycode
 				if key == KEY_P:
 					_toggle_blueprint_mode()
 					return
