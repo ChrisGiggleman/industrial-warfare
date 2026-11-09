@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-08 — Corner Cargo Regression Accepted (8/8)
+
+**Local Godot 4.6.2 evidence:** Player-provided Output panel screenshot for `res://tests/conveyor_corner_cargo_test.tscn`, reporting `ALL 8 CORNER CARGO TESTS PASSED`.
+
+- Real conveyor components retained cargo and travel progress through in-place right-turn conversion.
+- Right-turn cargo delivery, occupied-output backpressure, post-blockage resumption and rotated left-turn transfer passed.
+- Three distinct item types remained conserved within the scripted test; no reported errors.
+- This suite does not replace a manual, item-counted end-to-end delivery into a completed Storage building.
+- No gameplay/runtime code changes were made for this checkpoint.
+
+**Next test gate:** `res://tests/conveyor_cargo_demolition_test.tscn` (six guarded-demolition checks), then `res://tests/wreckage_selection_cleanup_test.tscn` (12 salvage/selection checks) before isolated universal construction job implementation.
+
+---
+
 ## 2026-11-08 — Manual Opposite-Direction Corner and Buffered Ammunition
 
 **Evidence:** Player screenshot and explicit confirmation that the opposite 90-degree conveyor layout works in the Godot 4.6.2 Factory Testing Sandbox.
