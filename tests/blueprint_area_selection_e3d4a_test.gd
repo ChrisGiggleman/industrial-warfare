@@ -47,8 +47,11 @@ func _ready() -> void:
 	assert(third.job.state == ConstructionJob.State.PLANNED)
 	print("PASS B: Two building types and a third unselected plan coexist")
 
-	assert(controller._toggle_blueprint_area_selection())
-	assert(controller.get("_blueprint_area_selection_mode"))
+	var q_key := InputEventKey.new()
+	q_key.physical_keycode = KEY_Q
+	q_key.pressed = true
+	controller._unhandled_input(q_key)
+	assert(bool(controller.get("_blueprint_area_selection_mode")))
 	var ghost: Node3D = controller.get("placement_ghost") as Node3D
 	assert(ghost != null and not ghost.visible)
 	var overlay: BlueprintAreaSelectionOverlay = world.get_node(
@@ -81,11 +84,21 @@ func _ready() -> void:
 	assert(not matches.has(third))
 	print("PASS D: Screen drag selects only the two planned centers inside its box")
 
-	assert(controller._begin_blueprint_area_drag(box.position))
+	var down := InputEventMouseButton.new()
+	down.button_index = MOUSE_BUTTON_LEFT
+	down.pressed = true
+	down.position = box.position
+	controller._unhandled_input(down)
 	assert(overlay.is_dragging())
-	controller._update_blueprint_area_drag(box.end)
+	var move := InputEventMouseMotion.new()
+	move.position = box.end
+	controller._unhandled_input(move)
 	assert(overlay.get_drag_rect().size.is_equal_approx(box.size))
-	assert(controller._finish_blueprint_area_drag(box.end) == 2)
+	var up := InputEventMouseButton.new()
+	up.button_index = MOUSE_BUTTON_LEFT
+	up.pressed = false
+	up.position = box.end
+	controller._unhandled_input(up)
 	assert(not overlay.is_dragging())
 	var selected: Array = controller.get("_area_selected_sites")
 	assert(selected.size() == 2)
@@ -104,7 +117,10 @@ func _ready() -> void:
 	assert(summary != null and summary.text.contains("Selected: 2"))
 	print("PASS F: Construction summary reports selected blueprints")
 
-	assert(controller._authorize_selected_blueprint_sites() == 2)
+	var e_key := InputEventKey.new()
+	e_key.physical_keycode = KEY_E
+	e_key.pressed = true
+	controller._unhandled_input(e_key)
 	assert(first.job.state == ConstructionJob.State.CONSTRUCTING)
 	assert(second.job.state == ConstructionJob.State.CONSTRUCTING)
 	assert(third.job.state == ConstructionJob.State.PLANNED)
@@ -116,7 +132,11 @@ func _ready() -> void:
 	print("PASS G: E authorizes only selected plans, preserving other blueprints and timers")
 
 	assert(controller._authorize_selected_blueprint_sites() == 0)
-	assert(controller._authorize_all_blueprint_sites() == 1)
+	var ctrl_e := InputEventKey.new()
+	ctrl_e.physical_keycode = KEY_E
+	ctrl_e.ctrl_pressed = true
+	ctrl_e.pressed = true
+	controller._unhandled_input(ctrl_e)
 	assert(third.job.state == ConstructionJob.State.CONSTRUCTING)
 	assert(third.job.get_progress() == 0.0)
 	print("PASS H: Empty E is safe and Ctrl+E still authorizes all remaining plans")
@@ -131,10 +151,14 @@ func _ready() -> void:
 	)
 	var tiny := Rect2(pos - Vector2(10, 10), Vector2(20, 20))
 	assert(controller._select_blueprints_in_screen_rect(tiny) == 1)
-	controller._clear_blueprint_area_selection()
+	var escape_key := InputEventKey.new()
+	escape_key.physical_keycode = KEY_ESCAPE
+	escape_key.pressed = true
+	controller._unhandled_input(escape_key)
 	assert(not fourth.is_in_group("blueprint_area_selected"))
 	assert(fourth.job.state == ConstructionJob.State.PLANNED)
-	assert(not controller._toggle_blueprint_area_selection())
+	controller._unhandled_input(q_key)
+	assert(not bool(controller.get("_blueprint_area_selection_mode")))
 	assert(ghost.visible)
 	assert(fourth.job.state == ConstructionJob.State.PLANNED)
 	print("PASS I: Esc and Q clear highlights without authorizing or cancelling sites")
