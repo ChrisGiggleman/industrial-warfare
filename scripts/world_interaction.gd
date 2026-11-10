@@ -305,6 +305,13 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if _blueprint_area_selection_mode:
 		_prune_blueprint_area_selection()
+		# A HUD widget can consume the mouse-release event; end the drag
+		# anyway when the physical left button is no longer down.
+		if (
+			_blueprint_dragging
+			and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+		):
+			_finish_blueprint_area_drag(get_viewport().get_mouse_position())
 		return
 	if not placement_mode_active:
 		return
