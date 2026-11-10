@@ -96,6 +96,7 @@ enable_timed_storage_construction = true
 enable_planned_storage_conveyor_snap = true
 enable_blueprint_planning = true
 compact_blueprint_visuals = true
+enable_blueprint_route_tool = true
 blueprint_sandbox_debug_requirements = true
 enable_connected_conveyor_blueprints = true
 enable_connected_storage_blueprints = true
