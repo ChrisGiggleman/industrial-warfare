@@ -70,6 +70,17 @@ func has_endpoint_claim(site: ConstructionSite, output_side: bool) -> bool:
 	)
 
 
+# Read-only status for a directed reservation. The physical endpoint can
+# complete independently of its neighbor without claiming a live link.
+func has_completed_endpoint(reservation_id: int, output_side: bool) -> bool:
+	if not _reservations.has(reservation_id):
+		return false
+	var record: Dictionary = _reservations[reservation_id]
+	var key := "source_belt" if output_side else "receiver_belt"
+	var belt: ConveyorSegment = record[key] as ConveyorSegment
+	return is_instance_valid(belt) and not belt.is_queued_for_deletion()
+
+
 func get_ready_candidate(reservation_id: int) -> Dictionary:
 	if not _reservations.has(reservation_id):
 		return {}
