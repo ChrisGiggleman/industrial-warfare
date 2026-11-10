@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — Post-E2c2 Compatibility Passed (45/45), E3a Geometry Staged
+
+**Godot 4.6.2 evidence:** The developer supplied four Output screenshots verifying the full post-E2c2 regression set: E2b planned route reservations **16/16**, E2c1 physical activation **15/15**, planned Storage Build Mode **6/6**, and conveyor corner cargo **8/8**. Total **45/45**. No failed checks were shown.
+
+**Next gated implementation (not yet Godot validated):**
+
+- Added `scripts/components/planned_building_port_geometry.gd`: read-only inspection of an unfinished job-driven building's planned `InputPort` or `OutputPort` marker against a still-planned straight conveyor site's directed `OutputEndpoint` or `InputEndpoint`, respectively.
+- Uses the proven `LogisticsConnectionGeometry.are_endpoints_aligned()` with the operational belt's connection-gap tolerance. The Storage input and output are separate; a reverse-facing belt, wrong port, lateral offset, or excessive gap is rejected.
+- Supports correctly rotated planned Storage and job states PLANNED/QUEUED/CONSTRUCTING/PAUSED. Cancelled or completed placeholders are no longer valid connection targets; operational building ports must be handled by a later activation transaction.
+- New `res://tests/planned_building_port_geometry_e3a_test.tscn` has **15 scripted checks**; developer F6 **pending**. It does not create any reservation, power, material delivery, worker, cargo inventory or physical logistics link.
+- `WorldInteraction`, `BlueprintConveyorRouteCoordinator`, Main, operational factory systems, combat and save/load remain unchanged in this checkpoint.
+
+**Later, separately tested:** E3b exclusive Storage future-input/future-output ownership with cancellation and build-order survival; E3c reciprocal real port activation and cargo conservation. The existing delayed-connection Storage code remains intact.
+
+---
+
 ## 2026-11-09 — Blueprint E Authorization Independent of Preview Rotation
 
 **Manual Godot evidence:** Developer provided four screenshots and confirmed an already-placed planned corner successfully authorizes and builds with **E** no matter which direction the currently selected conveyor placement preview faces.
