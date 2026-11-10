@@ -101,6 +101,20 @@ func _ready() -> void:
 	preview.global_transform = input_transform
 	print("PASS G: A wrong-facing ghost is rejected without changing R rotation")
 
+	# Interactive placement opts into auto-orientation; plain lookups
+	# retain their directional guard for regression compatibility.
+	preview.rotation_degrees.y += 90.0
+	var auto_choice: Dictionary = controller._get_storage_blueprint_snap_preview(
+		input_transform.origin, true
+	)
+	assert(auto_choice.get("site") == storage)
+	assert((auto_choice["transform"] as Transform3D).is_equal_approx(
+		input_transform
+	))
+	assert(not preview.global_transform.is_equal_approx(input_transform))
+	preview.global_transform = input_transform
+	print("PASS G2: Interactive preview offers correct port rotation despite wrong-facing belt")
+
 	assert(controller._get_storage_blueprint_snap_preview(
 		input_transform.origin + Vector3(1.0, 0, 0)
 	).is_empty())
@@ -176,4 +190,4 @@ func _ready() -> void:
 	main.free()
 	print("PASS N: Disabled feature and Main gameplay retain their prior preview path")
 
-	print("ALL 14 STORAGE BLUEPRINT PREVIEW SNAP E3C2B TESTS PASSED")
+	print("ALL 15 STORAGE BLUEPRINT PREVIEW SNAP E3C2B TESTS PASSED")
