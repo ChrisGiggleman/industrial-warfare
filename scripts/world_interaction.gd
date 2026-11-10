@@ -1494,7 +1494,72 @@ func _get_conveyor_preview_scene_for_mouse(
 #   - turns green when placement is valid
 #   - turns red when placement is blocked
 
+# =============================================================================
+# STRAIGHT CONVEYOR BLUEPRINT PREVIEW — SANDBOX PHASE E1
+# =============================================================================
+# No automatic snaps or physical connections. A green ghost only means the
+# chosen grid tile is free, not that a logistics link is already reserved.
+
+func _update_straight_conveyor_blueprint_preview() -> void:
+	placement_is_valid = false
+	if not is_instance_valid(placement_ghost):
+		return
+	if not placement_ghost is ConveyorSegment:
+		return
+	var definition := _get_selected_building_definition()
+	if not is_instance_valid(definition) or not is_instance_valid(camera):
+		return
+
+	var cursor: Vector2 = get_viewport().get_mouse_position()
+	var ray_start: Vector3 = camera.project_ray_origin(cursor)
+	var ray_end: Vector3 = (
+		ray_start + camera.project_ray_normal(cursor) * ray_length
+	)
+	var ray := PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+	ray.collision_mask = GROUND_COLLISION_MASK
+	var hit: Dictionary = (
+		get_viewport().world_3d.direct_space_state.intersect_ray(ray)
+	)
+	if not hit.is_empty():
+		var ground: Vector3 = hit["position"]
+		current_placement_position = Vector3(
+			snappedf(ground.x, grid_size),
+			ground.y,
+			snappedf(ground.z, grid_size)
+		)
+		placement_ghost.global_position = current_placement_position
+		placement_ghost.rotation_degrees.y = placement_rotation_degrees
+		placement_is_valid = ConveyorBlueprintPlacement.is_clear(
+			get_tree(),
+			get_viewport().world_3d,
+			definition,
+			placement_ghost.global_transform,
+			PLACEMENT_BLOCKER_COLLISION_MASK
+		)
+
+	if ghost_material != null:
+		var selected_color := (
+			valid_placement_color if placement_is_valid else invalid_placement_color
+		)
+		ghost_material.albedo_color = Color(
+			selected_color.r,
+			selected_color.g,
+			selected_color.b,
+			PLACEMENT_GHOST_ALPHA
+		)
+
+
 func _update_placement_preview() -> void:
+	# E1 conveyor blueprints use a non-snapping straight preview only.
+	# This keeps the proven live conveyor corner/bridge algorithms untouched.
+	if (
+		enable_blueprint_planning
+		and blueprint_mode_active
+		and _is_conveyor_selected()
+	):
+		_update_straight_conveyor_blueprint_preview()
+		return
+
 	var mouse_position: Vector2 = get_viewport().get_mouse_position()
 
 	var ray_origin: Vector3 = camera.project_ray_origin(mouse_position)
@@ -2130,12 +2195,6 @@ func _update_placement_preview() -> void:
 		_clear_terminal_corner_preview()
 		_clear_gap_connector_preview()
 		placement_is_valid = false
-
-	# Conveyor blueprints need their own endpoint and corner reservations.
-	# A red ghost communicates that this test phase cannot place them yet.
-	if enable_blueprint_planning and blueprint_mode_active:
-		if _is_conveyor_selected():
-			placement_is_valid = false
 
 	if ghost_material != null:
 		if placement_is_valid:
@@ -3277,11 +3336,12 @@ func _find_perpendicular_corner_candidate(
 
 
 # =============================================================================
-# BLUEPRINT PLANNING — SANDBOX-ONLY BUILDING PHASE
+# BLUEPRINT PLANNING — SANDBOX BUILDINGS AND ISOLATED STRAIGHT BELTS
 # =============================================================================
 # A plan is a non-operational ConstructionSite whose ConstructionJob remains
 # PLANNED until explicitly authorized. All controls are disabled in Main.
-# Conveyor blueprints need independent directional graph tests before use.
+# E1 straight conveyors are isolated; directional graph links and corners
+# still need their own reservation and transport-conservation tests.
 
 func _toggle_blueprint_mode() -> bool:
 	if not enable_blueprint_planning or not placement_mode_active:
@@ -3289,13 +3349,18 @@ func _toggle_blueprint_mode() -> bool:
 	if demolition_mode_active:
 		return false
 	blueprint_mode_active = not blueprint_mode_active
+	# Drop any previously selected live corner/bridge ghost as this phase
+	# deliberately plans straight segments only.
+	if _is_conveyor_selected():
+		_create_placement_ghost(ConveyorPieceSelector.STRAIGHT_SCENE)
 	if is_instance_valid(build_hud) and build_hud.has_method(
 		"set_blueprint_mode"
 	):
 		build_hud.call("set_blueprint_mode", blueprint_mode_active)
 	print(
 		"BLUEPRINT MODE: ",
-		"PLAN (buildings only)" if blueprint_mode_active else "OFF"
+		"PLAN (buildings + isolated straight belts)"
+		if blueprint_mode_active else "OFF"
 	)
 	return true
 
@@ -3445,6 +3510,38 @@ func _create_blueprint_site(
 	return site
 
 
+# =============================================================================
+# STRAIGHT CONVEYOR BLUEPRINT COMMIT — SANDBOX PHASE E1
+# =============================================================================
+# A site is a plan, never an operational belt. Its two endpoints are markers
+# until the authorized two-second construction job creates a ConveyorSegment.
+# No live or pending neighbor connections are made in this phase.
+
+func _create_straight_conveyor_blueprint(
+	definition: BuildingDefinition,
+	placement: Transform3D
+) -> ConstructionSite:
+	if not enable_blueprint_planning:
+		return null
+	if not buildable_definitions.has(definition):
+		return null
+	if not ConveyorBlueprintPlacement.is_clear(
+		get_tree(), get_viewport().world_3d,
+		definition, placement, PLACEMENT_BLOCKER_COLLISION_MASK
+	):
+		return null
+	var scene_root := get_parent() as Node3D
+	if not is_instance_valid(scene_root):
+		return null
+	var site := ConstructionSite.new()
+	if not site.setup_with_definition_job(definition):
+		site.free()
+		return null
+	scene_root.add_child(site)
+	site.global_transform = placement
+	return site
+
+
 func _commit_blueprint_from_preview() -> void:
 	if not is_instance_valid(placement_ghost):
 		return
@@ -3452,7 +3549,22 @@ func _commit_blueprint_from_preview() -> void:
 	if not is_instance_valid(definition):
 		return
 	if _is_conveyor_selected():
-		print("BLUEPRINT: Conveyor planning awaits directional topology gate.")
+		# Refresh the actual cursor position before committing any belt.
+		# No snap-to-building or snap-to-belt links are permitted in E1.
+		_update_placement_preview()
+		if (
+			not placement_is_valid
+			or conveyor_preview_scene != ConveyorPieceSelector.STRAIGHT_SCENE
+		):
+			print("BLUEPRINT: Straight belt tile blocked or preview invalid.")
+			return
+		var belt_site := _create_straight_conveyor_blueprint(
+			definition, placement_ghost.global_transform
+		)
+		if not is_instance_valid(belt_site):
+			print("BLUEPRINT: Straight belt footprint reservation rejected.")
+			return
+		print("BLUEPRINT BELT PLANNED: 2-second job | E authorize | X cancel")
 		return
 	# Refresh before evaluating the snap/collision state. A mouse movement
 	# since the last rendered frame must never commit a stale blueprint.
@@ -3525,8 +3637,8 @@ func _commit_planned_storage_belt(
 
 func _try_place_object() -> void:
 	# Blueprint clicks never enter legacy conveyor/building placement paths.
-	# The prototype plans non-conveyor buildings first; physical belt graph
-	# reservations and corner geometry are a separate validation gate.
+	# E1 adds independent straight belts only. Physical belt graph links,
+	# bridge previews, and 90-degree corner conversions remain a later gate.
 	if enable_blueprint_planning and blueprint_mode_active:
 		_commit_blueprint_from_preview()
 		return
