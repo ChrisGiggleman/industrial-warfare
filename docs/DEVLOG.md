@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-11-09 — E2c1 Deferred Physical Connections Accepted (15/15)
+
+**Godot 4.6.2 evidence:** Developer Output screenshot reports `ALL 15 PLANNED CONVEYOR ACTIVATION E2C1 TESTS PASSED` (A–O), with normal debugger shutdown.
+
+- Direct, right-turn and left-turn routes activate only after both real conveyors complete, regardless of which finished first.
+- Reciprocal links and multi-segment chains transfer physical cargo with no duplication; waiting ore is retained before activation.
+- Stale geometry, occupied ports, cancelled construction and demolished endpoints do not create unsafe connections.
+- The existing operational connection helper remained unchanged. Player-facing Blueprint Mode had not yet been integrated in E2c1.
+
+**Next gate:** E2c2 sandbox-only connection discovery and planned-corner visual indicators; revalidate the completed activation flow and legacy Build Mode separately. The Main scene and power infrastructure remain unchanged.
+
+---
+
 ## 2026-11-09 — E2c1 Deferred Conveyor Activation Staged (15 Checks Pending)
 
 **Source checkpoint, not yet tested in Godot:** Added `scripts/components/planned_conveyor_route_activator.gd` and `res://tests/planned_conveyor_activation_e2c1_test.tscn`.
