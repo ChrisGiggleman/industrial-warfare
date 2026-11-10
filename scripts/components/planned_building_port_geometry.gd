@@ -12,7 +12,8 @@ class_name PlannedBuildingPortGeometry
 static func inspect_pair(
 	building_site: ConstructionSite,
 	belt_site: ConstructionSite,
-	input_side: bool
+	input_side: bool,
+	port_name: StringName = &""
 ) -> Dictionary:
 	if not _is_available_site(building_site):
 		return {}
@@ -23,7 +24,11 @@ static func inspect_pair(
 	if not _is_belt(belt_site) or _is_belt(building_site):
 		return {}
 
-	var building_marker := building_site.get_planned_port(input_side)
+	if port_name == &"":
+		port_name = &"InputPort" if input_side else &"OutputPort"
+	if not str(port_name).begins_with("InputPort" if input_side else "OutputPort"):
+		return {}
+	var building_marker := building_site.get_planned_port_named(port_name)
 	var belt_marker := belt_site.get_node_or_null(
 		"PlannedOutputEndpoint" if input_side else "PlannedInputEndpoint"
 	) as Marker3D
@@ -47,6 +52,7 @@ static func inspect_pair(
 		"building_site": building_site,
 		"belt_site": belt_site,
 		"input_side": input_side,
+		"port_name": port_name,
 		"building_marker": building_marker,
 		"belt_marker": belt_marker,
 		"junction": building_marker.global_position
