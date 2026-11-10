@@ -73,6 +73,10 @@ static func is_clear(
 	# retires; do not depend on a physics-server synchronization before
 	# rejecting a duplicate belt in that tile.
 	for member: Node in tree.get_nodes_in_group("player_built"):
+		# A conveyor placement ghost keeps its original scene groups, but
+		# has no operational footprint and must not block itself.
+		if member.is_in_group("construction_preview"):
+			continue
 		if not member is ConveyorSegment:
 			continue
 		var completed := member as ConveyorSegment
