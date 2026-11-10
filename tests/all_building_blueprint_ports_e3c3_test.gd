@@ -44,8 +44,14 @@ func _ready() -> void:
 	for case_data: Dictionary in BUILDING_CASES:
 		var definition := load(case_data["path"]) as BuildingDefinition
 		assert(definition != null)
+		# Use an unobstructed position and the definition's grid parity.
+		# The sandbox's reference cube occupies the world origin, and
+		# odd/even footprints cannot all be centered at integer (0, 0).
+		var placement_origin: Vector3 = FactoryGrid.snap_building_origin(
+			Vector3(-6.0, 0.0, 3.0), definition.footprint_tiles
+		)
 		var site := controller._create_blueprint_site(
-			definition, Transform3D.IDENTITY
+			definition, Transform3D(Basis.IDENTITY, placement_origin)
 		) as ConstructionSite
 		assert(site != null)
 		site.set_process(false)
