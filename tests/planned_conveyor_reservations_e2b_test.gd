@@ -124,10 +124,15 @@ func _ready() -> void:
 	print("PASS F: Both completed chain links become candidates without auto-transport")
 
 	await get_tree().process_frame
+	# These ConstructionSite references are now freed, while their route
+	# claims must remain valid through the finished ConveyorSegments.
+	assert(not is_instance_valid(a))
+	assert(not is_instance_valid(b))
+	assert(not is_instance_valid(c))
 	assert(registry.claim_count() == 4)
 	assert(registry.get_ready_candidate(ab).get("source") == belt_a)
 	assert(registry.get_ready_candidate(bc).get("receiver") == belt_c)
-	print("PASS G: Site retirement preserves stable claim keys and completed belt refs")
+	print("PASS G: Freed construction sites preserve stable live belt claims")
 
 	belt_c.position.x += 0.25
 	assert(registry.get_ready_candidate(bc).is_empty())
@@ -136,12 +141,15 @@ func _ready() -> void:
 	assert(ready_ids.size() == 2)
 	print("PASS H: Stale physical geometry invalidates commitment without new signals")
 
+	# Explicit release is safe even though A, B, and C sites were
+	# already freed at the preceding frame boundary.
 	assert(registry.release(ab))
 	assert(not registry.is_reserved(ab))
 	assert(not registry.release(ab))
 	assert(registry.is_reserved(bc))
 	assert(registry.claim_count() == 2)
-	print("PASS I: Releasing one link preserves the independent downstream claim")
+	assert(registry.has_completed_endpoint(bc, true))
+	print("PASS I: Freed-site cleanup preserves the independent downstream claim")
 
 	belt_b.free()
 	assert(not registry.is_reserved(bc))
