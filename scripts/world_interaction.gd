@@ -3745,16 +3745,6 @@ func _handle_blueprint_route_click() -> int:
 	var definition: BuildingDefinition = _get_selected_building_definition()
 	if not is_instance_valid(definition):
 		return 0
-	var endpoint_target: Dictionary = {}
-	if _route_anchor.is_empty() or _route_anchor.has("turn"):
-		var cursor: Vector3 = raw_ground if raw_ground.is_finite() else position
-		endpoint_target = _blueprint_route_port_target(
-			cursor, not _route_anchor.is_empty()
-		)
-		if not endpoint_target.is_empty():
-			var snapped: Transform3D = endpoint_target["transform"]
-			position = snapped.origin
-
 	if _route_anchor.is_empty():
 		# The first click must be placeable. No resources or claims change yet.
 		if not ConveyorBlueprintPlacement.is_clear(
@@ -3835,6 +3825,16 @@ func _handle_blueprint_l_route_position(
 	var definition: BuildingDefinition = _get_selected_building_definition()
 	if not is_instance_valid(definition):
 		return 0
+
+	var endpoint_target: Dictionary = {}
+	if _route_anchor.is_empty() or _route_anchor.has("turn"):
+		var cursor: Vector3 = raw_ground if raw_ground.is_finite() else position
+		endpoint_target = _blueprint_route_port_target(
+			cursor, not _route_anchor.is_empty()
+		)
+		if not endpoint_target.is_empty():
+			var snapped: Transform3D = endpoint_target["transform"]
+			position = snapped.origin
 
 	if _route_anchor.is_empty():
 		if not ConveyorBlueprintPlacement.is_clear(
