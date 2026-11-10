@@ -5,14 +5,15 @@ class_name BlueprintStoragePortSnapPreview
 # SANDBOX STORAGE BLUEPRINT PORT SNAPPING — READ-ONLY DISCOVERY
 # =============================================================================
 # Suggests a straight belt transform for an unfinished Storage input/output.
-# The current player-selected belt direction is never changed. This helper
-# does not create a site, reserve a port, connect belts or transfer cargo.
+# Callers may opt into suggesting the port's correct orientation, but this
+# helper never rotates the supplied ghost, creates reservations or cargo.
 
 static func find_nearest(
 	preview_belt: ConveyorSegment,
 	mouse_world: Vector3,
 	port_registry: PlannedBuildingPortReservations,
-	search_radius: float = 0.65
+	search_radius: float = 0.65,
+	auto_orient: bool = false
 ) -> Dictionary:
 	if not is_instance_valid(preview_belt):
 		return {}
@@ -59,7 +60,7 @@ static func find_nearest(
 			var forward := (
 				candidate.basis * Vector3.FORWARD
 			).normalized()
-			if requested_forward.dot(forward) < 0.98:
+			if not auto_orient and requested_forward.dot(forward) < 0.98:
 				continue
 			if not FactoryGrid.is_on_conveyor_grid(candidate.origin):
 				continue
