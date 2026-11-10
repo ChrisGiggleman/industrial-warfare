@@ -1624,6 +1624,25 @@ func _update_straight_conveyor_blueprint_preview() -> void:
 			placement_ghost.global_transform = transform
 			current_placement_position = transform.origin
 
+		# Route gesture preview also shows completed-building ports.
+		# The turn click itself is free-grid; only start/end are port targets.
+		if (
+			enable_blueprint_route_tool
+			and Input.is_physical_key_pressed(KEY_SHIFT)
+			and (
+				_route_anchor.is_empty()
+				or not _blueprint_l_route_mode
+				or _route_anchor.has("turn")
+			)
+		):
+			var route_port: Dictionary = _blueprint_route_port_target(
+				ground, not _route_anchor.is_empty()
+			)
+			if not route_port.is_empty():
+				var port_transform: Transform3D = route_port["transform"]
+				placement_ghost.global_transform = port_transform
+				current_placement_position = port_transform.origin
+
 		placement_is_valid = ConveyorBlueprintPlacement.is_clear(
 			get_tree(),
 			get_viewport().world_3d,
