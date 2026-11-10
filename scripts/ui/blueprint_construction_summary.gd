@@ -18,7 +18,7 @@ func _ready() -> void:
 	panel.offset_left = 16.0
 	panel.offset_top = 16.0
 	panel.offset_right = 285.0
-	panel.offset_bottom = 132.0
+	panel.offset_bottom = 159.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
 
@@ -78,9 +78,14 @@ func _refresh() -> void:
 	if is_instance_valid(controller):
 		selection_active = bool(controller.get("_blueprint_area_selection_mode"))
 	var hint: String = "E: Build Selected" if selection_active else "Q: Area Select"
+	var extra_hint: String = (
+		"\nShift+Drag: Add | Alt+Drag: Remove"
+		if selection_active else ""
+	)
 	_summary.text = (
 		"FACTORY BLUEPRINTS\n"
 		+ "Planned: %d   Queued: %d\n" % [counts["planned"], counts["queued"]]
 		+ "Building: %d   Paused: %d\n" % [counts["building"], counts["paused"]]
 		+ "Selected: %d   |   %s" % [selected_count, hint]
+		+ extra_hint
 	)
