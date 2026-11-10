@@ -12,6 +12,7 @@ class_name PlannedConveyorRouteReservations
 # Consumers MUST revalidate get_ready_candidate() at commit time.
 
 signal reservation_ready(reservation_id: int)
+signal reservation_released(reservation_id: int)
 
 var _next_id: int = 1
 var _reservations: Dictionary = {}
@@ -154,6 +155,7 @@ func release(reservation_id: int) -> bool:
 	_endpoint_claims.erase(record["source_key"])
 	_endpoint_claims.erase(record["receiver_key"])
 	_reservations.erase(reservation_id)
+	reservation_released.emit(reservation_id)
 	return true
 
 func _endpoint_key(site: ConstructionSite, side: String) -> String:
