@@ -73,9 +73,14 @@ func _refresh() -> void:
 			and chosen.job.state == ConstructionJob.State.PLANNED
 		):
 			selected_count += 1
+	var selection_active: bool = false
+	var controller: Node = get_parent().get_node_or_null("WorldInteraction")
+	if is_instance_valid(controller):
+		selection_active = bool(controller.get("_blueprint_area_selection_mode"))
+	var hint: String = "E: Build Selected" if selection_active else "Q: Area Select"
 	_summary.text = (
 		"FACTORY BLUEPRINTS\n"
 		+ "Planned: %d   Queued: %d\n" % [counts["planned"], counts["queued"]]
 		+ "Building: %d   Paused: %d\n" % [counts["building"], counts["paused"]]
-		+ "Selected: %d   |   Q: Area Select" % selected_count
+		+ "Selected: %d   |   %s" % [selected_count, hint]
 	)
