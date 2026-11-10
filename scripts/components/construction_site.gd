@@ -317,6 +317,27 @@ func clear_planned_conveyor_turn() -> bool:
 	return true
 
 
+func get_planned_port_names(input_side: bool) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for child: Node in get_children():
+		if not child is Marker3D:
+			continue
+		var port_name := StringName(str(child.name).trim_prefix("Planned"))
+		if not str(child.name).begins_with("Planned"):
+			continue
+		if input_side and str(port_name).begins_with("InputPort"):
+			result.append(port_name)
+		elif not input_side and str(port_name).begins_with("OutputPort"):
+			result.append(port_name)
+	return result
+
+
+func get_planned_port_named(port_name: StringName) -> Marker3D:
+	if not str(port_name).begins_with("InputPort") and not str(port_name).begins_with("OutputPort"):
+		return null
+	return get_node_or_null("Planned" + str(port_name)) as Marker3D
+
+
 func get_planned_port(input_side: bool) -> Marker3D:
 	return get_node_or_null(
 		"PlannedInputPort" if input_side else "PlannedOutputPort"
@@ -337,11 +358,20 @@ func accepts_planned_connections() -> bool:
 func get_planned_belt_transform(
 	belt: ConveyorSegment, input_side: bool
 ) -> Dictionary:
+	return get_planned_belt_transform_named(
+		belt, &"InputPort" if input_side else &"OutputPort"
+	)
+
+
+func get_planned_belt_transform_named(
+	belt: ConveyorSegment, port_name: StringName
+) -> Dictionary:
 	if not is_instance_valid(belt) or not belt.is_inside_tree():
 		return {}
 	if not accepts_planned_connections():
 		return {}
-	var marker := get_planned_port(input_side)
+	var input_side := str(port_name).begins_with("InputPort")
+	var marker := get_planned_port_named(port_name)
 	var endpoint := belt.get_node_or_null(
 		"OutputEndpoint" if input_side else "InputEndpoint"
 	) as Marker3D
