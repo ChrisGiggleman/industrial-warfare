@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — E2c2 Connected Conveyor Blueprint Automation Passed (17/17)
+
+**Godot 4.6.2 evidence:** Developer supplied the game view and Output screenshots for `res://tests/connected_conveyor_blueprint_e2c2_test.tscn`, showing PASS A–Q and `ALL 17 CONNECTED CONVEYOR BLUEPRINT E2C2 TESTS PASSED`. The rendered factory sandbox contains a mix of planned translucent conveyor segments and completed directional belts.
+
+- New player-sandbox route coordinator creates exclusive pending straight/left/right neighbor reservations without creating live transport on unfinished sites.
+- Both mirrored planned-corner shapes and real physical completion were validated; cancellation restores an unfinished source to a straight blueprint.
+- Source-first/receiver-first build activation and a three-belt, two-hop cargo conservation scenario passed.
+- Compact blueprint labels and Main's opt-out defaults were also covered.
+- Output includes routine `Extractor has no resource node` and `Hit nothing` diagnostics after the passing summary; no failing E2c2 checks are shown.
+- **This was an automated F6 scene**, not a manual player-input acceptance of B/5/P/LMB/R/E/X. Manual right/left blueprint placement, cancellation/replanning and normal P-off belt construction remain the next gate.
+- Continue to protect existing Main, combat, cargo, and the eventual integrated save/load design. Production power, physical material delivery and worker drones are not yet implemented.
+
+**Next:** Complete manual E2c2 input tests, then rerun E2b (16), E2c1 (15), planned Storage Build Mode (6), and corner cargo (8) regressions before planning belt connections to unfinished Storage.
+
+---
+
 ## 2026-11-09 — E2c2 Sandbox Connected Blueprint Corners Staged (17 Checks Pending)
 
 **Status:** New opt-in code committed to `main`, **not yet Godot validated**. E2c1 physical activation passed all 15 checks in the developer's previous F6 screenshot.
