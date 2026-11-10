@@ -87,6 +87,7 @@ var selected_object: Node = null
 var placement_mode_active: bool = false
 var blueprint_mode_active: bool = false
 var _route_anchor: Dictionary = {}
+var _blueprint_l_route_mode: bool = false
 var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
 var selected_building_index: int = 0
 
@@ -363,6 +364,14 @@ func _unhandled_input(event: InputEvent) -> void:
 					return
 				if key == KEY_X:
 					_cancel_blueprint_site(_blueprint_site_under_mouse())
+					return
+				if (
+					key == KEY_L
+					and enable_blueprint_route_tool
+					and blueprint_mode_active
+					and _is_conveyor_selected()
+				):
+					_toggle_blueprint_l_route_mode()
 					return
 
 		# =============================================================================
@@ -801,6 +810,7 @@ func _connect_existing_conveyor_junction() -> void:
 
 func _toggle_placement_mode() -> void:
 	_route_anchor.clear()
+	_blueprint_l_route_mode = false
 	placement_mode_active = not placement_mode_active
 
 	if placement_mode_active:
@@ -1021,6 +1031,7 @@ func _select_building(index: int) -> void:
 
 	selected_building_index = index
 	_route_anchor.clear()
+	_blueprint_l_route_mode = false
 	placement_rotation_degrees = 0.0
 
 	if placement_mode_active and not demolition_mode_active:
@@ -1055,6 +1066,8 @@ func _toggle_demolition_mode() -> void:
 
 	if demolition_mode_active:
 		blueprint_mode_active = false
+		_route_anchor.clear()
+		_blueprint_l_route_mode = false
 		_clear_demolition_hover()
 		_destroy_placement_ghost()
 		placement_is_valid = false
@@ -3427,6 +3440,7 @@ func _find_perpendicular_corner_candidate(
 
 func _toggle_blueprint_mode() -> bool:
 	_route_anchor.clear()
+	_blueprint_l_route_mode = false
 	if not enable_blueprint_planning or not placement_mode_active:
 		return false
 	if demolition_mode_active:
@@ -3683,6 +3697,8 @@ func _handle_blueprint_route_click() -> int:
 		print("BLUEPRINT ROUTE: Point at an open ground tile.")
 		return 0
 	var position: Vector3 = clicked["position"]
+	if _blueprint_l_route_mode:
+		return _handle_blueprint_l_route_position(position)
 	var definition: BuildingDefinition = _get_selected_building_definition()
 	if not is_instance_valid(definition):
 		return 0
@@ -3715,7 +3731,100 @@ func _handle_blueprint_route_click() -> int:
 		print("BLUEPRINT ROUTE: Choose a straight row or column (2–32 tiles).")
 		return 0
 
-	# Preflight ALL cells before any ConstructionSite is created.
+	var placed: int = _commit_blueprint_route_tiles(tiles, definition)
+	if placed > 0:
+		print("BLUEPRINT ROUTE PLANNED: ", placed, " conveyor tiles.")
+	return placed
+
+
+# =============================================================================
+# E3D3B — THREE-CLICK L-SHAPED ROUTE PLACEMENT
+# =============================================================================
+# L toggles an isolated L-route tool. Shift-click start, turn, and finish.
+# The outgoing leg uses the same straight-site creation path: the existing
+# blueprint route coordinator converts the pivot site into a 90-degree turn.
+
+func _toggle_blueprint_l_route_mode() -> bool:
+	if not (
+		enable_blueprint_route_tool
+		and enable_blueprint_planning
+		and blueprint_mode_active
+		and placement_mode_active
+		and not demolition_mode_active
+		and _is_conveyor_selected()
+	):
+		return false
+	_blueprint_l_route_mode = not _blueprint_l_route_mode
+	_route_anchor.clear()
+	if _blueprint_l_route_mode:
+		print("BLUEPRINT L-ROUTE: ON | Shift-click start, corner, endpoint.")
+	else:
+		print("BLUEPRINT L-ROUTE: OFF | Shift-click straight routes.")
+	return _blueprint_l_route_mode
+
+
+func _handle_blueprint_l_route_position(position: Vector3) -> int:
+	# Separate testable handler: input device raycast is handled by caller.
+	if not (
+		_blueprint_l_route_mode
+		and enable_blueprint_route_tool
+		and enable_blueprint_planning
+		and blueprint_mode_active
+		and placement_mode_active
+		and not demolition_mode_active
+		and _is_conveyor_selected()
+	):
+		return 0
+	var definition: BuildingDefinition = _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return 0
+
+	if _route_anchor.is_empty():
+		if not ConveyorBlueprintPlacement.is_clear(
+			get_tree(), get_viewport().world_3d, definition,
+			Transform3D.IDENTITY.translated(position),
+			PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("BLUEPRINT L-ROUTE: Start tile blocked.")
+			return 0
+		_route_anchor = {"position": position}
+		print("BLUEPRINT L-ROUTE: Start selected; Shift-click corner.")
+		return 0
+
+	var start: Vector3 = _route_anchor["position"]
+	if not _route_anchor.has("turn"):
+		var incoming: Array[Transform3D] = (
+			BlueprintStraightRoute.get_tiles_between(start, position)
+		)
+		if incoming.size() < 2 or incoming.size() >= BlueprintStraightRoute.MAX_SEGMENTS:
+			print("BLUEPRINT L-ROUTE: Corner must be on a different tile in a straight row or column.")
+			return 0
+		_route_anchor["turn"] = position
+		print("BLUEPRINT L-ROUTE: Corner selected; Shift-click endpoint at 90 degrees.")
+		return 0
+
+	var pivot: Vector3 = _route_anchor["turn"]
+	var tiles: Array[Transform3D] = BlueprintLRoute.get_tiles(
+		start, pivot, position
+	)
+	if tiles.is_empty():
+		# Retain the two points so the player can retry the endpoint.
+		print("BLUEPRINT L-ROUTE: Endpoint must form a 90-degree turn (max 32 tiles).")
+		return 0
+	var placed: int = _commit_blueprint_route_tiles(tiles, definition)
+	if placed > 0:
+		_route_anchor.clear()
+		print("BLUEPRINT L-ROUTE PLANNED: ", placed,
+			" conveyor tiles including one automatic corner.")
+	return placed
+
+
+func _commit_blueprint_route_tiles(
+	tiles: Array[Transform3D], definition: BuildingDefinition
+) -> int:
+	if tiles.is_empty() or not is_instance_valid(definition):
+		return 0
+	# No partial route should be created when a tile is already reserved.
 	for tile: Transform3D in tiles:
 		if not ConveyorBlueprintPlacement.is_clear(
 			get_tree(), get_viewport().world_3d,
@@ -3724,7 +3833,6 @@ func _handle_blueprint_route_click() -> int:
 			print("BLUEPRINT ROUTE: Blocked tile at ",
 				tile.origin, "; no route placed.")
 			return 0
-
 	var created: Array[ConstructionSite] = []
 	for tile: Transform3D in tiles:
 		var site: ConstructionSite = _create_straight_conveyor_blueprint(
@@ -3737,8 +3845,6 @@ func _handle_blueprint_route_click() -> int:
 			print("BLUEPRINT ROUTE: Placement failed; sites cancelled.")
 			return 0
 		created.append(site)
-	print("BLUEPRINT ROUTE PLANNED: ", created.size(),
-		" conveyor tiles.")
 	return created.size()
 
 # =============================================================================
