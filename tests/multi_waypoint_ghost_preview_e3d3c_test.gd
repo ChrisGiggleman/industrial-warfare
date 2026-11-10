@@ -54,7 +54,8 @@ func _ready() -> void:
 		arrow.transform.basis * Vector3.UP
 	)
 	assert(heading.is_finite())
-	print("PASS D: Bend tile uses a visible direction arrow above the grid")
+	assert(heading.normalized().dot(Vector3.RIGHT) > 0.98)
+	print("PASS D: Bend tile turns its arrow toward the outgoing leg")
 
 	visual.show_route(route, 7, false, Vector3(14, 0, 4))
 	assert(not visual.preview_valid)
@@ -97,6 +98,12 @@ func _ready() -> void:
 	assert(controller._handle_blueprint_waypoint_position(
 		Vector3(-6, 0, 2)
 	) == 2)
+	assert(controller._show_blueprint_waypoint_preview_at(
+		Vector3(-4, 0, 2)
+	))
+	assert(ghost.displayed_count == 5)
+	assert(not controller._show_blueprint_waypoint_preview_at(Vector3.INF))
+	assert(ghost.displayed_count == 3)
 	assert(controller._show_blueprint_waypoint_preview_at(
 		Vector3(-4, 0, 2)
 	))
