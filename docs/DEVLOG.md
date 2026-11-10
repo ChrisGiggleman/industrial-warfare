@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — E3c2a Sandbox Storage Connections Passed (16/16); E3c2b Snap Preview Staged
+
+**Developer Godot 4.6.2 evidence:** Two screenshots show the mixed planned/finished factory and `ALL 16 CONNECTED STORAGE BLUEPRINT E3C2A TESTS PASSED` (A–P), with normal debugger shutdown. Sandbox shared claims, Storage-first/belt-first port connections, rotation, upstream route activation, ore conservation, backpressure, cancellation, corner preview and Main opt-out were validated.
+
+**E3c2b Stage 1 — new preview change, NOT YET VALIDATED:**
+
+- Added `BlueprintStoragePortSnapPreview.find_nearest()`, a read-only helper that proposes a future belt transform from unfinished job-driven **Test Storage** input or output markers. It respects both E3b and legacy port claims, player-selected R direction, the established 0.65-tile snap radius, and conveyor grid alignment.
+- The opt-in `WorldInteraction._get_storage_blueprint_snap_preview()` rejects candidates whose real placement footprint is blocked. The straight conveyor blueprint preview resolves the snap using the **raw world mouse hit**, before normal grid rounding, and displays exactly the transform that will be committed. The old free-grid fallback still applies when no valid snap exists.
+- The factory sandbox already enables `enable_connected_storage_blueprints`; Main's default remains **false**, so ordinary conveyors, corner/bridge placement, existing cargo transport and production combat are unchanged.
+- New `res://tests/storage_blueprint_preview_snap_e3c2b_test.tscn` has **14 pending F6 checks** for input/output, matching orientation, exact and fractional cursor positioning, forbidden/occupied claims, cancellation return, rotated Storage, enabled/disabled flags and Main opt-out.
+- This stage **does not** change actual construction, reservation ownership, reciprocal port activation, worker/material/power readiness, or save/load. Physical links remain owned by the separately validated E3c2a service.
+
+**Next:** Execute the E3c2b 14-check F6 scene in Godot. If it passes, manually test B/5/P/R/LMB/E/X around planned Storage input/output ports, confirm visual hard-snapping and prior normal conveyor placement, then rerun legacy logistics regression.
+
+---
+
 ## 2026-11-09 — E3c1 Storage Activation Accepted (18/18); Sandbox E3c2a Staged
 
 **Godot 4.6.2 evidence:** Developer Output screenshot confirms `ALL 18 PLANNED STORAGE PORT ACTIVATION E3C1 TESTS PASSED` (A–R). Storage-first and belt-first construction, real input/output port reciprocity, mixed upstream route ownership, rotation, stale/moved or occupied endpoints, cancellation, demolition, cargo backpressure and conservation were validated.
