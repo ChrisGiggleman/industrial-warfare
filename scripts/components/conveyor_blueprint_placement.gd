@@ -69,6 +69,21 @@ static func is_clear(
 		):
 			return false
 
+	# A completed belt can be created in the same frame that a site
+	# retires; do not depend on a physics-server synchronization before
+	# rejecting a duplicate belt in that tile.
+	for member: Node in tree.get_nodes_in_group("player_built"):
+		if not member is ConveyorSegment:
+			continue
+		var completed := member as ConveyorSegment
+		if completed.is_queued_for_deletion():
+			continue
+		if (
+			absf(completed.global_position.x - placement.origin.x) < 0.98
+			and absf(completed.global_position.z - placement.origin.z) < 0.98
+		):
+			return false
+
 	# A narrow footprint inset permits side-by-side lanes but rejects
 	# intersection with real built structures and completed conveyors.
 	var box := BoxShape3D.new()
