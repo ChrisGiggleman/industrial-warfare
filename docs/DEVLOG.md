@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-11-09 — E3a Planned Storage Port Geometry Passed (15/15); E3b Reservations Staged
+
+**Godot 4.6.2 evidence:** Developer-provided Output screenshot confirms `ALL 15 PLANNED BUILDING PORT GEOMETRY E3A TESTS PASSED` (PASS A–O): directed future Storage input/output port matching, separate rotated junctions, invalid-facing and offset rejection, queued/paused acceptance, cancellation/completion rejection and no premature inventory activation.
+
+**E3b source checkpoint — local Godot validation pending:**
+
+- Added `scripts/components/planned_building_port_reservations.gd`. Each directed reservation exclusively claims one unfinished building input or output and the matching conveyor blueprint output or input **within this isolated registry**.
+- Per-reservation completion, cancellation and exit observers retain immutable claim keys and completed real-object references across deletion of the temporary sites. Distinct callbacks allow one Storage plan to reserve both its input and output without missing construction events.
+- `get_ready_candidate()` is read-only and requires both completed instances, correct real `ItemPortComponent` direction, an unoccupied conveyor endpoint, unchanged original junction and matching endpoint geometry. It does **not** connect or transfer cargo.
+- Cancelling, unexpectedly removing or destroying a site/finished object releases both claims. Existing live-belt-to-planned-Storage `ConstructionSite.reserve_conveyor()` claims are respected.
+- Added `res://tests/planned_building_port_reservations_e3b_test.tscn` with **18 pending F6 checks** for independent input/output claims, duplicate rejection, Storage-first and belt-first completion, rotated sites, stale alignment, freed-site cleanup, cancellation, unexpected deletion, completed-object destruction and legacy-reservation priority.
+- Important boundary: E3b does **not yet share a single claim broker with E2b conveyor-to-conveyor reservations**. Exclusive ownership *across both registries* is an explicit prerequisite before wiring E3b into `BlueprintConveyorRouteCoordinator`. No gameplay scene, cargo transfer code or independent save system changed.
+
+**Next:** Run E3b's 18-check scene. Only after it passes, design shared claim ownership and a separately validated reciprocal physical port-activation transaction (E3c) before sandbox UI integration.
+
+---
+
 ## 2026-11-09 — Post-E2c2 Compatibility Passed (45/45), E3a Geometry Staged
 
 **Godot 4.6.2 evidence:** The developer supplied four Output screenshots verifying the full post-E2c2 regression set: E2b planned route reservations **16/16**, E2c1 physical activation **15/15**, planned Storage Build Mode **6/6**, and conveyor corner cargo **8/8**. Total **45/45**. No failed checks were shown.
