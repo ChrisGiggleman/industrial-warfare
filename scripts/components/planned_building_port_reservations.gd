@@ -17,6 +17,18 @@ signal reservation_released(reservation_id: int)
 var _next_id: int = 1
 var _records: Dictionary = {}
 var _claims: Dictionary = {}
+var _shared_claim_broker: PlannedEndpointClaimBroker = null
+
+
+func set_claim_broker(broker: PlannedEndpointClaimBroker) -> bool:
+	# The existing isolated E3b API remains usable without a broker.
+	# In the mixed E3c phase, both E2b and E3b MUST share one broker.
+	if not is_instance_valid(broker) or is_instance_valid(_shared_claim_broker):
+		return false
+	if not _records.is_empty():
+		return false
+	_shared_claim_broker = broker
+	return true
 
 
 func reserve_pair(
@@ -45,8 +57,25 @@ func reserve_pair(
 		return 0
 
 	var id := _next_id
+	var broker_owner := ""
+	if is_instance_valid(_shared_claim_broker):
+		broker_owner = "port:%d:%d" % [get_instance_id(), id]
+		var building_side := (
+			PlannedEndpointClaimBroker.BUILDING_INPUT if input_side
+			else PlannedEndpointClaimBroker.BUILDING_OUTPUT
+		)
+		var belt_side := (
+			PlannedEndpointClaimBroker.BELT_OUTPUT if input_side
+			else PlannedEndpointClaimBroker.BELT_INPUT
+		)
+		if not _shared_claim_broker.claim_pair(
+			building_site, building_side,
+			belt_site, belt_side, broker_owner
+		):
+			return 0
 	_next_id += 1
 	_records[id] = {
+		"broker_owner": broker_owner,
 		"building_site": building_site,
 		"belt_site": belt_site,
 		"building_key": building_key,
@@ -186,6 +215,10 @@ func release(id: int) -> bool:
 
 	_claims.erase(record["building_key"])
 	_claims.erase(record["belt_key"])
+	if is_instance_valid(_shared_claim_broker):
+		var broker_owner: String = record.get("broker_owner", "")
+		if not broker_owner.is_empty():
+			_shared_claim_broker.release_owner(broker_owner)
 	_records.erase(id)
 	reservation_released.emit(id)
 	return true
