@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — E3c0 Shared Claims Passed (18/18); E3c1 Physical Port Activation Staged
+
+**Godot 4.6.2 evidence:** The developer's latest Output screenshot shows `ALL 18 SHARED BLUEPRINT ENDPOINT OWNERSHIP E3C0 TESTS PASSED` (A–R). Opposing claim orders, independent belt input/output, Storage input/output, cancellation, freed sites, completed-belt destruction and final claim cleanup all passed. E3c0 is accepted as an isolated system.
+
+**E3c1 isolated implementation — NOT YET VALIDATED IN GODOT:**
+
+- Added `scripts/components/planned_building_port_activator.gd`, an isolated listener to the validated E3b registry's `reservation_ready` signal. It revalidates the completed Storage `ItemPortComponent`, completed `ConveyorSegment`, expected port direction, original junction and endpoint vacancy before committing.
+- Actual activation calls the existing operational `ConveyorSegment.try_connect_building_port()` method rather than manually assigning connection references. Successful commits require reciprocal `port.connected_conveyor` and belt `input_building_port` / `output_building_port`, release the exact reservation (and E3c0 broker keys), then emit `connection_committed`.
+- Failed connections leave the reservation pending; the separate `try_commit(id)` path can retry after a moved endpoint, occupied port or invalid direction is corrected. Cargo is never moved during connection activation itself.
+- New `res://tests/planned_storage_port_activation_e3c1_test.tscn` contains **18 pending F6 checks**, including mixed E2b belt-to-belt and E3b belt-to-Storage links with one shared broker; Storage-first and belt-first completion; rotated ports; buffered ore transfer through Storage input and output; blocked-output conservation; moved or occupied connections; cancellation, destroyed endpoints and reciprocal cleanup.
+- No `WorldInteraction`, Factory Testing Sandbox, Main scene, worker/power/material services or save/load code was changed. **E3c1 is NOT yet a manual player-facing feature** and the new tests are not claimed to have passed.
+
+**Next:** Run the E3c1 18-check F6 scene, inspect any assertions before proceeding. Once accepted, integrate shared claims and Storage-port reservation/activation into sandbox-only blueprint planning with independent scripted and manual regression gates.
+
+---
+
 ## 2026-11-09 — E3b Storage Port Reservations Accepted (18/18); Shared Claims E3c0 Staged
 
 **Evidence:** Developer Godot 4.6.2 Output screenshot shows `ALL 18 PLANNED BUILDING PORT RESERVATION E3B TESTS PASSED` (A–R), with normal debugger shutdown. Independent input/output claims, both build orders, released/cancelled endpoints, moved geometry, completed-object removal and non-operational status were all verified.
