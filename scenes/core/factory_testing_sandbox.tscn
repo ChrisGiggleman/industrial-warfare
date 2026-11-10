@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/prototype_zombie_target.tscn" id="14_target"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/prototype_moving_zombie.tscn" id="15_moving_zombie"]
 [ext_resource type="Script" path="res://scripts/components/world_destruction_service.gd" id="16_world_destruction"]
+[ext_resource type="Script" path="res://scripts/ui/blueprint_construction_summary.gd" id="17_blueprint_summary"]
 [ext_resource type="PackedScene" uid="uid://cm21fdbudejf5" path="res://scenes/resource_nodes/TestOreDeposit.tscn" id="9_jpx65"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_6rktp"]
@@ -94,6 +95,7 @@ production_debug_hud = NodePath("../ProductionDebugHUD")
 enable_timed_storage_construction = true
 enable_planned_storage_conveyor_snap = true
 enable_blueprint_planning = true
+compact_blueprint_visuals = true
 blueprint_sandbox_debug_requirements = true
 enable_connected_conveyor_blueprints = true
 enable_connected_storage_blueprints = true
@@ -102,6 +104,9 @@ buildable_definitions = Array[ExtResource("1_44pk5")]([ExtResource("5_jpx65"), E
 [node name="HoverMarker" type="MeshInstance3D" parent="." unique_id=2100502670]
 material_override = SubResource("StandardMaterial3D_2dmjg")
 mesh = SubResource("BoxMesh_2dmjg")
+
+[node name="BlueprintConstructionSummary" type="CanvasLayer" parent="."]
+script = ExtResource("17_blueprint_summary")
 
 [node name="BuildHUD" parent="." unique_id=1882342599 instance=ExtResource("6_jvmw0")]
 
