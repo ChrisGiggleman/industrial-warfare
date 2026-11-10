@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 is committed with **14 F6 checks pending**. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
+**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 **passed 14/14 scripted F6 checks** (2026-11-09); its manual player controls remain pending. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -146,7 +146,7 @@ The Factory Testing Sandbox's opt-in P mode now supports planning a stand-alone,
 - `WorldInteraction._create_straight_conveyor_blueprint()` creates a job-backed `ConstructionSite` from the definition's two-second timing. The site has a reserved footprint, a yellow directional label and two non-operational endpoint markers, but **no live conveyor inventory, transport timer or physical link**.
 - E and X reuse the blueprint authorization and cancellation commands. The Factory Testing Sandbox alone has the explicit synthetic power/material/worker readiness override. Main scene defaults remain opt-out.
 - When the two-second authorized job completes, the existing straight `ConveyorSegment` scene is instantiated once at the saved transform. E1 does not automatically connect it to adjacent belts or buildings; physical endpoint reservations and cargo conservation are future E2/E3 requirements.
-- `res://tests/conveyor_blueprint_e1_test.tscn` contains **14 F6 checks, pending developer execution**. Do not label this phase complete or extend planned belt link behavior until it passes and the cursor/keyboard interaction is manually confirmed.
+- `res://tests/conveyor_blueprint_e1_test.tscn` passed **14/14 in developer-run Godot 4.6.2**. Phase E1 manual cursor/keyboard acceptance is still pending; do not add planned belt link behavior until that interaction and the original conveyor Build Mode are revalidated.
 
 ---
 
