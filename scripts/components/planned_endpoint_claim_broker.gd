@@ -9,10 +9,10 @@ class_name PlannedEndpointClaimBroker
 # Owner tokens are registry-scoped, never plain numeric reservation IDs.
 # The broker does not connect real ports, move cargo, or own construction.
 
-const BELT_INPUT := "in"
-const BELT_OUTPUT := "out"
-const BUILDING_INPUT := "building_input"
-const BUILDING_OUTPUT := "building_output"
+const BELT_INPUT = "in"
+const BELT_OUTPUT = "out"
+const BUILDING_INPUT = "building_input"
+const BUILDING_OUTPUT = "building_output"
 
 var _claims: Dictionary = {}
 var _owner_keys: Dictionary = {}
