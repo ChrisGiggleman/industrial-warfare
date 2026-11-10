@@ -60,13 +60,15 @@ func _ready() -> void:
 	assert(output.get("building_marker") == storage.get_planned_port(false))
 	print("PASS C: Unfinished Storage output aligns to outbound belt input")
 
-	assert((input["junction"] as Vector3).is_equal_approx(
+	var input_junction: Vector3 = input["junction"]
+	var output_junction: Vector3 = output["junction"]
+	assert(input_junction.is_equal_approx(
 		storage.get_planned_port(true).global_position
 	))
-	assert((output["junction"] as Vector3).is_equal_approx(
+	assert(output_junction.is_equal_approx(
 		storage.get_planned_port(false).global_position
 	))
-	assert(not input["junction"].is_equal_approx(output["junction"]))
+	assert(not input_junction.is_equal_approx(output_junction))
 	print("PASS D: Input and output have separate exact world-space junctions")
 
 	assert(storage.get_node_or_null("InventoryComponent") == null)
