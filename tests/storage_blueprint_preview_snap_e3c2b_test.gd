@@ -65,11 +65,11 @@ func _ready() -> void:
 	assert(preview.process_mode == Node.PROCESS_MODE_DISABLED)
 	print("PASS C: Player Blueprint Mode uses the isolated straight-belt ghost")
 
-	var input_placement := storage.get_planned_belt_transform(preview, true)
+	var input_placement: Dictionary = storage.get_planned_belt_transform(preview, true)
 	assert(input_placement.has("transform"))
 	var input_transform: Transform3D = input_placement["transform"]
 	preview.global_transform = input_transform
-	var input_choice := controller._get_storage_blueprint_snap_preview(
+	var input_choice: Dictionary = controller._get_storage_blueprint_snap_preview(
 		input_transform.origin
 	)
 	assert(input_choice.get("site") == storage)
@@ -79,14 +79,14 @@ func _ready() -> void:
 	print("PASS D: Correctly oriented preview hard-snaps to future Storage input")
 
 	var marker := storage.get_planned_port(true)
-	var from_marker := controller._get_storage_blueprint_snap_preview(
+	var from_marker: Dictionary = controller._get_storage_blueprint_snap_preview(
 		marker.global_position
 	)
 	assert(from_marker.get("site") == storage)
 	assert(bool(from_marker.get("input_side", false)))
 	print("PASS E: Cursor aimed at the visible planned input marker also snaps")
 
-	var fractional := controller._get_storage_blueprint_snap_preview(
+	var fractional: Dictionary = controller._get_storage_blueprint_snap_preview(
 		marker.global_position + Vector3(0.12, 0, -0.12)
 	)
 	assert(fractional.get("site") == storage)
@@ -106,11 +106,11 @@ func _ready() -> void:
 	).is_empty())
 	print("PASS H: Outside the tight radius, preview reverts to free placement")
 
-	var output_placement := storage.get_planned_belt_transform(preview, false)
+	var output_placement: Dictionary = storage.get_planned_belt_transform(preview, false)
 	assert(output_placement.has("transform"))
 	var output_transform: Transform3D = output_placement["transform"]
 	preview.global_transform = output_transform
-	var output_choice := controller._get_storage_blueprint_snap_preview(
+	var output_choice: Dictionary = controller._get_storage_blueprint_snap_preview(
 		output_transform.origin
 	)
 	assert(output_choice.get("site") == storage)
@@ -151,11 +151,11 @@ func _ready() -> void:
 	var rotated := _plan(
 		controller, storage_def, Vector3(5, 0, 1), 90.0
 	)
-	var rotated_in := rotated.get_planned_belt_transform(preview, true)
+	var rotated_in: Dictionary = rotated.get_planned_belt_transform(preview, true)
 	assert(rotated_in.has("transform"))
 	var rotated_transform: Transform3D = rotated_in["transform"]
 	preview.global_transform = rotated_transform
-	var rotated_choice := controller._get_storage_blueprint_snap_preview(
+	var rotated_choice: Dictionary = controller._get_storage_blueprint_snap_preview(
 		rotated_transform.origin
 	)
 	assert(rotated_choice.get("site") == rotated)
