@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14 passed**, universal ConstructionSite **15/15 passed**, original compatibility suites **23/23 passed**, per-definition durations **12/12 passed**, and sandbox building Blueprint Mode **12/12 passed** in Godot 4.6.2. Building Blueprint Mode also passed seven manual placement/authorization steps and six manual cancellation/overlap steps (2026-11-09). The two current-branch conveyor compatibility suites are pending rerun; conveyor blueprint connectivity, Main scene and power grid remain unimplemented.  
+**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 is committed with **14 F6 checks pending**. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -134,6 +134,19 @@ The Factory Testing Sandbox opts into a first **building-only** interactive plan
 **Recommended checkpoint sequence:** E1 tests one planned straight piece and its delayed 2-second activation with no cargo before completion; E2 tests a planned Storage + two planned straight ports, including either completion order and conserved item counts; E3 tests left/right corner planned chains and blocked downstream transport; E4 tests cancellation/footprint reuse and a batch authorization path. Add UI/cursor tests at each step before enabling planned belts in Main.
 
 **No live power grid:** The existing sandbox readiness override remains a deliberately explicit testing shortcut. All normal power/material/worker readiness remains fail-closed until real services are built.
+
+---
+
+### Conveyor blueprint E1 implementation — isolated straight pieces only
+
+The Factory Testing Sandbox's opt-in P mode now supports planning a stand-alone, cardinal straight conveyor. Its operation is intentionally narrower than the E2/E3 planned graph proposal:
+
+- `ConveyorBlueprintPlacement.is_clear()` validates the conveyor definition, one-tile integer-grid alignment, cardinal orientation, overlapping blueprint-site footprints, same-frame completed belt tiles and physical collision blockers.
+- `WorldInteraction._update_straight_conveyor_blueprint_preview()` avoids every existing physical conveyor snap/corner/bridge path while P mode selects a conveyor. The placement ghost has a green/red validity indicator but **does not claim any neighbor endpoint**.
+- `WorldInteraction._create_straight_conveyor_blueprint()` creates a job-backed `ConstructionSite` from the definition's two-second timing. The site has a reserved footprint, a yellow directional label and two non-operational endpoint markers, but **no live conveyor inventory, transport timer or physical link**.
+- E and X reuse the blueprint authorization and cancellation commands. The Factory Testing Sandbox alone has the explicit synthetic power/material/worker readiness override. Main scene defaults remain opt-out.
+- When the two-second authorized job completes, the existing straight `ConveyorSegment` scene is instantiated once at the saved transform. E1 does not automatically connect it to adjacent belts or buildings; physical endpoint reservations and cargo conservation are future E2/E3 requirements.
+- `res://tests/conveyor_blueprint_e1_test.tscn` contains **14 F6 checks, pending developer execution**. Do not label this phase complete or extend planned belt link behavior until it passes and the cursor/keyboard interaction is manually confirmed.
 
 ---
 
