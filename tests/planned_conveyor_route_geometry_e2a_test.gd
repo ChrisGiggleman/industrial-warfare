@@ -73,7 +73,8 @@ func _ready() -> void:
 		right_source.global_transform
 		* (right_template.get_node("OutputEndpoint") as Marker3D).transform
 	)
-	assert((right["junction"] as Vector3).distance_to(
+	var proposed_junction: Vector3 = right["junction"]
+	assert(proposed_junction.distance_to(
 		expected_right_output.origin
 	) < 0.001)
 	right_template.free()
