@@ -145,9 +145,13 @@ func _ready() -> void:
 	assert(belt.input_building_port == null)
 	assert(belt.output_building_port == null)
 	assert(belt.can_demolish_safely())
+	assert(not ConveyorBlueprintPlacement.is_clear(
+		get_tree(), get_viewport().world_3d,
+		definition, first_transform
+	))
 	first._process(5.0)
 	assert(completed.size() == 1)
-	print("PASS K: No phantom connections, double builds or loaded cargo")
+	print("PASS K: No phantom connections, duplicates or loaded cargo")
 
 	var second_transform := Transform3D(
 		Basis.IDENTITY, Vector3(1.0, 0.0, -3.0)
