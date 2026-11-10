@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-11-09 — E2b First Local Run Failed; Shared-Site Callbacks Revised
+
+**Developer Godot 4.6.2 evidence:** `planned_conveyor_reservations_e2b_test.tscn` stopped at line 99 in test F, with `ready_ids` containing only one ID where `[ab, bc]` was expected. The initial screenshot shows Debugger Errors (4); their detailed messages were not visible. **Do not mark E2b passed.**
+
+**Isolation and fix candidate:**
+
+- The A→B→C test reuses the middle blueprint B as receiver of one reserved route and source of another. Both claims must receive the same `building_completed` event, and neither may steal the other's endpoint.
+- Replaced bound shared-method site observers with **distinct per-reservation Callable closures** for completion, cancellation, and tree exit. Saved the exact handles in each reservation record and disconnects them on release; connection failures now roll back their claim. Completed-belt removal observers also use distinct stored closures.
+- Added read-only `has_completed_endpoint()` introspection and expanded test E to assert both route records receive the middle belt's completion. Test F now prints candidate and emitted-signal diagnostics if the two-ready assertion fails again.
+- No physical conveyor activation, corner conversion, user placement routing, Main scene, or cargo transport code was changed.
+
+**Status:** Fix committed for another local Godot F6 run; **16/16 not yet validated**. If it fails, inspect the detailed Debugger errors and the new diagnostic line before further changes.
+
+---
+
 ## 2026-11-09 — E2a Route Geometry Accepted (12/12), E2b Reservations Staged
 
 **Godot evidence:** Developer-supplied Output screenshot confirms all twelve `planned_conveyor_route_geometry_e2a_test.tscn` checks passed in Godot 4.6.2: straight links, right/left turns, rotations, invalid gaps/facing, cancellation, paused/queued eligibility, and finished-site rejection.
