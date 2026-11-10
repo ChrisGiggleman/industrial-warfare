@@ -13,7 +13,8 @@ static func find_nearest(
 	mouse_world: Vector3,
 	port_registry: PlannedBuildingPortReservations,
 	search_radius: float = 0.65,
-	auto_orient: bool = false
+	auto_orient: bool = false,
+	input_side_filter: int = -1
 ) -> Dictionary:
 	if not is_instance_valid(preview_belt):
 		return {}
@@ -44,6 +45,8 @@ static func find_nearest(
 			continue
 
 		for input_side: bool in [true, false]:
+			if input_side_filter >= 0 and input_side != (input_side_filter == 1):
+				continue
 			for port_name: StringName in site.get_planned_port_names(input_side):
 				var proposed: Dictionary = _inspect_port(
 					site, preview_belt, port_registry, input_side,
