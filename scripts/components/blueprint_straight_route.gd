@@ -46,3 +46,41 @@ static func get_tiles(
 		placement.origin = start.origin + forward * float(index)
 		result.append(placement)
 	return result
+
+
+# Player route gestures infer direction from distinct grid endpoints.
+# The legacy get_tiles() stays forward-only for explicit-direction callers.
+static func get_tiles_between(
+	start: Vector3,
+	finish: Vector3,
+	limit: int = MAX_SEGMENTS
+) -> Array[Transform3D]:
+	var empty: Array[Transform3D] = []
+	if not start.is_finite() or not finish.is_finite():
+		return empty
+	if not FactoryGrid.is_on_conveyor_grid(start):
+		return empty
+	if not FactoryGrid.is_on_conveyor_grid(finish):
+		return empty
+	if absf(start.y - finish.y) > 0.02:
+		return empty
+
+	var displacement: Vector3 = finish - start
+	var dx: int = roundi(displacement.x)
+	var dz: int = roundi(displacement.z)
+	if absf(displacement.x - float(dx)) > 0.02:
+		return empty
+	if absf(displacement.z - float(dz)) > 0.02:
+		return empty
+	# Reject same-tile clicks and diagonals; neither is a straight route.
+	if (dx == 0 and dz == 0) or (dx != 0 and dz != 0):
+		return empty
+
+	var direction := Vector3(
+		float(signi(dx)), 0.0, float(signi(dz))
+	)
+	var yaw: float = atan2(-direction.x, -direction.z)
+	var oriented_start := Transform3D(
+		Basis(Vector3.UP, yaw), start
+	)
+	return get_tiles(oriented_start, finish, limit)
