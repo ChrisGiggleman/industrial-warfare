@@ -55,6 +55,7 @@ const SELECTION_COLLISION_MASK: int = 2
 # Debug availability is a test override, not generated electrical power,
 # delivered materials or actual construction drones.
 @export var enable_blueprint_planning: bool = false
+@export var compact_blueprint_visuals: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
@@ -3601,6 +3602,7 @@ func _create_blueprint_site(
 	if not is_instance_valid(scene_root):
 		return null
 	var site := ConstructionSite.new()
+	site.compact_blueprint_visuals = compact_blueprint_visuals
 	if not site.setup_with_definition_job(definition):
 		site.free()
 		return null
@@ -3643,6 +3645,7 @@ func _create_straight_conveyor_blueprint(
 	if not is_instance_valid(scene_root):
 		return null
 	var site := ConstructionSite.new()
+	site.compact_blueprint_visuals = compact_blueprint_visuals
 	if not site.setup_with_definition_job(definition):
 		site.free()
 		return null
