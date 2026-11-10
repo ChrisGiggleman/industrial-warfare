@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-09 — Blueprint E Authorization Independent of Preview Rotation
+
+**Manual Godot evidence:** Developer provided four screenshots and confirmed an already-placed planned corner successfully authorizes and builds with **E** no matter which direction the currently selected conveyor placement preview faces.
+
+- The earlier reported extra-rotation restriction was not reproduced for E authorization; no change to blueprint cursor targeting is warranted.
+- The receiving belt still needs to face the correct direction **when placing the route** to form a valid directed connection. Optional automatic orientation of the next placement preview can be considered separately after broader logistics regressions.
+- Automated E2c2 **17/17** and all six prior manual checks remain accepted. This additional check closes the outstanding direction-vs-authorization question.
+- **Next gate remains pending:** post-E2c2 E2b (16), E2c1 (15), planned Storage Build Mode (6), and conveyor corner cargo (8), totaling **45 checks**, before extending blueprint routes to unfinished Storage ports.
+
+---
+
 ## 2026-11-09 — Manual Connected Conveyor Corner Acceptance
 
 **Manual Godot evidence:** Developer confirmed all six player-control steps in the Factory Testing Sandbox passed and supplied three game screenshots showing translucent connected corner blueprints and completed working 90-degree conveyor layouts.
