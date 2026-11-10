@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — E1 Manual Acceptance and E2a Planned Corner Discovery Staged
+
+**Manual acceptance:** The developer confirmed all seven E1 Factory Testing Sandbox steps completed. Screenshots show a set of transparent `PLANNED 0%` directional conveyor sites and the equivalent constructed real belts. Mouse placement, visible direction, E authorization and two-second build completion, X cancellation and released-space reuse, and normal P-off Build Mode are reported working.
+
+**Observed limitation:** Perpendicular blueprint straights currently remain separate pieces and do not create a real 90-degree planned corner. This is **expected E1 scope**, because P-mode intentionally avoids the live `ConveyorCornerConversion` and endpoint-connection paths. The goal is to restore automatic turning for blueprints after they can reserve a graph edge safely.
+
+**E2a source checkpoint (not yet Godot validated):**
+
+- Added `scripts/components/planned_conveyor_route_geometry.gd` to inspect two unfinished straight-conveyor sites and return a direct, right-turn, or left-turn candidate. It uses the exact output transform from the corresponding existing real corner PackedScene and the established physical endpoint gap/direction thresholds, without creating or modifying an active conveyor.
+- Eligibility excludes cancelled and completed jobs, unrelated definitions, invalid orientation and misplaced receivers. Queued and paused sites still carry valid geometry.
+- Added `res://tests/planned_conveyor_route_geometry_e2a_test.tscn` with **12 scripted checks**, covering direct adjacency, unmodified blueprint state, right/left templates, rotated layouts, incorrect facing/distance, invalid/self targets, pause, cancellation and completion. **Run in Godot F6 before continuing.**
+- This is intentionally discovery-only. It does **not** change the on-screen corner shape, store an exclusive route reservation, activate a link, or modify cargo. E2b will own pending route claims and release them during cancellation; E2c will commit the correct corner shape and connect only fully built endpoints after revalidation.
+- Existing Main gameplay, functional conveyor geometry/cargo, zombie systems and save architecture remain unchanged.
+
+---
+
 ## 2026-11-09 — Straight Conveyor Blueprint E1 Automated Regression Passed (14/14)
 
 **Evidence:** Developer-provided Godot 4.6.2 Output screenshot of `res://tests/conveyor_blueprint_e1_test.tscn`, showing all PASS A–N and `ALL 14 STRAIGHT CONVEYOR BLUEPRINT E1 TESTS PASSED`.
