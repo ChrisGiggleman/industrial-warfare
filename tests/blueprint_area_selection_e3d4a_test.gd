@@ -54,10 +54,12 @@ func _ready() -> void:
 	assert(bool(controller.get("_blueprint_area_selection_mode")))
 	var ghost: Node3D = controller.get("placement_ghost") as Node3D
 	assert(ghost != null and not ghost.visible)
-	var overlay: BlueprintAreaSelectionOverlay = world.get_node(
+	var overlay: BlueprintAreaSelectionOverlay = controller.get_node_or_null(
 		"BlueprintAreaSelectionOverlay"
 	) as BlueprintAreaSelectionOverlay
-	assert(overlay != null and not overlay.is_dragging())
+	assert(overlay != null)
+	assert(overlay.is_inside_tree())
+	assert(not overlay.is_dragging())
 	print("PASS C: Q hides the placement ghost and enables a non-colliding rectangle")
 
 	var a: Vector2 = camera.unproject_position(
