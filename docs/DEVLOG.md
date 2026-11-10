@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-09 — E2b Exclusive Route Reservations Accepted (16/16)
+
+**Godot 4.6.2 evidence:** The developer's latest Output screenshot shows `ALL 16 PLANNED CONVEYOR RESERVATION E2B TESTS PASSED`, all PASS A–P, and normal debugger shutdown.
+
+- Exclusive directed input/output claims remain safe through three-belt completion, including the shared middle segment receiving both reservation callbacks.
+- Plans survive arbitrary job completion order and construction-site retirement without generating premature physical links.
+- Right/left corner candidates, stale physical endpoint rejection, cancellation, completed-belt removal, orphaned site cleanup and claim release all passed.
+- Earlier failures due to incomplete shared-site callbacks and unsafe casts of freed construction sites are now covered by successful tests.
+- No changes to operational conveyor, live Build Mode or Main scene were required to accept this result.
+
+**Next gated implementation:** E2c isolated activation should reuse `ConveyorExistingConnection.try_connect_candidate()` only after `get_ready_candidate()` verifies that both endpoints are completed, oriented, vacant and unchanged. Save UI and planned L-shaped visuals for a later independently tested checkpoint.
+
+---
+
 ## 2026-11-09 — E2b Freed-Site Reservation Cleanup Fixed (Retest Pending)
 
 **Godot 4.6.2 evidence:** After the first callback fix, the developer's next F6 screenshot stopped in `PlannedConveyorRouteReservations.release()` at the old line 120, invoked from test I (the explicit A→B release). The Debugger message was `Trying to cast a freed object.` The run had reached test I, so the earlier two-route completion failure no longer appears to be the current blocker.
