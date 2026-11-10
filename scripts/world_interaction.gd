@@ -3346,12 +3346,12 @@ func _find_perpendicular_corner_candidate(
 
 
 # =============================================================================
-# BLUEPRINT PLANNING — SANDBOX BUILDINGS AND ISOLATED STRAIGHT BELTS
+# BLUEPRINT PLANNING — SANDBOX BUILDINGS AND CONNECTED STRAIGHT BELT PLANS
 # =============================================================================
 # A plan is a non-operational ConstructionSite whose ConstructionJob remains
 # PLANNED until explicitly authorized. All controls are disabled in Main.
-# E1 straight conveyors are isolated; directional graph links and corners
-# still need their own reservation and transport-conservation tests.
+# Connected blueprints are opt-in; the validated E2b/E2c1 services own
+# pending route claims and physical links only after construction.
 
 func _toggle_blueprint_mode() -> bool:
 	if not enable_blueprint_planning or not placement_mode_active:
@@ -3369,7 +3369,7 @@ func _toggle_blueprint_mode() -> bool:
 		build_hud.call("set_blueprint_mode", blueprint_mode_active)
 	print(
 		"BLUEPRINT MODE: ",
-		"PLAN (buildings + isolated straight belts)"
+		"PLAN (buildings + connected conveyors)"
 		if blueprint_mode_active else "OFF"
 	)
 	return true
@@ -3521,11 +3521,11 @@ func _create_blueprint_site(
 
 
 # =============================================================================
-# STRAIGHT CONVEYOR BLUEPRINT COMMIT — SANDBOX PHASE E1
+# STRAIGHT CONVEYOR BLUEPRINT COMMIT — OPTIONAL E2C2 ROUTE DISCOVERY
 # =============================================================================
 # A site is a plan, never an operational belt. Its two endpoints are markers
 # until the authorized two-second construction job creates a ConveyorSegment.
-# No live or pending neighbor connections are made in this phase.
+# The sandbox-only route coordinator can reserve adjacent blueprint sites.
 
 func _create_straight_conveyor_blueprint(
 	definition: BuildingDefinition,
@@ -3562,7 +3562,7 @@ func _commit_blueprint_from_preview() -> void:
 		return
 	if _is_conveyor_selected():
 		# Refresh the actual cursor position before committing any belt.
-		# No snap-to-building or snap-to-belt links are permitted in E1.
+		# The preview uses grid snapping, not live physical port snapping.
 		_update_placement_preview()
 		if (
 			not placement_is_valid
