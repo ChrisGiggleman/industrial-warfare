@@ -88,6 +88,8 @@ var placement_mode_active: bool = false
 var blueprint_mode_active: bool = false
 var _route_anchor: Dictionary = {}
 var _blueprint_l_route_mode: bool = false
+var _blueprint_waypoint_route_mode: bool = false
+var _waypoint_route_points: Array[Dictionary] = []
 var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
 var selected_building_index: int = 0
 
@@ -373,6 +375,21 @@ func _unhandled_input(event: InputEvent) -> void:
 				):
 					_toggle_blueprint_l_route_mode()
 					return
+				if (
+					key == KEY_T
+					and enable_blueprint_route_tool
+					and blueprint_mode_active
+					and _is_conveyor_selected()
+				):
+					_toggle_blueprint_waypoint_route_mode()
+					return
+				if _blueprint_waypoint_route_mode:
+					if key == KEY_ENTER or key == KEY_KP_ENTER:
+						_finalize_blueprint_waypoint_route()
+						return
+					if key == KEY_ESCAPE:
+						_cancel_blueprint_waypoint_route()
+						return
 
 		# =============================================================================
 		# PLAYER QUICK-BUILD KEYS — CONFIGURABLE 1–9
@@ -811,6 +828,8 @@ func _connect_existing_conveyor_junction() -> void:
 func _toggle_placement_mode() -> void:
 	_route_anchor.clear()
 	_blueprint_l_route_mode = false
+	_blueprint_waypoint_route_mode = false
+	_waypoint_route_points.clear()
 	placement_mode_active = not placement_mode_active
 
 	if placement_mode_active:
@@ -1032,6 +1051,8 @@ func _select_building(index: int) -> void:
 	selected_building_index = index
 	_route_anchor.clear()
 	_blueprint_l_route_mode = false
+	_blueprint_waypoint_route_mode = false
+	_waypoint_route_points.clear()
 	placement_rotation_degrees = 0.0
 
 	if placement_mode_active and not demolition_mode_active:
@@ -1068,6 +1089,8 @@ func _toggle_demolition_mode() -> void:
 		blueprint_mode_active = false
 		_route_anchor.clear()
 		_blueprint_l_route_mode = false
+		_blueprint_waypoint_route_mode = false
+		_waypoint_route_points.clear()
 		_clear_demolition_hover()
 		_destroy_placement_ghost()
 		placement_is_valid = false
@@ -1625,18 +1648,24 @@ func _update_straight_conveyor_blueprint_preview() -> void:
 			current_placement_position = transform.origin
 
 		# Route gesture preview also shows completed-building ports.
-		# The turn click itself is free-grid; only start/end are port targets.
+		# L-route turn clicks use the grid; waypoint clicks can be endpoints.
 		if (
 			enable_blueprint_route_tool
 			and Input.is_physical_key_pressed(KEY_SHIFT)
 			and (
-				_route_anchor.is_empty()
+				_blueprint_waypoint_route_mode
+				or _route_anchor.is_empty()
 				or not _blueprint_l_route_mode
 				or _route_anchor.has("turn")
 			)
 		):
+			var is_route_exit: bool = (
+				not _waypoint_route_points.is_empty()
+				if _blueprint_waypoint_route_mode
+				else not _route_anchor.is_empty()
+			)
 			var route_port: Dictionary = _blueprint_route_port_target(
-				ground, not _route_anchor.is_empty()
+				ground, is_route_exit
 			)
 			if not route_port.is_empty():
 				var port_transform: Transform3D = route_port["transform"]
@@ -3460,6 +3489,8 @@ func _find_perpendicular_corner_candidate(
 func _toggle_blueprint_mode() -> bool:
 	_route_anchor.clear()
 	_blueprint_l_route_mode = false
+	_blueprint_waypoint_route_mode = false
+	_waypoint_route_points.clear()
 	if not enable_blueprint_planning or not placement_mode_active:
 		return false
 	if demolition_mode_active:
@@ -3753,6 +3784,8 @@ func _handle_blueprint_route_click() -> int:
 		return 0
 	var position: Vector3 = clicked["position"]
 	var ground: Vector3 = clicked["ground"]
+	if _blueprint_waypoint_route_mode:
+		return _handle_blueprint_waypoint_position(position, ground)
 	if _blueprint_l_route_mode:
 		return _handle_blueprint_l_route_position(position, ground)
 	var endpoint_target: Dictionary = _blueprint_route_port_target(
@@ -3802,6 +3835,138 @@ func _handle_blueprint_route_click() -> int:
 
 
 # =============================================================================
+# E3D3C — SANDBOX MULTI-WAYPOINT CONVEYOR PLANNING
+# =============================================================================
+# T toggles the route planner; Shift+click records start and waypoints.
+# Enter validates and commits the entire route at once; Escape discards
+# pending points without affecting existing blueprint sites.
+# The existing route coordinator creates all corner reservations.
+
+func _toggle_blueprint_waypoint_route_mode() -> bool:
+	if not (
+		enable_blueprint_route_tool
+		and enable_blueprint_planning
+		and placement_mode_active
+		and blueprint_mode_active
+		and not demolition_mode_active
+		and _is_conveyor_selected()
+	):
+		return false
+	_blueprint_waypoint_route_mode = not _blueprint_waypoint_route_mode
+	_route_anchor.clear()
+	_blueprint_l_route_mode = false
+	_waypoint_route_points.clear()
+	if _blueprint_waypoint_route_mode:
+		print("BLUEPRINT WAYPOINT ROUTE: ON | Shift-click start and bends; Enter to build plan; Esc to clear.")
+	else:
+		print("BLUEPRINT WAYPOINT ROUTE: OFF")
+	return _blueprint_waypoint_route_mode
+
+
+func _handle_blueprint_waypoint_position(
+	position: Vector3, raw_ground: Vector3 = Vector3.INF
+) -> int:
+	if not (
+		_blueprint_waypoint_route_mode
+		and enable_blueprint_route_tool
+		and enable_blueprint_planning
+		and placement_mode_active
+		and blueprint_mode_active
+		and not demolition_mode_active
+		and _is_conveyor_selected()
+	):
+		return 0
+	if _waypoint_route_points.size() >= BlueprintWaypointRoute.MAX_WAYPOINTS:
+		print("BLUEPRINT WAYPOINT ROUTE: 12 waypoints maximum.")
+		return 0
+	var definition: BuildingDefinition = _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return 0
+
+	var first_point: bool = _waypoint_route_points.is_empty()
+	var cursor: Vector3 = raw_ground if raw_ground.is_finite() else position
+	var port_target: Dictionary = _blueprint_route_port_target(
+		cursor, not first_point
+	)
+	if not port_target.is_empty():
+		var port_transform: Transform3D = port_target["transform"]
+		position = port_transform.origin
+
+	if first_point:
+		var start_transform := Transform3D(Basis.IDENTITY, position)
+		if not port_target.is_empty():
+			start_transform = port_target["transform"]
+		if not ConveyorBlueprintPlacement.is_clear(
+			get_tree(), get_viewport().world_3d, definition,
+			start_transform, PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("BLUEPRINT WAYPOINT ROUTE: Starting tile blocked.")
+			return 0
+	else:
+		var previous: Vector3 = _waypoint_route_points.back()["position"]
+		if previous.is_equal_approx(position):
+			print("BLUEPRINT WAYPOINT ROUTE: Choose another grid tile.")
+			return 0
+
+	var proposed: Array[Dictionary] = _waypoint_route_points.duplicate()
+	proposed.append({"position": position, "port": port_target})
+	if proposed.size() >= 2:
+		var preview_tiles: Array[Transform3D] = BlueprintWaypointRoute.get_tiles(
+			_blueprint_waypoint_positions(proposed)
+		)
+		if preview_tiles.is_empty():
+			print("BLUEPRINT WAYPOINT ROUTE: Invalid leg, overlap, reversal, or 32-tile limit.")
+			return 0
+	_waypoint_route_points = proposed
+	print("BLUEPRINT WAYPOINT ROUTE: Point ", proposed.size(),
+		" accepted | Enter to finalize or Shift-click another waypoint.")
+	return proposed.size()
+
+
+func _blueprint_waypoint_positions(
+	points: Array[Dictionary]
+) -> Array[Vector3]:
+	var positions: Array[Vector3] = []
+	for point: Dictionary in points:
+		var position: Vector3 = point["position"]
+		positions.append(position)
+	return positions
+
+
+func _finalize_blueprint_waypoint_route() -> int:
+	if not _blueprint_waypoint_route_mode or _waypoint_route_points.size() < 2:
+		print("BLUEPRINT WAYPOINT ROUTE: At least two points required.")
+		return 0
+	var definition: BuildingDefinition = _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return 0
+	var positions: Array[Vector3] = _blueprint_waypoint_positions(
+		_waypoint_route_points
+	)
+	var tiles: Array[Transform3D] = BlueprintWaypointRoute.get_tiles(positions)
+	if tiles.is_empty():
+		return 0
+	var start_target: Dictionary = _waypoint_route_points[0].get("port", {})
+	var last_target: Dictionary = _waypoint_route_points.back().get("port", {})
+	var placed: int = _commit_blueprint_route_tiles(
+		tiles, definition, start_target, last_target
+	)
+	if placed > 0:
+		print("BLUEPRINT WAYPOINT ROUTE PLANNED: ", placed,
+			" tiles, ", BlueprintWaypointRoute.turn_count(positions),
+			" corners | Ctrl+E to authorize.")
+		_waypoint_route_points.clear()
+	return placed
+
+
+func _cancel_blueprint_waypoint_route() -> void:
+	if not _blueprint_waypoint_route_mode:
+		return
+	_waypoint_route_points.clear()
+	print("BLUEPRINT WAYPOINT ROUTE: Pending points cancelled.")
+
+
+# =============================================================================
 # E3D3B — THREE-CLICK L-SHAPED ROUTE PLACEMENT
 # =============================================================================
 # L toggles an isolated L-route tool. Shift-click start, turn, and finish.
@@ -3820,6 +3985,8 @@ func _toggle_blueprint_l_route_mode() -> bool:
 		return false
 	_blueprint_l_route_mode = not _blueprint_l_route_mode
 	_route_anchor.clear()
+	_blueprint_waypoint_route_mode = false
+	_waypoint_route_points.clear()
 	if _blueprint_l_route_mode:
 		print("BLUEPRINT L-ROUTE: ON | Shift-click start, corner, endpoint.")
 	else:
