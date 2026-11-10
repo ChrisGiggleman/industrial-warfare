@@ -16,6 +16,7 @@ var job: ConstructionJob = null
 var footprint: Vector2i = Vector2i.ONE
 var _collision: CollisionShape3D
 var compact_blueprint_visuals: bool = false
+var _area_selection_highlight: Node3D = null
 var _progress_fill: MeshInstance3D = null
 var _placeholder_material: StandardMaterial3D = null
 var _progress_label: Label3D
@@ -208,6 +209,54 @@ func _build_compact_progress_bar() -> void:
 	_progress_fill.position = Vector3(-0.45, 0.81, 0)
 	_progress_fill.material_override = StandardMaterial3D.new()
 	add_child(_progress_fill)
+
+
+# =============================================================================
+# DRAG-SELECTION HIGHLIGHT — VISUAL ONLY
+# =============================================================================
+# Called only by the opt-in blueprint area-selection tool. Green border is
+# separate from the existing construction progress and does not collide.
+
+func set_blueprint_area_selected(selected: bool) -> void:
+	var can_select: bool = (
+		selected and job != null
+		and job.state == ConstructionJob.State.PLANNED
+		and not is_queued_for_deletion()
+	)
+	if can_select and not is_instance_valid(_area_selection_highlight):
+		_build_area_selection_highlight()
+	if is_instance_valid(_area_selection_highlight):
+		_area_selection_highlight.visible = can_select
+	if can_select:
+		add_to_group("blueprint_area_selected")
+	else:
+		remove_from_group("blueprint_area_selected")
+
+
+func _build_area_selection_highlight() -> void:
+	_area_selection_highlight = Node3D.new()
+	_area_selection_highlight.name = "AreaSelectionHighlight"
+	add_child(_area_selection_highlight)
+	var color := StandardMaterial3D.new()
+	color.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	color.albedo_color = Color(0.14, 1.0, 0.44, 0.95)
+	var width: float = float(footprint.x) + 0.05
+	var depth: float = float(footprint.y) + 0.05
+	var thickness: float = 0.065
+	for side: int in range(4):
+		var edge := MeshInstance3D.new()
+		edge.name = "SelectionBorder%d" % side
+		var mesh := BoxMesh.new()
+		if side < 2:
+			mesh.size = Vector3(width, 0.035, thickness)
+			edge.position.z = (depth * 0.5 if side == 0 else -depth * 0.5)
+		else:
+			mesh.size = Vector3(thickness, 0.035, depth)
+			edge.position.x = (width * 0.5 if side == 2 else -width * 0.5)
+		edge.position.y = 0.69
+		edge.mesh = mesh
+		edge.material_override = color
+		_area_selection_highlight.add_child(edge)
 
 
 func _cancel_job_site() -> void:
