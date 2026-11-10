@@ -1511,10 +1511,42 @@ func _get_conveyor_preview_scene_for_mouse(
 #   - turns red when placement is blocked
 
 # =============================================================================
-# STRAIGHT CONVEYOR BLUEPRINT PREVIEW — SANDBOX PHASE E1
+# STRAIGHT CONVEYOR BLUEPRINT PREVIEW — SANDBOX PORT SNAPPING
 # =============================================================================
-# No automatic snaps or physical connections. A green ghost only means the
-# chosen grid tile is free, not that a logistics link is already reserved.
+# Storage snapping is opt-in. It preserves R's requested belt direction,
+# uses only unclaimed future port markers, and never creates a live link.
+
+func _get_storage_blueprint_snap_preview(mouse_world: Vector3) -> Dictionary:
+	if not enable_blueprint_planning or not enable_connected_storage_blueprints:
+		return {}
+	if not blueprint_mode_active:
+		return {}
+	if not placement_ghost is ConveyorSegment:
+		return {}
+	if not is_instance_valid(_planned_route_coordinator):
+		return {}
+	var port_registry := _planned_route_coordinator.port_registry
+	if not is_instance_valid(port_registry):
+		return {}
+	var proposed := BlueprintStoragePortSnapPreview.find_nearest(
+		placement_ghost as ConveyorSegment,
+		mouse_world,
+		port_registry
+	)
+	if proposed.is_empty():
+		return {}
+	var definition := _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return {}
+	var target: Transform3D = proposed["transform"]
+	# Preview and final placement must use the same footprint validator.
+	if not ConveyorBlueprintPlacement.is_clear(
+		get_tree(), get_viewport().world_3d, definition,
+		target, PLACEMENT_BLOCKER_COLLISION_MASK
+	):
+		return {}
+	return proposed
+
 
 func _update_straight_conveyor_blueprint_preview() -> void:
 	placement_is_valid = false
@@ -1545,6 +1577,15 @@ func _update_straight_conveyor_blueprint_preview() -> void:
 		)
 		placement_ghost.global_position = current_placement_position
 		placement_ghost.rotation_degrees.y = placement_rotation_degrees
+
+		# Resolve the snap from the UNSNAPPED mouse point. The previously
+		# selected orientation is preserved, including after pressing R.
+		var snapped := _get_storage_blueprint_snap_preview(ground)
+		if not snapped.is_empty():
+			var transform: Transform3D = snapped["transform"]
+			placement_ghost.global_transform = transform
+			current_placement_position = transform.origin
+
 		placement_is_valid = ConveyorBlueprintPlacement.is_clear(
 			get_tree(),
 			get_viewport().world_3d,
@@ -1566,8 +1607,8 @@ func _update_straight_conveyor_blueprint_preview() -> void:
 
 
 func _update_placement_preview() -> void:
-	# E1 conveyor blueprints use a non-snapping straight preview only.
-	# This keeps the proven live conveyor corner/bridge algorithms untouched.
+	# Sandbox blueprints use straight ghosts with optional planned Storage
+	# port snapping. Live conveyor corner/bridge previews are unchanged.
 	if (
 		enable_blueprint_planning
 		and blueprint_mode_active
@@ -3574,7 +3615,8 @@ func _commit_blueprint_from_preview() -> void:
 		return
 	if _is_conveyor_selected():
 		# Refresh the actual cursor position before committing any belt.
-		# The preview uses grid snapping, not live physical port snapping.
+		# Preview may be grid-aligned or snapped to an unfinished Storage
+		# port. Placement rechecks the exact displayed belt transform.
 		_update_placement_preview()
 		if (
 			not placement_is_valid
