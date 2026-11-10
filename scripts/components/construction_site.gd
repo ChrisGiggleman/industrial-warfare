@@ -171,6 +171,23 @@ func _build_placeholder() -> void:
 	mesh.material_override = material
 	add_child(mesh)
 
+	# Standalone conveyor plans must show their eventual cargo direction.
+	# The local -Z axis matches the completed belt's OutputEndpoint; a
+	# horizontal arrow makes rotation legible before the transport exists.
+	if (
+		is_instance_valid(target_definition)
+		and target_definition.building_id == &"conveyor_belt"
+	):
+		var direction := Label3D.new()
+		direction.name = "PlannedDirectionArrow"
+		direction.text = "↑"
+		direction.font_size = 48
+		direction.pixel_size = 0.005
+		direction.modulate = Color(1.0, 0.85, 0.2)
+		direction.position = Vector3(0.0, 0.63, 0.0)
+		direction.rotation.x = -PI * 0.5
+		add_child(direction)
+
 	var label := Label3D.new()
 	label.name = "ConstructionLabel"
 	label.text = "CONSTRUCTING 0%"
