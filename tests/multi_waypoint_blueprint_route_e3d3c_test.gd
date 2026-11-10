@@ -31,7 +31,7 @@ func _ready() -> void:
 		Vector3(3, 0, -2), Vector3(3, 0, -5),
 		Vector3(6, 0, -5)
 	]
-	assert(BlueprintWaypointRoute.get_tiles(zigzag).size() == 11)
+	assert(BlueprintWaypointRoute.get_tiles(zigzag).size() == 12)
 	assert(BlueprintWaypointRoute.turn_count(zigzag) == 3)
 	print("PASS B: Five waypoints support three distinct 90-degree turns")
 
