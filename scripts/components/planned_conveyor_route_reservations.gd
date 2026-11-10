@@ -17,6 +17,18 @@ signal reservation_released(reservation_id: int)
 var _next_id: int = 1
 var _reservations: Dictionary = {}
 var _endpoint_claims: Dictionary = {}
+var _shared_claim_broker: PlannedEndpointClaimBroker = null
+
+
+func set_claim_broker(broker: PlannedEndpointClaimBroker) -> bool:
+	# Reject rebinding with outstanding claims: existing reservations
+	# cannot safely migrate to another endpoint authority in flight.
+	if not is_instance_valid(broker) or is_instance_valid(_shared_claim_broker):
+		return false
+	if not _reservations.is_empty():
+		return false
+	_shared_claim_broker = broker
+	return true
 
 
 func reserve_pair(source: ConstructionSite, receiver: ConstructionSite) -> int:
@@ -30,8 +42,18 @@ func reserve_pair(source: ConstructionSite, receiver: ConstructionSite) -> int:
 		return 0
 
 	var reservation_id: int = _next_id
+	var broker_owner := ""
+	if is_instance_valid(_shared_claim_broker):
+		broker_owner = "belt:%d:%d" % [get_instance_id(), reservation_id]
+		if not _shared_claim_broker.claim_pair(
+			source, PlannedEndpointClaimBroker.BELT_OUTPUT,
+			receiver, PlannedEndpointClaimBroker.BELT_INPUT,
+			broker_owner
+		):
+			return 0
 	_next_id += 1
 	_reservations[reservation_id] = {
+		"broker_owner": broker_owner,
 		"source": source,
 		"receiver": receiver,
 		"source_key": outgoing,
@@ -154,6 +176,10 @@ func release(reservation_id: int) -> bool:
 	# Use immutable keys recorded when reserved; the sites can be freed.
 	_endpoint_claims.erase(record["source_key"])
 	_endpoint_claims.erase(record["receiver_key"])
+	if is_instance_valid(_shared_claim_broker):
+		var broker_owner: String = record.get("broker_owner", "")
+		if not broker_owner.is_empty():
+			_shared_claim_broker.release_owner(broker_owner)
 	_reservations.erase(reservation_id)
 	reservation_released.emit(reservation_id)
 	return true
