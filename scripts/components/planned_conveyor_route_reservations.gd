@@ -107,6 +107,11 @@ func release(reservation_id: int) -> bool:
 
 	_disconnect_site(source, reservation_id, true)
 	_disconnect_site(receiver, reservation_id, false)
+	var exit_handler := _on_completed_belt_exiting.bind(reservation_id)
+	for side: String in ["source_belt", "receiver_belt"]:
+		var belt: ConveyorSegment = record[side] as ConveyorSegment
+		if is_instance_valid(belt) and belt.tree_exiting.is_connected(exit_handler):
+			belt.tree_exiting.disconnect(exit_handler)
 
 	# Use immutable keys recorded when reserved: completed sites may have
 	# been freed while their live belts and pending route still exist.
