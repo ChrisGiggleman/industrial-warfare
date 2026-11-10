@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-11-09 — E2a Route Geometry Accepted (12/12), E2b Reservations Staged
+
+**Godot evidence:** Developer-supplied Output screenshot confirms all twelve `planned_conveyor_route_geometry_e2a_test.tscn` checks passed in Godot 4.6.2: straight links, right/left turns, rotations, invalid gaps/facing, cancellation, paused/queued eligibility, and finished-site rejection.
+
+**E2b isolated implementation, not yet Godot validated:**
+
+- New `scripts/components/planned_conveyor_route_reservations.gd` tracks exclusive output-to-input blueprint endpoint claims. Each directed reservation records source/receiver site references, anticipated `mode`, `turn`, `junction`, and immutable endpoint keys.
+- Every reserved site can be independently authorized and built. The registry listens for `building_completed`, retaining finished real conveyor references even after the site leaves the tree; only after both real belts exist and geometry is revalidated can it emit `reservation_ready`. The signal is not a command to connect until a later activation transaction explicitly validates/commits the route.
+- Cancelling either unfinished site, unexpectedly removing one, destroying a completed belt, or explicitly releasing a route clears both endpoint claims. Shared middle blueprint sites may own one input and one output without conflict.
+- `get_ready_candidate()` uses the original real-conveyor endpoint finder on the completed instances and rejects moved, occupied, incompatible or stale endpoints. This avoids physical cargo transfers or false connector links while waiting.
+- New `res://tests/planned_conveyor_reservations_e2b_test.tscn` has **16 F6 checks**, including a three-belt route, duplicate blocking, completion in either order, right and left turns, release after site retirement, stale geometry rejection, cancellation and demolition. **Developer execution pending.**
+- Existing `WorldInteraction`, `ConstructionSite`, operational conveyor components, Main scene, production and save/load architecture were **not modified** for E2b. Player-facing right-angle blueprint visuals and physical connection activation remain E2c.
+
+**Next:** Run the E2b F6 scene. Do not enable automatic blueprint connections until E2b passes and the E2c activation/cargo tests are designed.
+
+---
+
 ## 2026-11-09 — E1 Manual Acceptance and E2a Planned Corner Discovery Staged
 
 **Manual acceptance:** The developer confirmed all seven E1 Factory Testing Sandbox steps completed. Screenshots show a set of transparent `PLANNED 0%` directional conveyor sites and the equivalent constructed real belts. Mouse placement, visible direction, E authorization and two-second build completion, X cancellation and released-space reuse, and normal P-off Build Mode are reported working.
