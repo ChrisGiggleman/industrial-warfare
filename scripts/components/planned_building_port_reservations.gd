@@ -34,21 +34,26 @@ func set_claim_broker(broker: PlannedEndpointClaimBroker) -> bool:
 func reserve_pair(
 	building_site: ConstructionSite,
 	belt_site: ConstructionSite,
-	input_side: bool
+	input_side: bool,
+	port_name: StringName = &""
 ) -> int:
+	if port_name == &"":
+		port_name = &"InputPort" if input_side else &"OutputPort"
 	var candidate := PlannedBuildingPortGeometry.inspect_pair(
-		building_site, belt_site, input_side
+		building_site, belt_site, input_side, port_name
 	)
 	if candidate.is_empty():
 		return 0
 
 	# The older live-belt-to-planned-Storage reservation owns this port
 	# independently. Do not steal its claim.
-	if is_instance_valid(building_site.get_reserved_conveyor(input_side)):
-		return 0
+	if port_name in [&"InputPort", &"OutputPort"]:
+		if is_instance_valid(building_site.get_reserved_conveyor(input_side)):
+			return 0
 
 	var building_key := _site_key(
-		building_site, "building_input" if input_side else "building_output"
+		building_site, "building_input" if input_side else "building_output",
+		port_name
 	)
 	var belt_key := _site_key(
 		belt_site, "belt_output" if input_side else "belt_input"
@@ -64,6 +69,8 @@ func reserve_pair(
 			PlannedEndpointClaimBroker.BUILDING_INPUT if input_side
 			else PlannedEndpointClaimBroker.BUILDING_OUTPUT
 		)
+		if port_name not in [&"InputPort", &"OutputPort"]:
+			building_side += ":" + str(port_name)
 		var belt_side := (
 			PlannedEndpointClaimBroker.BELT_OUTPUT if input_side
 			else PlannedEndpointClaimBroker.BELT_INPUT
@@ -81,6 +88,7 @@ func reserve_pair(
 		"building_key": building_key,
 		"belt_key": belt_key,
 		"input_side": input_side,
+		"port_name": port_name,
 		"junction": candidate["junction"],
 		"building": null,
 		"belt": null,
@@ -106,11 +114,15 @@ func claim_count() -> int:
 	return _claims.size()
 
 
-func has_building_claim(site: ConstructionSite, input_side: bool) -> bool:
+func has_building_claim(
+	site: ConstructionSite, input_side: bool, port_name: StringName = &""
+) -> bool:
 	if not is_instance_valid(site):
 		return false
+	if port_name == &"":
+		port_name = &"InputPort" if input_side else &"OutputPort"
 	return _claims.has(_site_key(
-		site, "building_input" if input_side else "building_output"
+		site, "building_input" if input_side else "building_output", port_name
 	))
 
 
@@ -150,9 +162,10 @@ func get_ready_candidate(id: int) -> Dictionary:
 		return {}
 
 	var input_side: bool = record["input_side"]
-	var port := building.get_node_or_null(
-		"InputPort" if input_side else "OutputPort"
-	) as ItemPortComponent
+	var port_name: StringName = record.get(
+		"port_name", &"InputPort" if input_side else &"OutputPort"
+	)
+	var port := building.get_node_or_null(str(port_name)) as ItemPortComponent
 	var endpoint := belt.get_node_or_null(
 		"OutputEndpoint" if input_side else "InputEndpoint"
 	) as Marker3D
@@ -224,8 +237,13 @@ func release(id: int) -> bool:
 	return true
 
 
-func _site_key(site: ConstructionSite, side: String) -> String:
-	return "%d:%s" % [site.get_instance_id(), side]
+func _site_key(
+	site: ConstructionSite, side: String, port_name: StringName = &""
+) -> String:
+	# Legacy default ports retain the original keys; named ports are independent.
+	if port_name in [&"", &"InputPort", &"OutputPort"]:
+		return "%d:%s" % [site.get_instance_id(), side]
+	return "%d:%s:%s" % [site.get_instance_id(), side, str(port_name)]
 
 
 func _observe_site(site: ConstructionSite, id: int, is_building: bool) -> bool:
@@ -289,10 +307,12 @@ func _on_completed(built: Node3D, id: int, is_building: bool) -> void:
 	if not _records.has(id):
 		return
 	if is_building:
-		if not is_instance_valid(built.get_node_or_null("InputPort")):
-			release(id)
-			return
-		if not is_instance_valid(built.get_node_or_null("OutputPort")):
+		var record_for_port: Dictionary = _records[id]
+		var port_name: StringName = record_for_port.get(
+			"port_name",
+			&"InputPort" if record_for_port["input_side"] else &"OutputPort"
+		)
+		if not built.get_node_or_null(str(port_name)) is ItemPortComponent:
 			release(id)
 			return
 	elif not built is ConveyorSegment:
