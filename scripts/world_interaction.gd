@@ -56,6 +56,8 @@ const SELECTION_COLLISION_MASK: int = 2
 # delivered materials or actual construction drones.
 @export var enable_blueprint_planning: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
+# E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
+@export var enable_connected_conveyor_blueprints: bool = false
 
 # Legacy scene list retained temporarily while the placement system is
 # migrated to BuildingDefinition resources.
@@ -79,6 +81,7 @@ var selected_object: Node = null
 # Build Mode state.
 var placement_mode_active: bool = false
 var blueprint_mode_active: bool = false
+var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
 var selected_building_index: int = 0
 
 # Player quick-build keys are assigned by stable building_id, not the
@@ -247,6 +250,13 @@ func _ready() -> void:
 	build_hotbar = BuildHotbarConfiguration.new()
 	build_hotbar.configure(buildable_definitions)
 	build_hotbar.reset_to_default()
+
+	# The route service exists only in the explicit Factory Testing Sandbox.
+	# Existing physical conveyor placement remains on its original path.
+	if enable_blueprint_planning and enable_connected_conveyor_blueprints:
+		_planned_route_coordinator = BlueprintConveyorRouteCoordinator.new()
+		_planned_route_coordinator.name = "BlueprintRouteCoordinator"
+		add_child(_planned_route_coordinator)
 
 	if build_hud_panel != null:
 		build_hud_panel.visible = false
@@ -3539,6 +3549,8 @@ func _create_straight_conveyor_blueprint(
 		return null
 	scene_root.add_child(site)
 	site.global_transform = placement
+	if is_instance_valid(_planned_route_coordinator):
+		_planned_route_coordinator.register_new_site(site)
 	return site
 
 
