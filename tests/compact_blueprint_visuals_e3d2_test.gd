@@ -56,7 +56,7 @@ func _ready() -> void:
 	assert(belt.get_node_or_null("PlannedDirectionArrow") != null)
 	print("PASS E: Belt keeps direction arrow but hides overlapping label")
 
-	var defaults := (load("res://scripts/world_interaction.gd") as GDScript).new()
+	var defaults: Node = (load("res://scripts/world_interaction.gd") as GDScript).new() as Node
 	assert(not defaults.compact_blueprint_visuals)
 	defaults.free()
 	print("PASS F: Main default remains opt-out")
