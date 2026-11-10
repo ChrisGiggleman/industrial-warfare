@@ -92,13 +92,19 @@ func _eligible(site: ConstructionSite, side: String) -> bool:
 	var is_belt := site.target_definition.building_id == &"conveyor_belt"
 	if is_belt:
 		return side == BELT_INPUT or side == BELT_OUTPUT
-	return side == BUILDING_INPUT or side == BUILDING_OUTPUT
+	return (
+		side == BUILDING_INPUT or side == BUILDING_OUTPUT
+		or side.begins_with(BUILDING_INPUT + ":InputPort")
+		or side.begins_with(BUILDING_OUTPUT + ":OutputPort")
+	)
 
 
 func _valid_side(side: String) -> bool:
-	return side in [
-		BELT_INPUT, BELT_OUTPUT, BUILDING_INPUT, BUILDING_OUTPUT
-	]
+	return (
+		side in [BELT_INPUT, BELT_OUTPUT, BUILDING_INPUT, BUILDING_OUTPUT]
+		or side.begins_with(BUILDING_INPUT + ":InputPort")
+		or side.begins_with(BUILDING_OUTPUT + ":OutputPort")
+	)
 
 
 func _key(site: ConstructionSite, side: String) -> String:
