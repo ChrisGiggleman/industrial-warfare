@@ -57,6 +57,7 @@ const SELECTION_COLLISION_MASK: int = 2
 @export var enable_blueprint_planning: bool = false
 @export var compact_blueprint_visuals: bool = false
 @export var enable_blueprint_route_tool: bool = false
+@export var enable_blueprint_area_selection: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
@@ -90,6 +91,10 @@ var _route_anchor: Dictionary = {}
 var _blueprint_l_route_mode: bool = false
 var _blueprint_waypoint_route_mode: bool = false
 var _waypoint_route_points: Array[Dictionary] = []
+var _blueprint_area_selection_mode: bool = false
+var _blueprint_dragging: bool = false
+var _area_selected_sites: Array[ConstructionSite] = []
+var _blueprint_selection_overlay: BlueprintAreaSelectionOverlay = null
 var _waypoint_ghost_preview: BlueprintWaypointGhostPreview = null
 var _waypoint_preview_signature: String = ""
 var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
@@ -272,6 +277,11 @@ func _ready() -> void:
 		)
 		add_child(_planned_route_coordinator)
 
+	if enable_blueprint_planning and enable_blueprint_area_selection:
+		_blueprint_selection_overlay = BlueprintAreaSelectionOverlay.new()
+		_blueprint_selection_overlay.name = "BlueprintAreaSelectionOverlay"
+		get_parent().add_child(_blueprint_selection_overlay)
+
 	if build_hud_panel != null:
 		build_hud_panel.visible = false
 
@@ -293,6 +303,9 @@ func _ready() -> void:
 #   Updates the structure currently targeted for demolition.
 
 func _process(_delta: float) -> void:
+	if _blueprint_area_selection_mode:
+		_prune_blueprint_area_selection()
+		return
 	if not placement_mode_active:
 		return
 
@@ -362,9 +375,22 @@ func _unhandled_input(event: InputEvent) -> void:
 				if key == KEY_P:
 					_toggle_blueprint_mode()
 					return
+				if (
+					key == KEY_Q
+					and enable_blueprint_area_selection
+					and blueprint_mode_active
+				):
+					_toggle_blueprint_area_selection()
+					return
+				if _blueprint_area_selection_mode and key == KEY_ESCAPE:
+					_clear_blueprint_area_selection()
+					return
 				if key == KEY_E:
 					if event.ctrl_pressed:
 						_authorize_all_blueprint_sites()
+						_clear_blueprint_area_selection()
+					elif _blueprint_area_selection_mode:
+						_authorize_selected_blueprint_sites()
 					else:
 						_authorize_blueprint_site(_blueprint_site_under_mouse())
 					return
@@ -375,6 +401,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					key == KEY_L
 					and enable_blueprint_route_tool
 					and blueprint_mode_active
+					and not _blueprint_area_selection_mode
 					and _is_conveyor_selected()
 				):
 					_toggle_blueprint_l_route_mode()
@@ -383,6 +410,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					key == KEY_T
 					and enable_blueprint_route_tool
 					and blueprint_mode_active
+					and not _blueprint_area_selection_mode
 					and _is_conveyor_selected()
 				):
 					_toggle_blueprint_waypoint_route_mode()
@@ -394,6 +422,22 @@ func _unhandled_input(event: InputEvent) -> void:
 					if key == KEY_ESCAPE:
 						_cancel_blueprint_waypoint_route()
 						return
+
+		# Area selection takes exclusive ownership of left-drag while Q is
+		# active. No buildings or conveyor previews can be placed by mistake.
+		if _blueprint_area_selection_mode:
+			if event is InputEventMouseButton:
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					if event.pressed:
+						_begin_blueprint_area_drag(event.position)
+					else:
+						_finish_blueprint_area_drag(event.position)
+				return
+			if event is InputEventMouseMotion:
+				if _blueprint_dragging:
+					_update_blueprint_area_drag(event.position)
+				return
+			return
 
 		# =============================================================================
 		# PLAYER QUICK-BUILD KEYS — CONFIGURABLE 1–9
@@ -830,6 +874,7 @@ func _connect_existing_conveyor_junction() -> void:
 #   - hides the Build HUD
 
 func _toggle_placement_mode() -> void:
+	_exit_blueprint_area_selection()
 	_route_anchor.clear()
 	_blueprint_l_route_mode = false
 	_blueprint_waypoint_route_mode = false
@@ -1092,6 +1137,7 @@ func _toggle_demolition_mode() -> void:
 	demolition_mode_active = not demolition_mode_active
 
 	if demolition_mode_active:
+		_exit_blueprint_area_selection()
 		blueprint_mode_active = false
 		_route_anchor.clear()
 		_blueprint_l_route_mode = false
@@ -3500,6 +3546,7 @@ func _find_perpendicular_corner_candidate(
 # pending route claims and physical links only after construction.
 
 func _toggle_blueprint_mode() -> bool:
+	_exit_blueprint_area_selection()
 	_route_anchor.clear()
 	_blueprint_l_route_mode = false
 	_blueprint_waypoint_route_mode = false
@@ -3569,6 +3616,145 @@ func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 		print("BLUEPRINT DEBUG: Requirements bypassed in testing sandbox")
 	print("BLUEPRINT AUTHORIZED: ", site.target_definition.display_name)
 	return true
+
+
+# =============================================================================
+# E3D4 — DRAG-SELECT PLANNED BLUEPRINTS AND AUTHORIZE ONLY THE SELECTION
+# =============================================================================
+# Q enters a non-placement tool, left-drag selects on screen, E authorizes
+# the selected sites. Existing Ctrl+E and one-site E behavior are preserved.
+# No new resources, inventory, workers, or construction duration are created.
+
+func _toggle_blueprint_area_selection() -> bool:
+	if not (
+		enable_blueprint_area_selection
+		and enable_blueprint_planning
+		and placement_mode_active
+		and blueprint_mode_active
+		and not demolition_mode_active
+	):
+		return false
+	if _blueprint_area_selection_mode:
+		_exit_blueprint_area_selection()
+		print("BLUEPRINT AREA SELECT: OFF")
+		return false
+
+	_blueprint_area_selection_mode = true
+	# Do not leave a route-input gesture active when drawing a rectangle.
+	_route_anchor.clear()
+	_blueprint_l_route_mode = false
+	_blueprint_waypoint_route_mode = false
+	_waypoint_route_points.clear()
+	_clear_blueprint_waypoint_preview()
+	if is_instance_valid(placement_ghost):
+		placement_ghost.visible = false
+	print("BLUEPRINT AREA SELECT: ON | Drag to select; E build selection; Esc clear; Q exit.")
+	return true
+
+
+func _begin_blueprint_area_drag(screen_position: Vector2) -> bool:
+	if not _blueprint_area_selection_mode:
+		return false
+	if not is_instance_valid(_blueprint_selection_overlay):
+		return false
+	_blueprint_dragging = true
+	_blueprint_selection_overlay.start_drag(screen_position)
+	return true
+
+
+func _update_blueprint_area_drag(screen_position: Vector2) -> void:
+	if _blueprint_dragging and is_instance_valid(_blueprint_selection_overlay):
+		_blueprint_selection_overlay.update_drag(screen_position)
+
+
+func _finish_blueprint_area_drag(screen_position: Vector2) -> int:
+	if not _blueprint_area_selection_mode or not _blueprint_dragging:
+		return 0
+	_blueprint_dragging = false
+	if not is_instance_valid(_blueprint_selection_overlay):
+		return 0
+	var bounds: Rect2 = _blueprint_selection_overlay.finish_drag(
+		screen_position
+	)
+	return _select_blueprints_in_screen_rect(bounds)
+
+
+func _select_blueprints_in_screen_rect(bounds: Rect2) -> int:
+	if not (
+		enable_blueprint_area_selection
+		and _blueprint_area_selection_mode
+		and blueprint_mode_active
+		and placement_mode_active
+		and is_instance_valid(camera)
+	):
+		return 0
+	_clear_blueprint_area_selection()
+	var root: Node3D = get_parent() as Node3D
+	if not is_instance_valid(root):
+		return 0
+	var chosen: Array[ConstructionSite] = (
+		BlueprintAreaSelectionQuery.find_planned(camera, bounds, root)
+	)
+	for site: ConstructionSite in chosen:
+		if not _is_managed_blueprint(site):
+			continue
+		_area_selected_sites.append(site)
+		site.set_blueprint_area_selected(true)
+	print("BLUEPRINT AREA SELECTED: ", _area_selected_sites.size(), " planned sites")
+	return _area_selected_sites.size()
+
+
+func _prune_blueprint_area_selection() -> void:
+	var retained: Array[ConstructionSite] = []
+	for site: ConstructionSite in _area_selected_sites:
+		if not _is_managed_blueprint(site):
+			continue
+		if site.job.state != ConstructionJob.State.PLANNED:
+			site.set_blueprint_area_selected(false)
+			continue
+		retained.append(site)
+	_area_selected_sites = retained
+
+
+func _clear_blueprint_area_selection() -> void:
+	for site: ConstructionSite in _area_selected_sites:
+		if is_instance_valid(site) and not site.is_queued_for_deletion():
+			site.set_blueprint_area_selected(false)
+	_area_selected_sites.clear()
+	_blueprint_dragging = false
+	if is_instance_valid(_blueprint_selection_overlay):
+		_blueprint_selection_overlay.cancel_drag()
+
+
+func _exit_blueprint_area_selection() -> void:
+	_clear_blueprint_area_selection()
+	_blueprint_area_selection_mode = false
+	if is_instance_valid(placement_ghost):
+		placement_ghost.visible = true
+
+
+func _authorize_selected_blueprint_sites() -> int:
+	if not (
+		enable_blueprint_area_selection
+		and _blueprint_area_selection_mode
+		and blueprint_mode_active
+		and placement_mode_active
+		and not demolition_mode_active
+	):
+		return 0
+	_prune_blueprint_area_selection()
+	var count: int = 0
+	var selected_copy: Array[ConstructionSite] = _area_selected_sites.duplicate()
+	for site: ConstructionSite in selected_copy:
+		if not _is_managed_blueprint(site):
+			continue
+		if site.job.state != ConstructionJob.State.PLANNED:
+			continue
+		if _authorize_blueprint_site(site):
+			count += 1
+	_clear_blueprint_area_selection()
+	print("BLUEPRINT AREA AUTHORIZED: ", count, " selected planned sites")
+	return count
 
 
 # =============================================================================
