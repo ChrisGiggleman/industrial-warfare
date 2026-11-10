@@ -16,9 +16,9 @@ func _ready() -> void:
 	layer = 15
 	_drawing = Control.new()
 	_drawing.name = "SelectionRectangleCanvas"
-	_drawing.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_drawing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_drawing)
+	_drawing.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_drawing.draw.connect(_draw_box)
 
 
