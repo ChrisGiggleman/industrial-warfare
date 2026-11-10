@@ -58,6 +58,9 @@ const SELECTION_COLLISION_MASK: int = 2
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
+# E3c2a opt-in: plan directed conveyor links to unfinished Storage ports.
+# Off by default. The real power/material/worker systems are not bypassed.
+@export var enable_connected_storage_blueprints: bool = false
 
 # Legacy scene list retained temporarily while the placement system is
 # migrated to BuildingDefinition resources.
@@ -256,6 +259,9 @@ func _ready() -> void:
 	if enable_blueprint_planning and enable_connected_conveyor_blueprints:
 		_planned_route_coordinator = BlueprintConveyorRouteCoordinator.new()
 		_planned_route_coordinator.name = "BlueprintRouteCoordinator"
+		_planned_route_coordinator.enable_storage_port_blueprints = (
+			enable_connected_storage_blueprints
+		)
 		add_child(_planned_route_coordinator)
 
 	if build_hud_panel != null:
@@ -3517,6 +3523,12 @@ func _create_blueprint_site(
 		return null
 	scene_root.add_child(site)
 	site.global_transform = placement
+	if (
+		enable_connected_storage_blueprints
+		and definition.building_id == &"test_storage"
+		and is_instance_valid(_planned_route_coordinator)
+	):
+		_planned_route_coordinator.register_new_site(site)
 	return site
 
 
