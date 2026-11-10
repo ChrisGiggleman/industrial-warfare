@@ -112,10 +112,12 @@ func show_route(
 		if is_bend and valid:
 			color = Color(0.99, 0.72, 0.22, 0.45)
 		_tile_materials[index].albedo_color = color
-		_tile_arrows[index].transform.basis = (
+		var arrow_transform: Transform3D = _tile_arrows[index].transform
+		arrow_transform.basis = (
 			original.basis.inverse() * arrow_basis
 			* Basis(Vector3.RIGHT, -PI * 0.5)
 		)
+		_tile_arrows[index].transform = arrow_transform
 
 	_invalid_marker.visible = not valid and invalid_endpoint.is_finite()
 	if _invalid_marker.visible:
