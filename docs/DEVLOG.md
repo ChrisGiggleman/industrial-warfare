@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-11-09 — E3b Storage Port Reservations Accepted (18/18); Shared Claims E3c0 Staged
+
+**Evidence:** Developer Godot 4.6.2 Output screenshot shows `ALL 18 PLANNED BUILDING PORT RESERVATION E3B TESTS PASSED` (A–R), with normal debugger shutdown. Independent input/output claims, both build orders, released/cancelled endpoints, moved geometry, completed-object removal and non-operational status were all verified.
+
+**E3c0 implementation — awaiting first local Godot execution:**
+
+- Added `scripts/components/planned_endpoint_claim_broker.gd`, a shared endpoint authority using stable `ConstructionSite` identity plus directional side. Both E2b belt routes and E3b Storage-port routes now claim the exact same `belt in/out` keys when connected to one broker.
+- Each claim transaction reserves both keys atomically. Owner strings include the registry instance ID and local reservation ID, ensuring one system cannot accidentally release the other registry's claim.
+- `PlannedConveyorRouteReservations.set_claim_broker()` and `PlannedBuildingPortReservations.set_claim_broker()` are **optional** so earlier isolated suites still work. A broker cannot be attached after pending reservations exist, or rebound later. When a registry's reservation ends, its broker keys are released even if its construction sites were freed.
+- Added `res://tests/shared_blueprint_endpoint_ownership_e3c0_test.tscn` with **18 planned checks**: belt-first and Storage-first competition, separate in/out claims on one conveyor and one Storage, cancelled construction, unexpected removal, freed sites, completed-belt destruction, and final cleanup. **F6 validation is pending.**
+- This is deliberately a shared-ownership *prerequisite*, not a physical connection. Existing `WorldInteraction`, sandbox scene, cargo transport and Main remain unchanged; E3b is **not yet enabled alongside E2b in the player sandbox**.
+- **Next after E3c0 passes:** E3c1 read-only real port readiness and one-time physical activation with cargo conservation, then isolated sandbox wiring and manual acceptance. Do not interpret E3c0 as end-to-end factory operation.
+
+---
+
 ## 2026-11-09 — E3a Planned Storage Port Geometry Passed (15/15); E3b Reservations Staged
 
 **Godot 4.6.2 evidence:** Developer-provided Output screenshot confirms `ALL 15 PLANNED BUILDING PORT GEOMETRY E3A TESTS PASSED` (PASS A–O): directed future Storage input/output port matching, separate rotated junctions, invalid-facing and offset rejection, queued/paused acceptance, cancellation/completion rejection and no premature inventory activation.
