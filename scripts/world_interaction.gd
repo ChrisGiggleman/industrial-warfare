@@ -280,7 +280,10 @@ func _ready() -> void:
 	if enable_blueprint_planning and enable_blueprint_area_selection:
 		_blueprint_selection_overlay = BlueprintAreaSelectionOverlay.new()
 		_blueprint_selection_overlay.name = "BlueprintAreaSelectionOverlay"
-		get_parent().add_child(_blueprint_selection_overlay)
+		# WorldInteraction is entering the tree when this runs. Its parent
+		# scene can still be busy registering children, so do not inject a
+		# sibling there. A CanvasLayer renders normally as our own child.
+		add_child(_blueprint_selection_overlay)
 
 	if build_hud_panel != null:
 		build_hud_panel.visible = false
