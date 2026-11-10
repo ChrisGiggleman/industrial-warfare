@@ -67,7 +67,7 @@ func _ready() -> void:
 			var transform: Transform3D = proposed["transform"]
 			assert(transform.origin.is_finite())
 			total_ports += 1
-		print("PASS PORT: ", definition.display_name, " / ", port_name)
+			print("PASS PORT: ", definition.display_name, " / ", port_name)
 		assert(controller._cancel_blueprint_site(site))
 		await get_tree().process_frame
 		assert(not is_instance_valid(site))
