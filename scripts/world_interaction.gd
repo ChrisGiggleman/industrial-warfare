@@ -3642,6 +3642,31 @@ func _create_blueprint_site(
 # Preflight every tile. A failure does not leave a partial factory route.
 # Single-click placement, corners, and Main remain unchanged.
 
+func _blueprint_route_cursor_grid() -> Dictionary:
+	# Route selection deliberately uses the raw ground grid, not the
+	# placement ghost: nearby building ports can move and rotate that ghost.
+	if not is_instance_valid(camera):
+		return {}
+	var cursor: Vector2 = get_viewport().get_mouse_position()
+	var start: Vector3 = camera.project_ray_origin(cursor)
+	var end: Vector3 = start + camera.project_ray_normal(cursor) * ray_length
+	var ray := PhysicsRayQueryParameters3D.create(start, end)
+	ray.collision_mask = GROUND_COLLISION_MASK
+	var hit: Dictionary = (
+		get_viewport().world_3d.direct_space_state.intersect_ray(ray)
+	)
+	if hit.is_empty():
+		return {}
+	var point: Vector3 = hit["position"]
+	return {
+		"position": Vector3(
+			snappedf(point.x, grid_size),
+			point.y,
+			snappedf(point.z, grid_size)
+		)
+	}
+
+
 func _handle_blueprint_route_click() -> int:
 	if not (
 		enable_blueprint_route_tool
@@ -3652,47 +3677,69 @@ func _handle_blueprint_route_click() -> int:
 		and _is_conveyor_selected()
 	):
 		return 0
-	_update_placement_preview()
-	if not is_instance_valid(placement_ghost) or not placement_is_valid:
-		print("BLUEPRINT ROUTE: Invalid cursor tile.")
+
+	var clicked: Dictionary = _blueprint_route_cursor_grid()
+	if clicked.is_empty():
+		print("BLUEPRINT ROUTE: Point at an open ground tile.")
 		return 0
-	if _route_anchor.is_empty():
-		_route_anchor = {"transform": placement_ghost.global_transform}
-		print("BLUEPRINT ROUTE: Start selected; Shift-click forward endpoint.")
-		return 0
-	var start: Transform3D = _route_anchor["transform"]
-	var destination: Vector3 = placement_ghost.global_position
-	_route_anchor.clear()
-	var definition := _get_selected_building_definition()
+	var position: Vector3 = clicked["position"]
+	var definition: BuildingDefinition = _get_selected_building_definition()
 	if not is_instance_valid(definition):
 		return 0
-	var tiles: Array[Transform3D] = BlueprintStraightRoute.get_tiles(
-		start, destination
+
+	if _route_anchor.is_empty():
+		# The first click must be placeable. No resources or claims change yet.
+		if not ConveyorBlueprintPlacement.is_clear(
+			get_tree(), get_viewport().world_3d, definition,
+			Transform3D(Basis.IDENTITY, position),
+			PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("BLUEPRINT ROUTE: Start tile blocked.")
+			return 0
+		_route_anchor = {"position": position}
+		print("BLUEPRINT ROUTE: Start selected at ", position,
+			"; Shift-click a different tile in the same row or column.")
+		return 0
+
+	var anchor: Vector3 = _route_anchor["position"]
+	_route_anchor.clear()
+	if anchor.is_equal_approx(position):
+		print("BLUEPRINT ROUTE: Start and endpoint are the same tile.")
+		return 0
+	# Route direction is derived from the two clicks, not the R rotation
+	# or any automatic building-port snap applied to the placement ghost.
+	var tiles: Array[Transform3D] = BlueprintStraightRoute.get_tiles_between(
+		anchor, position
 	)
 	if tiles.is_empty():
-		print("BLUEPRINT ROUTE: Endpoint must be forward, straight and within 32 tiles.")
+		print("BLUEPRINT ROUTE: Choose a straight row or column (2–32 tiles).")
 		return 0
-	# Validate the entire route before creating construction sites.
+
+	# Preflight ALL cells before any ConstructionSite is created.
 	for tile: Transform3D in tiles:
 		if not ConveyorBlueprintPlacement.is_clear(
 			get_tree(), get_viewport().world_3d,
 			definition, tile, PLACEMENT_BLOCKER_COLLISION_MASK
 		):
-			print("BLUEPRINT ROUTE: Blocked tile; no route placed.")
+			print("BLUEPRINT ROUTE: Blocked tile at ",
+				tile.origin, "; no route placed.")
 			return 0
+
 	var created: Array[ConstructionSite] = []
 	for tile: Transform3D in tiles:
-		var site := _create_straight_conveyor_blueprint(definition, tile)
+		var site: ConstructionSite = _create_straight_conveyor_blueprint(
+			definition, tile
+		)
 		if not is_instance_valid(site):
 			for previous: ConstructionSite in created:
 				if is_instance_valid(previous) and previous.job != null:
 					previous.job.cancel()
-			print("BLUEPRINT ROUTE: Placement failed; created sites cancelled.")
+			print("BLUEPRINT ROUTE: Placement failed; sites cancelled.")
 			return 0
 		created.append(site)
-	print("BLUEPRINT ROUTE PLANNED: ", created.size(), " conveyor tiles.")
+	print("BLUEPRINT ROUTE PLANNED: ", created.size(),
+		" conveyor tiles.")
 	return created.size()
-
 
 # =============================================================================
 # STRAIGHT CONVEYOR BLUEPRINT COMMIT — OPTIONAL E2C2 ROUTE DISCOVERY
