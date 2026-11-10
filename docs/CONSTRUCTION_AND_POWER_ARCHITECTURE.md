@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 **passed 14/14 scripted F6 checks** and its seven-step manual placement/authorization/cancellation sequence was confirmed (2026-11-09). E2a planned direct/right/left route-geometry discovery **passed 12/12 in Godot 4.6.2** (2026-11-09). E2b exclusive endpoint reservation registry and its **16-check F6 suite are committed but not yet validated**. Visible planned corner conversion and physical graph activation remain unimplemented. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
+**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 **passed 14/14 scripted F6 checks** and its seven-step manual placement/authorization/cancellation sequence was confirmed (2026-11-09). E2a planned direct/right/left route-geometry discovery **passed 12/12 in Godot 4.6.2** (2026-11-09). E2b exclusive endpoint reservations **passed 16/16** in Godot 4.6.2 (2026-11-09). E2c1 isolated physical connection activation is committed with **15 F6 checks pending**. Visible planned corner conversion and physical graph activation remain unimplemented. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -175,6 +175,18 @@ The Factory Testing Sandbox's opt-in P mode now supports planning a stand-alone,
 - `res://tests/planned_conveyor_reservations_e2b_test.tscn` has **16 focused checks and awaits developer F6 execution**. Test completion ordering, exclusive claims, source/receiver cancellation, mid-chain sites, stale geometry, unexpected deletion and cleanup before enabling this service in the sandbox.
 
 **Next step:** E2c may bind this service to player planning, reserve a contiguous blueprint route, render planned corner geometry and physically commit using the existing `ConveyorExistingConnection` transaction only when both neighbors are complete. Add separate corner cargo, demolition, item-conservation and Build Mode regression tests. Main scene remains unchanged.
+
+---
+
+### E2c1 — Isolated post-construction physical activation (staged)
+
+The `PlannedConveyorRouteActivator` Node listens for a validated E2b registry's `reservation_ready` events. It does not inspect or connect live neighbors on its own, and is not yet installed in the Factory Testing Sandbox or Main scene.
+
+- The adapter calls `get_ready_candidate()` to verify both reserved endpoints are **completed ConveyorSegments**, mutually free, correctly oriented and located at the originally recorded junction. An unbuilt blueprint never receives cargo.
+- The adapter delegates the actual physical transaction to `ConveyorExistingConnection.try_connect_candidate()`, which revalidates the candidate and uses the already-proven real direct, right-corner or left-corner conversion path. Successful activation requires reciprocal `next_segment` / `previous_segment` references.
+- Successful connections release only their own endpoint reservation claims. Failed or out-of-date connections keep their reservations; `try_commit(id)` explicitly retries after the physical cause is corrected. Completed belts are never silently connected to a second occupied endpoint.
+- This stage tests runtime connection/cargo conservation, not blueprint visuals. `res://tests/planned_conveyor_activation_e2c1_test.tscn` includes **15 F6 checks pending developer validation**; the prior E2b reservation checks passed **16/16**.
+- **E2c2 remains necessary:** bind the isolated services to player P-mode in the Factory Testing Sandbox, create planned route claims on placement, convert transparent straight placeholders to directional L-shapes, and validate mouse/keyboard, build-order independence, resource conservation and demolition. Do not enable E2c1 automatically in Main.
 
 ---
 
