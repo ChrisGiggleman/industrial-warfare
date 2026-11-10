@@ -56,6 +56,7 @@ const SELECTION_COLLISION_MASK: int = 2
 # delivered materials or actual construction drones.
 @export var enable_blueprint_planning: bool = false
 @export var compact_blueprint_visuals: bool = false
+@export var enable_blueprint_route_tool: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
@@ -85,6 +86,7 @@ var selected_object: Node = null
 # Build Mode state.
 var placement_mode_active: bool = false
 var blueprint_mode_active: bool = false
+var _route_anchor: Dictionary = {}
 var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
 var selected_building_index: int = 0
 
@@ -455,7 +457,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 		if event.is_action_pressed("primary_action"):
-			_try_place_object()
+			if (
+				enable_blueprint_route_tool
+				and blueprint_mode_active
+				and _is_conveyor_selected()
+				and event is InputEventMouseButton
+				and event.shift_pressed
+			):
+				_handle_blueprint_route_click()
+			else:
+				_try_place_object()
 			return
 
 		return
@@ -789,6 +800,7 @@ func _connect_existing_conveyor_junction() -> void:
 #   - hides the Build HUD
 
 func _toggle_placement_mode() -> void:
+	_route_anchor.clear()
 	placement_mode_active = not placement_mode_active
 
 	if placement_mode_active:
@@ -1008,6 +1020,7 @@ func _select_building(index: int) -> void:
 		return
 
 	selected_building_index = index
+	_route_anchor.clear()
 	placement_rotation_degrees = 0.0
 
 	if placement_mode_active and not demolition_mode_active:
@@ -3413,6 +3426,7 @@ func _find_perpendicular_corner_candidate(
 # pending route claims and physical links only after construction.
 
 func _toggle_blueprint_mode() -> bool:
+	_route_anchor.clear()
 	if not enable_blueprint_planning or not placement_mode_active:
 		return false
 	if demolition_mode_active:
@@ -3619,6 +3633,65 @@ func _create_blueprint_site(
 		# Building-first planning also discovers neighboring belt plans.
 		_planned_route_coordinator.register_new_site(site)
 	return site
+
+
+# =============================================================================
+# E3D3A — SANDBOX TWO-CLICK STRAIGHT BLUEPRINT ROUTE
+# =============================================================================
+# Shift+Left Click chooses a starting transform, then an endpoint.
+# Preflight every tile. A failure does not leave a partial factory route.
+# Single-click placement, corners, and Main remain unchanged.
+
+func _handle_blueprint_route_click() -> int:
+	if not (
+		enable_blueprint_route_tool
+		and enable_blueprint_planning
+		and blueprint_mode_active
+		and placement_mode_active
+		and not demolition_mode_active
+		and _is_conveyor_selected()
+	):
+		return 0
+	_update_placement_preview()
+	if not is_instance_valid(placement_ghost) or not placement_is_valid:
+		print("BLUEPRINT ROUTE: Invalid cursor tile.")
+		return 0
+	if _route_anchor.is_empty():
+		_route_anchor = {"transform": placement_ghost.global_transform}
+		print("BLUEPRINT ROUTE: Start selected; Shift-click forward endpoint.")
+		return 0
+	var start: Transform3D = _route_anchor["transform"]
+	var destination: Vector3 = placement_ghost.global_position
+	_route_anchor.clear()
+	var definition := _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return 0
+	var tiles: Array[Transform3D] = BlueprintStraightRoute.get_tiles(
+		start, destination
+	)
+	if tiles.is_empty():
+		print("BLUEPRINT ROUTE: Endpoint must be forward, straight and within 32 tiles.")
+		return 0
+	# Validate the entire route before creating construction sites.
+	for tile: Transform3D in tiles:
+		if not ConveyorBlueprintPlacement.is_clear(
+			get_tree(), get_viewport().world_3d,
+			definition, tile, PLACEMENT_BLOCKER_COLLISION_MASK
+		):
+			print("BLUEPRINT ROUTE: Blocked tile; no route placed.")
+			return 0
+	var created: Array[ConstructionSite] = []
+	for tile: Transform3D in tiles:
+		var site := _create_straight_conveyor_blueprint(definition, tile)
+		if not is_instance_valid(site):
+			for previous: ConstructionSite in created:
+				if is_instance_valid(previous) and previous.job != null:
+					previous.job.cancel()
+			print("BLUEPRINT ROUTE: Placement failed; created sites cancelled.")
+			return 0
+		created.append(site)
+	print("BLUEPRINT ROUTE PLANNED: ", created.size(), " conveyor tiles.")
+	return created.size()
 
 
 # =============================================================================
