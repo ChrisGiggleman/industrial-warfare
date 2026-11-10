@@ -10,6 +10,7 @@ var _drawing: Control = null
 var _begin: Vector2 = Vector2.ZERO
 var _finish: Vector2 = Vector2.ZERO
 var _dragging: bool = false
+var _drag_operation: int = 0
 
 
 func _ready() -> void:
@@ -22,9 +23,10 @@ func _ready() -> void:
 	_drawing.draw.connect(_draw_box)
 
 
-func start_drag(screen_pos: Vector2) -> void:
+func start_drag(screen_pos: Vector2, operation: int = 0) -> void:
 	_begin = screen_pos
 	_finish = screen_pos
+	_drag_operation = operation
 	_dragging = true
 	if is_instance_valid(_drawing):
 		_drawing.queue_redraw()
@@ -67,5 +69,15 @@ func _draw_box() -> void:
 	if not _dragging or not is_instance_valid(_drawing):
 		return
 	var area: Rect2 = get_drag_rect()
-	_drawing.draw_rect(area, Color(0.18, 0.84, 0.47, 0.14), true)
-	_drawing.draw_rect(area, Color(0.25, 1.0, 0.58, 0.95), false, 2.0)
+	var fill_color := Color(0.18, 0.84, 0.47, 0.14)
+	var line_color := Color(0.25, 1.0, 0.58, 0.95)
+	if _drag_operation == 1:
+		# Cyan signals additive selection.
+		fill_color = Color(0.12, 0.70, 1.0, 0.14)
+		line_color = Color(0.24, 0.83, 1.0, 0.95)
+	elif _drag_operation == 2:
+		# Red signals subtractive selection.
+		fill_color = Color(1.0, 0.22, 0.24, 0.14)
+		line_color = Color(1.0, 0.35, 0.32, 0.95)
+	_drawing.draw_rect(area, fill_color, true)
+	_drawing.draw_rect(area, line_color, false, 2.0)
