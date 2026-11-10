@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-11-09 — E3c1 Storage Activation Accepted (18/18); Sandbox E3c2a Staged
+
+**Godot 4.6.2 evidence:** Developer Output screenshot confirms `ALL 18 PLANNED STORAGE PORT ACTIVATION E3C1 TESTS PASSED` (A–R). Storage-first and belt-first construction, real input/output port reciprocity, mixed upstream route ownership, rotation, stale/moved or occupied endpoints, cancellation, demolition, cargo backpressure and conservation were validated.
+
+**E3c2a opt-in sandbox integration — new, awaiting Godot validation:**
+
+- `BlueprintConveyorRouteCoordinator` can now optionally create one E3c0 `PlannedEndpointClaimBroker` and attach both its existing E2b conveyor-route registry and the E3b Storage-port registry to this same broker, with an E3c1 `PlannedBuildingPortActivator`. The feature must be enabled before the coordinator enters the scene tree.
+- The controller’s `enable_connected_storage_blueprints` flag defaults **false**. It is enabled in `factory_testing_sandbox.tscn` alongside existing blueprint flags. The original Main scene remains unchanged.
+- Upon placing either an unfinished `test_storage` or a straight conveyor blueprint, the controller notifies the coordinator. Newly placed belts first inspect existing unfinished Storage input/output markers for exclusive claims, then seek neighboring belt links. Newly placed Storage can also discover previously placed belts; both construction orders are supported.
+- The existing operational conveyor and Storage port-connection methods are used only after both constructions have completed and the activators revalidate their corresponding reservations. Unfinished blueprints remain nonoperational.
+- New `res://tests/connected_storage_blueprint_e3c2a_test.tscn` has **16 pending F6 checks**: sandbox-only flags and service ownership; Storage-first input/output, mixed upstream conveyor, broker claim release; deferred real activation; ore-through-Storage conservation and blocked output; Storage cancellation; belt-first planning; rotated Storage; wrong-facing rejection; existing right-corner cancellation; and Main opt-out.
+- **Not implemented in this gate:** automatic preview snapping to future Storage ports, UI visual connection lines, player mouse/keyboard acceptance, production power/material/worker availability, and universal save/load. Existing grid snapping remains; players must correctly align belt rotations and tile positions to match the future ports.
+
+**Next:** Run the E3c2a F6 scene. If it passes, implement and separately test future-port preview snapping and manual player E/X/R/LMB controls before expanding from Storage to other production buildings.
+
+---
+
 ## 2026-11-09 — E3c0 Shared Claims Passed (18/18); E3c1 Physical Port Activation Staged
 
 **Godot 4.6.2 evidence:** The developer's latest Output screenshot shows `ALL 18 SHARED BLUEPRINT ENDPOINT OWNERSHIP E3C0 TESTS PASSED` (A–R). Opposing claim orders, independent belt input/output, Storage input/output, cancellation, freed sites, completed-belt destruction and final claim cleanup all passed. E3c0 is accepted as an isolated system.
