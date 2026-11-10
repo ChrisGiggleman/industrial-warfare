@@ -15,6 +15,9 @@ var lifecycle: ConstructionLifecycle = ConstructionLifecycle.new()
 var job: ConstructionJob = null
 var footprint: Vector2i = Vector2i.ONE
 var _collision: CollisionShape3D
+var compact_blueprint_visuals: bool = false
+var _progress_fill: MeshInstance3D = null
+var _placeholder_material: StandardMaterial3D = null
 var _progress_label: Label3D
 var _completed_building: Node3D
 # Pending belts have no active inventory connection until construction ends.
@@ -115,6 +118,9 @@ func _process(delta: float) -> void:
 func _refresh_progress_label() -> void:
 	if not is_instance_valid(_progress_label):
 		return
+	if compact_blueprint_visuals:
+		_update_compact_visuals()
+		return
 	if job == null:
 		_progress_label.text = "CONSTRUCTING %d%%" % int(round(get_progress() * 100.0))
 		return
@@ -136,6 +142,72 @@ func _refresh_progress_label() -> void:
 	_progress_label.text = "%s %d%%" % [
 		status, int(round(get_progress() * 100.0))
 	]
+
+
+# Compact construction visuals are opt-in for the Factory Testing Sandbox.
+# A small 3D progress track replaces overlapping billboard percentages.
+func _update_compact_visuals() -> void:
+	var state: int = ConstructionJob.State.CONSTRUCTING
+	if job != null:
+		state = job.state
+	var color := Color(0.45, 0.75, 1.0)
+	match state:
+		ConstructionJob.State.PLANNED:
+			color = Color(0.45, 0.75, 1.0)
+		ConstructionJob.State.QUEUED:
+			color = Color(0.95, 0.7, 0.3)
+		ConstructionJob.State.CONSTRUCTING:
+			color = Color(0.3, 0.9, 0.55)
+		ConstructionJob.State.PAUSED:
+			color = Color(0.95, 0.4, 0.3)
+	if _placeholder_material != null:
+		_placeholder_material.albedo_color = Color(color.r, color.g, color.b, 0.48)
+	if is_instance_valid(_progress_fill):
+		var progress: float = clampf(get_progress(), 0.0, 1.0)
+		_progress_fill.scale.x = maxf(progress, 0.001)
+		_progress_fill.position.x = -(1.0 - progress) * 0.45
+		var fill_material := _progress_fill.material_override as StandardMaterial3D
+		if fill_material != null:
+			fill_material.albedo_color = color
+	if is_instance_valid(_progress_label):
+		# Belt labels are deliberately hidden; direction arrows remain visible.
+		_progress_label.visible = (
+			not is_instance_valid(target_definition)
+			or target_definition.building_id != &"conveyor_belt"
+		)
+		if _progress_label.visible:
+			match state:
+				ConstructionJob.State.PLANNED:
+					_progress_label.text = "PLAN"
+				ConstructionJob.State.QUEUED:
+					_progress_label.text = "WAIT"
+				ConstructionJob.State.CONSTRUCTING:
+					_progress_label.text = "BUILD"
+				ConstructionJob.State.PAUSED:
+					_progress_label.text = "PAUSED"
+				_:
+					_progress_label.text = ""
+
+
+func _build_compact_progress_bar() -> void:
+	var track := MeshInstance3D.new()
+	track.name = "ConstructionProgressTrack"
+	var track_mesh := BoxMesh.new()
+	track_mesh.size = Vector3(1.0, 0.035, 0.1)
+	track.mesh = track_mesh
+	track.position = Vector3(0, 0.78, 0)
+	var track_material := StandardMaterial3D.new()
+	track_material.albedo_color = Color(0.13, 0.15, 0.2)
+	track.material_override = track_material
+	add_child(track)
+	_progress_fill = MeshInstance3D.new()
+	_progress_fill.name = "ConstructionProgressFill"
+	var fill_mesh := BoxMesh.new()
+	fill_mesh.size = Vector3(0.9, 0.04, 0.1)
+	_progress_fill.mesh = fill_mesh
+	_progress_fill.position = Vector3(-0.45, 0.81, 0)
+	_progress_fill.material_override = StandardMaterial3D.new()
+	add_child(_progress_fill)
 
 
 func _cancel_job_site() -> void:
@@ -169,7 +241,10 @@ func _build_placeholder() -> void:
 	material.albedo_color = Color(0.26, 0.58, 0.82, 0.48)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mesh.material_override = material
+	_placeholder_material = material
 	add_child(mesh)
+	if compact_blueprint_visuals:
+		_build_compact_progress_bar()
 
 	# Standalone conveyor plans must show their eventual cargo direction.
 	# The local -Z axis matches the completed belt's OutputEndpoint; a
@@ -205,6 +280,10 @@ func _build_placeholder() -> void:
 		label.font_size = 15
 		label.pixel_size = 0.005
 		label.position.y = 0.82
+	if compact_blueprint_visuals:
+		label.font_size = 18
+		label.pixel_size = 0.004
+		label.position.y = 0.98
 	_progress_label = label
 
 
