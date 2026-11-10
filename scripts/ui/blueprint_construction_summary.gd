@@ -18,7 +18,7 @@ func _ready() -> void:
 	panel.offset_left = 16.0
 	panel.offset_top = 16.0
 	panel.offset_right = 285.0
-	panel.offset_bottom = 106.0
+	panel.offset_bottom = 132.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
 
@@ -62,8 +62,20 @@ func _refresh() -> void:
 				counts["building"] += 1
 			ConstructionJob.State.PAUSED:
 				counts["paused"] += 1
+	var selected_count: int = 0
+	for member: Node in get_tree().get_nodes_in_group("blueprint_area_selected"):
+		if not member is ConstructionSite:
+			continue
+		var chosen: ConstructionSite = member as ConstructionSite
+		if (
+			is_instance_valid(chosen) and not chosen.is_queued_for_deletion()
+			and chosen.job != null
+			and chosen.job.state == ConstructionJob.State.PLANNED
+		):
+			selected_count += 1
 	_summary.text = (
 		"FACTORY BLUEPRINTS\n"
 		+ "Planned: %d   Queued: %d\n" % [counts["planned"], counts["queued"]]
-		+ "Building: %d   Paused: %d" % [counts["building"], counts["paused"]]
+		+ "Building: %d   Paused: %d\n" % [counts["building"], counts["paused"]]
+		+ "Selected: %d   |   Q: Area Select" % selected_count
 	)
