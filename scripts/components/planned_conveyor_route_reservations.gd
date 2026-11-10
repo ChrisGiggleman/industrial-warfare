@@ -33,6 +33,8 @@ func reserve_pair(source: ConstructionSite, receiver: ConstructionSite) -> int:
 	_reservations[reservation_id] = {
 		"source": source,
 		"receiver": receiver,
+		"source_key": outgoing,
+		"receiver_key": incoming,
 		"mode": candidate["mode"],
 		"turn": candidate["turn"],
 		"junction": candidate["junction"],
@@ -106,8 +108,10 @@ func release(reservation_id: int) -> bool:
 	_disconnect_site(source, reservation_id, true)
 	_disconnect_site(receiver, reservation_id, false)
 
-	_endpoint_claims.erase(_endpoint_key(source, "out"))
-	_endpoint_claims.erase(_endpoint_key(receiver, "in"))
+	# Use immutable keys recorded when reserved: completed sites may have
+	# been freed while their live belts and pending route still exist.
+	_endpoint_claims.erase(record["source_key"])
+	_endpoint_claims.erase(record["receiver_key"])
 	_reservations.erase(reservation_id)
 	return true
 
