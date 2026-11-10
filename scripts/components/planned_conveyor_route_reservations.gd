@@ -45,8 +45,12 @@ func reserve_pair(source: ConstructionSite, receiver: ConstructionSite) -> int:
 	_endpoint_claims[outgoing] = reservation_id
 	_endpoint_claims[incoming] = reservation_id
 
-	_connect_site(source, reservation_id, true)
-	_connect_site(receiver, reservation_id, false)
+	if not _connect_site(source, reservation_id, true):
+		release(reservation_id)
+		return 0
+	if not _connect_site(receiver, reservation_id, false):
+		release(reservation_id)
+		return 0
 	return reservation_id
 
 
@@ -107,10 +111,18 @@ func release(reservation_id: int) -> bool:
 
 	_disconnect_site(source, reservation_id, true)
 	_disconnect_site(receiver, reservation_id, false)
-	var exit_handler := _on_completed_belt_exiting.bind(reservation_id)
-	for side: String in ["source_belt", "receiver_belt"]:
-		var belt: ConveyorSegment = record[side] as ConveyorSegment
-		if is_instance_valid(belt) and belt.tree_exiting.is_connected(exit_handler):
+	for side: String in ["source", "receiver"]:
+		var belt: ConveyorSegment = (
+			record[side + "_belt"] as ConveyorSegment
+		)
+		var exit_handler: Callable = record.get(
+			side + "_belt_exit_callback", Callable()
+		)
+		if (
+			is_instance_valid(belt)
+			and exit_handler.is_valid()
+			and belt.tree_exiting.is_connected(exit_handler)
+		):
 			belt.tree_exiting.disconnect(exit_handler)
 
 	# Use immutable keys recorded when reserved: completed sites may have
@@ -129,16 +141,45 @@ func _endpoint_key(site: ConstructionSite, side: String) -> String:
 
 func _connect_site(
 	site: ConstructionSite, reservation_id: int, is_source: bool
-) -> void:
-	site.building_completed.connect(
-		_on_site_completed.bind(reservation_id, is_source)
+) -> bool:
+	# Distinct closures are required when a transit blueprint owns one
+	# incoming reservation and one outgoing reservation simultaneously.
+	# Keep the exact Callable identities so release() disconnects cleanly.
+	var completed_callback := func(building: Node3D) -> void:
+		_on_site_completed(building, reservation_id, is_source)
+	var cancelled_callback := func() -> void:
+		_on_site_cancelled(reservation_id)
+	var exiting_callback := func() -> void:
+		_on_site_exiting(reservation_id, is_source)
+
+	var complete_result := site.building_completed.connect(completed_callback)
+	var cancel_result := site.job.job_cancelled.connect(cancelled_callback)
+	var exit_result := site.tree_exiting.connect(exiting_callback)
+	var valid_connections := (
+		complete_result == OK
+		and cancel_result == OK
+		and exit_result == OK
 	)
-	site.job.job_cancelled.connect(
-		_on_site_cancelled.bind(reservation_id)
-	)
-	site.tree_exiting.connect(
-		_on_site_exiting.bind(reservation_id, is_source)
-	)
+
+	if not valid_connections:
+		if site.building_completed.is_connected(completed_callback):
+			site.building_completed.disconnect(completed_callback)
+		if site.job.job_cancelled.is_connected(cancelled_callback):
+			site.job.job_cancelled.disconnect(cancelled_callback)
+		if site.tree_exiting.is_connected(exiting_callback):
+			site.tree_exiting.disconnect(exiting_callback)
+		push_error("Failed to attach construction-site route observers.")
+		return false
+
+	var record: Dictionary = _reservations[reservation_id]
+	var side := "source" if is_source else "receiver"
+	record[side + "_callbacks"] = {
+		"complete": completed_callback,
+		"cancel": cancelled_callback,
+		"exit": exiting_callback
+	}
+	_reservations[reservation_id] = record
+	return true
 
 
 func _disconnect_site(
@@ -146,16 +187,27 @@ func _disconnect_site(
 ) -> void:
 	if not is_instance_valid(site):
 		return
-	var complete := _on_site_completed.bind(reservation_id, is_source)
-	var cancelled := _on_site_cancelled.bind(reservation_id)
-	var exiting := _on_site_exiting.bind(reservation_id, is_source)
+	if not _reservations.has(reservation_id):
+		return
+
+	var record: Dictionary = _reservations[reservation_id]
+	var side := "source" if is_source else "receiver"
+	var callbacks: Dictionary = record.get(side + "_callbacks", {})
+	if callbacks.is_empty():
+		return
+
+	var complete: Callable = callbacks["complete"]
+	var cancelled: Callable = callbacks["cancel"]
+	var exiting: Callable = callbacks["exit"]
 	if site.building_completed.is_connected(complete):
 		site.building_completed.disconnect(complete)
-	if is_instance_valid(site.job) and site.job.job_cancelled.is_connected(cancelled):
+	if (
+		is_instance_valid(site.job)
+		and site.job.job_cancelled.is_connected(cancelled)
+	):
 		site.job.job_cancelled.disconnect(cancelled)
 	if site.tree_exiting.is_connected(exiting):
 		site.tree_exiting.disconnect(exiting)
-
 
 func _on_site_completed(
 	building: Node3D, reservation_id: int, is_source: bool
@@ -174,11 +226,17 @@ func _on_site_completed(
 		record["receiver_belt"] = belt
 	_reservations[reservation_id] = record
 
-	# Completed segments can later be demolished. A stale pending
-	# reservation must not outlive either actual belt.
-	belt.tree_exiting.connect(
-		_on_completed_belt_exiting.bind(reservation_id)
-	)
+	# A shared middle conveyor can belong to two reservations. Use a
+	# separate closure per route to guarantee both lifecycle events fire.
+	var exit_callback := func() -> void:
+		_on_completed_belt_exiting(reservation_id)
+	if belt.tree_exiting.connect(exit_callback) != OK:
+		release(reservation_id)
+		push_error("Failed to observe completed planned conveyor removal.")
+		return
+	var side := "source" if is_source else "receiver"
+	record[side + "_belt_exit_callback"] = exit_callback
+	_reservations[reservation_id] = record
 	_notify_if_ready(reservation_id)
 
 
