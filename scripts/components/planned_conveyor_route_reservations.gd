@@ -77,8 +77,12 @@ func has_completed_endpoint(reservation_id: int, output_side: bool) -> bool:
 		return false
 	var record: Dictionary = _reservations[reservation_id]
 	var key := "source_belt" if output_side else "receiver_belt"
-	var belt: ConveyorSegment = record[key] as ConveyorSegment
-	return is_instance_valid(belt) and not belt.is_queued_for_deletion()
+	var saved_belt: Variant = record[key]
+	# A freed Object cannot be cast with 'as', even to its old class.
+	if not is_instance_valid(saved_belt):
+		return false
+	var belt := saved_belt as ConveyorSegment
+	return belt != null and not belt.is_queued_for_deletion()
 
 
 func get_ready_candidate(reservation_id: int) -> Dictionary:
@@ -86,9 +90,13 @@ func get_ready_candidate(reservation_id: int) -> Dictionary:
 		return {}
 
 	var record: Dictionary = _reservations[reservation_id]
-	var source: ConveyorSegment = record["source_belt"] as ConveyorSegment
-	var receiver: ConveyorSegment = record["receiver_belt"] as ConveyorSegment
-	if not is_instance_valid(source) or not is_instance_valid(receiver):
+	var saved_source: Variant = record["source_belt"]
+	var saved_receiver: Variant = record["receiver_belt"]
+	if not is_instance_valid(saved_source) or not is_instance_valid(saved_receiver):
+		return {}
+	var source := saved_source as ConveyorSegment
+	var receiver := saved_receiver as ConveyorSegment
+	if source == null or receiver == null:
 		return {}
 	if source.is_queued_for_deletion() or receiver.is_queued_for_deletion():
 		return {}
@@ -117,32 +125,36 @@ func release(reservation_id: int) -> bool:
 	if not _reservations.has(reservation_id):
 		return false
 	var record: Dictionary = _reservations[reservation_id]
-	var source: ConstructionSite = record["source"] as ConstructionSite
-	var receiver: ConstructionSite = record["receiver"] as ConstructionSite
 
-	_disconnect_site(source, reservation_id, true)
-	_disconnect_site(receiver, reservation_id, false)
+	# A completed blueprint's ConstructionSite is queue_freed while its
+	# reservation remains active. Inspect the raw stored Variant BEFORE
+	# casting: casting a freed Object raises a Godot runtime error.
 	for side: String in ["source", "receiver"]:
-		var belt: ConveyorSegment = (
-			record[side + "_belt"] as ConveyorSegment
-		)
+		var saved_site: Variant = record[side]
+		if is_instance_valid(saved_site):
+			var site := saved_site as ConstructionSite
+			if site != null:
+				_disconnect_site(site, reservation_id, side == "source")
+
+		var saved_belt: Variant = record[side + "_belt"]
+		if not is_instance_valid(saved_belt):
+			continue
+		var belt := saved_belt as ConveyorSegment
 		var exit_handler: Callable = record.get(
 			side + "_belt_exit_callback", Callable()
 		)
 		if (
-			is_instance_valid(belt)
+			belt != null
 			and exit_handler.is_valid()
 			and belt.tree_exiting.is_connected(exit_handler)
 		):
 			belt.tree_exiting.disconnect(exit_handler)
 
-	# Use immutable keys recorded when reserved: completed sites may have
-	# been freed while their live belts and pending route still exist.
+	# Use immutable keys recorded when reserved; the sites can be freed.
 	_endpoint_claims.erase(record["source_key"])
 	_endpoint_claims.erase(record["receiver_key"])
 	_reservations.erase(reservation_id)
 	return true
-
 
 func _endpoint_key(site: ConstructionSite, side: String) -> String:
 	if not is_instance_valid(site):
@@ -273,11 +285,13 @@ func _on_site_exiting(reservation_id: int, is_source: bool) -> void:
 	if not _reservations.has(reservation_id):
 		return
 	var record: Dictionary = _reservations[reservation_id]
-	var completed: ConveyorSegment = (
+	var completed: Variant = (
 		record["source_belt"] if is_source else record["receiver_belt"]
-	) as ConveyorSegment
+	)
 	# Normal site retirement after completion preserves the claim.
 	# Unexpected removal of an unbuilt site cancels its entire route.
+	# Test validity before casting because a completed belt might have
+	# been removed during a teardown callback.
 	if not is_instance_valid(completed):
 		release(reservation_id)
 
