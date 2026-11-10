@@ -97,6 +97,7 @@ func _ready() -> void:
 		print("PASS CLAIM: ", port.name, " rejects duplicate plans")
 
 		assert(controller._cancel_blueprint_site(site))
+		await get_tree().process_frame
 		assert(not BlueprintRoutePortSnap.has_pending_live_claim(
 			get_tree(), port
 		))
