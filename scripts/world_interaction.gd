@@ -91,8 +91,14 @@ var _route_anchor: Dictionary = {}
 var _blueprint_l_route_mode: bool = false
 var _blueprint_waypoint_route_mode: bool = false
 var _waypoint_route_points: Array[Dictionary] = []
+# Selection modes are scoped to Q-area-selection, never normal placement.
+const BLUEPRINT_SELECT_REPLACE: int = 0
+const BLUEPRINT_SELECT_ADD: int = 1
+const BLUEPRINT_SELECT_SUBTRACT: int = 2
+
 var _blueprint_area_selection_mode: bool = false
 var _blueprint_dragging: bool = false
+var _blueprint_drag_operation: int = BLUEPRINT_SELECT_REPLACE
 var _area_selected_sites: Array[ConstructionSite] = []
 var _blueprint_selection_overlay: BlueprintAreaSelectionOverlay = null
 var _waypoint_ghost_preview: BlueprintWaypointGhostPreview = null
@@ -439,7 +445,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event is InputEventMouseButton:
 				if event.button_index == MOUSE_BUTTON_LEFT:
 					if event.pressed:
-						_begin_blueprint_area_drag(event.position)
+						# Capture modifiers at drag START so releasing Shift/Alt
+						# while dragging does not change the operation.
+						var operation: int = BLUEPRINT_SELECT_REPLACE
+						if event.alt_pressed:
+							operation = BLUEPRINT_SELECT_SUBTRACT
+						elif event.shift_pressed:
+							operation = BLUEPRINT_SELECT_ADD
+						_begin_blueprint_area_drag(event.position, operation)
 					else:
 						_finish_blueprint_area_drag(event.position)
 				return
@@ -3662,13 +3675,23 @@ func _toggle_blueprint_area_selection() -> bool:
 	return true
 
 
-func _begin_blueprint_area_drag(screen_position: Vector2) -> bool:
+func _begin_blueprint_area_drag(
+	screen_position: Vector2,
+	operation: int = BLUEPRINT_SELECT_REPLACE
+) -> bool:
 	if not _blueprint_area_selection_mode:
 		return false
 	if not is_instance_valid(_blueprint_selection_overlay):
 		return false
+	if operation not in [
+		BLUEPRINT_SELECT_REPLACE,
+		BLUEPRINT_SELECT_ADD,
+		BLUEPRINT_SELECT_SUBTRACT
+	]:
+		operation = BLUEPRINT_SELECT_REPLACE
+	_blueprint_drag_operation = operation
 	_blueprint_dragging = true
-	_blueprint_selection_overlay.start_drag(screen_position)
+	_blueprint_selection_overlay.start_drag(screen_position, operation)
 	return true
 
 
@@ -3686,10 +3709,15 @@ func _finish_blueprint_area_drag(screen_position: Vector2) -> int:
 	var bounds: Rect2 = _blueprint_selection_overlay.finish_drag(
 		screen_position
 	)
-	return _select_blueprints_in_screen_rect(bounds)
+	var operation: int = _blueprint_drag_operation
+	_blueprint_drag_operation = BLUEPRINT_SELECT_REPLACE
+	return _select_blueprints_in_screen_rect(bounds, operation)
 
 
-func _select_blueprints_in_screen_rect(bounds: Rect2) -> int:
+func _select_blueprints_in_screen_rect(
+	bounds: Rect2,
+	operation: int = BLUEPRINT_SELECT_REPLACE
+) -> int:
 	if not (
 		enable_blueprint_area_selection
 		and _blueprint_area_selection_mode
@@ -3698,19 +3726,41 @@ func _select_blueprints_in_screen_rect(bounds: Rect2) -> int:
 		and is_instance_valid(camera)
 	):
 		return 0
-	_clear_blueprint_area_selection()
+	_prune_blueprint_area_selection()
+	if operation == BLUEPRINT_SELECT_REPLACE:
+		_clear_blueprint_area_selection()
+	elif operation != BLUEPRINT_SELECT_ADD and operation != BLUEPRINT_SELECT_SUBTRACT:
+		return _area_selected_sites.size()
 	var root: Node3D = get_parent() as Node3D
 	if not is_instance_valid(root):
 		return 0
 	var chosen: Array[ConstructionSite] = (
 		BlueprintAreaSelectionQuery.find_planned(camera, bounds, root)
 	)
+	var changes: int = 0
 	for site: ConstructionSite in chosen:
 		if not _is_managed_blueprint(site):
 			continue
-		_area_selected_sites.append(site)
-		site.set_blueprint_area_selected(true)
-	print("BLUEPRINT AREA SELECTED: ", _area_selected_sites.size(), " planned sites")
+		if operation == BLUEPRINT_SELECT_SUBTRACT:
+			var current_index: int = _area_selected_sites.find(site)
+			if current_index < 0:
+				continue
+			_area_selected_sites.remove_at(current_index)
+			site.set_blueprint_area_selected(false)
+			changes += 1
+		elif not _area_selected_sites.has(site):
+			_area_selected_sites.append(site)
+			site.set_blueprint_area_selected(true)
+			changes += 1
+	var action: String = "REPLACE"
+	if operation == BLUEPRINT_SELECT_ADD:
+		action = "ADD"
+	elif operation == BLUEPRINT_SELECT_SUBTRACT:
+		action = "REMOVE"
+	print(
+		"BLUEPRINT AREA SELECTED: ", _area_selected_sites.size(),
+		" planned sites | ", action, " changed ", changes
+	)
 	return _area_selected_sites.size()
 
 
@@ -3727,6 +3777,7 @@ func _prune_blueprint_area_selection() -> void:
 
 
 func _clear_blueprint_area_selection() -> void:
+	_blueprint_drag_operation = BLUEPRINT_SELECT_REPLACE
 	for site: ConstructionSite in _area_selected_sites:
 		if is_instance_valid(site) and not site.is_queued_for_deletion():
 			site.set_blueprint_area_selected(false)
