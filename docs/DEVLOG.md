@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-09 — Manual Connected Conveyor Corner Acceptance
+
+**Manual Godot evidence:** Developer confirmed all six player-control steps in the Factory Testing Sandbox passed and supplied three game screenshots showing translucent connected corner blueprints and completed working 90-degree conveyor layouts.
+
+- Player-facing right/left corner planning, blueprinted direction cues, E authorization and timed construction, X cancellation/return to straight, and regular P-off conveyor placement were all reported successful.
+- This complements the separately verified automated **17/17 E2c2** suite; the Main scene remains opted out.
+- **UX observation (not yet diagnosed):** The developer reports needing to rotate the selected conveyor so it faces the intended direction before a corner blueprint can be built. Direction-correct placement of the receiving belt is an intentional port requirement; however, authorization of an *already placed* site via E should not depend on current ghost rotation. The current `_blueprint_site_under_mouse()` selection-ray path and `_authorize_blueprint_site()` do not inspect ghost yaw. A focused manual confirmation is needed before changing the UI or ray selection.
+- No gameplay fix is claimed by this documentation checkpoint. Explore optional automatic receiver preview orientation after distinguishing route placement from E authorization.
+- **Next compatibility gate:** rerun E2b reservations (16), E2c1 activation (15), planned Storage Build Mode (6), and conveyor corner cargo (8) — **45 checks** — after accepting the player-facing integration. Then proceed toward planned-building port links with end-to-end inventory conservation.
+
+---
+
 ## 2026-11-09 — E2c2 Connected Conveyor Blueprint Automation Passed (17/17)
 
 **Godot 4.6.2 evidence:** Developer supplied the game view and Output screenshots for `res://tests/connected_conveyor_blueprint_e2c2_test.tscn`, showing PASS A–Q and `ALL 17 CONNECTED CONVEYOR BLUEPRINT E2C2 TESTS PASSED`. The rendered factory sandbox contains a mix of planned translucent conveyor segments and completed directional belts.
