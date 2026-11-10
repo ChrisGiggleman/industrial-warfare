@@ -30,10 +30,20 @@ func _ready() -> void:
 		Basis(Vector3.UP, deg_to_rad(90.0)),
 		Vector3(-4.0, 0.0, -1.0)
 	)
+	# Instanced conveyor ghosts retain the scene's player_built group.
+	# They must not be mistaken for completed conveyors during preview.
+	var ghost := ConveyorPieceSelector.STRAIGHT_SCENE.instantiate() as ConveyorSegment
+	assert(ghost != null)
+	ghost.add_to_group("construction_preview")
+	ghost.process_mode = Node.PROCESS_MODE_DISABLED
+	world.add_child(ghost)
+	ghost.global_transform = first_transform
+	(ghost.get_node("ConveyorBody") as StaticBody3D).collision_layer = 0
 	assert(ConveyorBlueprintPlacement.is_clear(
 		get_tree(), get_viewport().world_3d,
 		definition, first_transform
 	))
+	ghost.queue_free()
 	var first := controller._create_straight_conveyor_blueprint(
 		definition, first_transform
 	) as ConstructionSite
