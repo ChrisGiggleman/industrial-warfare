@@ -196,6 +196,15 @@ func _build_placeholder() -> void:
 	label.font_size = 28
 	label.pixel_size = 0.008
 	add_child(label)
+	# Several neighboring belts otherwise overlay large "PLANNED 0%"
+	# labels. Scale conveyor labels independently from building labels.
+	if (
+		is_instance_valid(target_definition)
+		and target_definition.building_id == &"conveyor_belt"
+	):
+		label.font_size = 15
+		label.pixel_size = 0.005
+		label.position.y = 0.82
 	_progress_label = label
 
 
@@ -227,6 +236,85 @@ func _build_planned_ports() -> void:
 		marker.transform = (child as Marker3D).transform
 		add_child(marker)
 	prototype.free()
+
+
+# =============================================================================
+# VISUAL CONVEYOR TURN INTENT — NON-OPERATIONAL BLUEPRINTS
+# =============================================================================
+# This is presentation only. The physical conveyor is still instantiated as
+# a straight scene and converted after BOTH endpoints complete by E2c1.
+# Keeping the existing ConstructionSite and cargo lifecycle unchanged allows
+# the player to see a proposed corner without transporting items early.
+
+func set_planned_conveyor_turn(turn: int) -> bool:
+	if not is_instance_valid(target_definition):
+		return false
+	if target_definition.building_id != &"conveyor_belt":
+		return false
+	if job == null or not accepts_planned_connections():
+		return false
+	if turn not in [
+		ConveyorTurnIntent.Turn.RIGHT,
+		ConveyorTurnIntent.Turn.LEFT
+	]:
+		return false
+	if has_meta("planned_conveyor_turn"):
+		return false
+
+	var mesh := get_node_or_null("ConstructionPlaceholder") as MeshInstance3D
+	var output := get_node_or_null("PlannedOutputEndpoint") as Marker3D
+	var arrow := get_node_or_null("PlannedDirectionArrow") as Label3D
+	if mesh == null or output == null or arrow == null:
+		return false
+
+	var corner_mesh := ConveyorCornerVisualMesh.build(turn)
+	var corner_scene := ConveyorPieceSelector.get_scene_for_turn(turn)
+	if corner_mesh == null or corner_scene == null:
+		return false
+	var prototype := corner_scene.instantiate() as ConveyorSegment
+	if prototype == null:
+		return false
+	var corner_output := prototype.get_node_or_null("OutputEndpoint") as Marker3D
+	if corner_output == null:
+		prototype.free()
+		return false
+
+	# Retain the previous local transform for lossless cancellation.
+	set_meta("planned_conveyor_straight_output", output.transform)
+	set_meta("planned_conveyor_turn", turn)
+	output.transform = corner_output.transform
+	mesh.mesh = corner_mesh
+	mesh.position.y = 0.3
+	arrow.text = "↱" if turn == ConveyorTurnIntent.Turn.RIGHT else "↰"
+	prototype.free()
+	return true
+
+
+func clear_planned_conveyor_turn() -> bool:
+	if not has_meta("planned_conveyor_turn"):
+		return false
+	if not is_instance_valid(target_definition):
+		return false
+	if target_definition.building_id != &"conveyor_belt":
+		return false
+	if job == null or not accepts_planned_connections():
+		return false
+
+	var mesh := get_node_or_null("ConstructionPlaceholder") as MeshInstance3D
+	var output := get_node_or_null("PlannedOutputEndpoint") as Marker3D
+	var arrow := get_node_or_null("PlannedDirectionArrow") as Label3D
+	if mesh == null or output == null or arrow == null:
+		return false
+
+	var straight_box := BoxMesh.new()
+	straight_box.size = Vector3(float(footprint.x), 0.6, float(footprint.y))
+	mesh.mesh = straight_box
+	mesh.position.y = 0.3
+	output.transform = get_meta("planned_conveyor_straight_output")
+	arrow.text = "↑"
+	remove_meta("planned_conveyor_turn")
+	remove_meta("planned_conveyor_straight_output")
+	return true
 
 
 func get_planned_port(input_side: bool) -> Marker3D:
