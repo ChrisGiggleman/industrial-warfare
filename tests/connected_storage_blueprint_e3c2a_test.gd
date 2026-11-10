@@ -188,6 +188,9 @@ func _ready() -> void:
 	assert(coordinator.claim_broker.claim_count() == 0)
 	assert(cancel_belt.job.state == ConstructionJob.State.PLANNED)
 	print("PASS K: Cancelling planned Storage releases adjacent belt without building")
+	# Let the PhysicsServer retire the cancelled footprint before placing
+	# new plans in the same area; reservation ownership is already clear.
+	await get_tree().process_frame
 
 	# Planning order can be reversed: register the belt before its Storage.
 	var first_belt_site := _plan_belt(
