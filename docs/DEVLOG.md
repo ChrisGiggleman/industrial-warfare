@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-09 — Straight Conveyor Blueprint E1 Automated Regression Passed (14/14)
+
+**Evidence:** Developer-provided Godot 4.6.2 Output screenshot of `res://tests/conveyor_blueprint_e1_test.tscn`, showing all PASS A–N and `ALL 14 STRAIGHT CONVEYOR BLUEPRINT E1 TESTS PASSED`.
+
+- Scripted regression verifies that cardinal straight conveyor plans reserve a one-tile footprint, preserve planned endpoint geometry and direction, and lack operational cargo/transport before construction completes.
+- Authorization fails closed without power/material/worker availability, pauses without lost progress, and creates one real `ConveyorSegment` with inventory and transport on the two-second job's completion.
+- Invalid rotations and overlapping plans are rejected, cancelling a plan prevents activation, and its tile can be reused; completed belts do not create phantom links or duplicate instances.
+- The sandbox test-only requirements override remains separate from actual future power, materials and construction workers. Main Build Mode is still opted out.
+- The screenshot contains `Hit nothing` after the successful test summary. No test assertion failed; this is a separate interaction diagnostic, not a construction regression.
+- **Pending:** Manual keyboard/mouse test for B/P/5/LMB/E, direction arrows, completion and X cancellation in the Factory Testing Sandbox. Scripted assertions cannot prove the real cursor controls or belt visuals.
+- **After manual acceptance:** Recheck normal live conveyor Build Mode before enabling the E2 connection-graph work. No gameplay code changed for this documentation checkpoint.
+
+---
+
 ## 2026-11-09 — Conveyor Compatibility Passed and Straight Blueprint E1 Staged
 
 **Validated in Godot 4.6.2:** Developer-provided Output screenshots show the post-Blueprint-Mode `planned_storage_build_mode_test.tscn` passed **6/6** and `conveyor_corner_cargo_test.tscn` passed **8/8**, a combined **14/14** on the prior E0 controller revision.
