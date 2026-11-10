@@ -9,20 +9,33 @@ var _summary: Label = null
 
 
 func _ready() -> void:
+	# Explicit bounds are necessary for a programmatically created Control.
+	# Without right/bottom offsets, it may render as a collapsed rectangle.
+	layer = 5
 	var panel := PanelContainer.new()
 	panel.name = "BlueprintSummaryPanel"
-	panel.anchor_left = 0.0
-	panel.anchor_top = 0.0
-	panel.offset_left = 12.0
-	panel.offset_top = 12.0
+	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	panel.offset_left = 16.0
+	panel.offset_top = 16.0
+	panel.offset_right = 285.0
+	panel.offset_bottom = 106.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.name = "SummaryMargin"
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(margin)
 
 	_summary = Label.new()
 	_summary.name = "BlueprintSummaryLabel"
 	_summary.add_theme_font_size_override("font_size", 15)
 	_summary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(_summary)
+	margin.add_child(_summary)
 	_refresh()
 
 
