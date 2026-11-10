@@ -353,7 +353,10 @@ func _unhandled_input(event: InputEvent) -> void:
 					_toggle_blueprint_mode()
 					return
 				if key == KEY_E:
-					_authorize_blueprint_site(_blueprint_site_under_mouse())
+					if event.ctrl_pressed:
+						_authorize_all_blueprint_sites()
+					else:
+						_authorize_blueprint_site(_blueprint_site_under_mouse())
 					return
 				if key == KEY_X:
 					_cancel_blueprint_site(_blueprint_site_under_mouse())
@@ -3473,6 +3476,37 @@ func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 		print("BLUEPRINT DEBUG: Requirements bypassed in testing sandbox")
 	print("BLUEPRINT AUTHORIZED: ", site.target_definition.display_name)
 	return true
+
+
+# =============================================================================
+# BATCH BLUEPRINT AUTHORIZATION — SANDBOX PLANNING TOOL
+# =============================================================================
+# Ctrl+E authorizes all still-planned sites in the current factory world.
+# Every site uses the existing authorization and readiness gates.
+# No resources, power, workers, or construction time are fabricated here.
+
+func _authorize_all_blueprint_sites() -> int:
+	if not enable_blueprint_planning or not placement_mode_active:
+		return 0
+	if demolition_mode_active or not blueprint_mode_active:
+		return 0
+	var count: int = 0
+	# Snapshot the group: authorization can emit signals that change state.
+	var candidates: Array[Node] = get_tree().get_nodes_in_group(
+		"construction_sites"
+	)
+	for candidate: Node in candidates:
+		if not candidate is ConstructionSite:
+			continue
+		var site := candidate as ConstructionSite
+		if not _is_managed_blueprint(site):
+			continue
+		if site.job.state != ConstructionJob.State.PLANNED:
+			continue
+		if _authorize_blueprint_site(site):
+			count += 1
+	print("BLUEPRINT BATCH AUTHORIZED: ", count, " planned sites")
+	return count
 
 
 func _cancel_blueprint_site(site: ConstructionSite) -> bool:
