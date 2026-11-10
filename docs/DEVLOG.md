@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-11-09 — E2c1 Deferred Conveyor Activation Staged (15 Checks Pending)
+
+**Source checkpoint, not yet tested in Godot:** Added `scripts/components/planned_conveyor_route_activator.gd` and `res://tests/planned_conveyor_activation_e2c1_test.tscn`.
+
+- The isolated `PlannedConveyorRouteActivator` listens to the validated E2b registry's `reservation_ready` signal. It attempts a physical connection only after `get_ready_candidate()` confirms both completed real belts, compatible endpoints, matching planned turn and unchanged junction.
+- `ConveyorExistingConnection.try_connect_candidate()` performs the already-tested direct/left/right transaction and independently revalidates the final geometry. Reciprocal belt references must exist before the adapter releases reservation claims and emits `connection_committed`.
+- A missed or rejected connection leaves the reservation pending, including moved geometry or occupied ports. `try_commit(id)` supports explicit retry after those conditions are corrected; no premature cargo transfer occurs.
+- The new **15-check E2c1 F6 scene** covers receiver/source-first direct links, right/left corner conversion, held and delivered ore, two-link route conservation, stale geometry rejection/retry, occupied input/output protection, cancellation and completed-belt deletion. **Pending developer execution; not yet 15/15.**
+- No changes to live `WorldInteraction`, building HUD, Main, factory construction sites, existing operational conveyor modules, AI/combat, or save/load. The physical activation adapter is not yet connected to player-created blueprints.
+- **After passing:** create a separate sandbox-only E2c2 gate to register placed blueprint neighbors, render the planned turn and authorize actual connection activation. Test all manual controls and cargo/demolition regressions.
+
+---
+
 ## 2026-11-09 — E2b Exclusive Route Reservations Accepted (16/16)
 
 **Godot 4.6.2 evidence:** The developer's latest Output screenshot shows `ALL 16 PLANNED CONVEYOR RESERVATION E2B TESTS PASSED`, all PASS A–P, and normal debugger shutdown.
