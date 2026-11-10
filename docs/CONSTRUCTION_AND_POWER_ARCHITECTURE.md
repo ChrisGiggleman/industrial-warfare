@@ -2,7 +2,7 @@
 
 **Project:** Industrial Warfare — one zombie-planet playable demo  
 **Date:** 2026-11-08  
-**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 **passed 14/14 scripted F6 checks** (2026-11-09); its manual player controls remain pending. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
+**Status:** ConstructionJob **14/14**, universal ConstructionSite **15/15**, original compatibility suites **23/23**, per-definition durations **12/12**, and building Blueprint Mode **12/12** passed in Godot 4.6.2. Building Blueprint Mode passed 7-step manual authorization and 6-step cancellation/overlap checks. Post-Blueprint-Mode conveyor compatibility **14/14 passed** (2026-11-09). Stand-alone straight conveyor blueprint E1 **passed 14/14 scripted F6 checks** and its seven-step manual placement/authorization/cancellation sequence was confirmed (2026-11-09). E2a planned direct/right/left route-geometry discovery is committed with a **12-check F6 test pending**. Visible planned corner conversion and graph activation remain unimplemented. Connected conveyor blueprint topology, Main scene and power grid remain unimplemented.  
 **Compatibility baseline:** Godot 4.6.2 Stable, `main`; timed Storage construction and planned Storage belt reservations remain sandbox-only.
 
 ## 1. Existing Implementation and Constraints
@@ -147,6 +147,19 @@ The Factory Testing Sandbox's opt-in P mode now supports planning a stand-alone,
 - E and X reuse the blueprint authorization and cancellation commands. The Factory Testing Sandbox alone has the explicit synthetic power/material/worker readiness override. Main scene defaults remain opt-out.
 - When the two-second authorized job completes, the existing straight `ConveyorSegment` scene is instantiated once at the saved transform. E1 does not automatically connect it to adjacent belts or buildings; physical endpoint reservations and cargo conservation are future E2/E3 requirements.
 - `res://tests/conveyor_blueprint_e1_test.tscn` passed **14/14 in developer-run Godot 4.6.2**. Phase E1 manual cursor/keyboard acceptance is still pending; do not add planned belt link behavior until that interaction and the original conveyor Build Mode are revalidated.
+
+---
+
+### E2a checkpoint — planned straight-to-straight corner intent
+
+`PlannedConveyorRouteGeometry.inspect_pair(source_site, receiver_site)` performs **read-only** discovery of a valid direct link or a source site's potential right/left conversion. It uses the same corner scenes' `OutputEndpoint` transforms and gap/facing thresholds already used by the operational conveyor system. It refuses invalid, non-belt, cancelled, completed and unrelated sites.
+
+- Its result contains the intended `mode`, `turn`, `junction`, `source` and `receiver`. The object is a **candidate**, not a reserved or active link.
+- Blueprints keep their straight placeholder graphics and non-operational markers. No preconstruction `ConveyorSegment`, inventory, or extra runtime physics connection is created.
+- `res://tests/planned_conveyor_route_geometry_e2a_test.tscn` has **12 local Godot checks pending developer execution**.
+- **E2b ownership requirement:** Reserve both endpoint claims exclusively, protect against duplicate/out-of-date claims, release claims when either site is cancelled or destroyed, and handle either construction completion order. Do not hand a real belt a neighbor reference until that neighbor is a complete, geometry-compatible operational conveyor.
+- **E2c player behavior:** Update planned turn arrows and visibly L-shaped placeholders from reserved geometry, then activate correct operational corner shapes and links. Right and left turns, blocked downstream cargo, demolition and conservation must pass separate automated and manual acceptance.
+- Main scene remains unchanged. The temporary testing readiness override does not represent generated power or supplied building materials.
 
 ---
 
