@@ -93,9 +93,29 @@ func _ready() -> void:
 	assert(candidate_ab.get("source") == belt_a)
 	assert(candidate_ab.get("receiver") == belt_b)
 	assert(registry.get_ready_candidate(bc).is_empty())
-	print("PASS E: Receiver completion makes first route ready exactly once")
+	assert(registry.has_completed_endpoint(ab, true))
+	assert(registry.has_completed_endpoint(ab, false))
+	assert(registry.has_completed_endpoint(bc, true))
+	assert(not registry.has_completed_endpoint(bc, false))
+	print("PASS E: Middle belt announces its incoming AND outgoing reservations")
 
 	var belt_c := _complete(c)
+	assert(registry.has_completed_endpoint(bc, true))
+	assert(registry.has_completed_endpoint(bc, false))
+	if ready_ids != [ab, bc]:
+		print(
+			"E2B DIAGNOSTIC: emitted=", ready_ids,
+			" | BC claimed=", registry.is_reserved(bc),
+			" | completed sides=",
+			registry.has_completed_endpoint(bc, true), "/",
+			registry.has_completed_endpoint(bc, false),
+			" | physical candidate=",
+			ConveyorExistingEndpointFinder.inspect_pair(belt_b, belt_c).get(
+				"mode", "none"
+			),
+			" | ready candidate=",
+			registry.get_ready_candidate(bc).get("mode", "none")
+		)
 	assert(ready_ids == [ab, bc])
 	assert(registry.get_ready_candidate(bc).get("mode") == "direct")
 	assert(belt_a.next_segment == null)
