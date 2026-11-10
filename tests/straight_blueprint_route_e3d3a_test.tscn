@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/straight_blueprint_route_e3d3a_test.gd" id="1_test"]
+
+[node name="StraightBlueprintRouteE3D3ATest" type="Node3D"]
+script = ExtResource("1_test")
