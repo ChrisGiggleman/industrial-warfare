@@ -12,7 +12,7 @@ class_name BlueprintConveyorRouteCoordinator
 var registry: PlannedConveyorRouteReservations
 var activator: PlannedConveyorRouteActivator
 
-# Optional Storage blueprint integration. Must be configured before
+# Optional building-port blueprint integration. Must be configured before
 # add_child() calls _ready(); Main and older isolated tests stay opt-out.
 var enable_storage_port_blueprints: bool = false
 var claim_broker: PlannedEndpointClaimBroker = null
@@ -63,10 +63,10 @@ func register_new_site(site: ConstructionSite) -> Array[int]:
 	if site.is_queued_for_deletion():
 		return result
 
-	# Storage can be planned before or after its connecting belts.
-	# Only the explicit sandbox feature opt-in creates these claims.
-	if enable_storage_port_blueprints and _is_storage_plan(site):
-		return _reserve_storage_neighbors(site)
+	# Port-bearing buildings can be planned before or after their belts.
+	# No operational link is created until both sites finish construction.
+	if enable_storage_port_blueprints and _is_port_building_plan(site):
+		return _reserve_building_neighbors(site)
 	if not _is_active_plan(site) or not is_instance_valid(registry):
 		return result
 
@@ -76,14 +76,15 @@ func register_new_site(site: ConstructionSite) -> Array[int]:
 	var neighbors: Array[ConstructionSite] = _neighbors(site)
 	if is_instance_valid(port_registry):
 		for existing: ConstructionSite in neighbors:
-			if not _is_storage_plan(existing):
+			if not _is_port_building_plan(existing):
 				continue
 			for input_side: bool in [true, false]:
-				var port_id := port_registry.reserve_pair(
-					existing, site, input_side
-				)
-				if port_id > 0:
-					result.append(port_id)
+				for port_name: StringName in existing.get_planned_port_names(input_side):
+					var port_id := port_registry.reserve_pair(
+						existing, site, input_side, port_name
+					)
+					if port_id > 0:
+						result.append(port_id)
 
 	# Connect up to one incoming and one outgoing belt endpoint. The
 	# registry's shared broker rejects ends owned by a Storage port.
@@ -110,21 +111,22 @@ func register_new_site(site: ConstructionSite) -> Array[int]:
 	return result
 
 
-func _reserve_storage_neighbors(
-	storage_site: ConstructionSite
+func _reserve_building_neighbors(
+	building_site: ConstructionSite
 ) -> Array[int]:
 	var result: Array[int] = []
 	if not is_instance_valid(port_registry):
 		return result
-	for existing: ConstructionSite in _neighbors(storage_site):
+	for existing: ConstructionSite in _neighbors(building_site):
 		if not _is_active_plan(existing):
 			continue
 		for input_side: bool in [true, false]:
-			var id := port_registry.reserve_pair(
-				storage_site, existing, input_side
-			)
-			if id > 0:
-				result.append(id)
+			for port_name: StringName in building_site.get_planned_port_names(input_side):
+				var id := port_registry.reserve_pair(
+					building_site, existing, input_side, port_name
+				)
+				if id > 0:
+					result.append(id)
 	return result
 
 
@@ -143,7 +145,7 @@ func _neighbors(site: ConstructionSite) -> Array[ConstructionSite]:
 	return result
 
 
-func _is_storage_plan(site: ConstructionSite) -> bool:
+func _is_port_building_plan(site: ConstructionSite) -> bool:
 	return (
 		is_instance_valid(site)
 		and site.is_inside_tree()
@@ -151,7 +153,11 @@ func _is_storage_plan(site: ConstructionSite) -> bool:
 		and site.job != null
 		and site.accepts_planned_connections()
 		and is_instance_valid(site.target_definition)
-		and site.target_definition.building_id == &"test_storage"
+		and site.target_definition.building_id != &"conveyor_belt"
+		and (
+			not site.get_planned_port_names(true).is_empty()
+			or not site.get_planned_port_names(false).is_empty()
+		)
 	)
 
 func _reserve_and_visualize(
