@@ -61,6 +61,12 @@ func _ready() -> void:
 	assert(registry.reserve_pair(a, b) == 0)
 	assert(registry.reserve_pair(a, a) == 0)
 	assert(registry.reserve_pair(b, c) == 0)
+	# A separate competing blueprint at the same geometry still cannot
+	# steal a claimed receiver input or source output.
+	var rival_source := _make_site(root, definition, Vector3(0, 0, 0))
+	var rival_receiver := _make_site(root, definition, Vector3(0, 0, -1))
+	assert(registry.reserve_pair(rival_source, b) == 0)
+	assert(registry.reserve_pair(a, rival_receiver) == 0)
 	assert(registry.claim_count() == 4)
 	assert(registry.has_endpoint_claim(a, true))
 	assert(registry.has_endpoint_claim(b, false))
