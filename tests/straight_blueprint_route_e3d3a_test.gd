@@ -86,4 +86,35 @@ func _ready() -> void:
 	defaults.free()
 	print("PASS E: Main-scene route tool remains disabled by default")
 
-	print("ALL 5 STRAIGHT BLUEPRINT ROUTE E3D3A TESTS PASSED")
+	for yaw: float in angles:
+		var basis := Basis(Vector3.UP, deg_to_rad(yaw))
+		var forward: Vector3 = basis * Vector3.FORWARD
+		var endpoint: Vector3 = start_position + forward * 5.0
+		# No R key is needed: endpoints determine the final orientation.
+		var inferred: Array[Transform3D] = (
+			BlueprintStraightRoute.get_tiles_between(start_position, endpoint)
+		)
+		assert(inferred.size() == 6)
+		assert((inferred[0].basis * Vector3.FORWARD).is_equal_approx(
+			forward
+		))
+		assert(inferred[5].origin.is_equal_approx(endpoint))
+	print("PASS F: Two-click routes auto-orient in all four cardinal directions")
+
+	assert(BlueprintStraightRoute.get_tiles_between(
+		start_position, start_position
+	).is_empty())
+	assert(BlueprintStraightRoute.get_tiles_between(
+		start_position, start_position + Vector3(3, 0, 2)
+	).is_empty())
+	print("PASS G: Same-tile and diagonal clicks never create misleading routes")
+
+	assert(BlueprintStraightRoute.get_tiles_between(
+		start_position, start_position + Vector3(0, 0, -31)
+	).size() == 32)
+	assert(BlueprintStraightRoute.get_tiles_between(
+		start_position, start_position + Vector3(0, 0, -32)
+	).is_empty())
+	print("PASS H: Inferred two-click routes retain the 32-tile safety limit")
+
+	print("ALL 8 STRAIGHT BLUEPRINT ROUTE E3D3A TESTS PASSED")
