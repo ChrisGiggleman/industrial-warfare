@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-11-09 — Conveyor Compatibility Passed and Straight Blueprint E1 Staged
+
+**Validated in Godot 4.6.2:** Developer-provided Output screenshots show the post-Blueprint-Mode `planned_storage_build_mode_test.tscn` passed **6/6** and `conveyor_corner_cargo_test.tscn` passed **8/8**, a combined **14/14** on the prior E0 controller revision.
+
+**Phase E1 implementation — pending local validation:**
+
+- Added `scripts/components/conveyor_blueprint_placement.gd` to check one straight conveyor's cardinal orientation and integer-grid tile against other unfinished footprints, same-frame completed conveyor tiles and physical placement blockers.
+- The sandbox's existing P Blueprint Mode can now place **stand-alone straight belt sites only** using the definition's two-second duration. Selected conveyor ghosts in P mode use a dedicated no-snap preview instead of the existing live conveyor corner/bridge/port discovery. The normal non-P conveyor placement route is untouched.
+- Planned belt sites are non-operational: only reserved collision, future endpoint markers, `PLANNED` progress and a visible direction arrow exist. No `CargoInventory`, `ConveyorTransportTimer`, completed port links or transport is created before job completion.
+- E authorization and X cancellation reuse the previously validated blueprint job controls; the explicit sandbox debug override supplies synthetic readiness for testing only.
+- The new `res://tests/conveyor_blueprint_e1_test.tscn` contains **14 scripted checks**, including geometry, reservation exclusivity, queued requirements, pause/resume, 2-second activation, direction, no phantom physical connections, duplicate rejection and cancellation/reuse. **Not yet run in Godot.**
+- **Deliberately out of scope:** planned belt-to-belt linking, planned Storage input/output snaps, corner chains, build-order-independent physical connection and construction materials/power/drones. All require dedicated E2/E3 architecture and regression tests.
+- Main scene remains opted out. No standalone save system or new enemy factions were introduced.
+
+**Next acceptance:** Run E1 F6 14-check test; then manual belt-plan P/LMB/E and cancellation X in the zombie-free Factory Testing Sandbox before adding any live conveyor graph behavior.
+
+---
+
 ## 2026-11-09 — Blueprint Cancellation and Footprint Reuse Manually Accepted
 
 **Evidence:** Developer screenshot of a translucent `PLANNED 0%` Storage site in Godot 4.6.2 and explicit confirmation that all six manual steps passed in the Factory Testing Sandbox.
