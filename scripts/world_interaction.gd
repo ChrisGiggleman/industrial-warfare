@@ -3928,6 +3928,8 @@ func _show_blueprint_waypoint_preview_at(
 		_waypoint_ghost_preview.clear_preview()
 		return false
 	if not position.is_finite():
+		# Force a rebuild when the cursor returns to the same grid tile.
+		_waypoint_preview_signature = ""
 		_waypoint_ghost_preview.show_route(
 			fixed_tiles, fixed_tiles.size(), false
 		)
