@@ -3677,8 +3677,44 @@ func _blueprint_route_cursor_grid() -> Dictionary:
 			snappedf(point.x, grid_size),
 			point.y,
 			snappedf(point.z, grid_size)
-		)
+		),
+		"ground": point
 	}
+
+
+func _blueprint_route_port_target(
+	world_cursor: Vector3, building_input: bool
+) -> Dictionary:
+	if not enable_connected_storage_blueprints:
+		return {}
+	if not is_instance_valid(placement_ghost):
+		return {}
+	if not placement_ghost is ConveyorSegment:
+		return {}
+	if not is_instance_valid(_planned_route_coordinator):
+		return {}
+	var proposed: Dictionary = BlueprintRoutePortSnap.find_nearest(
+		placement_ghost as ConveyorSegment,
+		world_cursor,
+		_planned_route_coordinator.port_registry,
+		building_input
+	)
+	if proposed.is_empty():
+		return {}
+	if proposed.get("kind") == "live":
+		var port: ItemPortComponent = proposed.get("port") as ItemPortComponent
+		if BlueprintRoutePortSnap.has_pending_live_claim(get_tree(), port):
+			return {}
+	var definition: BuildingDefinition = _get_selected_building_definition()
+	if not is_instance_valid(definition):
+		return {}
+	var candidate: Transform3D = proposed["transform"]
+	if not ConveyorBlueprintPlacement.is_clear(
+		get_tree(), get_viewport().world_3d,
+		definition, candidate, PLACEMENT_BLOCKER_COLLISION_MASK
+	):
+		return {}
+	return proposed
 
 
 func _handle_blueprint_route_click() -> int:
@@ -3697,11 +3733,27 @@ func _handle_blueprint_route_click() -> int:
 		print("BLUEPRINT ROUTE: Point at an open ground tile.")
 		return 0
 	var position: Vector3 = clicked["position"]
+	var ground: Vector3 = clicked["ground"]
 	if _blueprint_l_route_mode:
-		return _handle_blueprint_l_route_position(position)
+		return _handle_blueprint_l_route_position(position, ground)
+	var endpoint_target: Dictionary = _blueprint_route_port_target(
+		ground, not _route_anchor.is_empty()
+	)
+	if not endpoint_target.is_empty():
+		var snapped: Transform3D = endpoint_target["transform"]
+		position = snapped.origin
 	var definition: BuildingDefinition = _get_selected_building_definition()
 	if not is_instance_valid(definition):
 		return 0
+	var endpoint_target: Dictionary = {}
+	if _route_anchor.is_empty() or _route_anchor.has("turn"):
+		var cursor: Vector3 = raw_ground if raw_ground.is_finite() else position
+		endpoint_target = _blueprint_route_port_target(
+			cursor, not _route_anchor.is_empty()
+		)
+		if not endpoint_target.is_empty():
+			var snapped: Transform3D = endpoint_target["transform"]
+			position = snapped.origin
 
 	if _route_anchor.is_empty():
 		# The first click must be placeable. No resources or claims change yet.
@@ -3712,12 +3764,13 @@ func _handle_blueprint_route_click() -> int:
 		):
 			print("BLUEPRINT ROUTE: Start tile blocked.")
 			return 0
-		_route_anchor = {"position": position}
+		_route_anchor = {"position": position, "port": endpoint_target}
 		print("BLUEPRINT ROUTE: Start selected at ", position,
 			"; Shift-click a different tile in the same row or column.")
 		return 0
 
 	var anchor: Vector3 = _route_anchor["position"]
+	var start_target: Dictionary = _route_anchor.get("port", {})
 	_route_anchor.clear()
 	if anchor.is_equal_approx(position):
 		print("BLUEPRINT ROUTE: Start and endpoint are the same tile.")
@@ -3731,7 +3784,9 @@ func _handle_blueprint_route_click() -> int:
 		print("BLUEPRINT ROUTE: Choose a straight row or column (2–32 tiles).")
 		return 0
 
-	var placed: int = _commit_blueprint_route_tiles(tiles, definition)
+	var placed: int = _commit_blueprint_route_tiles(
+		tiles, definition, start_target, endpoint_target
+	)
 	if placed > 0:
 		print("BLUEPRINT ROUTE PLANNED: ", placed, " conveyor tiles.")
 	return placed
@@ -3763,7 +3818,9 @@ func _toggle_blueprint_l_route_mode() -> bool:
 	return _blueprint_l_route_mode
 
 
-func _handle_blueprint_l_route_position(position: Vector3) -> int:
+func _handle_blueprint_l_route_position(
+	position: Vector3, raw_ground: Vector3 = Vector3.INF
+) -> int:
 	# Separate testable handler: input device raycast is handled by caller.
 	if not (
 		_blueprint_l_route_mode
@@ -3787,7 +3844,7 @@ func _handle_blueprint_l_route_position(position: Vector3) -> int:
 		):
 			print("BLUEPRINT L-ROUTE: Start tile blocked.")
 			return 0
-		_route_anchor = {"position": position}
+		_route_anchor = {"position": position, "port": endpoint_target}
 		print("BLUEPRINT L-ROUTE: Start selected; Shift-click corner.")
 		return 0
 
@@ -3811,7 +3868,10 @@ func _handle_blueprint_l_route_position(position: Vector3) -> int:
 		# Retain the two points so the player can retry the endpoint.
 		print("BLUEPRINT L-ROUTE: Endpoint must form a 90-degree turn (max 32 tiles).")
 		return 0
-	var placed: int = _commit_blueprint_route_tiles(tiles, definition)
+	var start_target: Dictionary = _route_anchor.get("port", {})
+	var placed: int = _commit_blueprint_route_tiles(
+		tiles, definition, start_target, endpoint_target
+	)
 	if placed > 0:
 		_route_anchor.clear()
 		print("BLUEPRINT L-ROUTE PLANNED: ", placed,
@@ -3820,10 +3880,32 @@ func _handle_blueprint_l_route_position(position: Vector3) -> int:
 
 
 func _commit_blueprint_route_tiles(
-	tiles: Array[Transform3D], definition: BuildingDefinition
+	tiles: Array[Transform3D],
+	definition: BuildingDefinition,
+	start_target: Dictionary = {},
+	end_target: Dictionary = {}
 ) -> int:
 	if tiles.is_empty() or not is_instance_valid(definition):
 		return 0
+	if not BlueprintRoutePortSnap.matches_route_end(tiles[0], start_target):
+		print("BLUEPRINT ROUTE: Start port faces a different direction.")
+		return 0
+	if not BlueprintRoutePortSnap.matches_route_end(
+		tiles[tiles.size() - 1], end_target
+	):
+		print("BLUEPRINT ROUTE: End port faces a different direction.")
+		return 0
+	for target: Dictionary in [start_target, end_target]:
+		if target.get("kind") != "live":
+			continue
+		var port: ItemPortComponent = target.get("port") as ItemPortComponent
+		if (
+			port == null or not port.is_inside_tree()
+			or is_instance_valid(port.connected_conveyor)
+			or BlueprintRoutePortSnap.has_pending_live_claim(get_tree(), port)
+		):
+			print("BLUEPRINT ROUTE: Completed building port unavailable.")
+			return 0
 	# No partial route should be created when a tile is already reserved.
 	for tile: Transform3D in tiles:
 		if not ConveyorBlueprintPlacement.is_clear(
@@ -3845,7 +3927,64 @@ func _commit_blueprint_route_tiles(
 			print("BLUEPRINT ROUTE: Placement failed; sites cancelled.")
 			return 0
 		created.append(site)
+	# The standard coordinator already owns claims to unfinished building
+	# ports. Completed ports need deferred physical activation on the
+	# corresponding edge belt once construction finishes.
+	for entry: Dictionary in [
+		{"target": start_target, "site": created[0]},
+		{"target": end_target, "site": created[created.size() - 1]}
+	]:
+		var target: Dictionary = entry["target"]
+		if target.get("kind") == "planned":
+			var plan: ConstructionSite = target.get("site") as ConstructionSite
+			if (
+				not is_instance_valid(plan)
+				or not is_instance_valid(_planned_route_coordinator)
+				or not _planned_route_coordinator.port_registry.has_building_claim(
+					plan, bool(target["input_side"]), target["port_name"]
+				)
+			):
+				for previous: ConstructionSite in created:
+					if is_instance_valid(previous):
+						previous.job.cancel()
+				print("BLUEPRINT ROUTE: Planned building port claim failed; route cancelled.")
+				return 0
+		elif target.get("kind") == "live":
+			var port: ItemPortComponent = target.get("port") as ItemPortComponent
+			if not _bind_blueprint_route_live_port(entry["site"] as ConstructionSite, port):
+				for previous: ConstructionSite in created:
+					if is_instance_valid(previous):
+						previous.job.cancel()
+				print("BLUEPRINT ROUTE: Completed building port binding failed; route cancelled.")
+				return 0
 	return created.size()
+
+
+func _bind_blueprint_route_live_port(
+	site: ConstructionSite, port: ItemPortComponent
+) -> bool:
+	if not is_instance_valid(site) or not is_instance_valid(port):
+		return false
+	if is_instance_valid(port.connected_conveyor):
+		return false
+	if BlueprintRoutePortSnap.has_pending_live_claim(get_tree(), port):
+		return false
+	site.set_meta("route_live_port_id", port.get_instance_id())
+	var port_ref: WeakRef = weakref(port)
+	site.building_completed.connect(func(built: Node3D) -> void:
+		var raw: Variant = port_ref.get_ref()
+		if not is_instance_valid(raw) or not built is ConveyorSegment:
+			return
+		var live_port: ItemPortComponent = raw as ItemPortComponent
+		var belt: ConveyorSegment = built as ConveyorSegment
+		if not belt.try_connect_building_port(live_port):
+			print("BLUEPRINT ROUTE: Completed building port connection rejected.")
+		else:
+			print("BLUEPRINT ROUTE: Connected completed building port ",
+				live_port.name)
+	)
+	return true
+
 
 # =============================================================================
 # STRAIGHT CONVEYOR BLUEPRINT COMMIT — OPTIONAL E2C2 ROUTE DISCOVERY
