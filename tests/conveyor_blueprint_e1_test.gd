@@ -47,6 +47,7 @@ func _ready() -> void:
 	assert(first.get_node_or_null("ReservedFootprint/CollisionShape3D") != null)
 	assert(first.get_node_or_null("PlannedInputEndpoint") is Marker3D)
 	assert(first.get_node_or_null("PlannedOutputEndpoint") is Marker3D)
+	assert(first.get_node_or_null("PlannedDirectionArrow") is Label3D)
 	assert(first.get_node_or_null("CargoInventory") == null)
 	assert(first.get_node_or_null("ConveyorTransportTimer") == null)
 	assert(first.get_node_or_null("ConveyorTransportComponent") == null)
