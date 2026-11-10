@@ -138,8 +138,9 @@ func _ready() -> void:
 	assert(target.get("kind") == "planned")
 	assert(target.get("site") == planned)
 	assert(bool(target["input_side"]))
+	var planned_tiles: Array[Transform3D] = [plan_transform]
 	assert(controller._commit_blueprint_route_tiles(
-		[plan_transform], belt_def, {}, target
+		planned_tiles, belt_def, {}, target
 	) == 1)
 	assert(coordinator.port_registry.has_building_claim(
 		planned, true, &"InputPort"
