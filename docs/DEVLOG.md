@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-11-09 — E2b Freed-Site Reservation Cleanup Fixed (Retest Pending)
+
+**Godot 4.6.2 evidence:** After the first callback fix, the developer's next F6 screenshot stopped in `PlannedConveyorRouteReservations.release()` at the old line 120, invoked from test I (the explicit A→B release). The Debugger message was `Trying to cast a freed object.` The run had reached test I, so the earlier two-route completion failure no longer appears to be the current blocker.
+
+**Root cause and corrective patch:**
+
+- When a construction job completes, its placeholder `ConstructionSite` is retired. The registry intentionally retains the route reservation and completed `ConveyorSegment` references across that retirement.
+- `release()` nonetheless cast `record["source"]` and `record["receiver"]` directly to `ConstructionSite`, which throws in Godot if either stored Variant refers to an already-freed Object.
+- Cleanup now checks `is_instance_valid()` on raw saved site and belt Variants **before casting**, disconnecting observers only for existing objects. Exclusive claims are always released using the immutable source/receiver endpoint keys instead of touching freed sites.
+- Applied the same validity-before-cast guard to `has_completed_endpoint()`, `get_ready_candidate()`, and the site-exit observer, to avoid related stale-object cast errors during future teardown.
+- Test G now explicitly confirms A, B and C sites have been freed before continuing to test readiness. Test I directly exercises releasing A→B after those sites are gone while preserving B→C.
+- No operational conveyor, cargo, or player Build Mode scripts were modified.
+
+**Status:** Fix committed to `main`, **16/16 Godot validation still pending**. Next run: `res://tests/planned_conveyor_reservations_e2b_test.tscn` with F6.
+
+---
+
 ## 2026-11-09 — E2b First Local Run Failed; Shared-Site Callbacks Revised
 
 **Developer Godot 4.6.2 evidence:** `planned_conveyor_reservations_e2b_test.tscn` stopped at line 99 in test F, with `ready_ids` containing only one ID where `[ab, bc]` was expected. The initial screenshot shows Debugger Errors (4); their detailed messages were not visible. **Do not mark E2b passed.**
