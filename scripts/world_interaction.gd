@@ -3574,9 +3574,13 @@ func _create_blueprint_site(
 	site.global_transform = placement
 	if (
 		enable_connected_storage_blueprints
-		and definition.building_id == &"test_storage"
 		and is_instance_valid(_planned_route_coordinator)
+		and (
+			not site.get_planned_port_names(true).is_empty()
+			or not site.get_planned_port_names(false).is_empty()
+		)
 	):
+		# Building-first planning also discovers neighboring belt plans.
 		_planned_route_coordinator.register_new_site(site)
 	return site
 
