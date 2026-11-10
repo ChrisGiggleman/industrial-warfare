@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/shared_blueprint_endpoint_ownership_e3c0_test.gd" id="1_test"]
+
+[node name="SharedBlueprintEndpointOwnershipE3C0Test" type="Node3D"]
+script = ExtResource("1_test")
