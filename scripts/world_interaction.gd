@@ -1513,10 +1513,13 @@ func _get_conveyor_preview_scene_for_mouse(
 # =============================================================================
 # STRAIGHT CONVEYOR BLUEPRINT PREVIEW — SANDBOX PORT SNAPPING
 # =============================================================================
-# Storage snapping is opt-in. It preserves R's requested belt direction,
-# uses only unclaimed future port markers, and never creates a live link.
+# Storage snapping is opt-in. Manual direction checks remain available for
+# regression tests; player previews can auto-orient to free future ports.
+# Discovery never creates a live link.
 
-func _get_storage_blueprint_snap_preview(mouse_world: Vector3) -> Dictionary:
+func _get_storage_blueprint_snap_preview(
+	mouse_world: Vector3, auto_orient: bool = false
+) -> Dictionary:
 	if not enable_blueprint_planning or not enable_connected_storage_blueprints:
 		return {}
 	if not blueprint_mode_active:
@@ -1531,7 +1534,9 @@ func _get_storage_blueprint_snap_preview(mouse_world: Vector3) -> Dictionary:
 	var proposed := BlueprintStoragePortSnapPreview.find_nearest(
 		placement_ghost as ConveyorSegment,
 		mouse_world,
-		port_registry
+		port_registry,
+		0.65,
+		auto_orient
 	)
 	if proposed.is_empty():
 		return {}
@@ -1578,9 +1583,12 @@ func _update_straight_conveyor_blueprint_preview() -> void:
 		placement_ghost.global_position = current_placement_position
 		placement_ghost.rotation_degrees.y = placement_rotation_degrees
 
-		# Resolve the snap from the UNSNAPPED mouse point. The previously
-		# selected orientation is preserved, including after pressing R.
-		var snapped := _get_storage_blueprint_snap_preview(ground)
+		# Resolve from the unsnapped cursor and orient the displayed ghost
+		# to the free Storage port. R remains the manual rotation choice
+		# when the cursor is away from an available port.
+		var snapped: Dictionary = _get_storage_blueprint_snap_preview(
+			ground, true
+		)
 		if not snapped.is_empty():
 			var transform: Transform3D = snapped["transform"]
 			placement_ghost.global_transform = transform
