@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-09 — E2c2 Sandbox Connected Blueprint Corners Staged (17 Checks Pending)
+
+**Status:** New opt-in code committed to `main`, **not yet Godot validated**. E2c1 physical activation passed all 15 checks in the developer's previous F6 screenshot.
+
+- Added `BlueprintConveyorRouteCoordinator` as a sandbox-only Node. It owns a `PlannedConveyorRouteReservations` registry and `PlannedConveyorRouteActivator` instance, scans nearby unfinished straight-belt sites on placement, and reserves up to one directed incoming and one outgoing link.
+- The existing `WorldInteraction._create_straight_conveyor_blueprint()` now notifies the coordinator only when `enable_connected_conveyor_blueprints` is enabled; the flag is true in `factory_testing_sandbox.tscn` and **false by default** for Main and all other scenes.
+- `ConstructionSite.set_planned_conveyor_turn()` replaces a non-operational straight placeholder mesh with the existing `ConveyorCornerVisualMesh` left/right shape, copies the appropriate corner output marker transform, changes the directional arrow, and retains an original marker for safe rollback. `clear_planned_conveyor_turn()` restores straight geometry on reservation cancellation.
+- The E2b registry now emits `reservation_released` after removing a claim. The coordinator uses `WeakRef` for planned source sites and only clears still-unfinished source visuals; it cannot resurrect deleted sites or change completed conveyors.
+- Compact `PLANNED` labels reduce overlap on adjacent one-tile conveyor blueprints. No visual plan contains live `CargoInventory`, transport timers, or active links before construction.
+- `res://tests/connected_conveyor_blueprint_e2c2_test.tscn` contains **17 scripted checks** for standalone/straight and mirrored corners, output marker transforms, cancellation rollback, source-/receiver-first completion, three-segment chains, ore conservation and Main opt-out. **Developer F6 execution remains pending.**
+- No standalone save/load feature, real Power Station, drones, or new enemy factions were introduced. Building-port blueprint connections, manual full-route editing and short-gap bridges are not included in this initial E2c2 gate.
+
+**Next:** Run the 17-check scene. If it passes, manually use B/5/P/LMB to lay a straight-to-right or straight-to-left plan and confirm the corner visually updates before E authorization. Then rerun E2b, E2c1 and legacy cargo/Build Mode regressions before broadening planning to unfinished Storage ports.
+
+---
+
 ## 2026-11-09 — E2c1 Deferred Physical Connections Accepted (15/15)
 
 **Godot 4.6.2 evidence:** Developer Output screenshot reports `ALL 15 PLANNED CONVEYOR ACTIVATION E2C1 TESTS PASSED` (A–O), with normal debugger shutdown.
