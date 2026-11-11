@@ -4,8 +4,9 @@ class_name SandboxConstructionRequirementsFeatureGate
 # =============================================================================
 # E3D5C3D2B — FACTORY TESTING SANDBOX READ-ONLY PANEL GATE
 # =============================================================================
-# This component is OFF by default. A sandbox-only F6 fixture may opt in
-# before entering the tree. Does not change WorldInteraction, authorization,
+# This component's SCRIPT default is OFF, but Factory Testing Sandbox
+# explicitly enables the read-only UI in its scene. Other instances remain
+# off unless opted in. Does not change WorldInteraction, authorization,
 # debug construction bypass, materials, power, worker slots, cargo or combat.
 #
 # When enabled, it attaches only the existing read-only RequirementsPanel

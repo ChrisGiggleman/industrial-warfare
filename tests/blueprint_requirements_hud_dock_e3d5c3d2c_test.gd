@@ -23,10 +23,9 @@ func _run_checks() -> void:
 		"ConstructionRequirementsFeatureGate"
 	) as SandboxConstructionRequirementsFeatureGate
 	assert(gate != null)
-	assert(not gate.enable_read_only_requirements_panel)
-	print("PASS A: Committed Factory Testing Sandbox UI remains off by default")
+	assert(gate.enable_read_only_requirements_panel)
+	print("PASS A: Committed Factory Testing Sandbox UI is enabled by default")
 
-	gate.enable_read_only_requirements_panel = true
 	add_child(sandbox)
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -35,7 +34,7 @@ func _run_checks() -> void:
 	var panel: BlueprintConstructionRequirementsPanel = gate.get_panel()
 	assert(is_instance_valid(panel))
 	assert(not panel.is_open())
-	print("PASS B: Only the F6 instance opts in; sandbox debug gates stay intact")
+	print("PASS B: Default-on UI leaves sandbox debug gates intact")
 
 	var hud: Control = sandbox.get_node(
 		"ProductionDebugHUD/InfoPanel"

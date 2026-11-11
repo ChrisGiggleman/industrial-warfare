@@ -114,7 +114,7 @@ script = ExtResource("17_blueprint_summary")
 
 [node name="ConstructionRequirementsFeatureGate" type="Node" parent="."]
 script = ExtResource("18_requirements_gate")
-enable_read_only_requirements_panel = false
+enable_read_only_requirements_panel = true
 
 [node name="BuildHUD" parent="." unique_id=1882342599 instance=ExtResource("6_jvmw0")]
 

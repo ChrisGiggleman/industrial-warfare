@@ -2570,3 +2570,13 @@ Developer Godot 4.6.2 screenshot shows `ALL 18 E3D5C3D2A READ-ONLY REQUIREMENTS 
 The remaining manual acceptance is a direct physical mouse-click close/reopen verification in the running game window. Automated `pressed.emit()` tests prove signal handling but are not proof of human mouse interaction. Thus the regular Factory Testing Sandbox gate remains **OFF by default**. This is an evidence/documentation-only update; no source, construction, inventory, combat or scene files were modified.
 
 After confirmation, the next small checkpoint is a read-only UI default-on switch in Factory Testing Sandbox with F6/manual smoke tests, preserving its debug construction override and all existing gameplay input.
+
+### 2026-11-11 — E3d5c3d2d Default-On Sandbox Requirements Button Staged
+
+The developer's new standalone screenshot displays the **closed** Construction Requirements panel and its visible button, confirming physical mouse-close behavior in addition to previously accepted 44/44 UI F6 checks. Reopening by physical mouse click is not explicitly shown and remains part of the next manual smoke test.
+
+**Focused implementation:** Changed `scenes/core/factory_testing_sandbox.tscn` so its `ConstructionRequirementsFeatureGate` opts into the existing read-only panel **by default**. The component script's exported default is still OFF for any other host. The UI itself begins **closed** to avoid clutter until the player clicks. Main gameplay is not given this UI; no other existing game control or service was changed. Existing F6 E3d5c3d2b and E3d5c3d2c scenes were updated solely to expect intentional default-on sandbox behavior, without dropping their acceptance assertions.
+
+Staged `res://tests/sandbox_requirements_default_on_e3d5c3d2d_test.tscn` with **12 A–L scripted checks**, pending local Godot F6. It validates a real unmodified sandbox instance, initial closed state, single button, no overlap, materials-only observation, unknown services, unchanged debug construction flags and no unintended game-side effects. Follow with E3d5c3d2b 16 and E3d5c3d2c 10 regressions plus the manual F6 sandbox mouse/blueprint/conveyor smoke test.
+
+**No real construction readiness enabled:** materials/power/workers are not wired; the panel continues to report UNKNOWN and `Live readiness: NOT VERIFIED`, and the sandbox's existing debug-gate bypass is unchanged.

@@ -1021,3 +1021,21 @@ Completed:
 - [ ] Keep `enable_read_only_requirements_panel = false` in Factory Testing Sandbox until user confirms real mouse interaction. Do not enable production resource/power/worker readiness or remove `blueprint_sandbox_debug_requirements = true`.
 
 **Next controlled checkpoint after mouse acceptance:** enable the read-only panel by default ONLY in Factory Testing Sandbox, retain its ability to be closed, and test it in a regular F6 sandbox launch plus one controlled selection/conveyor/combat smoke test. Main and live construction authority remain unchanged.
+
+### E3d5c3d2a/b/c — Manual Close Verified; UI Regression Matrix Complete (2026-11-11)
+
+- [x] Developer-supplied screenshot of the standalone F6 window shows the **closed** Construction Requirements panel and the **Construction Requirements** button. This confirms a physical UI close action was successful, complementing previous open-panel screenshots and automated toggle assertions.
+- [x] All current-code E3d5c3d2a/b/c UI suites **44/44 automated checks passed**, and the sandbox HUD-overlap fix passed visual inspection.
+- [ ] Physical open-after-close mouse operation has not been explicitly confirmed; test it in the next default-on sandbox smoke run.
+
+### E3d5c3d2d — Requirements Button Enabled for Regular Factory Testing (Staged; F6 Pending)
+
+- [x] Change only the **Factory Testing Sandbox scene** `ConstructionRequirementsFeatureGate.enable_read_only_requirements_panel` from false to **true**. The component class's default remains false for all other scenes. The panel is still **initially closed** and opens only when clicked.
+- [x] Retain Production Debug adaptive docking and blueprint selection observation; do not connect nonexistent power/stock/escrow/worker services, and always display UNKNOWN and `Live readiness: NOT VERIFIED`.
+- [x] Update E3d5c3d2b (16-check) and E3d5c3d2c (10-check) test fixtures to reflect the intentional scene-default change, preserving their original safety, behavior and HUD assertions.
+- [x] Stage `res://tests/sandbox_requirements_default_on_e3d5c3d2d_test.tscn` with **12 A–L** checks: generic gate off vs sandbox scene on; single closed UI; HUD coexistence; toggle states; selected blueprint material bill; UNKNOWN providers; no construction authorization/time changes; unchanged keyboard debug controls; and no new UI in Main.
+- [ ] **Godot 4.6.2 F6 12/12 pending**, followed by E3d5c3d2b 16/16 and E3d5c3d2c 10/10 compatibility reruns under the new scene default.
+- [ ] Manually run `res://scenes/core/factory_testing_sandbox.tscn` with F6: confirm button shown while panel CLOSED, click open / close / reopen, and check normal blueprint selection, conveyor placement and debug HUD without interference.
+- [ ] Next: a separate scoped design/test for clickable selected-blueprint priorities and authorization, forwarding to existing validated commands without bypassing materials/power/worker gates.
+
+**Safe boundary:** `main.tscn`, `WorldInteraction`, gameplay scheduling, power allocation, inventory/escrow, logistics, and combat remain unchanged; `blueprint_sandbox_debug_requirements = true` stays enabled in the Factory Testing Sandbox for prototype testing.

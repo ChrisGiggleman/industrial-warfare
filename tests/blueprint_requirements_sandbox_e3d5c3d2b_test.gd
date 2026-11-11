@@ -25,12 +25,11 @@ func _ready() -> void:
 		"ConstructionRequirementsFeatureGate"
 	) as SandboxConstructionRequirementsFeatureGate
 	assert(gate != null)
-	assert(not gate.enable_read_only_requirements_panel)
+	assert(gate.enable_read_only_requirements_panel)
 	assert(gate.get_panel() == null)
-	print("PASS B: Committed sandbox has feature disabled by default")
+	print("PASS B: Committed sandbox enables read-only UI by default")
 
-	# Opt in ONLY this one F6 fixture instance, before _ready on children.
-	gate.enable_read_only_requirements_panel = true
+	# The committed scene already opts in; exercise its regular startup.
 	add_child(sandbox)
 	assert(sandbox.is_inside_tree())
 	var controller: Node = sandbox.get_node("WorldInteraction")
@@ -38,7 +37,7 @@ func _ready() -> void:
 	assert(bool(controller.get("blueprint_sandbox_debug_requirements")))
 	assert(bool(controller.get("enable_blueprint_area_selection")))
 	assert(bool(controller.get("enable_blueprint_construction_priorities")))
-	print("PASS C: Opt-in test preserves existing sandbox blueprint debug flags")
+	print("PASS C: Default-on UI preserves sandbox blueprint debug flags")
 
 	var panel: BlueprintConstructionRequirementsPanel = gate.get_panel()
 	assert(is_instance_valid(panel))
@@ -46,7 +45,7 @@ func _ready() -> void:
 	assert(panel.follow_area_selection)
 	assert(not panel.is_open())
 	assert(panel.get_toggle_button() != null)
-	print("PASS D: Opt-in sandbox creates exactly one closed read-only panel")
+	print("PASS D: Regular sandbox creates exactly one closed read-only panel")
 
 	assert(gate.get_child_count() == 1)
 	var toggle: Button = panel.get_toggle_button()
@@ -59,7 +58,7 @@ func _ready() -> void:
 	assert(panel.is_open())
 	assert(toggle.text == "Close Construction Requirements")
 	assert(panel.get_display_text().contains("No selected site"))
-	print("PASS F: Sandbox mouse-toggle signal opens read-only details")
+	print("PASS F: Sandbox toggle signal opens read-only details")
 
 	var storage := load(
 		"res://data/buildings/test_storage.tres"
@@ -144,4 +143,4 @@ func _ready() -> void:
 
 	print("ALL 16 E3D5C3D2B SANDBOX READ-ONLY REQUIREMENTS UI TESTS PASSED")
 	print("MANUAL: In the F6 window, click Close Construction Requirements, then reopen it.")
-	print("MANUAL: The factory sandbox scene itself remains disabled by default.")
+	print("MANUAL: Regular Factory Testing Sandbox now has the button by default.")
