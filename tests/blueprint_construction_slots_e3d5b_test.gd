@@ -75,9 +75,11 @@ func _ready() -> void:
 	for site: ConstructionSite in sites:
 		assert(site.job.get_wait_reasons().size() == 3)
 		assert(site.job.get_progress() == 0.0)
+	var unattached := ConstructionSite.new()
 	assert(not scheduler.update_requirements(
-		ConstructionSite.new(), true, true
+		unattached, true, true
 	))
+	unattached.free()
 	print("PASS C: Missing readiness snapshots fail closed; nothing builds")
 
 	assert(scheduler.update_requirements(low_one, true, true))
