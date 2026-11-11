@@ -495,3 +495,9 @@ This is NOT live sandbox certification: the coordinator is not instantiated by W
 **Persistence safety:** The one-time per-Hub marker currently lives in runtime metadata, and escrow records are also in-memory. Without an authoritative saved state, neither may be considered secure against save/load duplication or material loss. Consequently this bootstrap is a TEST-ONLY foundation and must not be enabled in normal gameplay until persistence and migration are designed and tested. The current nameplate power allocator is still not actual metered electricity.
 
 **Test:** `res://tests/main_hub_starter_inventory_e3d5c3c2_test.tscn` has 16 staged F6 checks A–P, pending developer validation. Once accepted, rerun existing completed power structures E3d5c3b1 (16) and construction readiness E3d5c3c1 (18) to ensure that the additional inventory child did not change power or coordinator behavior. Main and Factory Testing Sandbox scenes remain completely unchanged.
+
+### E3d5c3c2 — Inventory Lookup Diagnostic (F6 Retest Pending)
+
+The first isolated starter-inventory acceptance run failed before stock seeding at the first inventory availability assertion. The committed prototype Hub scene does declare `InventoryComponent` with the expected `InventoryComponent` script and capacity 40; the actual loaded instance did not yield a usable typed, in-tree inventory according to the screenshot. The root cause has not been verified.
+
+For diagnosis, the F6 fixture now prints the live Hub child list, attached scripts and raw inventory-node type before safely stopping, rather than silently attaching a fallback inventory. The test remains isolated. Do not change bootstrap authorization, inventory stock counts, physical belt logistics, Main or Factory Testing Sandbox until the cause is clear. 16/16 acceptance and follow-up power/coordinator regressions are still pending.

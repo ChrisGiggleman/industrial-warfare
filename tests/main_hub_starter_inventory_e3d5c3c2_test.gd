@@ -46,6 +46,31 @@ func _ready() -> void:
 
 	var hub: PrototypePowerStructure = _hub()
 	var stock: InventoryComponent = bootstrap.get_hub_inventory(hub)
+	# Diagnostic gate: report the instantiated scene when the expected
+	# typed inventory is missing. Do not fabricate a replacement inventory.
+	if stock == null or not stock.is_inside_tree():
+		print("E3D5C3C2 DIAGNOSTIC: Hub scene path = ", hub.scene_file_path)
+		print("E3D5C3C2 DIAGNOSTIC: Hub children:")
+		for child: Node in hub.get_children():
+			var script_path: String = "<none>"
+			var child_script: Script = child.get_script() as Script
+			if is_instance_valid(child_script):
+				script_path = child_script.resource_path
+			print(
+				"  name=", child.name, " class=", child.get_class(),
+				" script=", script_path, " inside_tree=", child.is_inside_tree()
+			)
+		var raw_inventory: Node = hub.get_node_or_null("InventoryComponent")
+		print(
+			"E3D5C3C2 DIAGNOSTIC: Raw inventory node = ",
+			raw_inventory, " typed_as_InventoryComponent = ",
+			raw_inventory is InventoryComponent
+		)
+		push_error(
+			"E3D5C3C2 cannot continue: loaded Hub is missing its live typed "
+			+ "InventoryComponent. Inspect the diagnostic lines above."
+		)
+		return
 	assert(stock != null and stock.is_inside_tree())
 	assert(stock.max_capacity == 40)
 	assert(stock.get_total_amount() == 0)

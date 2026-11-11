@@ -870,3 +870,13 @@ Completed:
 - [ ] Important unsolved before live gameplay: persist the one-time starter marker and escrow across save/load; decide which inventory physically supplies build drones and delivery; implement real supplied electrical energy, construction UI and safe opt-in switch from debug bypass.
 
 **No Factory Testing Sandbox or Main scene/control modifications.** The starter service runs only if explicitly invoked; constructing a Hub scene alone creates no starting resources. The 20/8 item quantities are provisional prototype economy values, not final balancing.
+
+### E3d5c3c2 — Hub Inventory Load Failure: Diagnostic Gate (2026-11-11)
+
+- [ ] **Developer's first F6 run halted at Test B, line 49:** `assert(stock != null and stock.is_inside_tree())`; Godot debugger displayed an assertion failure. Full 16/16 acceptance is NOT established.
+- [x] GitHub `prototype_main_hub.tscn` declares a direct child named `InventoryComponent` with script `inventory_component.gd` and finite capacity 40. The separate bootstrap lookup expects exactly this live, typed child.
+- [x] Stage a test-only diagnostic before the failed assertion: show the loaded `scene_file_path`, each actual Hub child name/class/script/tree state, and whether the raw InventoryComponent node is typed correctly. Stop safely on failure; **do not fabricate a replacement inventory or bypass the fault**.
+- [ ] Rerun `res://tests/main_hub_starter_inventory_e3d5c3c2_test.tscn` and capture **Output diagnostic lines plus both Debugger errors**; compare local Hub scene contents with GitHub if the child is absent.
+- [ ] Do not mark E3d5c3c2 accepted until all 16 checks A–P pass. Power-structure/coordinator regression still pending after that.
+
+**Scope:** only the isolated F6 fixture and documentation were changed. Main and Factory Testing Sandbox remain untouched.
