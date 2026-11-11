@@ -9,6 +9,7 @@ class_name ConstructionJob
 # It never creates buildings, consumes inventory or allocates power.
 
 signal state_changed(new_state: int)
+signal priority_changed(new_priority: int)
 signal job_completed
 signal job_cancelled
 
@@ -21,7 +22,11 @@ enum State {
 	CANCELLED
 }
 
+# Low numbers are dispatched first when future workers become available.
+enum Priority { HIGH, NORMAL, LOW }
+
 var state: State = State.PLANNED
+var priority: Priority = Priority.NORMAL
 
 var _configured: bool = false
 var _requires_power: bool = true
@@ -59,6 +64,32 @@ func configure(
 	_requires_workers = requires_workers
 	_configured = true
 	return true
+
+
+# Priority changes never modify authorization, availability, or progress.
+# A queued job may be reprioritized; an active job is already assigned work.
+func set_priority(new_priority: int) -> bool:
+	if not _configured:
+		return false
+	if state not in [State.PLANNED, State.QUEUED]:
+		return false
+	if new_priority not in [Priority.HIGH, Priority.NORMAL, Priority.LOW]:
+		return false
+	if int(priority) == new_priority:
+		return true
+	priority = new_priority as Priority
+	priority_changed.emit(new_priority)
+	return true
+
+
+static func priority_name(value: int) -> String:
+	match value:
+		Priority.HIGH:
+			return "High"
+		Priority.LOW:
+			return "Low"
+		_:
+			return "Normal"
 
 
 func authorize() -> bool:
