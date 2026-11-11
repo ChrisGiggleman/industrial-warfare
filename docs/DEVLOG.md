@@ -2580,3 +2580,11 @@ The developer's new standalone screenshot displays the **closed** Construction R
 Staged `res://tests/sandbox_requirements_default_on_e3d5c3d2d_test.tscn` with **12 A–L scripted checks**, pending local Godot F6. It validates a real unmodified sandbox instance, initial closed state, single button, no overlap, materials-only observation, unknown services, unchanged debug construction flags and no unintended game-side effects. Follow with E3d5c3d2b 16 and E3d5c3d2c 10 regressions plus the manual F6 sandbox mouse/blueprint/conveyor smoke test.
 
 **No real construction readiness enabled:** materials/power/workers are not wired; the panel continues to report UNKNOWN and `Live readiness: NOT VERIFIED`, and the sandbox's existing debug-gate bypass is unchanged.
+
+### 2026-11-11 — E3d5c3d2d Default-On Sandbox Requirements F6 12/12 Passed
+
+Developer's F6 Output screenshot confirms PASS A–L and `ALL 12 E3D5C3D2D DEFAULT-ON SANDBOX REQUIREMENTS TESTS PASSED`, with no visible errors. In the paired running-window screenshot, the Factory Blueprints HUD shows one selected High-priority planned blueprint, the read-only Construction Requirements panel shows Test Storage, priority High, progress 0%, and Test Ingot x3, while stock, escrow, power and workers remain explicitly UNKNOWN. Production Debug and Factory Blueprints are not visually obscured.
+
+The additional `Hit nothing` line matches the existing empty raycast selection diagnostic and is not an assertion failure. The screenshot shows the panel open, not a complete physical open/close/reopen sequence; manual sandbox UI and conveyor smoke checks remain to be confirmed.
+
+**Next acceptance gate:** Re-run the updated E3d5c3d2b (16) and E3d5c3d2c (10) scenes after enabling the sandbox button by default. No source code changes in this documentation-only acceptance record. The normal sandbox retains debug construction, while this panel remains read-only and without real supply-provider connections.

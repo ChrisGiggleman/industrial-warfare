@@ -1039,3 +1039,14 @@ Completed:
 - [ ] Next: a separate scoped design/test for clickable selected-blueprint priorities and authorization, forwarding to existing validated commands without bypassing materials/power/worker gates.
 
 **Safe boundary:** `main.tscn`, `WorldInteraction`, gameplay scheduling, power allocation, inventory/escrow, logistics, and combat remain unchanged; `blueprint_sandbox_debug_requirements = true` stays enabled in the Factory Testing Sandbox for prototype testing.
+
+### E3d5c3d2d — Default-On Sandbox UI Dedicated F6 Accepted (2026-11-11)
+
+- [x] Developer Godot 4.6.2 screenshot confirms `ALL 12 E3D5C3D2D DEFAULT-ON SANDBOX REQUIREMENTS TESTS PASSED` (PASS A–L); no failed assertions visible.
+- [x] Running-window screenshot shows Factory Blueprints, Production Debug and the read-only Construction Requirements panel coexisting without overlap; selected High-priority Test Storage appears with Test Ingot x3 and UNKNOWN unconnected services.
+- [x] Confirmed committed Factory Testing Sandbox enables the requirements **button** by default and leaves the debug construction override intact. The panel starts closed and does not grant real power, materials or workers.
+- [ ] Current-code post-enable regressions still pending: `res://tests/blueprint_requirements_sandbox_e3d5c3d2b_test.tscn` (16) and `res://tests/blueprint_requirements_hud_dock_e3d5c3d2c_test.tscn` (10).
+- [ ] Manual regular sandbox F6 smoke: physically open, close and reopen the button; select/deselect blueprints; test a small conveyor route and existing HUD/placement without errors. This is separate from programmatic button signal checks.
+- [ ] Only after these checks accept E3d5c3d2d in full. Next: isolated clickable priority controls using existing validated blueprint commands, with no construction-readiness bypass.
+
+**Status:** Dedicated 12/12 accepted; **26 compatibility checks and manual F6 smoke remain**. Production Main, gameplay power, material escrow, worker scheduling, conveyors and combat are unchanged.
