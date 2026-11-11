@@ -17,8 +17,8 @@ func _ready() -> void:
 	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	panel.offset_left = 16.0
 	panel.offset_top = 16.0
-	panel.offset_right = 285.0
-	panel.offset_bottom = 159.0
+	panel.offset_right = 392.0
+	panel.offset_bottom = 211.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
 
@@ -63,6 +63,9 @@ func _refresh() -> void:
 			ConstructionJob.State.PAUSED:
 				counts["paused"] += 1
 	var selected_count: int = 0
+	var selected_high: int = 0
+	var selected_normal: int = 0
+	var selected_low: int = 0
 	for member: Node in get_tree().get_nodes_in_group("blueprint_area_selected"):
 		if not member is ConstructionSite:
 			continue
@@ -73,6 +76,13 @@ func _refresh() -> void:
 			and chosen.job.state == ConstructionJob.State.PLANNED
 		):
 			selected_count += 1
+			match chosen.job.priority:
+				ConstructionJob.Priority.HIGH:
+					selected_high += 1
+				ConstructionJob.Priority.NORMAL:
+					selected_normal += 1
+				ConstructionJob.Priority.LOW:
+					selected_low += 1
 	var selection_active: bool = false
 	var controller: Node = get_parent().get_node_or_null("WorldInteraction")
 	if is_instance_valid(controller):
@@ -82,10 +92,37 @@ func _refresh() -> void:
 		"\nShift+Drag: Add | Alt+Drag: Remove"
 		if selection_active else ""
 	)
+	var priority_lines: String = ""
+	if (
+		is_instance_valid(controller)
+		and bool(controller.get("enable_blueprint_construction_priorities"))
+	):
+		var waiting: int = 0
+		var next_label: String = "None"
+		var queue: BlueprintConstructionPriorityQueue = (
+			controller.get_node_or_null("BlueprintConstructionPriorityQueue")
+			as BlueprintConstructionPriorityQueue
+		)
+		if is_instance_valid(queue):
+			waiting = queue.get_waiting_count()
+			var next: ConstructionSite = queue.peek_next()
+			if is_instance_valid(next) and is_instance_valid(next.target_definition):
+				next_label = (
+					ConstructionJob.priority_name(int(next.job.priority))
+					+ ": " + next.target_definition.display_name
+				)
+		priority_lines = (
+			"\nSelected priority: H %d | N %d | L %d" %
+			[selected_high, selected_normal, selected_low]
+			+ "\nWaiting queue: %d | Next: %s" % [waiting, next_label]
+		)
+		if selection_active:
+			priority_lines += "\nH: High  |  N: Normal  |  L: Low"
 	_summary.text = (
 		"FACTORY BLUEPRINTS\n"
 		+ "Planned: %d   Queued: %d\n" % [counts["planned"], counts["queued"]]
 		+ "Building: %d   Paused: %d\n" % [counts["building"], counts["paused"]]
 		+ "Selected: %d   |   %s" % [selected_count, hint]
 		+ extra_hint
+		+ priority_lines
 	)
