@@ -65,7 +65,7 @@ func _ready() -> void:
 		storage, Transform3D(Basis.IDENTITY, Vector3(1, 0, -5))
 	) as ConstructionSite
 	var immediate := controller._create_blueprint_site(
-		storage, Transform3D(Basis.IDENTITY, Vector3(-6, 0, -5))
+		storage, Transform3D(Basis.IDENTITY, Vector3(-7, 0, 5))
 	) as ConstructionSite
 	assert(
 		high_first != null and low_first != null and normal != null
