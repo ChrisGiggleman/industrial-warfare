@@ -507,3 +507,11 @@ For diagnosis, the F6 fixture now prints the live Hub child list, attached scrip
 The first bootstrap F6 attempts revealed that Godot instantiated the Hub without the `InventoryComponent` despite the local repository file declaring it. Investigation found `#` comments immediately preceding this final node. Godot documents `;` comments in TSCN; the scene has now been normalized by deleting those hash comments while leaving the inventory node, script, capacity and original power structure unchanged. This is a focused import/serialization correction, not a new source of material creation.
 
 The only authoritative completion gate remains a fresh Godot 4.6.2 F6 run of `main_hub_starter_inventory_e3d5c3c2_test.tscn` with all 16 checks, followed by prior power-structure and readiness-coordinator regressions. Main and Factory Testing Sandbox are unchanged.
+
+### E3d5c3c2 — Confirmed Godot Scene and F6 Acceptance (2026-11-11)
+
+Godot 4.6.2 now shows `InventoryComponent` as a fifth direct child of `PrototypeMainHub` in the editor, and the dedicated starter-inventory scene passes all **16/16 checks A–P**. The prior missing-child issue was resolved after removing unsupported hash-prefixed comments immediately before the new node declaration in the TSCN. This correction added no synthetic inventory fallback or construction bypass.
+
+The Hub's finite 40-slot inventory is empty when instantiated. The explicit opt-in bootstrap seeds a provisional 20-Test-Ingot/8-Test-Ore loadout only once; normal inventory transfer and per-site material escrow own later spending, refund and completion. Save/load persistence of the once-only marker and material escrow is still unimplemented.
+
+**Remaining acceptance gate:** fresh E3d5c3b1 (16) and E3d5c3c1 (18) F6 runs must pass on the new Hub scene. Live Factory Testing Sandbox integration remains disabled, and prototype nameplate electricity should not be represented as metered energy supply.

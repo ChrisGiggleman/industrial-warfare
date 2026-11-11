@@ -2492,3 +2492,11 @@ Staged a **diagnostic-only** revision of the F6 test to print the Hub's scene pa
 Developer's subsequent screenshots show that both the on-disk local scene and Git HEAD contain the expected `InventoryComponent` declaration, but the restarted Godot editor and runtime load only four Hub child nodes. Rechecking the committed scene revealed two `#` comment lines directly before the newly introduced inventory node. Godot's documented TSCN syntax uses semicolon-prefixed comments; these unsupported hash comments are a plausible parser boundary issue. Removed the two comment lines and preserved every scene node, link, script reference, property and inventory capacity.
 
 **Verification pending:** reopen Hub scene after pulling and confirm InventoryComponent appears as a fifth direct child; then run `res://tests/main_hub_starter_inventory_e3d5c3c2_test.tscn` for 16 A–P checks. If this still fails, inspect Godot's scene parse/import errors and the actual node list; do not manufacture fallback stock. The 67/67 previous integration checks remain accepted; E3d5c3c2 is not yet accepted.
+
+### 2026-11-11 — E3d5c3c2 Main Hub Starter Inventory Accepted 16/16
+
+Developer's refreshed Godot 4.6.2 screenshots show the prototype Main Hub scene tree with its `InventoryComponent` as the fifth child, and the standalone F6 test reporting `ALL 16 E3D5C3C2 MAIN HUB STARTER INVENTORY TESTS PASSED` (PASS A–P), with no errors visible in Output. The prior missing-child failure no longer occurs after correcting the nonstandard hash-comment lines in the TSCN resource.
+
+Verified finite, one-time 20 Test Ingots and 8 Test Ore bootstrap, refusal to duplicate startup materials, nonempty-stock and damaged-Hub rejection, inventory transfer conservation, cost-based material escrow, cancellation refund, and real building-completion consumption. Existing Main and Factory Testing Sandbox remain unchanged.
+
+**Pending post-change regressions:** E3d5c3b1 completed power structures 16/16 and E3d5c3c1 readiness coordinator 18/18 (34 checks). Future gameplay enablement still requires reliable save/load of bootstrap marker and escrow, powered network service tied to actual demand, and physical construction material delivery.

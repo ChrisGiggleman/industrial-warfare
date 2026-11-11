@@ -889,3 +889,13 @@ Completed:
 - [ ] After 16/16, rerun E3d5c3b1 completed power structures (16) and E3d5c3c1 integrated readiness (18) before any live construction integration.
 
 **No game behavior or material supply changed:** only scene-file comment formatting and checkpoint documentation were corrected.
+
+### E3d5c3c2 — One-Time Main Hub Starter Inventory Accepted (2026-11-11)
+
+- [x] **Godot 4.6.2 F6: all 16/16 checks A–P passed**, confirmed by developer-provided Output screenshot. No errors visible in Output.
+- [x] Developer also confirmed `InventoryComponent` is present as the fifth direct child of `PrototypeMainHub` in the refreshed Godot scene editor. The TSCN comment-syntax fix preceded this recovery; do not reintroduce invalid hash comments into scene resources.
+- [x] One-time 20 Test Ingots / 8 Test Ore prototype starter stock, finite capacity 40, duplicate-seeding rejection, invalid input rejection, inventory transfers, escrow holding/cancellation, and completed building consumption all passed.
+- [ ] **Post-change compatibility still required:** rerun `res://tests/completed_power_structures_e3d5c3b1_test.tscn` (16) and `res://tests/construction_readiness_coordinator_e3d5c3c1_test.tscn` (18). Target **34/34 regression checks**, beyond this checkpoint's dedicated 16/16.
+- [ ] Next development checkpoint only after those regressions: safely plan a sandbox-only feature gate, persisted starter inventory / escrow recovery, material delivery, and real generated energy. Keep existing sandbox debug construction override unchanged until these are verified.
+
+**Acceptance scope:** E3d5c3c2 is accepted **in isolation**, not enabled in Main or the Factory Testing Sandbox. Do not claim live resource delivery or save/load integrity from this test.
