@@ -2450,3 +2450,9 @@ The developer's Godot 4.6.2 debugger screenshot shows execution stopping at `tes
 The isolated test now keeps a `WeakRef` and an allocation-map entry count before freeing the site, verifies that the reference becomes null, confirms the allocation snapshot shrinks by exactly one entry, and confirms the still-active Normal job retains its five-unit allocation. No production allocator, power topology, factory sandbox, worker scheduler, inventory, or gameplay files were changed in this correction.
 
 **Next required check:** rerun `res://tests/finite_construction_power_e3d5c3b2_test.tscn` with F6 and verify `ALL 18 E3D5C3B2 FINITE CONSTRUCTION POWER TESTS PASSED`, including no new debugger errors. Then run E3d5c3a and E3d5c3b1 power regressions before integrating anything.
+
+### 2026-11-11 — E3d5c3b2 Finite Construction Power Accepted (18/18); Compatibility Pending
+
+The developer reran `res://tests/finite_construction_power_e3d5c3b2_test.tscn` in Godot 4.6.2 following the Test-Q use-after-free fix. The supplied Output screenshot shows PASS A–R, including `PASS Q: Cancelled, untracked and freed jobs do not retain capacity`, `PASS R: Destroyed Hub removes power, never fabricates progress or workers`, and `ALL 18 E3D5C3B2 FINITE CONSTRUCTION POWER TESTS PASSED`. No errors are visible in the provided Output.
+
+The finite allocator remains isolated and read-only with respect to worker/job availability, inventory, material escrow and build timers; its limits are provisional completed-generator nameplate ratings, not actual energy production or fuel use. **Required before advancing:** rerun earlier power topology and completed-structure F6 scenes (E3d5c3a 16 and E3d5c3b1 16) on this current code. Do not claim those post-change regressions passed until developer evidence is supplied.

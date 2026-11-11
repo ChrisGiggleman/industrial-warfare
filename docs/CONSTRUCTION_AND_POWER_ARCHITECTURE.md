@@ -459,3 +459,9 @@ The dedicated `res://tests/completed_power_structures_e3d5c3b1_test.tscn` test i
 ### E3d5c3b2 — Validation Note: Test Harness Corrected (2026-11-11)
 
 The first Godot F6 attempt hit a typed-argument error in the *test itself*: passing a freed `ConstructionSite` to `get_allocated_units()`. The allocator's underlying source, budget, and graph code was not changed. The focused correction verifies freed-site eviction using a pre-free snapshot size and `WeakRef`, without calling methods with invalid typed objects. E3d5c3b2 remains **unverified** until all 18 A–R checks pass locally, with no debugger errors. This does not activate the allocator in the Factory Testing Sandbox or Main.
+
+### E3d5c3b2 — Verified Dedicated F6 Result (2026-11-11)
+
+Developer-provided Godot 4.6.2 Output screenshot confirms **18/18 A–R passed** for `res://tests/finite_construction_power_e3d5c3b2_test.tscn`, after correcting the test-only use-after-free at Q. This establishes isolated validation of finite nameplate allocations, component separation/merging, operational priority behavior, source outages, destroyed nodes, and no automatic construction progress.
+
+**Compatibility gate pending:** The additive `get_operational_component()` topology helper and new allocator should be followed by fresh runs of `res://tests/construction_power_coverage_e3d5c3a_test.tscn` and `res://tests/completed_power_structures_e3d5c3b1_test.tscn` (32 combined checks) before a worker/material/power coordinator is attempted. Do not confuse current nameplate-budget observations with reserved, delivered real energy; the live sandbox remains unchanged.

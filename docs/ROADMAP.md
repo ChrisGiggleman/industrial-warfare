@@ -813,3 +813,12 @@ Completed:
 - [x] Replace invalid post-`free()` call with a `WeakRef` validity assertion and before/after count of allocation entries; verify surviving Normal allocation remains five power units. **Only isolated test and documentation changed**.
 - [ ] Rerun `res://tests/finite_construction_power_e3d5c3b2_test.tscn` — 18 checks A–R pending. Do not mark E3d5c3b2 accepted based on the failed first run.
 - [ ] After successful retest, rerun E3d5c3a and E3d5c3b1 topology/structure tests to protect the current 32/32 compatibility baseline.
+
+### E3d5c3b2 — Finite Power Allocation Dedicated F6 Accepted (2026-11-11)
+
+- [x] **Godot 4.6.2 F6: all 18/18 checks A–R passed**, confirmed in developer-provided Output screenshot after correcting the test-Q use-after-free. No errors visible in the supplied Output.
+- [x] Verified 12-unit nameplate budget limits, all-or-nothing construction demands, active job non-preemption, priority queue preference, explicit shared-versus-independent grids, outage and destruction behavior, fake source rejection, and release of cancelled/freed site allocations.
+- [ ] **Compatibility regression still required on the current code:** `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) and `res://tests/completed_power_structures_e3d5c3b1_test.tscn` (16 checks). Prior passes are not a substitute for rerunning after E3d5c3b2's topology API changes.
+- [ ] Only then proceed to the next isolated checkpoint connecting verified power, actual per-site material escrow, and finite worker-slot scheduling. Do not enable the new systems in Main or remove the sandbox debug override until integrated regressions pass.
+
+**Status:** E3d5c3b2 dedicated allocator test accepted **18/18**, but full compatibility milestone pending **32 power regression checks**. Allocation is still a prototype nameplate-demand observation, not measured energy delivery.
