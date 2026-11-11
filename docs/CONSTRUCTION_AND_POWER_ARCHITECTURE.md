@@ -405,3 +405,13 @@ Each worker slot can service one currently constructing job. Jobs with missing p
 **Safety limitations:** This is a single-source, memory-only prototype. There is no serialization, multi-source delivery, per-definition construction bill, stocked-site demolition recovery, power coverage, physical drone, or player recovery UI yet. It must NOT be enabled in Main or the Factory Testing Sandbox until those separate requirements are implemented and tested. Escrow does not call ConstructionJob.set_availability or scheduler.update_requirements; worker dispatch remains fail-closed. Future scheduling should acquire reservations in High → Normal → Low order after actual cost validation, and only verified real power plus owned escrow can permit workers.
 
 **Developer validation:** E3d5c1 passed 15/15 on 2026-11-11. E3d5c2a's `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` has 16 staged checks awaiting local F6.
+
+## E3d5c2b — Definition-Driven Construction Costs (Staged; F6 Pending)
+
+`BuildingDefinition.construction_materials: Array[ItemAmount]` reuses the same typed Resource structure already present in `ProductionRecipe`. Nine built-in building definitions now contain nonempty provisional Test Ore/Test Ingot bills. These are *data metadata*, subject to balance revision; initial Main Hub supplies and the bootstrap route to the first Extractor/Smelter still need design.
+
+`ConstructionMaterialBill.inspect(definition)` yields `{valid,error,costs}`, with `costs` an `ItemDefinition → int` map only when the bill is entirely valid. A null definition, missing list, null entry/item, blank item ID, zero/negative quantity or duplicate logical item ID invalidates the whole bill. `get_costs` returns a separate map for valid bills and empty map otherwise; the E3d5c2a escrow already rejects empty bills. The validator does not consume/hold materials or grant power/workers.
+
+**Future dispatch contract:** Actual per-site escrow ownership from `BlueprintConstructionMaterialEscrow`, not observed warehouse stock, must supply material readiness. A genuine power-coverage service supplies the independent power gate; `BlueprintConstructionSlotScheduler` remains responsible for finite non-preemptive assignments. The explicit sandbox debug availability override is still active and is not real construction enforcement.
+
+**F6 gate:** `res://tests/blueprint_construction_costs_e3d5c2b_test.tscn` — 17 checks pending in Godot 4.6.2. E3d5c2a escrow was previously accepted 16/16 on 2026-11-11. Main, Factory Testing Sandbox, production recipes, construction jobs, combat and conveyor transport remain untouched.

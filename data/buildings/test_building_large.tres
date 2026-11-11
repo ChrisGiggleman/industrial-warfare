@@ -3,6 +3,14 @@
 [ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_l5ah3"]
 [ext_resource type="PackedScene" uid="uid://wv2w4mvn0fmn" path="res://scenes/buildings/test_building_large.tscn" id="1_vqxk8"]
 
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 8
+
 [resource]
 script = ExtResource("1_l5ah3")
 building_id = &"test_building_large"
@@ -11,4 +19,5 @@ description = "Large prototype building used to test larger construction footpri
 category = &"Prototype"
 building_scene = ExtResource("1_vqxk8")
 construction_seconds = 20.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ingot_cost")])
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

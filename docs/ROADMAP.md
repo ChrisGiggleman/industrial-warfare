@@ -735,3 +735,18 @@ Completed:
 - [ ] Clickable priority/authorize/cancel and queue UI in a later phase, retaining keyboard alternatives.
 
 **Safety boundary:** No changes to Main, Factory Testing Sandbox, conveyor logistics, combat, live construction, or the explicit sandbox-only debug readiness override. Physical drones and save/load of escrow are not yet implemented.
+
+### E3d5c2a — Construction Material Escrow Accepted (2026-11-11)
+
+- [x] **Godot 4.6.2 F6: 16/16 tests A–P passed**, confirmed by developer Output screenshot from `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn`. No errors visible in supplied Output.
+
+### E3d5c2b — Definition-Owned Construction Material Costs (Staged; F6 Pending)
+
+- [x] Reuse existing `ItemAmount` data type: `BuildingDefinition.construction_materials: Array[ItemAmount]`.
+- [x] Add provisional Test Ore/Test Ingot construction bills to all nine existing `data/buildings/*.tres` resources. Original construction durations and building scenes remain unchanged. These prototype numbers are not final game balance.
+- [x] Add read-only `ConstructionMaterialBill.inspect()/get_costs()` for valid, nonempty, positive, unique item bills. Missing/invalid costs fail closed.
+- [x] Stage `res://tests/blueprint_construction_costs_e3d5c2b_test.tscn`, **17 tests A–Q**, including escrow ownership, competing jobs, refunds, paused construction, and successful completion.
+- [ ] **Local Godot 4.6.2 F6 verification pending.** Do not connect this bill resolver to live construction until accepted and power/material dispatch contracts are tested.
+- [ ] Next: validated power coverage, per-site escrow-to-scheduler adapter, and Main Hub initial inventory/bootstrap. Future clickable construction controls will supplement H/N/L keyboard shortcuts.
+
+**Isolation:** Existing WorldInteraction, Main, Factory Testing Sandbox, conveyor logistics, combat, production recipes and sandbox debug readiness override are unchanged. Construction materials are metadata in regular sandbox play; player building authorization does not yet debit them.

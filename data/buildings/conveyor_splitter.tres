@@ -1,7 +1,15 @@
-[gd_resource type="Resource" script_class="BuildingDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="BuildingDefinition" load_steps=6 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/buildings/conveyor_splitter.tscn" id="1_scene"]
 [ext_resource type="Script" path="res://scripts/data/building_definition.gd" id="2_def"]
+
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 2
 
 [resource]
 script = ExtResource("2_def")
@@ -12,3 +20,4 @@ category = &"Logistics"
 building_scene = ExtResource("1_scene")
 footprint_tiles = Vector2i(1, 1)
 construction_seconds = 5.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ingot_cost")])

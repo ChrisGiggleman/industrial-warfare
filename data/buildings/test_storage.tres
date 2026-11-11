@@ -3,6 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://bbltw2h4ep1fk" path="res://scenes/buildings/test_storage.tscn" id="1_8dtnx"]
 [ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="2_yxl25"]
 
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 3
+
 [resource]
 script = ExtResource("2_yxl25")
 building_id = &"test_storage"
@@ -12,4 +20,5 @@ category = &"Storage"
 building_scene = ExtResource("1_8dtnx")
 footprint_tiles = Vector2i(1, 3)
 construction_seconds = 10.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ingot_cost")])
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

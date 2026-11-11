@@ -3,6 +3,20 @@
 [ext_resource type="Script" path="res://scripts/data/building_definition.gd" id="1_definition"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/prototype_defensive_turret.tscn" id="2_scene"]
 
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="iw_ore"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ore_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ore")
+amount = 2
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 6
+
 [resource]
 script = ExtResource("1_definition")
 building_id = &"prototype_defensive_turret"
@@ -12,3 +26,4 @@ category = &"Defense"
 building_scene = ExtResource("2_scene")
 footprint_tiles = Vector2i(1, 1)
 construction_seconds = 15.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ore_cost"), SubResource("iw_ingot_cost")])

@@ -3,6 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://ct3cwtjt1ql6c" path="res://scenes/logistics/conveyor_straight.tscn" id="1_6sg68"]
 [ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_iejqf"]
 
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 1
+
 [resource]
 script = ExtResource("1_iejqf")
 building_id = &"conveyor_belt"
@@ -11,4 +19,5 @@ description = "Directional conveyor segment for physical factory logistics."
 category = &"Logistics"
 building_scene = ExtResource("1_6sg68")
 construction_seconds = 2.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ingot_cost")])
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"

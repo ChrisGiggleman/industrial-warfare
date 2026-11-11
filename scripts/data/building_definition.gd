@@ -61,3 +61,7 @@ class_name BuildingDefinition
 # Blueprint plans reserve geometry without starting this timer.
 
 @export_range(0.1, 600.0, 0.1) var construction_seconds: float = 10.0
+
+# E3D5C2B — per-building construction bill (ItemAmount as in recipes).
+# Metadata only; regular sandbox debug construction is not yet charged.
+@export var construction_materials: Array[ItemAmount] = []

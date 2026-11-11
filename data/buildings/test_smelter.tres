@@ -3,6 +3,20 @@
 [ext_resource type="Script" uid="uid://bbu8q0w5b6dmv" path="res://scripts/data/building_definition.gd" id="1_ma1lw"]
 [ext_resource type="PackedScene" uid="uid://cigrewh2uv258" path="res://scenes/buildings/test_smelter.tscn" id="1_xi8yq"]
 
+[ext_resource type="Script" uid="uid://y7paeaof0wen" path="res://scripts/data/item_amount.gd" id="iw_cost"]
+[ext_resource type="Resource" uid="uid://y7rm82v06ga7" path="res://data/items/test_ore.tres" id="iw_ore"]
+[ext_resource type="Resource" uid="uid://ktelnqbgob4a" path="res://data/items/test_ingot.tres" id="iw_ingot"]
+
+[sub_resource type="Resource" id="iw_ore_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ore")
+amount = 2
+
+[sub_resource type="Resource" id="iw_ingot_cost"]
+script = ExtResource("iw_cost")
+item = ExtResource("iw_ingot")
+amount = 4
+
 [resource]
 script = ExtResource("1_ma1lw")
 building_id = &"test_smelter"
@@ -12,4 +26,5 @@ category = &"Production"
 building_scene = ExtResource("1_xi8yq")
 footprint_tiles = Vector2i(2, 2)
 construction_seconds = 16.0
+construction_materials = Array[ExtResource("iw_cost")]([SubResource("iw_ore_cost"), SubResource("iw_ingot_cost")])
 metadata/_custom_type_script = "uid://bbu8q0w5b6dmv"
