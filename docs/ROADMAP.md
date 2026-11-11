@@ -1178,3 +1178,14 @@ Completed:
 - [ ] Do not treat the sandbox bypass or isolated coordinator as live construction readiness. Genuine material delivery/escrow, delivered power, finite worker capacity, recovery and save/load remain unverified.
 
 **Note:** The automated test Output also logs `Placement blocked` **after** its final PASS line. The source of this residual message is not established; investigate only if reproducible during an intentional normal-sandbox placement attempt. This acceptance supersedes the earlier E3d5c4a automated F6-pending note, not its separate manual/regression gates.
+
+### E3d5c4a — Targeted Post-Authorization Regression Gate Passed (2026-11-11)
+
+- [x] Godot 4.6.2 F6: `sandbox_vertical_priority_dock_e3d5c3e1b_test.tscn` **16/16 PASS**. Confirms compact L/N/H geometry, valid selected-priority changes, physical H/N/L alternatives, no automatic job authorization, Main opt-out and preserved timers.
+- [x] Godot 4.6.2 F6: `blueprint_area_selection_e3d4b_test.tscn` **13/13 PASS**. Confirms Q selection, Shift-add, Alt-remove, E selected-only, Ctrl+E all, unchanged progress, default Main opt-out.
+- [x] Godot 4.6.2 F6: `batch_blueprint_authorization_e3d1_test.tscn` **7/7 PASS**. Confirms batch filtering, idempotence, active Blueprint Mode requirement and QUEUED/no-readiness-bypass when sandbox debug flags are disabled.
+- **36/36 targeted regressions accepted; E3d5c4a authorization dedicated 18/18 + targeted 36/36 = 54/54 verified checks** on current implementation (separate F6 runs, not consolidated CI). The previous 89/89 UI milestone remains historically accepted; overlapping suites must not be counted as distinct new tests.
+- [ ] **Remaining player-facing acceptance:** physical mouse Authorize Selected and two-click Authorize All / Confirm All in normal Factory Testing Sandbox; verify timers, cancel/selection behavior and a short conveyor turn/placement smoke. Three F6 screenshots verify automated fixtures, not these manual UI actions.
+- [ ] No production connection to `BlueprintConstructionReadinessCoordinator` until actual material escrow/delivery, delivered power, worker capacity, recovery and save/load are proven. Main retains feature opt-out.
+
+These results supersede the earlier E3d5c4a pending-regression checklist, but **not** the still-pending manual sandbox interaction gate.
