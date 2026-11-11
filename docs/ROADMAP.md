@@ -690,3 +690,17 @@ Completed:
 - [ ] Implement actual finite worker-drone dispatch, real availability providers, power/material checks and progression only after isolated tests. Don't enable the new queue in Main until those requirements exist.
 
 **Status: E3d5a priority assignment accepted — 15/15 automated checks and manual six-blueprint H2/N2/L2 assignment verified. Actual finite worker dispatch remains future scope.**
+
+
+
+### Phase E3d5b — Finite Construction Worker Slots (Foundation; 2026-11-10)
+
+- [x] Add `BlueprintConstructionSlotScheduler` as an isolated finite-capacity scheduler with explicit slot configuration (1–16).
+- [x] Order eligible authorized jobs by **High → Normal → Low**, with stable registration-order ties; allow jobs blocked by power/material availability to remain waiting without consuming slots.
+- [x] Keep active jobs non-preemptive when a higher-priority job joins the queue; when readiness is lost, pause while retaining progress and release the worker slot.
+- [x] Resume paused work when readiness and a slot are available; completion/cancellation releases the slot and allows the next eligible job to start.
+- [x] Add `res://tests/blueprint_construction_slots_e3d5b_test.tscn` (15 checks covering capacity, priority, explicit readiness, no-preemption, pause/resume, completion/cancellation, and isolation).
+- [ ] **Godot F6 verification pending.** This is an **isolated test-only service**; not instantiated in Main or the regular Factory Testing Sandbox and has no physical worker drones.
+- [ ] Next: real power and delivered-material readiness providers; assign finite physical worker-drone availability only after those services have their own regressions.
+
+**Status:** Implementation committed, Godot validation pending. Existing E3d5a priority assignment, debug sandbox construction, conveyor routing and main gameplay remain unchanged.
