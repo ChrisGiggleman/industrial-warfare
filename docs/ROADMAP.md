@@ -766,3 +766,20 @@ Completed:
 - [ ] UI buttons and Main Hub drone charging remain separate future checkpoints.
 
 **Safety boundary:** This is *topology and construction coverage only*, using synthetic fixture power states. It does not create actual electrical energy, allocate consumer demand, produce charging or authorize jobs. No edits to WorldInteraction, Main, Factory Testing Sandbox, cargo, combat, or debug construction override.
+
+### E3d5c3a — Power Topology Accepted (2026-11-11)
+
+- [x] **All 16/16 Godot 4.6.2 F6 checks A–P passed**, confirmed by developer Output screenshot. Verified explicit links, disconnected/disabled/moved/destroyed relays, generator outage, complete rotated footprint coverage, and no automatic worker/material/time grants. No new errors visible in Output.
+
+### E3d5c3b1 — Completed Power Structure Ownership (Staged; F6 Pending)
+
+- [x] Stage **isolated prototype scenes** for a *prebuilt* Main Hub generator and a player-constructible-but-not-yet-listed Power Pole relay. The pole definition includes a 6-second construction timer and 2 Test Ingot provisional cost.
+- [x] Add `PrototypePowerStructure` runtime: completed physical structure health, service enable and generator enable determine its child `ConstructionPowerNetworkNode.operational` and `source_online` state. The Main Hub starts with a **12-unit nameplate generation rating**; the pole generates **zero** and must receive power via an explicit link.
+- [x] Planned/queued/half-built poles have NO electrical node; `ConstructionSite` adds the actual physical relay scene only after all construction job gates and its timer complete. Damaged/depleted structures stay offline even when toggled back on.
+- [x] Keep topology fail-closed when an existing power structure parent is queued for deletion; no immediate ghost electricity.
+- [x] Stage `res://tests/completed_power_structures_e3d5c3b1_test.tscn` with **16 A–P scripted checks**, including construction lifecycle, generator and pole shutdown, health destruction, parent removal, explicit links and no job-readiness bypass.
+- [ ] **Godot 4.6.2 F6 acceptance pending.** Also rerun E3d5c3a 16/16 when this checkpoint passes to ensure topology compatibility.
+- [ ] Next: capacity-limited **real energy allocation** (generator rating vs consumer demand), outage/recovery, explicit link provenance; then opt-in escrow-backed worker scheduler integration. Starter Hub scene placement in actual gameplay remains future scope.
+- [ ] Clickable priority/authorize/queue controls and drone charging remain future work.
+
+**Isolation:** Main and Factory Testing Sandbox remain untouched; neither new scene appears on the build hotbar. The Hub's fixed rating is **not** an energy-demand allocator, and prototype operational flags must NOT be used as verified construction power readiness until allocation, ownership, and coordinator tests pass.

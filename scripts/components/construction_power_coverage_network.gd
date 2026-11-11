@@ -143,6 +143,8 @@ func _valid_node(node: ConstructionPowerNetworkNode) -> bool:
 	return (
 		is_instance_valid(node) and not node.is_queued_for_deletion()
 		and node.is_inside_tree()
+		and is_instance_valid(node.get_parent())
+		and not node.get_parent().is_queued_for_deletion()
 		and is_finite(node.link_range) and node.link_range > 0.0
 		and is_finite(node.coverage_radius) and node.coverage_radius > 0.0
 	)

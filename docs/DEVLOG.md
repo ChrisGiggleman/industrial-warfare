@@ -2418,3 +2418,13 @@ Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS 
 **Staged:** Added offline-by-default `ConstructionPowerNetworkNode` fixture and an isolated `ConstructionPowerCoverageNetwork` topology evaluator. Only an operational online source with explicit range-valid links can energize relays. Overlapping circles cannot form links, and disabled/moved/destroyed nodes or source outages remove downstream power dynamically. Full rotated footprint containment is required: a partially covered building is not considered covered.
 
 **New F6 gate:** `res://tests/construction_power_coverage_e3d5c3a_test.tscn` stages 16 checks A–P pending developer validation. Power flags in this test are synthetic; the game still lacks real Main Hub/pole scene ownership, generation budget and consumer allocation. This service **never** sets construction availability or grants worker slots. Main/Factory Testing Sandbox and all existing logistics/combat systems remain unchanged.
+
+### 2026-11-11 — E3d5c3a Power Coverage Passed 16/16; E3d5c3b1 Completed Structures Staged
+
+**Validation:** Developer-provided Godot 4.6.2 screenshot shows PASS A–P and `ALL 16 E3D5C3A POWER COVERAGE NETWORK TESTS PASSED`, with no errors visible in Output. Rooted topology, explicit range-checked links, relay loss, rotation, disconnection, and no job-permission side effects are accepted.
+
+**New isolated checkpoint:** Added `PrototypePowerStructure` as a completed-entity runtime with a child electrical node and real `BuildingHealthComponent`. Two light prototype scenes were staged: a prebuilt Hub (rated 12 generation units, service radius 4.5) and an unfinished buildable Power Pole (0 generation, coverage radius 3.5; provisional 2 Test Ingots and a 6-second timer). The pole is not registered in the player hotbar. Hub/Pole state derives from actual completed scene, health and enabled switches, not direct test writes to the electrical node. A planned Power Pole has no electrical node until actual building activation.
+
+**Safety:** Updated `ConstructionPowerCoverageNetwork` to reject nodes whose owning parent structure is already queued for deletion; this closes a single-frame stale-power window and should retain E3d5c3a behavior. Fixed prototype output remains a nameplate rating, not allocated electricity; fuel, consumption and simultaneous demand are unimplemented. Nothing passes electricity into worker authorization or fabricates materials.
+
+**Next F6 gate:** `res://tests/completed_power_structures_e3d5c3b1_test.tscn` (16 checks A–P, pending Godot). If accepted, rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) for compatibility. Main/Factory Testing Sandbox and physical conveyor/combat flows remain unchanged.

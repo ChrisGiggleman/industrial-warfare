@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/components/prototype_power_structure.gd" id="1_runtime"]
+[ext_resource type="Script" path="res://scripts/components/building_health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://scripts/components/construction_power_network_node.gd" id="3_node"]
+
+[sub_resource type="CylinderMesh" id="pole_mesh"]
+top_radius = 0.16
+bottom_radius = 0.25
+height = 1.8
+
+[sub_resource type="BoxShape3D" id="pole_shape"]
+size = Vector3(0.6, 1.8, 0.6)
+
+[node name="PrototypePowerPole" type="Node3D"]
+script = ExtResource("1_runtime")
+rated_generation = 0
+
+[node name="BuildingMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("pole_mesh")
+
+[node name="BuildingBody" type="StaticBody3D" parent="."]
+collision_layer = 6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BuildingBody"]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("pole_shape")
+
+[node name="BuildingHealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="ConstructionPowerNetworkNode" type="Node3D" parent="."]
+script = ExtResource("3_node")
+link_range = 8.0
+coverage_radius = 3.5
