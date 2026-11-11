@@ -18,7 +18,7 @@ func _on_priority_requested(priority: int) -> void:
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var heading := Label.new()
-	heading.text = "Construction Priority Controls - isolated UI test"
+	heading.text = "Construction Priority Controls - compact vertical L / N / H test"
 	heading.position = Vector2(24, 18)
 	add_child(heading)
 
@@ -42,10 +42,14 @@ func _ready() -> void:
 	assert(controls.get_priority_button(ConstructionJob.Priority.LOW) != null)
 	print("PASS B: Three controls are created for High, Normal and Low")
 
-	assert(controls.get_priority_button(ConstructionJob.Priority.HIGH).text == "High")
-	assert(controls.get_priority_button(ConstructionJob.Priority.NORMAL).text == "Normal")
-	assert(controls.get_priority_button(ConstructionJob.Priority.LOW).text == "Low")
-	print("PASS C: Buttons have visible, correctly ordered priority labels")
+	assert(controls.get_priority_button(ConstructionJob.Priority.HIGH).text == "H")
+	assert(controls.get_priority_button(ConstructionJob.Priority.NORMAL).text == "N")
+	assert(controls.get_priority_button(ConstructionJob.Priority.LOW).text == "L")
+	assert(controls.get_child(0) == controls.get_priority_button(ConstructionJob.Priority.LOW))
+	assert(controls.get_child(1) == controls.get_priority_button(ConstructionJob.Priority.NORMAL))
+	assert(controls.get_child(2) == controls.get_priority_button(ConstructionJob.Priority.HIGH))
+	assert(controls.get_priority_button(ConstructionJob.Priority.LOW).tooltip_text.contains("Low"))
+	print("PASS C: Compact L/N/H labels and requested vertical order are correct")
 
 	for button: Node in controls.get_children():
 		assert(button is Button)
@@ -113,7 +117,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 	controls.set_selection_available(true)
 	assert(controls.visible)
-	assert(controls.get_rect().size.x >= 282.0)
+	assert(controls.get_rect().size.x >= 48.0)
+	assert(controls.get_rect().size.y >= 94.0)
 	print("ALL 12 E3D5C3E1A ISOLATED PRIORITY BUTTON TESTS PASSED")
-	print("MANUAL: Click High, Normal, Low in the F6 window; each prints one request.")
+	print("MANUAL: Click L, N, H in the F6 window; each prints one request.")
 	print("MANUAL: These buttons are NOT connected to sandbox construction yet.")

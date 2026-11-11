@@ -1123,3 +1123,17 @@ Completed:
 - [ ] Authorization buttons, worker drones, physical power delivery and resource logistics remain separate later checkpoints.
 
 **Checkpoint isolation:** The only new code here is an independently testable priority-button view and its F6 test. No existing gameplay or sandbox UI scene is edited.
+
+### E3d5c3e1b — Compact L/N/H Stack Beside Build Hotbar (Staged; F6 Pending)
+
+- [x] User chose **small vertical priority buttons marked L / N / H**, beside the **left edge of the existing nine-slot build hotbar**, instead of three wide horizontal High/Normal/Low buttons. Requested top-to-bottom order: L, N, H.
+- [x] Refactor `BlueprintConstructionPriorityButtons` into a narrow **48×30 px per-button VBox** with 2 px gaps and Low/Normal/High tooltips. Retain its existing `priority_requested` signal and fail-closed disabled behavior.
+- [x] Add **sandbox-only** `SandboxConstructionPriorityDock` CanvasLayer that follows `BuildHUD/VisualHotbar` screen geometry (8 px to the left, vertically centered), stays hidden outside Blueprint Mode, and enables buttons only while Q-area mode contains at least one eligible selected PLANNED job.
+- [x] Clicking L/N/H calls existing guarded `WorldInteraction._set_selected_blueprint_priority()`; the dock does not call `ConstructionJob.set_priority`, authorize jobs, alter resource escrow, power allocation, worker slots or timers. Single-click inspection remains independent; H/N/L keyboard alternatives remain.
+- [x] Opt in only `scenes/core/factory_testing_sandbox.tscn` to the new dock; Main and shared BuildHUD scene unchanged. Existing `blueprint_sandbox_debug_requirements = true` and all construction logistics remain unchanged.
+- [x] Update the still-pending isolated E3d5c3e1a test assertions for compact labels and dimensions while retaining its original **12 A–L** checks.
+- [x] Stage `res://tests/sandbox_vertical_priority_dock_e3d5c3e1b_test.tscn` with **16 A–P** checks for disabled behavior, vertical order, left-of-hotbar positioning, Q selection, Low/Normal/High requests through existing controller, unselected blueprint preservation, keyboard compatibility, and non-authorizing safety.
+- [ ] **Godot 4.6.2 F6 pending:** E3d5c3e1b 16/16 and updated standalone E3d5c3e1a 12/12. Then manually F6 Factory Testing Sandbox: Blueprint Mode → Q+drag blueprints → click L, N, H stack beside hotbar → verify HUD priority counts; verify button disabled on Q exit and single-click inspection unchanged.
+- [ ] Earlier post-inspection regressions E3d4a/b blueprint selection and E3d5c3d2b/c/d UI remain for a follow-up targeted batch before further gameplay construction integration.
+
+**This is still sandbox prototype UI**: no genuine materials/power/worker providers have been attached; `Live readiness: NOT VERIFIED` continues to apply.
