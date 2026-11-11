@@ -1090,3 +1090,15 @@ Completed:
 - [ ] After passing, rerun E3d5c3d2d default-on 12, E3d5c3d2b sandbox 16, E3d5c3d2c dock 10 and E3d4a/b area-selection regressions before further UI work.
 
 **Safety:** This is only inspection input and presentation. Main, production power/material/worker requirements, conveyor cargo logistics and combat remain unchanged. Sandbox debug construction override remains enabled for testing.
+
+### E3d5c3d2e — Direct Blueprint Click Inspection Automated F6 Accepted (2026-11-11)
+
+- [x] Developer's Godot 4.6.2 Output screenshot reports **ALL 16 E3D5C3D2E DIRECT BLUEPRINT CLICK INSPECTION TESTS PASSED**, checks A–P, with no visible assertion failure.
+- [x] Actual site collision raycast, direct-click inspection dispatch, second-click reopening, invalid-site guards, preservation of Q-area selection and priority commands, and Main opt-out all passed in the isolated fixture.
+- [x] Accompanying F6 game-window screenshot shows Construction Requirements displaying a planned Test Storage (3 Test Ingots, Normal priority, 0% progress, stock/power/workers UNKNOWN), while Factory Blueprints reports **Selected: 0**. This difference is intentional: inspection is not Q-batch selection.
+- [ ] **Manual regular-sandbox validation remains:** F6 `res://scenes/core/factory_testing_sandbox.tscn`; place Storage in Blueprint Mode, left-click its existing footprint and confirm panel opens without placing a duplicate; then Q+drag a planned Storage to confirm the green highlight, selection count and read-only requirements update; verify a short conveyor placement/turn.
+- [ ] Post-change targeted regressions: E3d5c3d2d default-on UI (12), E3d5c3d2b sandbox UI (16), E3d5c3d2c HUD docking (10), E3d4a area selection (10), and E3d4b advanced area selection (13). Run them in small batches after manual inspection confirmation.
+- [ ] E3d5c3d2d complete gameplay acceptance and E3d5c3e1 clickable priority buttons remain gated on normal sandbox input verification.
+- [!] `Footprint blocked or preview invalid` and `Hit nothing` appeared after test completion. They are non-fatal debug diagnostics, but investigate if reproducible on intended valid placements.
+
+**E3d5c3d2e status: 16/16 isolated automated tests accepted; live sandbox physical interaction and post-change regressions pending.** Real construction readiness remains unverified.
