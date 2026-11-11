@@ -40,6 +40,21 @@ func _ready() -> void:
 	add_child(_panel)
 
 
+# Keep the clickable panel below the LIVE Production Debug HUD as its
+# selected-object text grows and shrinks. This affects UI layout only.
+func _process(_delta: float) -> void:
+	if not is_instance_valid(_panel):
+		return
+	var sandbox: Node = get_parent()
+	if not is_instance_valid(sandbox):
+		return
+	var debug_panel: Control = (
+		sandbox.get_node_or_null("ProductionDebugHUD/InfoPanel") as Control
+	)
+	if is_instance_valid(debug_panel):
+		_panel.dock_after_production_debug(debug_panel)
+
+
 func get_panel() -> BlueprintConstructionRequirementsPanel:
 	if not is_instance_valid(_panel):
 		return null

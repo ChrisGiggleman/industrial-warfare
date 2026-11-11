@@ -970,3 +970,20 @@ Completed:
 - [ ] Keep the feature flag **off by default** until manual verification. Do not connect real construction materials/power/workers or change Main gameplay.
 
 **E3d5c3d2b status:** 16/16 automated checks accepted; full UI integration acceptance remains contingent on manual evidence.
+
+### E3d5c3d2b — Running Sandbox Visual Review (2026-11-11)
+
+- [x] Developer screenshot shows the real Factory Testing Sandbox with the opt-in Construction Requirements panel, Test Storage bill (3 Test Ingots), High priority, queued progress, UNKNOWN stock/escrow/power/workers, and the Factory Blueprints HUD.
+- [!] Visual issue identified: the requirements button/panel **overlaps the existing Production Debug HUD in the top-right**; do not enable the panel by default until layout regression and real mouse interactions pass.
+- [ ] Screenshot shows the panel open; physical mouse close/reopen is not yet independently confirmed. Automated E3d5c3d2b remains accepted 16/16.
+
+### E3d5c3d2c — Adaptive Sandbox HUD Dock (Staged; F6 Pending)
+
+- [x] Add `BlueprintConstructionRequirementsPanel.dock_after_production_debug()` to place the toggle button and scrollable panel **below actual ProductionDebugHUD/InfoPanel geometry** rather than hiding the existing debug text and progress bar.
+- [x] Update only the opt-in `SandboxConstructionRequirementsFeatureGate` to update placement dynamically as the Production Debug HUD expands or contracts. If insufficient right-side vertical space, dock below the upper-left Factory Blueprints summary instead.
+- [x] Keep `enable_read_only_requirements_panel = false` and `blueprint_sandbox_debug_requirements = true` unchanged in the committed Factory Testing Sandbox. No WorldInteraction, inventory, escrow, workers, power service, logistics, combat, or UI authorization code is modified.
+- [x] Stage `res://tests/blueprint_requirements_hud_dock_e3d5c3d2c_test.tscn` with **10 A–J** isolated F6 checks: no HUD overlap, button/panel within viewport, real bill data, UNKNOWN services, tall-debug fallback, toggles, and zero construction side effects.
+- [ ] **Godot 4.6.2 F6 10/10 pending**, then manual screenshot showing both HUDs simultaneously and confirmation that actual mouse clicks close/reopen the panel.
+- [ ] After layout acceptance, rerun E3d5c3d2b (16) plus E3d5c3d2a (18) before considering default-on sandbox UI.
+
+**Do not claim the live sandbox requirements gate is enabled or real construction readiness is verified.** This is a visual, read-only compatibility checkpoint.

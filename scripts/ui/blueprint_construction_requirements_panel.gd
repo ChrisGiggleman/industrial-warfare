@@ -130,6 +130,52 @@ func get_toggle_button() -> Button:
 	return _toggle
 
 
+# E3D5C3D2C — Sandbox-only adaptive layout. Another CanvasLayer owns
+# ProductionDebugHUD, so position the requirements UI below its actual
+# InfoPanel bounds rather than covering its text and progress bar.
+# If the production debug panel becomes too tall, fall back to the LEFT,
+# below the factory blueprint summary area. Never move or alter either HUD.
+func dock_after_production_debug(debug_panel: Control) -> void:
+	if (
+		not is_instance_valid(debug_panel)
+		or not is_instance_valid(_toggle)
+		or not is_instance_valid(_panel)
+	):
+		return
+	var viewport_height: float = get_viewport().get_visible_rect().size.y
+	var debug_bottom: float = debug_panel.get_global_rect().end.y
+	var right_top: float = maxf(16.0, ceilf(debug_bottom + 12.0))
+	var use_left: bool = (
+		right_top + 46.0 + 128.0 + 16.0 > viewport_height
+	)
+	var button_top: float = right_top
+	if use_left:
+		# Factory Blueprints occupies the top-left to approximately y=211.
+		button_top = maxf(
+			16.0, minf(232.0, viewport_height - 190.0)
+		)
+		_toggle.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		_toggle.offset_left = 16.0
+		_toggle.offset_right = 320.0
+		_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		_panel.offset_left = 16.0
+		_panel.offset_right = 400.0
+	else:
+		_toggle.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		_toggle.offset_left = -320.0
+		_toggle.offset_right = -16.0
+		_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		_panel.offset_left = -400.0
+		_panel.offset_right = -16.0
+	_toggle.offset_top = button_top
+	_toggle.offset_bottom = button_top + 38.0
+	var panel_top: float = button_top + 46.0
+	_panel.offset_top = panel_top
+	_panel.offset_bottom = maxf(
+		panel_top + 128.0, minf(viewport_height - 16.0, panel_top + 378.0)
+	)
+
+
 func get_display_text() -> String:
 	return _report.text if is_instance_valid(_report) else ""
 

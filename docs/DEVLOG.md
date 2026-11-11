@@ -2540,3 +2540,11 @@ Developer's Godot 4.6.2 Output screenshot contains PASS A–P and `ALL 16 E3D5C3
 **Remaining human acceptance:** The user has supplied only the automated Output for E3d5c3d2b so far, not a screenshot of the UI in the running Factory Testing Sandbox or confirmation of physical close/reopen mouse clicks. The printed MANUAL instructions are not evidence that the interactions occurred. Keep the gate off by default and await a screenshot/confirmation before turning it on for normal sandbox sessions.
 
 This is a documentation-only change; WorldInteraction, Factory Testing Sandbox scene, inventory, job scheduling, power, conveyors and combat have not been altered.
+
+### 2026-11-11 — E3d5c3d2b Sandbox Visual Conflict; E3d5c3d2c Adaptive Dock Staged
+
+The developer supplied a screenshot from the real opt-in Factory Testing Sandbox window. The new requirements panel renders Test Storage's definition-owned bill, priority/progress and correctly reports UNKNOWN stock, escrow, power and workers. The existing Factory Blueprints HUD and 3D objects remain visible, but the top-right requirements panel obscures the original **Production Debug HUD**, which is anchored to the same area. Screenshot does not establish physical mouse close/reopen; only automated button checks have passed.
+
+**Focused UI-only correction:** `BlueprintConstructionRequirementsPanel` gains a method to dock under the actual, currently measured Production Debug InfoPanel. The opt-in `SandboxConstructionRequirementsFeatureGate` periodically applies that geometry; the original debug panel itself is never moved or hidden. If the debug panel fills nearly the whole right side, the requirements interface moves to the left below the Factory Blueprints summary. The isolated panel (E3d5c3d2a) retains its existing default layout outside the sandbox gate.
+
+`res://tests/blueprint_requirements_hud_dock_e3d5c3d2c_test.tscn` stages **10 A–J checks awaiting Godot 4.6.2 F6** and a manual in-game screenshot. This changes only the read-only UI and feature gate, not live construction, workers, power, materials, conveyor automation or combat. The sandbox feature gate remains OFF by default.
