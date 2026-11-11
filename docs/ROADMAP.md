@@ -686,7 +686,7 @@ Completed:
 - [x] Show selection priority counts, pending queue length and next queued job in the Factory Blueprints HUD.
 - [x] Retain sandbox's explicit debug requirement override: it still starts test construction immediately. Priority **does not** fabricate workers, reserve materials, create power, or throttle work before the worker system exists.
 - [x] **Godot F6 validation:** `res://tests/blueprint_construction_priority_e3d5a_test.tscn` — **15/15 checkpoints passed** (developer screenshot, 2026-11-10).
-- [ ] Manual sandbox Q → select → H/N/L priority assignment and E authorization still pending.
+- [x] Manual sandbox Q → select → H/N/L priority assignment validated (developer screenshot, 2026-11-10): six selected planned Storage blueprints, priority mix **H 2 | N 2 | L 2**, waiting queue 0 as expected before authorization. Selected-only E authorization was already covered by automated regression; a separate manual post-E construction screenshot has not been supplied.
 - [ ] Implement actual finite worker-drone dispatch, real availability providers, power/material checks and progression only after isolated tests. Don't enable the new queue in Main until those requirements exist.
 
-**Status: 15/15 automated checks passed; manual priority controls still pending validation.**
+**Status: E3d5a priority assignment accepted — 15/15 automated checks and manual six-blueprint H2/N2/L2 assignment verified. Actual finite worker dispatch remains future scope.**
