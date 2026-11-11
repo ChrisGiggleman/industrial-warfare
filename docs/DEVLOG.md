@@ -2524,3 +2524,11 @@ Developer-supplied Godot 4.6.2 F6 Output shows all PASS A–R and `ALL 18 E3D5C3
 **Manual UI acceptance is still outstanding.** The Output contains `MANUAL UI CHECK: Click top-right Construction Requirements button twice.` but no screenshot or confirmation of the displayed running game-window panel or actual mouse clicks has been provided yet. No claim of complete UI acceptance or live Factory Testing Sandbox integration is made.
 
 This is a documentation-only evidence update. The next code checkpoint remains a read-only opt-in Factory Testing Sandbox panel and should begin only after the user confirms the manual visual/clickable behavior. No production scene or input behavior was modified.
+
+### 2026-11-11 — E3d5c3d2a Visual Panel Verified; E3d5c3d2b Sandbox Opt-In Staged
+
+Two user screenshots of the standalone Godot window demonstrate readable scrollable Construction Requirements content with a top-right Close button and explicit `Live readiness: NOT VERIFIED`. Automated tests remain 18/18 passed. Screenshots show an open panel only; manual physical button close/reopen is still awaiting confirmation (even though automated button signals passed).
+
+For the next isolated checkpoint, added a small `SandboxConstructionRequirementsFeatureGate` script and a **disabled-by-default** instance to the actual Factory Testing Sandbox scene. The feature gate creates only the existing read-only panel when explicitly enabled; it follows blueprint area-selection group membership without editing WorldInteraction or any producer/consumer. No material inventory, power allocator, escrow or worker scheduler is provided in gameplay; UNKNOWN is the safe output.
+
+New `res://tests/blueprint_requirements_sandbox_e3d5c3d2b_test.tscn` stages 16 A–P checks using a copy of the real sandbox scene with its UI gate enabled **only for the test instance**. It checks display/selection and that current debug construction/HUD inputs remain unchanged. Godot 4.6.2 F6 and human UI checks remain pending. The existing Factory Testing Sandbox continues with its feature gate off by default and its established debug construction mode unmodified.

@@ -944,3 +944,19 @@ Completed:
 - [ ] Only after manual acceptance, stage E3d5c3d2b: separately gated, read-only panel in Factory Testing Sandbox. Preserve `blueprint_sandbox_debug_requirements = true`, existing controls, cargo conservation, factory, and combat behavior.
 
 **Status:** E3d5c3d2a **automated tests accepted 18/18**, but the complete UI milestone is NOT yet accepted because human-visible interaction remains unverified.
+
+### E3d5c3d2a — Requirements Panel Visual Check Accepted (2026-11-11)
+
+- [x] Developer-provided two running-window screenshots show the top-right **Close Construction Requirements** button and readable scrollable panel: Test Storage material bill, priority, progress, stock vs reservation, prototype power/workers, and `Live readiness: NOT VERIFIED`.
+- [x] Automated A–R passed 18/18 previously. The GUI layout/visual milestone is accepted.
+- [ ] Both screenshots show the **open** panel. Actual physical close/reopen mouse clicks have not yet been independently confirmed, although scripted press-signal checks passed.
+
+### E3d5c3d2b — Sandbox UI Feature Gate (Staged; F6 Pending)
+
+- [x] Add `SandboxConstructionRequirementsFeatureGate` Node, with exported `enable_read_only_requirements_panel = false` as the **default**.
+- [x] Place one disabled feature-gate node in `scenes/core/factory_testing_sandbox.tscn`. When explicitly enabled, it creates only `BlueprintConstructionRequirementsPanel` and follows `blueprint_area_selected`; no inventory/escrow/power/scheduler provider is invented.
+- [x] Stage `res://tests/blueprint_requirements_sandbox_e3d5c3d2b_test.tscn`, **16 checks A–P**: instantiate the real sandbox scene, opt in only the F6 fixture instance, verify selection, button toggles, material bill, UNKNOWN providers, no unauthorized job progress, and preservation of the sandbox debug override and HUD.
+- [ ] **Godot 4.6.2 F6 16/16 pending** plus a manual running-window click-close/reopen check and a sandbox plan/area-selection interaction.
+- [ ] Only after successful F6/manual acceptance consider enabling the panel by default in Factory Testing Sandbox. Main, WorldInteraction, cargo, combat, scheduling, save/load, and real construction authority are out of scope.
+
+**Safety:** `blueprint_sandbox_debug_requirements = true` remains untouched. The panel is visual-only, displays `Live readiness: NOT VERIFIED`, and has no real source inventory until a separate provider is implemented.
