@@ -2385,3 +2385,13 @@ Added `scripts/components/blueprint_construction_slot_scheduler.gd`, a scheduler
 Active jobs are non-preemptive. If power/material readiness disappears, a job pauses, retains elapsed work and frees its slot. Restoring readiness still requires a free slot. Completion and cancellation safely release capacity. Added `res://tests/blueprint_construction_slots_e3d5b_test.tscn` with 15 isolated checks. **Godot 4.6.2 F6 validation passed 15/15 checks**, confirmed by developer-provided screenshot on 2026-11-10. Normal Factory Testing Sandbox debug construction remains immediate because this service is not enabled or instantiated by WorldInteraction.
 
 Next milestones: design and verify real power/material availability providers separately, then connect finite worker assignments to construction and physical drones. Maintain sandbox-only feature gating until regression-tested.
+
+
+### E3d5c1 — Read-only stock and power inspection staged (2026-11-10; F6 pending)
+
+Reviewed the accepted E3d5b scheduler, `ConstructionJob` state machine, `ConstructionSite`, inventory API, `BuildingDefinition`, and the sandbox's explicit test-only requirements override. `BuildingDefinition` has a duration and footprint but no construction bill of materials; the scheduler currently accepts test-controlled readiness booleans rather than real provider evidence.
+
+Added `BlueprintConstructionReadinessProbe` as an isolated, non-mutating diagnostic. An authorized live site, explicitly typed power report, nonempty valid material bill and active stock inventory are independently checked; missing item quantities are reported. Unknown power, missing/invalid costs, detached stock and cancelled/planned sites fail closed. No materials are removed or reserved, and no job or worker is started. Because two jobs can see the same unreserved stock, **stock sufficiency is deliberately NOT passed into the scheduler**.
+
+Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS checkpoints A–O); **local Godot F6 verification pending**. No edits to WorldInteraction, Main, Factory Testing Sandbox, legacy construction, logistics or combat. Next: atomic material reservation/escrow with real bills of materials, real power provider, then a gated worker-scheduler adapter and physical drones.
+

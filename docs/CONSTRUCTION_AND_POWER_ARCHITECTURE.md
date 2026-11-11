@@ -384,3 +384,15 @@ Each worker slot can service one currently constructing job. Jobs with missing p
 **Current boundary:** No actual power/material providers or worker drone entities are present in this checkpoint. All availability booleans in `res://tests/blueprint_construction_slots_e3d5b_test.tscn` are controlled test inputs. The service is **not activated** in Main or the Factory Testing Sandbox, protecting current immediate debug construction and preserving E3d5a/H-N-L selection and Ctrl+E behavior.
 
 **Validation gate passed:** Developer-provided Godot 4.6.2 screenshot confirms all 15 E3d5b F6 checks passed on 2026-11-10. The scheduler remains isolated; the next gate is verified power/material services, followed by finite physical worker-drone dispatch.
+
+
+## E3d5c1 — Read-only Readiness Probe (Isolated; F6 Pending)
+
+`BlueprintConstructionReadinessProbe.inspect(site, power_report, stock, required_materials)` is a read-only inspection service, not a constructor, job authorizer, material delivery service, reservation authority, power grid, or scheduler adapter. Its result describes `authorized`, `power_known`/`power_covered`, `bill_valid`, `stock_known`/`stock_sufficient`, and a per-item `missing_materials` map. An unknown power report is null; only a genuine Boolean is considered a known power observation. Stock must be a live `InventoryComponent`, and the caller's provisional bill must be nonempty with positive integer costs keyed by `ItemDefinition`.
+
+**Critical distinction: stock sufficiency is not committed materials.** Two sites can read the same available inventory; this probe never removes, reserves, delivers, refunds, or owns a single item and never calls `ConstructionJob.set_availability()` or `BlueprintConstructionSlotScheduler.update_requirements()`. Even a report showing covered power and sufficient stock is **NOT** permission to dispatch. Building definitions do not yet contain actual material costs, and there is no real power-coverage provider. The probe therefore cannot safely activate normal construction.
+
+**Integration contract for later checkpoints:** (1) definition-driven positive construction costs; (2) an atomic resource reservation/escrow transaction that prevents double claims, tracks ownership per job and supports cancellation/salvage; (3) a genuine power-coverage service with unknown/outage handling; (4) a sandbox-only coordinator that passes true material readiness to E3d5b **only after** confirmed per-job reservation and verified power readiness, with worker capacity remaining independently bounded and construction timers controlled by ConstructionJob. Active jobs stay non-preemptive; power outages pause and preserve work; consumed/reserved material policy must be explicit. Maintain the current debug override separately until the fully integrated pipeline passes tests.
+
+**Verification:** `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` has 15 staged checks; local Godot F6 validation is pending. Main and Factory Testing Sandbox remain untouched. Future player-facing queue management should offer clickable controls in addition to H/N/L shortcuts.
+

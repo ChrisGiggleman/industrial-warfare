@@ -704,3 +704,18 @@ Completed:
 - [ ] Next: real power and delivered-material readiness providers; assign finite physical worker-drone availability only after those services have their own regressions.
 
 **Status:** E3d5b isolated scheduler accepted — **15/15 automated checks passed**. Real readiness providers and physical drone dispatch are future milestones; existing E3d5a UI and normal gameplay are unchanged.
+
+
+### Phase E3d5c1 — Read-Only Construction Readiness Probe (Staged; 2026-11-10)
+
+- [x] Add an isolated `BlueprintConstructionReadinessProbe` that accepts only authorized live sites; unknown/malformed power reports fail closed.
+- [x] Check a caller-provided, nonempty construction bill of materials against a real live `InventoryComponent`; report shortages per `ItemDefinition`, and reject invalid costs.
+- [x] Keep inventory, jobs, construction progress, authorization and worker slots untouched. **Sufficient warehouse stock is NOT a material reservation** and must never be forwarded to the E3d5b scheduler as `materials_ready=true`.
+- [x] Stage 15 scripted safety checks in `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn`, including shared-stock double-count prevention by refusing dispatch.
+- [ ] **Godot 4.6.2 F6 acceptance pending:** developer screenshot/log of all 15 checks with no parser/runtime errors.
+- [ ] E3d5c2: define real per-building construction costs and implement atomic material reservation/escrow with release/recovery on cancellation, and conservation tests. A distinct real power-coverage provider must be validated before worker dispatch.
+- [ ] E3d5c3: integrate the verified power provider + reservation ownership with E3d5b finite scheduler behind a sandbox-only opt-in. Do not enable this in Main or remove the sandbox debug override until regression-tested.
+- [ ] Future construction management UI: clickable priority, authorize, cancel and queue buttons, retaining H/N/L and other shortcuts as optional alternatives.
+
+**Boundary:** This checkpoint is a read-only observation utility, not a source of actionable construction readiness. Factory Testing Sandbox and Main scenes are unchanged.
+
