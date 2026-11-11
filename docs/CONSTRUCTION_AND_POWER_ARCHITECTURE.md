@@ -501,3 +501,9 @@ This is NOT live sandbox certification: the coordinator is not instantiated by W
 The first isolated starter-inventory acceptance run failed before stock seeding at the first inventory availability assertion. The committed prototype Hub scene does declare `InventoryComponent` with the expected `InventoryComponent` script and capacity 40; the actual loaded instance did not yield a usable typed, in-tree inventory according to the screenshot. The root cause has not been verified.
 
 For diagnosis, the F6 fixture now prints the live Hub child list, attached scripts and raw inventory-node type before safely stopping, rather than silently attaching a fallback inventory. The test remains isolated. Do not change bootstrap authorization, inventory stock counts, physical belt logistics, Main or Factory Testing Sandbox until the cause is clear. 16/16 acceptance and follow-up power/coordinator regressions are still pending.
+
+### E3d5c3c2 — Godot TSCN Import Formatting Correction (Pending Retest)
+
+The first bootstrap F6 attempts revealed that Godot instantiated the Hub without the `InventoryComponent` despite the local repository file declaring it. Investigation found `#` comments immediately preceding this final node. Godot documents `;` comments in TSCN; the scene has now been normalized by deleting those hash comments while leaving the inventory node, script, capacity and original power structure unchanged. This is a focused import/serialization correction, not a new source of material creation.
+
+The only authoritative completion gate remains a fresh Godot 4.6.2 F6 run of `main_hub_starter_inventory_e3d5c3c2_test.tscn` with all 16 checks, followed by prior power-structure and readiness-coordinator regressions. Main and Factory Testing Sandbox are unchanged.

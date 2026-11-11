@@ -34,8 +34,6 @@ script = ExtResource("3_node")
 link_range = 8.0
 coverage_radius = 4.5
 
-# E3D5C3C2 — No automatic stock spawns. An isolated bootstrap service must
-# explicitly seed a brand-new intact Hub once, before using this inventory.
 [node name="InventoryComponent" type="Node" parent="."]
 script = ExtResource("4_inventory")
 max_capacity = 40

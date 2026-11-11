@@ -880,3 +880,12 @@ Completed:
 - [ ] Do not mark E3d5c3c2 accepted until all 16 checks A–P pass. Power-structure/coordinator regression still pending after that.
 
 **Scope:** only the isolated F6 fixture and documentation were changed. Main and Factory Testing Sandbox remain untouched.
+
+### E3d5c3c2 — Main Hub Scene Parser Correction (2026-11-11; F6 Pending)
+
+- [x] Developer confirmed local working copy and Git HEAD both declare `InventoryComponent` with capacity 40, yet fresh Godot 4.6.2 editor and F6 instance show only four Hub children and an absent raw inventory node.
+- [x] Found two `#`-prefixed comments immediately before the new Hub inventory child in `prototype_main_hub.tscn`. Godot's documented text-scene comment syntax uses `;`, not `#`. Remove the unsupported lines without altering the InventoryComponent script, node name, capacity, or existing power/health components.
+- [ ] Verify in the Godot scene editor that PrototypeMainHub has a fifth direct child, `InventoryComponent`, and that `res://tests/main_hub_starter_inventory_e3d5c3c2_test.tscn` passes A–P (16 checks). Cause is strongly suspected but still requires developer runtime confirmation.
+- [ ] After 16/16, rerun E3d5c3b1 completed power structures (16) and E3d5c3c1 integrated readiness (18) before any live construction integration.
+
+**No game behavior or material supply changed:** only scene-file comment formatting and checkpoint documentation were corrected.
