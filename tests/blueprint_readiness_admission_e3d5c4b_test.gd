@@ -178,11 +178,16 @@ func _run_checks() -> void:
 	print("PASS O: Test inventory escrows High first; no generator keeps work QUEUED")
 
 	controller.blueprint_sandbox_debug_requirements = true
-	assert(not admission.admit_site(second, 7))
+	var debug_site := _plan(
+		controller, definition, Vector3(6, 0, -5)
+	)
+	assert(controller._authorize_blueprint_site(debug_site))
+	assert(debug_site.job.state == ConstructionJob.State.CONSTRUCTING)
+	assert(not admission.admit_site(debug_site, 7))
 	assert(admission.admit_waiting(7) == 0)
 	assert(scheduler.get_active_count() == 0)
 	assert(sandbox.get_node_or_null("BlueprintConstructionReadinessAdmission") == null)
-	print("PASS P: Re-enabled debug bypass shuts intake; no playable adapter")
+	print("PASS P: Debug-constructed work cannot enter real readiness intake")
 
 	print("ALL 16 E3D5C4B READINESS ADMISSION TESTS PASSED")
 	print("TEST ONLY: Real power delivery, worker drones, recovery and save/load remain absent.")
