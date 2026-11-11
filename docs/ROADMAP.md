@@ -850,3 +850,23 @@ Completed:
 - [ ] Do not attach the coordinator to Factory Testing Sandbox/Main or remove the explicit sandbox debug requirement override until compatibility checks and live integration prerequisites (save/load escrow recovery, source validity, Main Hub starter inventory, actual energy/charging, construction UI and world destruction) have been resolved.
 
 **Status:** E3d5c3c1 dedicated integration F6 is **accepted 18/18**, but post-change **49/49 compatibility regression verification remains outstanding**. Finite allocation still derives from prototype nameplate ratings, not metered real power.
+
+### E3d5c3c1 — Construction Readiness Full Compatibility Accepted (2026-11-11)
+
+- [x] **E3d5b bounded worker scheduler post-integration F6: 15/15 passed**, developer screenshot.
+- [x] **E3d5c2a material escrow post-integration F6: 16/16 passed**, developer screenshot.
+- [x] **E3d5c3b2 finite power allocation post-integration F6: 18/18 passed**, developer screenshot.
+- [x] **49/49 compatibility checks passed**, plus the 18/18 dedicated E3d5c3c1 integration checks = **67/67 accepted**. No errors visible in the three compatibility screenshots.
+- [x] E3d5c3c1 accepted as **isolated service integration**. Main and Factory Testing Sandbox still use existing gameplay/debug paths.
+
+### E3d5c3c2 — One-Time Main Hub Starter Inventory (Staged; F6 Pending)
+
+- [x] Confirmed the actual Factory Testing Sandbox still has `blueprint_sandbox_debug_requirements = true` and no physical Hub starter inventory/source registered with the coordinator. Turning that override off now would strand normal blueprint jobs.
+- [x] Add a finite `InventoryComponent` (capacity 40, **initially empty**) to the existing isolated `prototype_main_hub.tscn`; neither Main nor Factory Testing Sandbox instantiates this Hub yet.
+- [x] Add explicit `PrototypeMainHubStarterStock.seed_fresh_hub(hub, items)` service that accepts ONLY a live, intact, operational, actual prototype Main Hub scene with an empty finite inventory. Reject null/detached or damaged Hub, invalid/nonpositive items, duplicate logical IDs, insufficient capacity, and a previously initialized Hub.
+- [x] Test-only **provisional starter loadout**: 20 Test Ingots and 8 Test Ore, created exactly once and marked on the specific Hub. Inventory transfer and material escrow handle subsequent item movement/spending, cancellation, and completion without any recurring refill or magical logistics.
+- [x] Stage `res://tests/main_hub_starter_inventory_e3d5c3c2_test.tscn` with **16 A–P** checks, covering one-time semantics, failure/capacity, transfers, escrow, no-worker bypass, completion, and disabled/damaged structures.
+- [ ] **Local Godot 4.6.2 F6 acceptance pending**, followed by rerun of E3d5c3b1 (16 completed-structure checks) and E3d5c3c1 (18 coordinator checks) for compatibility.
+- [ ] Important unsolved before live gameplay: persist the one-time starter marker and escrow across save/load; decide which inventory physically supplies build drones and delivery; implement real supplied electrical energy, construction UI and safe opt-in switch from debug bypass.
+
+**No Factory Testing Sandbox or Main scene/control modifications.** The starter service runs only if explicitly invoked; constructing a Hub scene alone creates no starting resources. The 20/8 item quantities are provisional prototype economy values, not final balancing.
