@@ -1155,3 +1155,16 @@ Completed:
 - [x] E3d5c3d2d default-on sandbox requirements panel: **12/12** F6.
 - **Acceptance totals: 73/73 new regression checks and 89/89 including the prior dock suite.** All previously listed pending UI/selection regression suites are now evidenced. This dated acceptance supersedes earlier checklist items marked F6 pending.
 - [ ] Next milestone: separately stage the intentional blueprint authorization UI/workflow without conflating priority with permission to build. Existing E and Ctrl+E paths should remain intact. **No production dispatch or live readiness claim** until material escrow, delivered power, finite workers, resource recovery and save/load paths are integrated and validated.
+
+### E3d5c4a — Explicit Sandbox Blueprint Authorization Dock (Staged; F6 Pending)
+
+- [x] Keep the validated Q+drag, L/N/H, E = selected, Ctrl+E = all and single-click inspection boundaries. **Changing priority never authorizes work.**
+- [x] Introduce a signal-only `BlueprintConstructionAuthorizationButtons` view with distinct **Authorize Selected** and **Authorize All** actions, stop-filtered mouse clicks, live candidate counts and disabled defaults.
+- [x] Introduce an opt-in `SandboxConstructionAuthorizationDock` above the existing nine-slot hotbar, without moving or replacing the vertical L/N/H dock. Only `factory_testing_sandbox.tscn` enables it; Main is unchanged.
+- [x] Route Selected through `WorldInteraction._authorize_selected_blueprint_sites()` and All through `_authorize_all_blueprint_sites()`. All requires a **second explicit Confirm All click**; changing the candidate set or leaving Blueprint Mode invalidates confirmation. Ctrl+E continues to work directly.
+- [x] Revalidate currently managed PLANNED blueprints at action time, never merely trust a UI signal, and clear Q-selection after successful authorization in the same way as E/Ctrl+E.
+- [x] Add `res://tests/sandbox_blueprint_authorization_test.tscn` with **18 A–R isolated checks**, including priority/inspection isolation, confirmation invalidation, keyboard compatibility and a debug-bypass-OFF assertion that authorized jobs remain QUEUED with three missing requirements and zero time advancement.
+- [ ] **Developer Godot 4.6.2 F6 pending:** Run the 18-case scene and manually verify both UI actions in normal Factory Testing Sandbox. Then rerun the E3d5c3e1b priority dock (16), E3d4b advanced selection (13) and E3d1 batch authorization (7) fixtures as the targeted regression gate.
+- [ ] Integrate *genuine* item-delivery escrow, delivered power, finite worker capacity, cancellation/destruction recovery and save/load **before** any non-debug production readiness adapter or automatic construction dispatch.
+
+**Safety boundary:** This UI uses the existing sandbox `blueprint_sandbox_debug_requirements = true` override only when the player explicitly authorizes a plan. The 18-case fixture turns that override **off** and expects QUEUED, not CONSTRUCTING. The isolated `BlueprintConstructionReadinessCoordinator` is not installed in Main or the playable sandbox. Prototype nameplate power is not delivered electricity, and unconnected requirements remain UNKNOWN / Live readiness NOT VERIFIED. Prior 89/89 acceptance is unchanged; the new 18/18 is **not yet verified**.
