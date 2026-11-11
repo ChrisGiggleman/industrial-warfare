@@ -1143,3 +1143,15 @@ Completed:
 **2026-11-11 developer F6 evidence:** [x] E3d5c3e1b vertical priority dock **16/16 checks PASSED** after physical-key fixture correction. [x] Visual alignment beside hotbar confirmed, with zero-selection disable behavior visible in regular sandbox. [ ] E3d5c3e1a standalone 12-check F6 suite. [ ] Manual Q+drag select blueprint(s) and click L/N/H; verify selected priority counters update, unselected remain unchanged, and disable on Q exit. [ ] Earlier E3d4a/b and E3d5c3d2b/c/d regression suites. These follow-up notes supersede the earlier pending status for the 16-check dock test only.
 
 **2026-11-11 manual acceptance:** [x] Developer reports compact L/N/H click checks passed during normal sandbox gameplay. Output demonstrates High/Normal/Low selected-site priority changes, Q toggle/off/re-entry, and 2 selected green-highlighted planned blueprints with H0/N1/L1. [x] Zero progress and independent read-only requirements preserved. [ ] Separate 12/12 E3d5c3e1a isolated fixture remains unverified in evidence. [ ] E3d4a/b selection and E3d5c3d2b/c/d requirements UI targeted regression suites. No change to Main or to actual readiness material/power/worker providers.
+
+### 2026-11-11 — E3d5c3e1b + Dependent UI Regression Acceptance
+
+- [x] E3d5c3e1b vertical L/N/H sandbox dock: **16/16** automated F6, prior screenshots; actual layout and manual selected-blueprint priority interactions accepted.
+- [x] E3d5c3e1a isolated L/N/H request-only buttons: **12/12** F6, newly submitted screenshot.
+- [x] E3d4a basic Q area-selection: **10/10** F6.
+- [x] E3d4b advanced Shift/Alt area-selection: **13/13** F6.
+- [x] E3d5c3d2b sandbox requirements read-only UI: **16/16** F6.
+- [x] E3d5c3d2c adaptive requirements HUD dock: **10/10** F6.
+- [x] E3d5c3d2d default-on sandbox requirements panel: **12/12** F6.
+- **Acceptance totals: 73/73 new regression checks and 89/89 including the prior dock suite.** All previously listed pending UI/selection regression suites are now evidenced. This dated acceptance supersedes earlier checklist items marked F6 pending.
+- [ ] Next milestone: separately stage the intentional blueprint authorization UI/workflow without conflating priority with permission to build. Existing E and Ctrl+E paths should remain intact. **No production dispatch or live readiness claim** until material escrow, delivered power, finite workers, resource recovery and save/load paths are integrated and validated.
