@@ -700,7 +700,7 @@ Completed:
 - [x] Keep active jobs non-preemptive when a higher-priority job joins the queue; when readiness is lost, pause while retaining progress and release the worker slot.
 - [x] Resume paused work when readiness and a slot are available; completion/cancellation releases the slot and allows the next eligible job to start.
 - [x] Add `res://tests/blueprint_construction_slots_e3d5b_test.tscn` (15 checks covering capacity, priority, explicit readiness, no-preemption, pause/resume, completion/cancellation, and isolation).
-- [ ] **Godot F6 verification pending.** This is an **isolated test-only service**; not instantiated in Main or the regular Factory Testing Sandbox and has no physical worker drones.
+- [x] **Godot F6 verification passed (15/15)** on 2026-11-10 (developer-provided output screenshot). This is an **isolated test-only service**; not instantiated in Main or the regular Factory Testing Sandbox and has no physical worker drones.
 - [ ] Next: real power and delivered-material readiness providers; assign finite physical worker-drone availability only after those services have their own regressions.
 
-**Status:** Implementation committed, Godot validation pending. Existing E3d5a priority assignment, debug sandbox construction, conveyor routing and main gameplay remain unchanged.
+**Status:** E3d5b isolated scheduler accepted — **15/15 automated checks passed**. Real readiness providers and physical drone dispatch are future milestones; existing E3d5a UI and normal gameplay are unchanged.
