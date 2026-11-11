@@ -537,3 +537,9 @@ The existing `Factory Testing Sandbox` still sets `blueprint_sandbox_debug_requi
 **Presentation guarantees:** Unknown service status is explicitly UNKNOWN; enough warehouse stock is distinguished from actual per-site escrow; an energized coverage circle is not proof of a bounded allocation; stale worker assignment after a generator outage does not imply readiness. The panel always shows **Live readiness: NOT VERIFIED** because the current prototype nameplate allocation and simulated worker slots are not actual delivered electricity or physical drone labor. There is no claim that the Factory Testing Sandbox debug construction bypass is real operational readiness.
 
 **Isolation and next gate:** The standalone `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn` stages 18 A–R automated assertions plus a manual click-open/click-close check. No existing world/controller/sandbox scene is modified. Only after passing should a separate, disabled-by-default sandbox UI feature gate be considered. Live construction enforcement, physical resource delivery, save/load escrow and starter-stock persistence, real energy supply and drone labor remain outside this checkpoint.
+
+### E3d5c3d2a — Automated Godot Verification Accepted (2026-11-11)
+
+The isolated `blueprint_requirements_panel_e3d5c3d2a_test.tscn` passed 18/18 automated A–R checks in developer-run Godot 4.6.2. The test asserts the button's signal actions and inspector values, but **human visual and real mouse-click verification remain pending**. The Output's manual check instruction is not itself evidence that the on-screen panel can be clicked and read.
+
+Until that manual step passes, E3d5c3d2a is automated-only accepted and no Factory Testing Sandbox hookup should be presented as verified. Keep source/fuel, persistence, logistics and physical worker-drone limitations separate from the read-only UI; `live_construction_ready` remains explicitly false.

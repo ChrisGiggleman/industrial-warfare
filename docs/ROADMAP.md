@@ -935,3 +935,12 @@ Completed:
 - [ ] Later: interactive construction management controls for authorize/priority/cancel, after separately proving those actions cannot bypass real material/power/worker gates.
 
 **Isolation:** No edits to `WorldInteraction`, `main.tscn`, `factory_testing_sandbox.tscn`, active HUD, construction jobs, real inventory, cargo/conveyors, or combat. This is an isolated UI-test checkpoint only.
+
+### E3d5c3d2a — Read-Only Clickable Panel: Automated F6 Accepted (2026-11-11)
+
+- [x] Developer's Godot 4.6.2 F6 Output screenshot confirms **18/18 checks A–R passed** in `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn`; no errors visible in the supplied Output.
+- [x] Automated checks cover button press signals, initial and missing service states, exact material shortages, real escrow versus free inventory, prototype power/worker status, outages, stale worker reporting, job progress, refunds, and blueprint selection group fallback, without the UI changing gameplay.
+- [ ] **Manual game-window visual and mouse-click acceptance remains pending.** Open the running F6 window, visually confirm the top-right Construction Requirements button and readable panel contents, click Close and reopen using the mouse, and provide a screenshot or confirmation.
+- [ ] Only after manual acceptance, stage E3d5c3d2b: separately gated, read-only panel in Factory Testing Sandbox. Preserve `blueprint_sandbox_debug_requirements = true`, existing controls, cargo conservation, factory, and combat behavior.
+
+**Status:** E3d5c3d2a **automated tests accepted 18/18**, but the complete UI milestone is NOT yet accepted because human-visible interaction remains unverified.

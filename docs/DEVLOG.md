@@ -2516,3 +2516,11 @@ Developer Godot 4.6.2 Output screenshot confirms `ALL 18 E3D5C3D1 CONSTRUCTION R
 **Next focused checkpoint:** Staged a clickable `BlueprintConstructionRequirementsPanel` in an isolated F6 test. The top-right button opens/closes a scrollable status panel showing building bill, stock shortages, escrow ownership, allocated prototype power, worker slot, priority, construction state and progress. Unknown or disconnected data is labeled UNKNOWN; the UI never claims genuine live construction readiness from the sandbox debug bypass. A selected planned blueprint can be followed using the existing `blueprint_area_selected` group, with no input/selection mutation.
 
 `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn` contains **18 test assertions A–R** awaiting developer Godot F6, plus a manual click-open/click-close check in the running game window. F6 fixture simulates service events explicitly; UI component itself uses inspector snapshots only. No Factory Testing Sandbox scene or game logic was changed in this commit. If validated, the next stage is opt-in, read-only sandbox display, keeping debug requirements and keyboard controls untouched.
+
+### 2026-11-11 — E3d5c3d2a Automated Requirements-Panel Tests Passed 18/18
+
+Developer-supplied Godot 4.6.2 F6 Output shows all PASS A–R and `ALL 18 E3D5C3D2A READ-ONLY REQUIREMENTS PANEL TESTS PASSED` with no errors visible. Button press signal handling, closed/open states, real material shortages and escrow visibility, prototype allocation and worker snapshots, outage behavior, retained progress, cancellation/refunds and selection fallback were exercised in the isolated fixture.
+
+**Manual UI acceptance is still outstanding.** The Output contains `MANUAL UI CHECK: Click top-right Construction Requirements button twice.` but no screenshot or confirmation of the displayed running game-window panel or actual mouse clicks has been provided yet. No claim of complete UI acceptance or live Factory Testing Sandbox integration is made.
+
+This is a documentation-only evidence update. The next code checkpoint remains a read-only opt-in Factory Testing Sandbox panel and should begin only after the user confirms the manual visual/clickable behavior. No production scene or input behavior was modified.
