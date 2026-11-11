@@ -960,3 +960,13 @@ Completed:
 - [ ] Only after successful F6/manual acceptance consider enabling the panel by default in Factory Testing Sandbox. Main, WorldInteraction, cargo, combat, scheduling, save/load, and real construction authority are out of scope.
 
 **Safety:** `blueprint_sandbox_debug_requirements = true` remains untouched. The panel is visual-only, displays `Live readiness: NOT VERIFIED`, and has no real source inventory until a separate provider is implemented.
+
+### E3d5c3d2b — Sandbox UI Gate Automated F6 Passed (2026-11-11)
+
+- [x] Developer Godot 4.6.2 Output screenshot confirms **all 16/16 A–P checks passed** in `res://tests/blueprint_requirements_sandbox_e3d5c3d2b_test.tscn`; no errors visible in the supplied Output.
+- [x] Verified disabled-by-default gate in the committed Factory Testing Sandbox, opt-in UI for the test instance, existing blueprint/priority/debug flags, single read-only panel, selection tracking, bill/priority/progress labels, UNKNOWN providers, and no UI-driven authorization or timer advancement.
+- [x] Existing Factory Testing Sandbox HUD, blueprint route tool and `blueprint_sandbox_debug_requirements = true` remain unchanged in the isolated fixture.
+- [ ] **Manual in-game window acceptance pending:** physically click the top-right button to close/reopen, confirm readability/visibility in the actual sandbox environment and that ordinary blueprint selection continues working. The Output's MANUAL lines are instructions, not proof of clicks.
+- [ ] Keep the feature flag **off by default** until manual verification. Do not connect real construction materials/power/workers or change Main gameplay.
+
+**E3d5c3d2b status:** 16/16 automated checks accepted; full UI integration acceptance remains contingent on manual evidence.

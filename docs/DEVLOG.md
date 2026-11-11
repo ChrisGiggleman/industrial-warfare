@@ -2532,3 +2532,11 @@ Two user screenshots of the standalone Godot window demonstrate readable scrolla
 For the next isolated checkpoint, added a small `SandboxConstructionRequirementsFeatureGate` script and a **disabled-by-default** instance to the actual Factory Testing Sandbox scene. The feature gate creates only the existing read-only panel when explicitly enabled; it follows blueprint area-selection group membership without editing WorldInteraction or any producer/consumer. No material inventory, power allocator, escrow or worker scheduler is provided in gameplay; UNKNOWN is the safe output.
 
 New `res://tests/blueprint_requirements_sandbox_e3d5c3d2b_test.tscn` stages 16 A–P checks using a copy of the real sandbox scene with its UI gate enabled **only for the test instance**. It checks display/selection and that current debug construction/HUD inputs remain unchanged. Godot 4.6.2 F6 and human UI checks remain pending. The existing Factory Testing Sandbox continues with its feature gate off by default and its established debug construction mode unmodified.
+
+### 2026-11-11 — E3d5c3d2b Sandbox UI Gate Passed Automated Tests 16/16
+
+Developer's Godot 4.6.2 Output screenshot contains PASS A–P and `ALL 16 E3D5C3D2B SANDBOX READ-ONLY REQUIREMENTS UI TESTS PASSED`. No errors are visible. The test enabled the otherwise disabled feature gate only for the loaded sandbox instance and verified the original debug construction, blueprint priorities, route controls and HUD, while reading materials and selection state without creating resources or advancing construction.
+
+**Remaining human acceptance:** The user has supplied only the automated Output for E3d5c3d2b so far, not a screenshot of the UI in the running Factory Testing Sandbox or confirmation of physical close/reopen mouse clicks. The printed MANUAL instructions are not evidence that the interactions occurred. Keep the gate off by default and await a screenshot/confirmation before turning it on for normal sandbox sessions.
+
+This is a documentation-only change; WorldInteraction, Factory Testing Sandbox scene, inventory, job scheduling, power, conveyors and combat have not been altered.
