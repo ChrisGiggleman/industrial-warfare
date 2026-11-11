@@ -1196,3 +1196,14 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [x] Acceptance evidence: developer-reported manual use of Selected and two-click All authorization, preserved timers and conveyor behavior; new authorization fixture **18/18** and targeted priority/selection/batch regressions **36/36** previously verified by Godot F6 screenshots.
 - [x] **E3d5c4a accepted for Factory Testing Sandbox user-facing authorization only.** The screenshot is a pre-authorization selection state; the post-click behavior is accepted on the developer's report, not independently demonstrated by this image.
 - [ ] Next: *isolated, fail-closed* authorization-to-readiness admission design/tests. Do not connect prototype nameplate power or test stock to production; actual delivered power, logistics, atomic escrow/recovery, bounded workers and save/load remain hard launch gates.
+
+### E3d5c4b — Isolated Authorization-to-Readiness Admission (Staged; F6 Pending)
+
+- [x] Introduce `BlueprintConstructionReadinessAdmission`, an explicit test-only handoff that defaults **OFF** and requires the Factory Testing Sandbox controller, enabled authorization dock, and sandbox debug readiness bypass **OFF**.
+- [x] Allow admission only for **already-authorized, managed, live QUEUED** ConstructionSites with unfulfilled **power / materials / workers** gates, valid positive power demand and an external configured `BlueprintConstructionReadinessCoordinator`. Priority alone and PLANNED sites are rejected.
+- [x] Delegate only to the existing coordinator's `track_site()` and provide explicit `admit_waiting()` discovery from WorldInteraction's authorized waiting priority queue. Neither method grants job flags, runs `reconcile()`, advances time, invents cargo/power, or dispatches worker drones.
+- [x] Stage `res://tests/blueprint_readiness_admission_e3d5c4b_test.tscn` with **16 A–P checks** for feature-gate isolation, queued-only permission, invalid power demand, duplicate rejection, E selected-only / Ctrl+E-style All handoff, empty-stock fail closed, a test-only atomic-escrow supply with no generator, and Main/playable-scene opt-out.
+- [ ] **Godot 4.6.2 F6 pending**: run 16-check isolated scene before any normal-sandbox wiring. Optional follow-up regression: `construction_readiness_coordinator_e3d5c3c1_test.tscn` 18 checks plus `sandbox_blueprint_authorization_test.tscn` 18 checks.
+- [ ] True delivered inventory, electrical energy, finite physical worker drones, cancelled-job escrow recovery under full/absent stock, and robust save/load still block real dispatch. This admission foundation is **not installed** in either playable scene.
+
+**Safety:** Existing prototype power allocator reports nameplate capacity, not electrical delivery. The isolated fixture may inject ingots into a test inventory, but the actual factory has not connected conveyor-delivered construction stock to escrow. Treat Live readiness as NOT VERIFIED.
