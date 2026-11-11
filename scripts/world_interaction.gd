@@ -58,6 +58,7 @@ const SELECTION_COLLISION_MASK: int = 2
 @export var compact_blueprint_visuals: bool = false
 @export var enable_blueprint_route_tool: bool = false
 @export var enable_blueprint_area_selection: bool = false
+@export var enable_blueprint_construction_priorities: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
@@ -101,6 +102,7 @@ var _blueprint_dragging: bool = false
 var _blueprint_drag_operation: int = BLUEPRINT_SELECT_REPLACE
 var _area_selected_sites: Array[ConstructionSite] = []
 var _blueprint_selection_overlay: BlueprintAreaSelectionOverlay = null
+var _construction_priority_queue: BlueprintConstructionPriorityQueue = null
 var _waypoint_ghost_preview: BlueprintWaypointGhostPreview = null
 var _waypoint_preview_signature: String = ""
 var _planned_route_coordinator: BlueprintConveyorRouteCoordinator = null
@@ -291,6 +293,11 @@ func _ready() -> void:
 		# sibling there. A CanvasLayer renders normally as our own child.
 		add_child(_blueprint_selection_overlay)
 
+	if enable_blueprint_planning and enable_blueprint_construction_priorities:
+		_construction_priority_queue = BlueprintConstructionPriorityQueue.new()
+		_construction_priority_queue.name = "BlueprintConstructionPriorityQueue"
+		add_child(_construction_priority_queue)
+
 	if build_hud_panel != null:
 		build_hud_panel.visible = false
 
@@ -401,6 +408,21 @@ func _unhandled_input(event: InputEvent) -> void:
 				if _blueprint_area_selection_mode and key == KEY_ESCAPE:
 					_clear_blueprint_area_selection()
 					return
+				if (
+					_blueprint_area_selection_mode
+					and enable_blueprint_construction_priorities
+				):
+					var selected_priority: int = -1
+					match key:
+						KEY_H:
+							selected_priority = ConstructionJob.Priority.HIGH
+						KEY_N:
+							selected_priority = ConstructionJob.Priority.NORMAL
+						KEY_L:
+							selected_priority = ConstructionJob.Priority.LOW
+					if selected_priority >= 0:
+						_set_selected_blueprint_priority(selected_priority)
+						return
 				if key == KEY_E:
 					if event.ctrl_pressed:
 						_authorize_all_blueprint_sites()
@@ -3631,6 +3653,10 @@ func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 		return false
 	if not site.job.authorize():
 		return false
+	# Record only actually waiting jobs. Sandbox debug availability can
+	# still start work immediately; this queue does not throttle it.
+	if is_instance_valid(_construction_priority_queue):
+		_construction_priority_queue.register_queued_site(site)
 	if blueprint_sandbox_debug_requirements:
 		# Explicit factory-testing override. Do not enable in Main:
 		# the actual power graph, delivered cargo and drone capacity
@@ -3816,6 +3842,40 @@ func _authorize_selected_blueprint_sites() -> int:
 	_clear_blueprint_area_selection()
 	print("BLUEPRINT AREA AUTHORIZED: ", count, " selected planned sites")
 	return count
+
+
+# =============================================================================
+# E3D5 — PRIORITY ASSIGNMENT FOR SELECTED PLANNED BLUEPRINTS
+# =============================================================================
+# H/N/L in Q selection mode only. This changes ordering metadata, never
+# authorizes jobs or bypasses power, material, worker or time requirements.
+
+func _set_selected_blueprint_priority(new_priority: int) -> int:
+	if not (
+		enable_blueprint_construction_priorities
+		and enable_blueprint_area_selection
+		and _blueprint_area_selection_mode
+		and blueprint_mode_active
+		and placement_mode_active
+		and not demolition_mode_active
+	):
+		return 0
+	_prune_blueprint_area_selection()
+	var changed: int = 0
+	for site: ConstructionSite in _area_selected_sites:
+		if not _is_managed_blueprint(site):
+			continue
+		if site.job.state != ConstructionJob.State.PLANNED:
+			continue
+		if int(site.job.priority) == new_priority:
+			continue
+		if site.job.set_priority(new_priority):
+			changed += 1
+	print(
+		"BLUEPRINT PRIORITY: ", ConstructionJob.priority_name(new_priority),
+		" applied to ", changed, " selected planned jobs."
+	)
+	return changed
 
 
 # =============================================================================
