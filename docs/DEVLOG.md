@@ -2622,3 +2622,15 @@ Developer supplied Godot 4.6.2 Output showing PASS A–P and `ALL 16 E3D5C3D2E D
 The Output additionally shows `Footprint blocked or preview invalid` and `Hit nothing` after the automated test. These are not F6 check failures; if they occur during otherwise valid normal sandbox placement or clicking, gather a reproducible sequence before treating them as harmless.
 
 **Acceptance limitation:** The new screenshots are from the isolated F6 test; they do not conclusively demonstrate physical click inspection in a normal Factory Testing Sandbox session. Next: manually click an existing planned blueprint in normal sandbox, verify Q+drag and conveyor placement, then rerun targeted UI and E3d4 area selection regressions. No game code changed in this documentation-only evidence update.
+
+### 2026-11-11 — Normal Sandbox Click/Area Selection and Conveyor Smoke Accepted
+
+Five user screenshots from normal Factory Testing Sandbox demonstrate the full manual interaction loop: direct Storage inspection (requirements show Test Storage, 3 ingots and zero progress without Q selection), separate Q+Drag selection with a green outline and Selected: 1, a conveyor blueprint's 1-ingot bill, a complete multi-corner directed conveyor route, and a 22-blueprint selection spanning High 7 / Normal 7 / Low 8. The debug HUD and Production Debug remain unobstructed, and the requirements report UNKNOWN stock/power/worker services rather than counterfeit readiness. This validates E3d5c3d2d and E3d5c3d2e manual acceptance following previously accepted dedicated automated tests (38/38 default-on UI, 16/16 click-inspection).
+
+**Targeted regression backlog remains:** E3d4a/b Q rectangle/Shift/Alt selection and E3d5c3d2b/c/d post-click UI suites. Manual visual evidence is not a substitute for these specific regression runs.
+
+### 2026-11-11 — E3d5c3e1a Standalone Priority Buttons Staged
+
+Implemented an **isolated** `BlueprintConstructionPriorityButtons` HBoxContainer with mouse-clickable High/Normal/Low controls. The component is disabled until an external controller declares a qualifying selection; it emits a typed `priority_requested` signal but never writes construction jobs or queue state. The existing WorldInteraction Q-selection command already gates priority updates to eligible PLANNED sites; only a future integration checkpoint will connect the signal to that validated command. This first step cannot accidentally authorize work, consume escrow, allocate power/workers, or override timers.
+
+Staged `res://tests/construction_priority_buttons_e3d5c3e1a_test.tscn` with **12 F6 A–L** checks and a manual button-click test. Godot F6 and mouse tests remain pending. Factory Testing Sandbox and Main scenes are unchanged. Before connecting the module to gameplay, run the queued E3d4a/b and E3d5c3d2b/c/d regressions.

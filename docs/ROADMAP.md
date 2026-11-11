@@ -1102,3 +1102,24 @@ Completed:
 - [!] `Footprint blocked or preview invalid` and `Hit nothing` appeared after test completion. They are non-fatal debug diagnostics, but investigate if reproducible on intended valid placements.
 
 **E3d5c3d2e status: 16/16 isolated automated tests accepted; live sandbox physical interaction and post-change regressions pending.** Real construction readiness remains unverified.
+
+### E3d5c3d2d/e — Normal Sandbox Blueprint Interaction Accepted (2026-11-11)
+
+- [x] Developer provided five screenshots from regular Godot 4.6.2 Factory Testing Sandbox: clicked Storage inspection appears in Construction Requirements while `Selected: 0` remains correct for the separate Q-area selection workflow.
+- [x] Q+Drag successfully selects one Storage blueprint (green outline, `Selected: 1`, Test Storage bill and Normal priority shown).
+- [x] Conveyor blueprint inspection reports `Conveyor Belt` with **1 Test Ingot**; a multi-turn conveyor loop with correct directional arrows and corners is visible.
+- [x] Area selection of **22 planned blueprints** shows priority distribution **7 High / 7 Normal / 8 Low**, confirming multi-selection and existing priority controls remain usable.
+- [x] Requirements panel open/close and the existing Factory Blueprints / Production Debug HUDs have been visually verified across regular sandbox tests; construction readiness remains explicitly `NOT VERIFIED`.
+- [x] **E3d5c3d2d default-on read-only UI** and **E3d5c3d2e direct click inspection** accepted for manual sandbox functionality, alongside their previously accepted **38/38** and **16/16** dedicated automated checks.
+- [ ] Post-E3d5c3d2e regression batch remains: E3d4a Q-area selection, E3d4b Shift/Alt area selection, and updated E3d5c3d2b/c/d UI compatibility. These must pass before the next live UI integration or gameplay construction changes.
+
+### E3d5c3e1a — Clickable Construction Priority Request Buttons (Isolated; F6 Pending)
+
+- [x] Add standalone `BlueprintConstructionPriorityButtons` component (HBoxContainer) with physically clickable High, Normal, Low controls and `priority_requested(priority)` signal.
+- [x] Fail-closed default: disabled unless an external caller explicitly sets selection availability, reject invalid priorities, mouse interactions stop at the UI, and absolutely **no ConstructionJob, priority queue, resource, power, scheduler or blueprint mutation** occurs within the component.
+- [x] Stage `res://tests/construction_priority_buttons_e3d5c3e1a_test.tscn` with **12 A–L** tests: labels/order, disabled state, signal requests, invalid IDs, non-mutation of a planned job, and a standalone game-window manual click check.
+- [ ] **Godot 4.6.2 F6 acceptance pending** (12/12) and actual mouse High/Normal/Low click visibility. This initial module is NOT inserted into Factory Testing Sandbox or Main.
+- [ ] E3d5c3e1b (later): connect signals to existing `WorldInteraction._set_selected_blueprint_priority()` via a guarded sandbox adapter only when Q-area selection has eligible planned blueprints; preserve H/N/L keyboard shortcuts and the direct-click inspection distinction.
+- [ ] Authorization buttons, worker drones, physical power delivery and resource logistics remain separate later checkpoints.
+
+**Checkpoint isolation:** The only new code here is an independently testable priority-button view and its F6 test. No existing gameplay or sandbox UI scene is edited.
