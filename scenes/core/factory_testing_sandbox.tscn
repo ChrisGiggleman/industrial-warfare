@@ -100,6 +100,7 @@ compact_blueprint_visuals = true
 enable_blueprint_route_tool = true
 enable_blueprint_area_selection = true
 enable_blueprint_construction_priorities = true
+enable_blueprint_click_inspection = true
 blueprint_sandbox_debug_requirements = true
 enable_connected_conveyor_blueprints = true
 enable_connected_storage_blueprints = true

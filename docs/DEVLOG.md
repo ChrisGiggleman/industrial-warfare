@@ -2604,3 +2604,13 @@ Developer's newest Godot 4.6.2 screenshot shows the post-enable E3d5c3d2c HUD do
 The HUD docking test confirms no overlap, responsive adaptive repositioning, intact sandbox debug gates and read-only reporting. The screenshot's `MANUAL:` lines are instructions and do not prove that physical mouse toggle or conveyor/build placement were exercised in the **regular sandbox**. Complete the manual OPEN/CLOSE/REOPEN, blueprint select/deselect and short conveyor smoke before declaring the entire default-on UI milestone fully accepted.
 
 No gameplay source changed in this documentation-only entry. `main.tscn` is unchanged. Future E3d5c3e1 will add clickable High/Normal/Low controls with existing priority logic, without granting real stock, power, worker slots or timer bypass.
+
+### 2026-11-11 — Manual Sandbox Found Blueprint Click Gap; E3d5c3d2e Fix Staged
+
+The developer supplied screenshots showing the actual default-on Construction Requirements button in both closed and open states and an existing blueprint in the sandbox, then reported **not being able to click the blueprint**. This blocks final manual acceptance of E3d5c3d2d, despite its successful 38/38 automated regression checks.
+
+Reviewed WorldInteraction: Q+drag owns area selection and adds sites to `blueprint_area_selected`, whereas ordinary left-click while Blueprint Mode is active attempts new placement. The new read-only panel only follows the Q-selection group. Therefore a bare click on a preexisting blueprint did not select an inspection target. ConstructionSite already has a real reserved-footprint StaticBody3D on selection layer 2, so the fix reuses its authoritative hitbox rather than adding a new collision or bypass.
+
+**E3d5c3d2e staged:** WorldInteraction emits a sandbox-gated `blueprint_inspection_requested(site)` for a plain primary click on a valid existing managed site in Blueprint Mode (and in neutral normal selection mode). The existing requirements gate listens and opens the informational panel on that target. Q-area selection and Shift route inputs retain their earlier priority; normal empty-space clicks keep placement behavior. The gate clears pinned inspection when Q area-selection begins, allowing multi-selection to drive the panel. It never edits ConstructionJob, escrow, power, workers or timers, and Main remains opted out.
+
+New `res://tests/blueprint_click_inspection_e3d5c3d2e_test.tscn` contains **16 A–P F6 tests** including physical raycast and input event, staged for developer validation. After acceptance, repeat area/placement and relevant UI regressions; do not claim current gameplay fixed before Godot F6 and manual test.

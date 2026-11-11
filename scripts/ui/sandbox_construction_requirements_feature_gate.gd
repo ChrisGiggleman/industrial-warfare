@@ -17,6 +17,7 @@ class_name SandboxConstructionRequirementsFeatureGate
 @export var enable_read_only_requirements_panel: bool = false
 
 var _panel: BlueprintConstructionRequirementsPanel = null
+var _was_area_selecting: bool = false
 
 
 func _ready() -> void:
@@ -39,6 +40,24 @@ func _ready() -> void:
 	_panel.name = "ReadOnlyConstructionRequirements"
 	_panel.follow_area_selection = true
 	add_child(_panel)
+	# The world controller owns all click/raycast decisions. Only this
+	# sandbox UI listens and opens an informational target. Area selection
+	# remains independent and can still be used for group operations.
+	var controller: Node = sandbox.get_node("WorldInteraction")
+	if controller.has_signal("blueprint_inspection_requested"):
+		controller.connect(
+			"blueprint_inspection_requested",
+			Callable(self, "_on_blueprint_inspection_requested")
+		)
+
+
+func _on_blueprint_inspection_requested(site: ConstructionSite) -> void:
+	if not is_instance_valid(_panel) or not is_instance_valid(site):
+		return
+	if site.is_queued_for_deletion():
+		return
+	_panel.set_target(site)
+	_panel.set_open(true)
 
 
 # Keep the clickable panel below the LIVE Production Debug HUD as its
@@ -49,6 +68,16 @@ func _process(_delta: float) -> void:
 	var sandbox: Node = get_parent()
 	if not is_instance_valid(sandbox):
 		return
+	# Starting Q-area selection releases any single-click pinned target,
+	# so its multi-selection can drive the same read-only panel.
+	var controller: Node = sandbox.get_node_or_null("WorldInteraction")
+	if is_instance_valid(controller):
+		var selecting: bool = bool(
+			controller.get("_blueprint_area_selection_mode")
+		)
+		if selecting and not _was_area_selecting:
+			_panel.set_target(null)
+		_was_area_selecting = selecting
 	var debug_panel: Control = (
 		sandbox.get_node_or_null("ProductionDebugHUD/InfoPanel") as Control
 	)

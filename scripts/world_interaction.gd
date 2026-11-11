@@ -1,5 +1,9 @@
 extends Node
 
+# A click on an existing sandbox blueprint can request read-only inspection.
+# This never authorizes a job or changes area-selection membership.
+signal blueprint_inspection_requested(site: ConstructionSite)
+
 
 # =============================================================================
 # CONSTANTS
@@ -59,6 +63,7 @@ const SELECTION_COLLISION_MASK: int = 2
 @export var enable_blueprint_route_tool: bool = false
 @export var enable_blueprint_area_selection: bool = false
 @export var enable_blueprint_construction_priorities: bool = false
+@export var enable_blueprint_click_inspection: bool = false
 @export var blueprint_sandbox_debug_requirements: bool = false
 # E2c2 sandbox opt-in. Main remains disconnected from planned belt routes.
 @export var enable_connected_conveyor_blueprints: bool = false
@@ -576,6 +581,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 		if event.is_action_pressed("primary_action"):
+			# Click an existing site to INSPECT instead of attempting to
+			# place a duplicate. Shift-route clicks keep their old behavior,
+			# and Q-area-selection was handled above.
+			if (
+				enable_blueprint_click_inspection
+				and blueprint_mode_active
+				and event is InputEventMouseButton
+				and not event.shift_pressed
+				and _try_inspect_blueprint_at(event.position)
+			):
+				return
 			if (
 				enable_blueprint_route_tool
 				and blueprint_mode_active
@@ -591,6 +607,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event.is_action_pressed("primary_action"):
+		if (
+			enable_blueprint_click_inspection
+			and event is InputEventMouseButton
+			and _try_inspect_blueprint_at(event.position)
+		):
+			return
 		_select_under_mouse()
 
 
@@ -3618,10 +3640,46 @@ func _toggle_blueprint_mode() -> bool:
 	return true
 
 
+# Physically clicked screen coordinates are used for mouse inspection.
+# Keyboard E/X retain their existing current-mouse-position behavior.
+func _try_inspect_blueprint_at(cursor: Vector2) -> bool:
+	return _request_blueprint_inspection(
+		_blueprint_site_at_screen_position(cursor)
+	)
+
+
+func _request_blueprint_inspection(site: ConstructionSite) -> bool:
+	if (
+		not enable_blueprint_click_inspection
+		or not is_inside_tree()
+		or not is_instance_valid(site) or not site.is_inside_tree()
+		or not _is_managed_blueprint(site)
+		or not blueprint_inspection_requested.has_connections()
+	):
+		return false
+	blueprint_inspection_requested.emit(site)
+	return true
+
+
 func _blueprint_site_under_mouse() -> ConstructionSite:
-	if not enable_blueprint_planning or not is_instance_valid(camera):
+	if (
+		not enable_blueprint_planning
+		or not is_inside_tree()
+		or not is_instance_valid(camera)
+	):
 		return null
-	var cursor := get_viewport().get_mouse_position()
+	return _blueprint_site_at_screen_position(
+		get_viewport().get_mouse_position()
+	)
+
+
+func _blueprint_site_at_screen_position(cursor: Vector2) -> ConstructionSite:
+	if (
+		not enable_blueprint_planning
+		or not is_inside_tree()
+		or not is_instance_valid(camera)
+	):
+		return null
 	var ray_origin := camera.project_ray_origin(cursor)
 	var ray_end := ray_origin + camera.project_ray_normal(cursor) * ray_length
 	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end)

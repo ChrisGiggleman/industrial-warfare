@@ -1071,3 +1071,22 @@ Completed:
 - [ ] After the manual gameplay smoke, accept E3d5c3d2d completely and start **E3d5c3e1 — Clickable Construction Priorities**, beginning with a safe isolated test layer and forwarding to existing validated priority/selection commands only. Keep H/N/L alternatives.
 
 **Scope:** All **38/38 automated checks accepted**; regular sandbox manual gameplay smoke still pending. This is evidence only, with no live construction-services integration.
+
+### E3d5c3d2d — Manual Sandbox Click-Selection Gap Found (2026-11-11)
+
+- [x] Developer supplied normal Factory Testing Sandbox screenshots showing Construction Requirements physically **closed**, then **opened**, and a placed Storage / conveyor blueprint.
+- [!] **Manual smoke NOT ACCEPTED:** user reports that they cannot click the placed blueprint to select/inspect it. Factory Blueprints continues showing `Selected: 0` with the read-only requirements panel showing no selected site.
+- [x] Code review identifies the cause: WorldInteraction uses Q+DRAG to create `blueprint_area_selected` membership. Ordinary left-click in Blueprint Mode instead enters placement; ConstructionSite is not in normal selectable-object group, and the requirements panel only observes existing group membership. It was not a confirmed power, worker, or inventory issue.
+- [ ] Accept E3d5c3d2d completely only after a new click-inspection smoke and basic conveyor/blueprint placement confirmation. Previous **38/38 automated UI checks remain accepted** but do not establish direct mouse inspection.
+
+### E3d5c3d2e — Direct Blueprint Click Inspection (Staged; F6 Pending)
+
+- [x] Add sandbox-only `enable_blueprint_click_inspection = true` while leaving this opt-in false in WorldInteraction default and the production Main scene.
+- [x] In the ordinary left-click path (before Blueprint Mode attempts another placement), detect an existing managed ConstructionSite by its existing layer-2 reserved-footprint ray hitbox. Only when a read-only listener exists, emit `blueprint_inspection_requested(site)` and consume that click instead of placing another object. Empty-ground placement and Shift-route clicks continue through established paths; Q-area drag still owns input independently.
+- [x] Connect the existing requirements feature gate to the new inspection signal; clicking a blueprint sets the panel's informational target and opens it, **without** changing `blueprint_area_selected`, job priority, authorization, reservations, power, workers or timers.
+- [x] When entering Q selection mode, clear the pinned inspection target so the existing `blueprint_area_selected` group can drive the read-only panel again.
+- [x] Stage `res://tests/blueprint_click_inspection_e3d5c3d2e_test.tscn`, **16 checks A–P**, including actual layer-2 physics hit testing, direct input handling, valid/invalid site guards, Q selection, priority independence, UNKNOWN providers, and Main unchanged.
+- [ ] **Godot 4.6.2 F6 pending**. Then manually click an existing Storage or conveyor blueprint in the normal Factory Testing Sandbox while in Blueprint Mode. Confirm the requirements panel opens for that blueprint, Q+drag selection and placement still work, and no duplicate site is created.
+- [ ] After passing, rerun E3d5c3d2d default-on 12, E3d5c3d2b sandbox 16, E3d5c3d2c dock 10 and E3d4a/b area-selection regressions before further UI work.
+
+**Safety:** This is only inspection input and presentation. Main, production power/material/worker requirements, conveyor cargo logistics and combat remain unchanged. Sandbox debug construction override remains enabled for testing.
