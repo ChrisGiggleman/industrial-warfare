@@ -4,10 +4,11 @@ class_name BlueprintConstructionSlotScheduler
 # =============================================================================
 # E3D5B — BOUNDED CONSTRUCTION SLOT SCHEDULER (ISOLATED FOUNDATION)
 # =============================================================================
-# Dispatches only explicit, externally verified power/material readiness.
-# This service controls ONLY the worker-availability flag on ConstructionJob:
-# it does not fabricate power, supply materials, consume inventory, allocate
-# a physical drone, or advance construction time.
+# Dispatches only explicit, externally supplied power/material readiness.
+# This service mirrors those two verified flags into ConstructionJob while
+# granting/revoking the finite worker-availability flag. It cannot fabricate
+# power, supply materials, consume inventory, allocate physical drones, or
+# advance construction time.
 #
 # Until actual power/material/worker services exist, no live sandbox controller
 # instantiates this scheduler. Tests inject explicit readiness snapshots.
