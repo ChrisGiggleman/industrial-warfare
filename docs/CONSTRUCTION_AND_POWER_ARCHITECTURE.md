@@ -571,3 +571,9 @@ The UI remains informational only: no job authority, readiness state updates, st
 Local Godot 4.6.2 F6 passed all 10 A–J adaptive HUD-docking checks. The running sandbox screenshot verifies a clear Production Debug HUD above the separate Construction Requirements button and panel, with Factory Blueprints visible at top-left and the selected planned Test Storage clearly displayed. No overlap appears in the submitted 1920×1080 frame. The UI still says UNKNOWN for unconnected material, power and worker providers and `Live readiness: NOT VERIFIED`.
 
 Automated toggle signals pass but human mouse-click close/reopen is not documented by the screenshots. Post-change compatibility requires the E3d5c3d2a 18-check UI suite and the E3d5c3d2b 16-check sandbox gate suite. Until then, the live Factory Testing Sandbox feature gate remains **off by default**, and no real construction readiness or resource delivery has been integrated.
+
+### E3d5c3d2b — Post-Docking Regression Confirmation (2026-11-11)
+
+The developer reran `blueprint_requirements_sandbox_e3d5c3d2b_test.tscn` following the HUD dock changes; Godot Output confirms **16/16 checks A–P passed**. This adds to E3d5c3d2c's previously accepted 10/10. The standalone E3d5c3d2a 18-check suite has not yet been shown on the new dock code. The sandbox gate remains off by default.
+
+The extra `Hit nothing` message is the old WorldInteraction empty raycast-selection log, unrelated to any failing UI assertion. The direct cause of that particular click is not demonstrated. Physical mouse press close/reopen still needs confirmation before the panel can be enabled by default. All stock, escrow, electrical, and worker service readiness remains UNKNOWN in the opt-in sandbox.

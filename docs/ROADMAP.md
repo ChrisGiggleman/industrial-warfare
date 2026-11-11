@@ -998,3 +998,14 @@ Completed:
 - [ ] Do not mistake UNKNOWN services or sandbox debug bypass for real construction readiness. Keep the sandbox feature gate default OFF until this final UI acceptance.
 
 **Checkpoint state:** E3d5c3d2c automated 10/10 and visual nonoverlap accepted; 34 earlier UI regression checks and real mouse-toggle confirmation pending.
+
+### E3d5c3d2b — Post-HUD-Docking UI Regression Accepted (2026-11-11)
+
+- [x] Developer screenshots (two Output views) confirm **E3d5c3d2b all 16/16 checks A–P passed** in Godot 4.6.2 after E3d5c3d2c docking changes.
+- [x] Current sandbox visual screenshots show Production Debug above Construction Requirements and Factory Blueprints clear at left. Test fixture reports sandbox still default-off, with original build/debug controls preserved.
+- [x] The extra `Hit nothing` Output is the existing WorldInteraction empty-selection raycast log, not a failing assertion. The screenshots do not identify the particular click that caused the log.
+- [ ] **E3d5c3d2a standalone panel 18/18 current-code regression still pending.** The provided new Output screenshots show E3d5c3d2b again, not the standalone suite.
+- [ ] Physical close/reopen button mouse-interaction confirmation remains pending; open-panel screenshots and automated pressed-signal checks do not alone demonstrate it.
+- [ ] Maintain the sandbox requirements feature gate disabled by default until both final checks pass. No live materials, power or workers should be inferred from read-only displays.
+
+**Current UI verification:** E3d5c3d2c 10/10 and updated E3d5c3d2b 16/16 = **26 current-code checks passed**; E3d5c3d2a 18 more required for 44/44.

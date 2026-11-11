@@ -2554,3 +2554,11 @@ The developer supplied a screenshot from the real opt-in Factory Testing Sandbox
 Developer supplied two screenshots for the new E3d5c3d2c checkpoint. Godot 4.6.2 Output reports PASS A–J and `ALL 10 E3D5C3D2C SANDBOX REQUIREMENTS HUD DOCK TESTS PASSED`. The 1920×1080 running-window screenshot shows Production Debug at the top-right, the clickable Construction Requirements button and scrollable panel immediately below, and Factory Blueprints at the left, with no visually apparent overlap. The panel correctly describes a planned Test Storage costing 3 Test Ingots with Normal priority and UNKNOWN power/stock/escrow/worker services.
 
 Automated signal checks for toggling passed, but screenshots show only the open panel state, not physical mouse closure and reopening. Accordingly, full mouse-interaction acceptance is still pending. No new source changes were made for this evidence update. Required next runs: the E3d5c3d2a standalone panel suite (18) and E3d5c3d2b sandbox opt-in suite (16), then confirm actual mouse toggling and blueprint selection before considering an opt-in-to-default-on UI setting change. The committed Factory Testing Sandbox requirements feature gate remains disabled by default.
+
+### 2026-11-11 — E3d5c3d2b Post-Docking Regression Passed 16/16; Standalone UI Test Still Needed
+
+Two developer Godot 4.6.2 screenshots show `ALL 16 E3D5C3D2B SANDBOX READ-ONLY REQUIREMENTS UI TESTS PASSED` after the adaptive HUD docking fix. PASS A–P are visible and no assertion errors appear. Existing Factory Testing Sandbox feature gate stays off by default, while isolated UI opt-in and original debug controls remain intact.
+
+The same screenshots contain `Hit nothing`. Repository inspection locates this exact message in `scripts/world_interaction.gd` when a mouse-selection raycast misses a selectable object. It is routine debug feedback and not a construction error. The message alone cannot identify whether it came from a background click or UI interaction; manual click confirmation is still pending.
+
+Required before default-on: run standalone `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn` (18 checks) on the latest code, and verify that actual mouse clicks close/reopen the panel in the F6 game window. No source or scene files were modified in this documentation update.
