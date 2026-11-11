@@ -1214,3 +1214,15 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [x] The fixture's controlled 3-ingot transfer into test stock gives one High-priority escrow without generators or workers; jobs remain QUEUED with no progress.
 - [ ] Gameplay readiness remains unverified. This success does **not** test conveyor-delivered construction cargo, metered/delivered electricity, real worker drones, lossless persistence, or full recovery behavior in playable worlds.
 - [ ] Next isolated material-supply step: a bounded input/staging inventory that transfers real item units instead of directly granting test stock, then proves escrow conservation, blocked refunds, and rerouting recovery under missing power. It is **not** proof of conveyor connectivity and must not be wired into production.
+
+### E3d5c4c — Bounded Construction Material Staging and Recovery (Staged; F6 Pending)
+
+- [x] Add test-only `BlueprintConstructionMaterialStaging`, disabled by default and absent from Main/Factory Testing Sandbox. Its own bounded `InventoryComponent` begins empty, accepts only definition-bill item types and validates inventory source ownership, capacity, and positive quantities.
+- [x] Receive items only through existing `InventoryComponent.transfer_to()`, conserving physically accounted inventory units. This tests inventory transfers, **not** conveyor path, port, movement-time or delivery provenance.
+- [x] Let the isolated readiness coordinator escrow **only from the staging buffer**, after both jobs are explicitly authorized. With no generators and no workers it remains QUEUED, even when a complete 3-ingot bill is held.
+- [x] Cover partial delivery, priority-ordered reservation, duplicate prevention, cancellation when staging is too full to accept an escrow refund, fallback recovery to a separate inventory, and re-staging so the next job can reserve its own exact bill.
+- [x] Stage `res://tests/blueprint_material_staging_e3d5c4c_test.tscn` with **16 A–P assertions**; no existing scenes or gameplay controllers were edited.
+- [ ] **Developer Godot 4.6.2 F6 pending:** expect `ALL 16 E3D5C4C MATERIAL STAGING AND RECOVERY TESTS PASSED`. If successful, recheck earlier E3d5c2a escrow (16) and E3d5c3c1 readiness coordinator (18) if integration changes follow.
+- [ ] Future physical connection must validate real conveyor endpoints, actual completed cargo movement, transfer ownership and refusal of disconnected/ghost sources. Metered delivered electrical power, worker drones, job recovery persistence/save-load remain separate production gates.
+
+**Do not enable this test staging model as a playable provider.** It only proves a bounded inventory transfer path into escrow under isolated conditions; it cannot prove cargo came from a conveyor or that a real worker received building supplies.
