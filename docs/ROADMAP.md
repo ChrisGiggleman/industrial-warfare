@@ -1168,3 +1168,13 @@ Completed:
 - [ ] Integrate *genuine* item-delivery escrow, delivered power, finite worker capacity, cancellation/destruction recovery and save/load **before** any non-debug production readiness adapter or automatic construction dispatch.
 
 **Safety boundary:** This UI uses the existing sandbox `blueprint_sandbox_debug_requirements = true` override only when the player explicitly authorizes a plan. The 18-case fixture turns that override **off** and expects QUEUED, not CONSTRUCTING. The isolated `BlueprintConstructionReadinessCoordinator` is not installed in Main or the playable sandbox. Prototype nameplate power is not delivered electricity, and unconnected requirements remain UNKNOWN / Live readiness NOT VERIFIED. Prior 89/89 acceptance is unchanged; the new 18/18 is **not yet verified**.
+
+### E3d5c4a — Automated Authorization Acceptance (2026-11-11)
+
+- [x] Developer-supplied Godot 4.6.2 Output screenshot verifies **18/18 A–R tests PASS** for `res://tests/sandbox_blueprint_authorization_test.tscn`.
+- [x] The test leaves **six authorized jobs QUEUED, zero CONSTRUCTING, zero progress**, using its deliberate sandbox-debug-requirements-OFF fixture. Existing requirements inspection correctly reports **UNKNOWN** material stock/reservations, power and workers and **Live readiness NOT VERIFIED**.
+- [x] Selected-only authorization, two-click All confirmation and candidate-set invalidation, L/N/H nonauthorization, direct-click inspection isolation and physical-key E/Ctrl+E fallbacks passed their isolated assertions.
+- [ ] **Still pending:** actual normal-sandbox physical mouse clicks on Authorize Selected and Authorize All / Confirm All, placement/conveyor smoke, and three targeted post-change F6 regressions: `sandbox_vertical_priority_dock_e3d5c3e1b_test.tscn` **16**, `blueprint_area_selection_e3d4b_test.tscn` **13**, `batch_blueprint_authorization_e3d1_test.tscn` **7** (36 total).
+- [ ] Do not treat the sandbox bypass or isolated coordinator as live construction readiness. Genuine material delivery/escrow, delivered power, finite worker capacity, recovery and save/load remain unverified.
+
+**Note:** The automated test Output also logs `Placement blocked` **after** its final PASS line. The source of this residual message is not established; investigate only if reproducible during an intentional normal-sandbox placement attempt. This acceptance supersedes the earlier E3d5c4a automated F6-pending note, not its separate manual/regression gates.
