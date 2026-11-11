@@ -1050,3 +1050,14 @@ Completed:
 - [ ] Only after these checks accept E3d5c3d2d in full. Next: isolated clickable priority controls using existing validated blueprint commands, with no construction-readiness bypass.
 
 **Status:** Dedicated 12/12 accepted; **26 compatibility checks and manual F6 smoke remain**. Production Main, gameplay power, material escrow, worker scheduling, conveyors and combat are unchanged.
+
+### E3d5c3d2d — Post-Enable Sandbox UI Regression Passed 16/16 (2026-11-11)
+
+- [x] Developer submitted four screenshots showing the updated E3d5c3d2b Factory Sandbox Requirements UI test passing **all 16/16 A–P** checks after the default-on change, with no failing assertions visible.
+- [x] Paired running-window screenshots show Production Debug, Factory Blueprints and Construction Requirements without visible overlap. The read-only panel displays queued High-priority Test Storage with 3 Test Ingots and UNKNOWN stock/escrow/power/workers.
+- [x] Together with previously accepted E3d5c3d2d dedicated **12/12**, the current default-on checkpoint has **28/38 verified checks**.
+- [ ] Run `res://tests/blueprint_requirements_hud_dock_e3d5c3d2c_test.tscn` in Godot F6 and verify **10/10 A–J** on default-on sandbox.
+- [ ] Perform manual physical mouse OPEN/CLOSE/REOPEN in regular `res://scenes/core/factory_testing_sandbox.tscn`; verify normal blueprint selection and conveyor placement still work. Open-panel screenshots do not independently verify the entire toggle sequence.
+- [ ] Retain real-readiness UNKNOWN/NOT VERIFIED disclosures and sandbox debug-gate bypass; physical drones, real power and resource delivery are still separate work.
+
+**E3d5c3d2d status:** dedicated suite 12/12 + sandbox regression 16/16 passed, final HUD dock 10 and manual smoke pending. This evidence update makes no gameplay changes.

@@ -2588,3 +2588,11 @@ Developer's F6 Output screenshot confirms PASS A–L and `ALL 12 E3D5C3D2D DEFAU
 The additional `Hit nothing` line matches the existing empty raycast selection diagnostic and is not an assertion failure. The screenshot shows the panel open, not a complete physical open/close/reopen sequence; manual sandbox UI and conveyor smoke checks remain to be confirmed.
 
 **Next acceptance gate:** Re-run the updated E3d5c3d2b (16) and E3d5c3d2c (10) scenes after enabling the sandbox button by default. No source code changes in this documentation-only acceptance record. The normal sandbox retains debug construction, while this panel remains read-only and without real supply-provider connections.
+
+### 2026-11-11 — E3d5c3d2d Post-Enable Sandbox UI Compatibility Passed 16/16
+
+Four developer screenshots show the updated E3d5c3d2b Godot 4.6.2 Output reporting `ALL 16 E3D5C3D2B SANDBOX READ-ONLY REQUIREMENTS UI TESTS PASSED` (PASS A–P), with no visible assertion failures. The accompanying sandbox windows show a queued High-priority Test Storage blueprint, the Construction Requirements panel docked below Production Debug, and Factory Blueprints unobstructed. All resource, worker and power sources remain UNKNOWN, correctly indicating no live services were attached.
+
+The screenshots duplicate the **E3d5c3d2b** test, not the required **E3d5c3d2c HUD dock 10-check regression**. With the preceding E3d5c3d2d 12/12, the current default-on checkpoint stands at **28/38** tests verified.
+
+Remaining: run the E3d5c3d2c 10-check F6 suite and verify physical open/close/reopen plus blueprint and conveyor smoke in a normal Factory Testing Sandbox session. No code was altered for this documentation entry. The UI remains strictly observational, and `main.tscn` remains unaffected.

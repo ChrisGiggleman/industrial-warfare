@@ -599,3 +599,9 @@ The focused `res://tests/sandbox_requirements_default_on_e3d5c3d2d_test.tscn` st
 The developer's Godot 4.6.2 screenshot confirms **12/12 dedicated F6 checks A–L passed** on the committed default-on Factory Testing Sandbox requirements button. The paired running sandbox image verifies HUD coexistence and accurate rendering of a selected High-priority Test Storage blueprint with its 3-ingot construction bill; stock/escrow/power/worker service readings are all UNKNOWN and live construction remains NOT VERIFIED.
 
 This evidence demonstrates UI availability and observational safety, **not** physical delivery or real construction authority. The main game scene is unchanged; Factory Testing Sandbox debug requirements remain intentionally bypassed. E3d5c3d2b (16) and E3d5c3d2c (10) post-enable compatibility checks and regular sandbox physical mouse/placement smoke are still required before complete milestone acceptance. The button may be opened and closed without changing jobs, but automated `pressed.emit()` validation is not a substitute for confirming physical open/close/reopen.
+
+### E3d5c3d2d — Compatibility Gate Progress (2026-11-11)
+
+The developer reran E3d5c3d2b on the default-on Factory Testing Sandbox and supplied Output evidence confirming **16/16 A–P** passing. Alongside E3d5c3d2d dedicated **12/12**, this gives **28/38 verified automatic checks**. Running-window screenshots continue to show nonoverlapping Production Debug / Construction Requirements / Factory Blueprints HUDs and correct UNKNOWN service statuses.
+
+The E3d5c3d2c HUD dock test with 10 A–J assertions remains pending on this default-on version. A physical mouse OPEN/CLOSE/REOPEN demonstration and normal sandbox blueprint/conveyor smoke also remain. Nothing in these checks grants power, workers or materials; sandbox debug bypass continues, and live readiness must remain NOT VERIFIED.
