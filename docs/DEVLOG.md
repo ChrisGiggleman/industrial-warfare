@@ -2378,10 +2378,10 @@ Implemented in the Factory Testing Sandbox after E3d4b's successful area-selecti
 
 
 
-### E3d5b — Isolated finite-worker construction scheduler (2026-11-10; F6 pending)
+### E3d5b — Isolated finite-worker construction scheduler (2026-11-10; 15/15 F6 passed)
 
 Added `scripts/components/blueprint_construction_slot_scheduler.gd`, a scheduler with 1–16 slots (two in the first test) and stable priority ordering. It accepts authorized queued sites registered through the existing priority queue, but **fails closed** until the caller supplies an explicit power/material readiness snapshot per site. It mirrors those external flags into the existing ConstructionJob availability gates and assigns finite worker permission. It neither fabricates resources nor advances time, starts an unauthorized blueprint, or creates physical drones.
 
-Active jobs are non-preemptive. If power/material readiness disappears, a job pauses, retains elapsed work and frees its slot. Restoring readiness still requires a free slot. Completion and cancellation safely release capacity. Added `res://tests/blueprint_construction_slots_e3d5b_test.tscn` with 15 isolated checks. **The code is committed but has not been run in local Godot**. Normal Factory Testing Sandbox debug construction remains immediate because this service is not enabled or instantiated by WorldInteraction.
+Active jobs are non-preemptive. If power/material readiness disappears, a job pauses, retains elapsed work and frees its slot. Restoring readiness still requires a free slot. Completion and cancellation safely release capacity. Added `res://tests/blueprint_construction_slots_e3d5b_test.tscn` with 15 isolated checks. **Godot 4.6.2 F6 validation passed 15/15 checks**, confirmed by developer-provided screenshot on 2026-11-10. Normal Factory Testing Sandbox debug construction remains immediate because this service is not enabled or instantiated by WorldInteraction.
 
-Next acceptance: Godot F6 regression and follow-up wiring through real power/material providers, then worker-drone construction dispatch.
+Next milestones: design and verify real power/material availability providers separately, then connect finite worker assignments to construction and physical drones. Maintain sandbox-only feature gating until regression-tested.
