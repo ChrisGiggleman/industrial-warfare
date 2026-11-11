@@ -437,3 +437,9 @@ The runtime synchronizes node operational state with *the actual completed build
 **Critical separation:** A positive nameplate generation rating is *not* proof of sufficient remaining power after consumers are served. This checkpoint models completed structure ownership and source up/down state, **not** power generation economics or allocation. No `ConstructionJob` availability flag, material escrow, worker assignment, drone energy or build time is advanced by the power runtime. Do NOT forward `covers_site() == true` as true power readiness until verified demand/allocation, completed-entity state and per-site material escrow are integrated behind a sandbox-only feature gate.
 
 **Validation:** E3d5c3a 16/16 passed in developer Godot 4.6.2 on 2026-11-11. `res://tests/completed_power_structures_e3d5c3b1_test.tscn` stages 16 checks A–P pending local F6. After it passes, rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn`. Main and regular sandbox construction remain isolated.
+
+### E3d5c3b1 — Developer Verification Update (2026-11-11)
+
+The dedicated `res://tests/completed_power_structures_e3d5c3b1_test.tscn` test is accepted: 16/16 A–P passed in developer-run Godot 4.6.2, with no errors visible in the supplied Output. Source enable/disable, completed pole ownership, operational relay link, damaged structure shutdown and held job-readiness gates passed in the isolated fixture.
+
+**Outstanding regression:** `res://tests/construction_power_coverage_e3d5c3a_test.tscn` has not yet been rerun following the parent-queued-for-deletion guard. Wait for its 16/16 confirmation before advancing to an actual power budget allocator. This does not enable Main/Factory Testing Sandbox power consumption.

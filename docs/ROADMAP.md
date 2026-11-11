@@ -783,3 +783,9 @@ Completed:
 - [ ] Clickable priority/authorize/queue controls and drone charging remain future work.
 
 **Isolation:** Main and Factory Testing Sandbox remain untouched; neither new scene appears on the build hotbar. The Hub's fixed rating is **not** an energy-demand allocator, and prototype operational flags must NOT be used as verified construction power readiness until allocation, ownership, and coordinator tests pass.
+
+### E3d5c3b1 — Completed Power Structures: Dedicated F6 Passed (2026-11-11)
+
+- [x] Developer Godot 4.6.2 screenshot confirms **all 16/16 A–P checks passed** in `res://tests/completed_power_structures_e3d5c3b1_test.tscn`.
+- [x] Verified Hub source online state, physical pole activation only after construction completion, generator/service shutdown, relay health depletion, queued-for-removal protection and unchanged construction job gates.
+- [ ] **Compatibility gate remains outstanding:** rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) after the new owning-parent deletion guard. Do not proceed to energy demand allocation until compatibility is confirmed.

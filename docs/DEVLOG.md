@@ -2428,3 +2428,9 @@ Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS 
 **Safety:** Updated `ConstructionPowerCoverageNetwork` to reject nodes whose owning parent structure is already queued for deletion; this closes a single-frame stale-power window and should retain E3d5c3a behavior. Fixed prototype output remains a nameplate rating, not allocated electricity; fuel, consumption and simultaneous demand are unimplemented. Nothing passes electricity into worker authorization or fabricates materials.
 
 **Next F6 gate:** `res://tests/completed_power_structures_e3d5c3b1_test.tscn` (16 checks A–P, pending Godot). If accepted, rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) for compatibility. Main/Factory Testing Sandbox and physical conveyor/combat flows remain unchanged.
+
+### 2026-11-11 — E3d5c3b1 Dedicated F6 Accepted (16/16); Regression Pending
+
+Developer's Godot 4.6.2 screenshot confirms PASS A–P and `ALL 16 E3D5C3B1 COMPLETED POWER STRUCTURE TESTS PASSED`. No errors visible in Output. Completed Hub/Pole runtime ownership, construction-gated activation, explicit links, source/service shutdown, health-depletion shutdown and deletion guard passed. This is a dedicated isolated test, **not** confirmation that the older E3d5c3a test passed after the code changes.
+
+**Next required acceptance:** rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) and review Output/Debugger. Power supply-demand allocation and sandbox integration remain blocked pending that regression.
