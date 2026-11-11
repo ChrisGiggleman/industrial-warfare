@@ -806,3 +806,10 @@ Completed:
 - [ ] Next: define production demand and realistic energy accounting (fuel/consumption, charging budgets), then a fail-closed sandbox-only coordinator using **per-site escrow ownership**, verified power allocation, and E3d5b worker slots. No Main integration until all component tests and regressions pass.
 
 **Safety:** This stage allocates prototype *nameplate budget*, NOT measured generated energy; no live supply/fuel model or persistent power reservation exists yet. The new allocator is never instantiated by Main or the Factory Testing Sandbox. No gameplay power, materials, worker service, or existing debug bypass is changed.
+
+### E3d5c3b2 — Test-Q Harness Fix (2026-11-11; Retest Pending)
+
+- [x] Investigate developer F6 debugger error at line 216 of `finite_construction_power_e3d5c3b2_test.gd`: an already-freed `ConstructionSite` was passed into a typed allocator method.
+- [x] Replace invalid post-`free()` call with a `WeakRef` validity assertion and before/after count of allocation entries; verify surviving Normal allocation remains five power units. **Only isolated test and documentation changed**.
+- [ ] Rerun `res://tests/finite_construction_power_e3d5c3b2_test.tscn` — 18 checks A–R pending. Do not mark E3d5c3b2 accepted based on the failed first run.
+- [ ] After successful retest, rerun E3d5c3a and E3d5c3b1 topology/structure tests to protect the current 32/32 compatibility baseline.

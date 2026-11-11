@@ -212,8 +212,15 @@ func _ready() -> void:
 	assert(allocator.get_allocated_units(low) == 0)
 	allocator.stop_tracking(high)
 	assert(allocator.get_allocated_units(low) == 4)
+	# Keep only a weak reference after freeing the typed ConstructionSite.
+	# Never pass a freed Object back into a typed method argument.
+	var low_ref: WeakRef = weakref(low)
+	var allocation_entries_before: int = allocator.get_allocations().size()
 	low.free()
-	assert(allocator.get_allocated_units(low) == 0)
+	assert(low_ref.get_ref() == null)
+	var allocations_after_free: Dictionary = allocator.get_allocations()
+	assert(allocations_after_free.size() == allocation_entries_before - 1)
+	assert(allocator.get_allocated_units(normal) == 5)
 	assert(allocator.track_site(high, 7))
 	assert(allocator.get_allocated_units(high) == 7)
 	print("PASS Q: Cancelled, untracked and freed jobs do not retain capacity")
