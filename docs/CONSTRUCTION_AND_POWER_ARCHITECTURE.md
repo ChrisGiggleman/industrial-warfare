@@ -359,3 +359,16 @@ The eventual unified game save/load schema must own building IDs, transforms, bl
 Additional planets or enemy factions; interplanetary travel; complex electrical simulation; full research tree; elaborate 3D art; unrestricted construction drones; disconnected save-file systems.
 
 **Next verification:** run `res://tests/planned_storage_bidirectional_conveyor_test.tscn` in Godot 4.6.2 and manually validate both planned ports and corner paths before changing production Build Mode.
+
+
+---
+
+## E3d5a — Priority Queue Foundation (Implemented; Godot Verification Pending)
+
+ConstructionJob's `priority` is one of High (0), Normal (1, default), or Low (2). The new sandbox-only `BlueprintConstructionPriorityQueue` tracks authorized jobs while they are in QUEUED state. It orders eligible waiting sites by priority and uses stable authorization order to break ties. Reprioritizing a queued job changes its place in the next read-only queue snapshot. Cancellation, construction start, and freed sites remove jobs from future waiting snapshots.
+
+The selected-blueprint tool (Q) assigns H/N/L priority without authorizing work. Priority is per job, not per conveyor network or category, so player intent overrides default structure examples. Jobs currently CONSTRUCTING cannot be reprioritized: priority is a **future dispatch preference**, not an interrupt or preemption command.
+
+**Safety boundary:** This queue is intentionally bookkeeping only. It never calls `ConstructionJob.set_availability()`, `advance()`, or `authorize()` and never sets worker capacity. Until a real WorkerDroneConstructionService and real power/material services are connected, the testing sandbox's explicit debug override continues to start authorized jobs immediately. Future worker dispatch must use the queue ordering, finite capacity and external readiness gates; it must not start jobs just because they are High priority.
+
+Godot acceptance gate: `res://tests/blueprint_construction_priority_e3d5a_test.tscn` — 15 new checks pending local F6, followed by manual Q → H/N/L → E selection workflow and targeted construction regression.
