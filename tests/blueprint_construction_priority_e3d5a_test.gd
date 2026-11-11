@@ -38,9 +38,9 @@ func _ready() -> void:
 	) as BlueprintConstructionPriorityQueue
 	assert(priority_queue != null)
 	assert(priority_queue.get_waiting_sites().is_empty())
-	assert(not controller._set_selected_blueprint_priority(
+	assert(controller._set_selected_blueprint_priority(
 		ConstructionJob.Priority.HIGH
-	))
+	) == 0)
 	print("PASS A: Priority service is sandbox opt-in and selection gated")
 
 	controller._toggle_placement_mode()
@@ -117,7 +117,7 @@ func _ready() -> void:
 	) == 1)
 	assert(controller._select_blueprints_in_screen_rect(
 		_around(camera, high_second),
-		controller.BLUEPRINT_SELECT_ADD
+		1 # BLUEPRINT_SELECT_ADD
 	) == 2)
 	_key(controller, KEY_N)
 	assert(high_first.job.priority == ConstructionJob.Priority.NORMAL)
@@ -168,7 +168,7 @@ func _ready() -> void:
 	high_first.job.advance(120.0)
 	assert(high_first.job.state == ConstructionJob.State.QUEUED)
 	assert(high_first.job.get_progress() == 0.0)
-	assert(not high_first.job.set_priority(ConstructionJob.Priority.LOW) == false)
+	assert(high_first.job.set_priority(ConstructionJob.Priority.LOW))
 	assert(high_first.job.set_priority(ConstructionJob.Priority.HIGH))
 	print("PASS J: Queue never bypasses unmet requirements or advances waiting jobs")
 
