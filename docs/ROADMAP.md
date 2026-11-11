@@ -987,3 +987,14 @@ Completed:
 - [ ] After layout acceptance, rerun E3d5c3d2b (16) plus E3d5c3d2a (18) before considering default-on sandbox UI.
 
 **Do not claim the live sandbox requirements gate is enabled or real construction readiness is verified.** This is a visual, read-only compatibility checkpoint.
+
+### E3d5c3d2c — Adaptive HUD Dock Automated and Visual Verification (2026-11-11)
+
+- [x] **Godot 4.6.2 F6 10/10 A–J passed** in `res://tests/blueprint_requirements_hud_dock_e3d5c3d2c_test.tscn`, confirmed by developer Output screenshot with no visible test failures.
+- [x] Developer's running Factory Testing Sandbox screenshot confirms **Production Debug** unobstructed at upper-right, **Construction Requirements** immediately beneath it, and **Factory Blueprints** unobstructed at upper-left. The selected planned Test Storage, three-Test-Ingot bill, Normal priority, zero progress, and UNKNOWN disconnected services display correctly.
+- [x] Visual overlap defect addressed in the isolated opt-in sandbox view; no construction, cargo, worker, power or combat behavior was changed.
+- [ ] Actual physical close/reopen **mouse clicks are not independently confirmed** by the two screenshots, although F6 PASS I verifies programmed button-signal toggling.
+- [ ] Before turning the requirements feature gate on by default, **rerun E3d5c3d2a (18 checks) and E3d5c3d2b (16 checks)** under the current HUD-docking code; confirm normal-area selection in the sandbox window and actual clickable open/close behavior.
+- [ ] Do not mistake UNKNOWN services or sandbox debug bypass for real construction readiness. Keep the sandbox feature gate default OFF until this final UI acceptance.
+
+**Checkpoint state:** E3d5c3d2c automated 10/10 and visual nonoverlap accepted; 34 earlier UI regression checks and real mouse-toggle confirmation pending.
