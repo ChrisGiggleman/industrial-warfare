@@ -719,3 +719,19 @@ Completed:
 
 **Boundary:** This checkpoint is a read-only observation utility, not a source of actionable construction readiness. Factory Testing Sandbox and Main scenes are unchanged.
 
+### E3d5c1 — Accepted (2026-11-11)
+
+- [x] **15/15 Godot 4.6.2 F6 tests passed** (PASS A–O), confirmed by developer screenshot for `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn`. No new errors visible in Output.
+
+### E3d5c2a — Atomic Material Escrow Foundation (Staged; F6 Pending)
+
+- [x] Isolated one-inventory, one-site ledger: valid authorized QUEUED sites can atomically reserve positive integer construction bills, with no debit on invalid or insufficient bills.
+- [x] Repeated and competing reservations cannot double-debit physical inventory. Source items are held in escrow, not only inspected.
+- [x] Site cancellation or unexpected removal attempts an exact refund. If the original inventory is full/unavailable, a stable ID retains held items for alternative recovery; refund never deliberately drops items.
+- [x] Only a job whose real structure has activated can commit/consume its escrow once.
+- [x] New isolated `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` with **16 A–P checks pending developer F6 validation**.
+- [ ] E3d5c2b: definition-owned real construction bills, cost balancing and missing-data rejection.
+- [ ] E3d5c3: verified power coverage and sandbox-only scheduler integration after independently tested reservation ownership.
+- [ ] Clickable priority/authorize/cancel and queue UI in a later phase, retaining keyboard alternatives.
+
+**Safety boundary:** No changes to Main, Factory Testing Sandbox, conveyor logistics, combat, live construction, or the explicit sandbox-only debug readiness override. Physical drones and save/load of escrow are not yet implemented.

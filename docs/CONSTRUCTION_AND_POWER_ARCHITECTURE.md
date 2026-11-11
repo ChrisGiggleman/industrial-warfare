@@ -396,3 +396,12 @@ Each worker slot can service one currently constructing job. Jobs with missing p
 
 **Verification:** `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` has 15 staged checks; local Godot F6 validation is pending. Main and Factory Testing Sandbox remain untouched. Future player-facing queue management should offer clickable controls in addition to H/N/L shortcuts.
 
+## E3d5c2a — Isolated Construction Material Escrow (Godot F6 Pending)
+
+`BlueprintConstructionMaterialEscrow.reserve(site, source, costs)` supports an authorized, live QUEUED ConstructionSite, a single live InventoryComponent and an explicit nonempty dictionary of valid ItemDefinition → positive integer quantities. It verifies the entire bill before any synchronous withdrawal, and tracks held items under a stable reservation ID. Duplicate site reservations and competing claims cannot reuse already-debited inventory stock. A stock-sufficiency snapshot (E3d5c1) must never be misread as an actual reservation.
+
+`recover_to(id)` attempts to return the entire held bill to its original source; `recover_to(id, alternate)` permits another live inventory. When full recovery is not possible the entire in-memory record remains held, `needs_recovery(id)` is true and no capacity-unsafe transfer is initiated. Job cancellation and unexpected site exit try recovery automatically. A successful `ConstructionSite.building_completed` signals real activation; `commit_built(id)` then finalizes the expense once, never before a real building exists.
+
+**Safety limitations:** This is a single-source, memory-only prototype. There is no serialization, multi-source delivery, per-definition construction bill, stocked-site demolition recovery, power coverage, physical drone, or player recovery UI yet. It must NOT be enabled in Main or the Factory Testing Sandbox until those separate requirements are implemented and tested. Escrow does not call ConstructionJob.set_availability or scheduler.update_requirements; worker dispatch remains fail-closed. Future scheduling should acquire reservations in High → Normal → Low order after actual cost validation, and only verified real power plus owned escrow can permit workers.
+
+**Developer validation:** E3d5c1 passed 15/15 on 2026-11-11. E3d5c2a's `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` has 16 staged checks awaiting local F6.

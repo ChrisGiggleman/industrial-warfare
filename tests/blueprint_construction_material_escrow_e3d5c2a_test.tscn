@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/blueprint_construction_material_escrow_e3d5c2a_test.gd" id="1_test"]
+
+[node name="BlueprintConstructionMaterialEscrowE3D5C2ATest" type="Node3D"]
+script = ExtResource("1_test")

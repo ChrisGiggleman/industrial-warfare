@@ -2395,3 +2395,10 @@ Added `BlueprintConstructionReadinessProbe` as an isolated, non-mutating diagnos
 
 Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS checkpoints A–O); **local Godot F6 verification pending**. No edits to WorldInteraction, Main, Factory Testing Sandbox, legacy construction, logistics or combat. Next: atomic material reservation/escrow with real bills of materials, real power provider, then a gated worker-scheduler adapter and physical drones.
 
+### 2026-11-11 — E3d5c1 Passed; E3d5c2a Escrow Staged
+
+**Verified:** User-provided Godot 4.6.2 screenshot reports PASS A–O and `ALL 15 E3D5C1 CONSTRUCTION READINESS PROBE TESTS PASSED`. No new debugger errors are visible.
+
+**New isolated implementation:** `BlueprintConstructionMaterialEscrow` synchronously checks and removes a complete explicitly supplied positive bill from a live `InventoryComponent` into a stable per-site ledger for authorized QUEUED work. Insufficient or competing jobs cannot double-spend stock. Cancellation and premature site deletion trigger refund attempts; if original stock cannot accept the full batch, the reservation persists with `needs_recovery` for explicit `recover_to` to another live stock. Actual completed building activation commits the exact held items once. This code does not call the worker scheduler or grant availability flags, workers, power or work progress.
+
+**Next F6 gate:** `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` (16 checks A–P), Godot verification pending. Construction bills are TEST-ONLY and not saved into `BuildingDefinition` yet. No live scene or gameplay integration and no persistence support.
