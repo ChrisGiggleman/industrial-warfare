@@ -822,3 +822,22 @@ Completed:
 - [ ] Only then proceed to the next isolated checkpoint connecting verified power, actual per-site material escrow, and finite worker-slot scheduling. Do not enable the new systems in Main or remove the sandbox debug override until integrated regressions pass.
 
 **Status:** E3d5c3b2 dedicated allocator test accepted **18/18**, but full compatibility milestone pending **32 power regression checks**. Allocation is still a prototype nameplate-demand observation, not measured energy delivery.
+
+### E3d5c3b2 — Full Power Regression Accepted (2026-11-11)
+
+- [x] **E3d5c3a post-change compatibility 16/16 passed**, confirmed by developer Godot 4.6.2 Output screenshot (A–P).
+- [x] **E3d5c3b1 post-change compatibility 16/16 passed**, confirmed by separate developer Godot 4.6.2 Output screenshot (A–P).
+- [x] With E3d5c3b2's dedicated **18/18**, all **50/50 relevant power checks** passed on the current implementation; no errors visible in either new screenshot.
+- [x] E3d5c3b2 accepted as an isolated finite *nameplate-budget* allocator (not measured electrical delivery or live construction authority).
+
+### E3d5c3c1 — Isolated Power/Materials/Workers Readiness Coordinator (Staged; F6 Pending)
+
+- [x] Add an opt-in `BlueprintConstructionReadinessCoordinator` that composes the already-tested `ConstructionMaterialBill`, `BlueprintConstructionMaterialEscrow`, `PrototypeConstructionPowerAllocator`, and finite `BlueprintConstructionSlotScheduler`, without modifying their existing dispatch logic.
+- [x] Restrict registration to freshly authorized, fully gated `QUEUED` jobs with valid building material bills and positive finite prototype power demands. Debug/bootstrap-gate bypasses cannot register.
+- [x] Reconcile in a deliberate sequence: **High → Normal → Low** material reservation (existing active work protected), then request finite power **only for owned escrow bills**, then pass verified flags to the existing worker scheduler. All-or-nothing material escrow prevents double spending; jobs without materials do not occupy a power allocation.
+- [x] Keep active jobs non-preemptive; outages pause and release worker slots, preserve material escrow and construction progress, and allow queued/paused jobs to resume when resources return. Completion commits escrow; cancellation refunds. No automatic timer advancing occurs in the coordinator.
+- [x] Stage `res://tests/construction_readiness_coordinator_e3d5c3c1_test.tscn` with **18 A–R F6 checks** spanning scarce materials, priority ordering, worker caps, no preemption, cancellation, power outage/recovery, timed completion and material conservation.
+- [ ] **Run the 18-check F6 scene and review errors/screenshots before enabling any integration in Factory Testing Sandbox.**
+- [ ] After acceptance, run E3d5b finite-worker (15), E3d5c2a escrow (16), and E3d5c3b2 power allocator (18) regressions. UI buttons, save/load, starter stock and physical drones remain future phases.
+
+**Hard safety boundary:** This coordinator is **not** instantiated in Main or the Factory Testing Sandbox and still relies on prototype generator **nameplate ratings**, not measured generation. It is an isolated integration test, not player-facing construction enforcement. Neither normal sandbox debug readiness nor logistics/combat code is changed.
