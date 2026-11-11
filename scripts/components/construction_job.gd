@@ -77,7 +77,13 @@ func set_priority(new_priority: int) -> bool:
 		return false
 	if int(priority) == new_priority:
 		return true
-	priority = new_priority as Priority
+	match new_priority:
+		Priority.HIGH:
+			priority = Priority.HIGH
+		Priority.NORMAL:
+			priority = Priority.NORMAL
+		Priority.LOW:
+			priority = Priority.LOW
 	priority_changed.emit(new_priority)
 	return true
 
