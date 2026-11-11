@@ -917,3 +917,21 @@ Completed:
 - [ ] Longer-term: persistence, material transport to sites, real power generation/energy metering, physical worker drones, UI authorize/priority/cancel buttons, world destruction and in-game save/load.
 
 **Scope:** The new inspector and F6 scene are isolated: no edits to Main, Factory Testing Sandbox, WorldInteraction, existing construction jobs, the escrow, power network, worker scheduler or cargo/combat.
+
+### E3d5c3d1 — Construction Requirements Inspector Accepted (2026-11-11)
+
+- [x] **Godot 4.6.2 F6: 18/18 checks A–R passed**, confirmed by developer Output screenshot. No errors visible in supplied Output.
+- [x] Inspection distinguishes real building bills, warehouse sufficiency, actual escrow ownership, prototype power allocation, worker assignment, and independent job-state snapshots. Read-only operation cannot consume materials, alter jobs, or advance timers.
+- [x] Inspector intentionally returns `live_construction_ready = false` even when prototype flags all appear available. The Factory Testing Sandbox still uses its explicit debug-gate override.
+
+### E3d5c3d2a — Clickable Requirements Panel (Isolated UI; F6 Pending)
+
+- [x] Add standalone `BlueprintConstructionRequirementsPanel` CanvasLayer with an actual **clickable open/close button** at the top-right, a scrollable read-only status panel, and weak references to an explicit test target or existing `blueprint_area_selected` group.
+- [x] Render bill item names/counts, exact material shortages when inventory exists, separate escrow status, prototype allocation, worker assignment, state/priority/progress and **Live readiness: NOT VERIFIED**. Missing services display **UNKNOWN**, not fake availability.
+- [x] UI only calls `BlueprintConstructionRequirementsInspector.inspect()`. No construction authorize, reserve, timer, scheduler dispatch, inventory changes, or power mutation. Only the isolated F6 fixture drives its test services explicitly.
+- [x] Stage `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn` with **18 checks A–R**, including programmatic toggle, missing data, stock shortages, escrow, power, workers, generator outage, paused progress, cancellation/refunds, and selection-group fallback.
+- [ ] **Godot 4.6.2 F6 acceptance pending** (18/18) AND manual game-window click test: toggle panel closed/open and inspect displayed data.
+- [ ] After successful UI verification, add the panel to Factory Testing Sandbox behind a separate read-only feature flag. Keep all debug-construction gates unchanged; do not install a real coordinator or automatically seed a Hub inventory in gameplay.
+- [ ] Later: interactive construction management controls for authorize/priority/cancel, after separately proving those actions cannot bypass real material/power/worker gates.
+
+**Isolation:** No edits to `WorldInteraction`, `main.tscn`, `factory_testing_sandbox.tscn`, active HUD, construction jobs, real inventory, cargo/conveyors, or combat. This is an isolated UI-test checkpoint only.
