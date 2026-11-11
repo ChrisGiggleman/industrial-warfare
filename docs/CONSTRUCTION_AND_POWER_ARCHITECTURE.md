@@ -372,3 +372,15 @@ The selected-blueprint tool (Q) assigns H/N/L priority without authorizing work.
 **Safety boundary:** This queue is intentionally bookkeeping only. It never calls `ConstructionJob.set_availability()`, `advance()`, or `authorize()` and never sets worker capacity. Until a real WorkerDroneConstructionService and real power/material services are connected, the testing sandbox's explicit debug override continues to start authorized jobs immediately. Future worker dispatch must use the queue ordering, finite capacity and external readiness gates; it must not start jobs just because they are High priority.
 
 Godot acceptance gate: `res://tests/blueprint_construction_priority_e3d5a_test.tscn` — **15/15 checks passed** locally on 2026-11-10 (developer screenshot); manual Q → H/N/L assignment verified via developer screenshot (6 selected, High 2 / Normal 2 / Low 2); the automated tests validate E authorization, while a separate manual post-E screenshot is still outstanding.
+
+
+
+## E3d5b — Worker Slot Dispatch Foundation (Test Only; Verification Pending)
+
+`BlueprintConstructionSlotScheduler` is an isolated, explicitly configured worker-capacity scheduler built on the existing `ConstructionJob` state machine and `BlueprintConstructionPriorityQueue`. It records each authorized construction site once, retains FIFO registration order within High / Normal / Low tiers, and dispatches only jobs that have **explicit external power and material readiness snapshots**. Unknown readiness is treated as unavailable, not assumed available.
+
+Each worker slot can service one currently constructing job. Jobs with missing power/material requirements do not consume a slot. Active work is non-preemptive. Lost readiness causes a pause with original progress preserved; the slot is released and a later eligible job may start. A paused job resumes only when the relevant external readiness is restored **and** capacity exists. Cancellation, destruction and job completion remove the corresponding active assignment during reconciliation. The scheduler never calls `advance()`, injects materials, generates power, or instantiates real drones.
+
+**Current boundary:** No actual power/material providers or worker drone entities are present in this checkpoint. All availability booleans in `res://tests/blueprint_construction_slots_e3d5b_test.tscn` are controlled test inputs. The service is **not activated** in Main or the Factory Testing Sandbox, protecting current immediate debug construction and preserving E3d5a/H-N-L selection and Ctrl+E behavior.
+
+**Validation gate:** The 15-check E3d5b F6 scene is committed and pending local Godot execution. Only after that should we connect verified power/material services and eventually assign actual worker drones.
