@@ -1189,3 +1189,10 @@ Completed:
 - [ ] No production connection to `BlueprintConstructionReadinessCoordinator` until actual material escrow/delivery, delivered power, worker capacity, recovery and save/load are proven. Main retains feature opt-out.
 
 These results supersede the earlier E3d5c4a pending-regression checklist, but **not** the still-pending manual sandbox interaction gate.
+
+### E3d5c4a — Player-Facing Sandbox Authorization Accepted (2026-11-11)
+
+- [x] Developer reports the entire regular Factory Testing Sandbox manual authorization and conveyor smoke sequence passed. The supplied game screenshot independently shows Blueprint Mode with **four Q-selected planned blueprints**, selected priority composition **H1 / N2 / L1**, green selected-site highlights, compact **L/N/H** dock beside the hotbar and **Authorize Selected (4)** / **Authorize All (4)** buttons above it.
+- [x] Acceptance evidence: developer-reported manual use of Selected and two-click All authorization, preserved timers and conveyor behavior; new authorization fixture **18/18** and targeted priority/selection/batch regressions **36/36** previously verified by Godot F6 screenshots.
+- [x] **E3d5c4a accepted for Factory Testing Sandbox user-facing authorization only.** The screenshot is a pre-authorization selection state; the post-click behavior is accepted on the developer's report, not independently demonstrated by this image.
+- [ ] Next: *isolated, fail-closed* authorization-to-readiness admission design/tests. Do not connect prototype nameplate power or test stock to production; actual delivered power, logistics, atomic escrow/recovery, bounded workers and save/load remain hard launch gates.
