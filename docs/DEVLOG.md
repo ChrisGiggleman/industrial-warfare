@@ -2700,3 +2700,11 @@ Staged **16 A–P isolated checks** in `res://tests/blueprint_readiness_admissio
 Developer F6 screenshot confirms **all 16** E3d5c4b checks passed in Godot 4.6.2: test-only opt-in, prior explicit authorization required, PLANNED and priority-only sites refused, bounded positive demands, duplicate admission protection and debug override isolation. In the fixture, direct test inventory escrow backs the High-priority job but no generator/worker permits dispatch or timer advancement. The production Main and regular sandbox remain unconnected to the admission adapter; live readiness is **NOT VERIFIED**.
 
 Next isolate a capacity-bounded construction material staging inventory and exercise inventory-to-inventory transfer plus escrow conservation/recovery without claiming a real conveyor-to-construction link. Metered power, physical worker drones, and save/load are later gates.
+
+### 2026-11-11 — E3d5c4c Isolated Construction Material Transfer Staged
+
+Following the screenshot-confirmed 16/16 E3d5c4b readiness admission acceptance, implemented `BlueprintConstructionMaterialStaging` as a **test-only disabled-by-default** material receiver with an owned bounded inventory. It cannot invent stock, automatically advance jobs or supply power/worker permission. It accepts construction-cost item types via `InventoryComponent.transfer_to()` from a controlled, live source inventory, and the isolated coordinator can escrow only that genuinely transferred buffered stock.
+
+Added `res://tests/blueprint_material_staging_e3d5c4c_test.tscn` with **16 F6 assertions staged, not yet executed in developer Godot**. The test starts with five ingots, delivers them in partial batches, reserves one three-ingot bill for an authorized High job, proves a second job cannot claim insufficient remaining stock, and verifies refund-full handling and alternate recovery without loss/duplication before the second job obtains its bill. A missing generator keeps both jobs QUEUED with no construction time advanced. Main, the normal sandbox, WorldInteraction, conveyor logistics and combat remain unchanged.
+
+**Important:** this is an inventory-conservation prototype and does not validate a physical belt delivery route, delivered electrical energy, real worker drones, or persistence. Those must remain fail-closed requirements before non-debug game integration.
