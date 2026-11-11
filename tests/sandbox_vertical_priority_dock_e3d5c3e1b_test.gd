@@ -116,13 +116,29 @@ func _run_checks() -> void:
 	assert(second.job.priority == ConstructionJob.Priority.NORMAL)
 	print("PASS L: Unselected blueprints retain their own priorities")
 
+	# Real hardware key events populate physical_keycode; the controller
+	# intentionally reads that property rather than keycode.
 	var key := InputEventKey.new()
-	key.keycode = KEY_H
 	key.pressed = true
+	key.physical_keycode = KEY_H
+	key.keycode = KEY_H
+	controller._unhandled_input(key)
+	assert(site.job.priority == ConstructionJob.Priority.HIGH)
+	key.physical_keycode = KEY_N
+	key.keycode = KEY_N
+	controller._unhandled_input(key)
+	assert(site.job.priority == ConstructionJob.Priority.NORMAL)
+	key.physical_keycode = KEY_L
+	key.keycode = KEY_L
+	controller._unhandled_input(key)
+	assert(site.job.priority == ConstructionJob.Priority.LOW)
+	key.physical_keycode = KEY_H
+	key.keycode = KEY_H
 	controller._unhandled_input(key)
 	assert(site.job.priority == ConstructionJob.Priority.HIGH)
 	assert(second.job.priority == ConstructionJob.Priority.NORMAL)
-	print("PASS M: Existing H/N/L keyboard alternative remains functional")
+	assert(site.job.state == ConstructionJob.State.PLANNED)
+	print("PASS M: Existing physical H/N/L keyboard alternatives remain functional")
 
 	controller._exit_blueprint_area_selection()
 	dock._update_dock()
