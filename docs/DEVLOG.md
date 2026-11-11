@@ -2410,3 +2410,11 @@ Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS 
 **Staged:** `BuildingDefinition` now exposes `construction_materials: Array[ItemAmount]`, reusing the engine's existing production-recipe data type. All nine current buildable resource definitions have nonempty provisional costs referencing existing Test Ore/Ingot resources. The new, isolated `ConstructionMaterialBill` validator builds a read-only, positive-integer `ItemDefinition → amount` escrow bill, rejecting missing, malformed or duplicate logical items. No inventory or scheduler mutation occurs in the validator.
 
 **Acceptance gate:** `res://tests/blueprint_construction_costs_e3d5c2b_test.tscn` includes **17 A–Q checks awaiting developer F6**. It tests data validation and the already-accepted escrow with paused/completed job timing. Cost balancing, reliable starter stock, real power, worker dispatch and save/load remain separate future milestones. Main and factory sandbox behavior, including explicit debug readiness, remain unchanged.
+
+### 2026-11-11 — E3d5c2b Accepted 17/17; E3d5c3a Isolated Power Topology Staged
+
+**Accepted:** Developer screenshot of Godot 4.6.2 Output confirms PASS A–Q and `ALL 17 E3D5C2B DEFINITION CONSTRUCTION COST TESTS PASSED`. Construction bills, invalid data rejection, duration preservation, actual escrow deduction, refunds, pause/resume and final consumption passed. No errors visible in the output.
+
+**Staged:** Added offline-by-default `ConstructionPowerNetworkNode` fixture and an isolated `ConstructionPowerCoverageNetwork` topology evaluator. Only an operational online source with explicit range-valid links can energize relays. Overlapping circles cannot form links, and disabled/moved/destroyed nodes or source outages remove downstream power dynamically. Full rotated footprint containment is required: a partially covered building is not considered covered.
+
+**New F6 gate:** `res://tests/construction_power_coverage_e3d5c3a_test.tscn` stages 16 checks A–P pending developer validation. Power flags in this test are synthetic; the game still lacks real Main Hub/pole scene ownership, generation budget and consumer allocation. This service **never** sets construction availability or grants worker slots. Main/Factory Testing Sandbox and all existing logistics/combat systems remain unchanged.

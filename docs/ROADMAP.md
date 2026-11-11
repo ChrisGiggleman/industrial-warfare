@@ -750,3 +750,19 @@ Completed:
 - [ ] Next: validated power coverage, per-site escrow-to-scheduler adapter, and Main Hub initial inventory/bootstrap. Future clickable construction controls will supplement H/N/L keyboard shortcuts.
 
 **Isolation:** Existing WorldInteraction, Main, Factory Testing Sandbox, conveyor logistics, combat, production recipes and sandbox debug readiness override are unchanged. Construction materials are metadata in regular sandbox play; player building authorization does not yet debit them.
+
+### E3d5c2b — Definition Construction Costs Accepted (2026-11-11)
+
+- [x] **All 17/17 Godot 4.6.2 F6 checks passed** (A–Q), confirmed by developer Output screenshot. Nine definition-owned cost bills validate, existing build durations are retained, malformed bills fail closed, escrow refunds cannot double-spend, and construction pause/finish conserves time and materials. No errors visible in supplied Output.
+
+### E3d5c3a — Isolated Explicit Power Network and Footprint Coverage (Staged; F6 Pending)
+
+- [x] Stage `ConstructionPowerNetworkNode` as an opt-in, offline-by-default node for a future completed Main Hub/Power Pole. Explicit `operational`, `is_source`, and `source_online` states are controlled by the test fixture only for now, **not** by a real power provider.
+- [x] Stage `ConstructionPowerCoverageNetwork`: links are explicit, range-checked graph edges, never inferred from overlapping construction coverage circles. Energized status requires an operational live source and a valid connected path; disconnected, disabled, moved or deleted relays fail closed.
+- [x] A construction site is covered only when **one energized node covers all four actual rotated footprint corners**. This intentionally conservative rule avoids partial-footprint false positives; planned sites can be previewed without authorizing construction.
+- [x] Stage `res://tests/construction_power_coverage_e3d5c3a_test.tscn` with **16 A–P isolated checks** for offline sources, link requirements, outage, physical relay loss, multi-relay chains, rotation, and no implicit worker/material/time grants.
+- [ ] **Godot 4.6.2 F6 validation pending.** Review developer screenshot/errors before integrating power with materials and scheduling.
+- [ ] Future E3d5c3b: actual completed Hub/Power Pole ownership, generator availability, and energy budget/supply-demand rules. E3d5c3c: escrow-backed scheduler integration behind a sandbox-only opt-in, tested with power loss and restoration.
+- [ ] UI buttons and Main Hub drone charging remain separate future checkpoints.
+
+**Safety boundary:** This is *topology and construction coverage only*, using synthetic fixture power states. It does not create actual electrical energy, allocate consumer demand, produce charging or authorize jobs. No edits to WorldInteraction, Main, Factory Testing Sandbox, cargo, combat, or debug construction override.

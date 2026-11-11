@@ -415,3 +415,15 @@ Each worker slot can service one currently constructing job. Jobs with missing p
 **Future dispatch contract:** Actual per-site escrow ownership from `BlueprintConstructionMaterialEscrow`, not observed warehouse stock, must supply material readiness. A genuine power-coverage service supplies the independent power gate; `BlueprintConstructionSlotScheduler` remains responsible for finite non-preemptive assignments. The explicit sandbox debug availability override is still active and is not real construction enforcement.
 
 **F6 gate:** `res://tests/blueprint_construction_costs_e3d5c2b_test.tscn` — 17 checks pending in Godot 4.6.2. E3d5c2a escrow was previously accepted 16/16 on 2026-11-11. Main, Factory Testing Sandbox, production recipes, construction jobs, combat and conveyor transport remain untouched.
+
+## E3d5c3a — Explicit Power Topology and Full-Footprint Coverage (Staged; F6 Pending)
+
+`ConstructionPowerNetworkNode` is an isolated prospective source/relay holder, offline and non-operational by default. Its `is_source`, `source_online`, `operational`, `link_range`, and `coverage_radius` values are supplied by the 16-check test fixture. No real Hub or Power Pole scene currently provides these properties.
+
+`ConstructionPowerCoverageNetwork` owns weak references to registered nodes and explicit undirected edges; no two circles or coverage radii are allowed to imply a valid electrical connection. A node is energized only if a live, operational source that is online reaches it through a chain of operational nodes and range-valid explicit edges. Coverage is recomputed from current positions and flags each query, so removing/moving/disabled relays or losing an online source immediately removes coverage. No power demand is accounted for in this stage, and no generator is actually producing resources.
+
+`covers_site(site)` is a **read-only geometry observation** for nonterminal opt-in `ConstructionSite` jobs. It requires **all four corners of the actual rotated building footprint** to lie inside a single energized source/relay service radius. The single-node rule is deliberately conservative; multi-relay union coverage may be evaluated as a separate future design decision. The function can report coverage for an un-authorized planned site as a preview, but it never modifies the site, job, worker scheduler, escrow, inventory or timer. Coverage does not equal safety from enemy attacks or a powered factory production connection.
+
+**Hard boundary:** Source/operational booleans in this implementation are synthetic test inputs, not verified generator/electricity data. The checker must **not** feed `BlueprintConstructionSlotScheduler.update_requirements(power_ready=true, ...)` until physical completed sources/poles and a real generation/consumption allocation are integrated, and the already-tested material escrow is held by the specific construction site. No Main or Factory Testing Sandbox enablement occurs in E3d5c3a.
+
+**Test:** `res://tests/construction_power_coverage_e3d5c3a_test.tscn` contains 16 isolated F6 checks A–P awaiting local Godot 4.6.2 verification. E3d5c2b definition costs passed 17/17 on 2026-11-11.
