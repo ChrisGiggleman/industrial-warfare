@@ -1061,3 +1061,13 @@ Completed:
 - [ ] Retain real-readiness UNKNOWN/NOT VERIFIED disclosures and sandbox debug-gate bypass; physical drones, real power and resource delivery are still separate work.
 
 **E3d5c3d2d status:** dedicated suite 12/12 + sandbox regression 16/16 passed, final HUD dock 10 and manual smoke pending. This evidence update makes no gameplay changes.
+
+### E3d5c3d2d — Full Automated Default-On UI Matrix Accepted (2026-11-11)
+
+- [x] Developer Godot 4.6.2 F6 screenshot confirms **E3d5c3d2c Adaptive HUD Dock 10/10 A–J PASSED** after default-on enablement, with no errors visible in the Output.
+- [x] Previously accepted E3d5c3d2d dedicated **12/12** and updated E3d5c3d2b sandbox **16/16** plus E3d5c3d2c **10/10** = **38/38 current-code automated checks**.
+- [x] Production Debug HUD, Factory Blueprints, and Construction Requirements coexist without layout overlap in the provided visual tests. Read-only UNKNOWN services and `Live readiness: NOT VERIFIED` remain truthful.
+- [ ] **Final manual regular-sandbox smoke remains:** run `res://scenes/core/factory_testing_sandbox.tscn` using F6 (not just an automated test scene); physically click Construction Requirements OPEN → CLOSED → OPEN; create, select, deselect a blueprint; place a short straight/corner conveyor route; ensure existing HUD, selection, deletion and debug behavior still work.
+- [ ] After the manual gameplay smoke, accept E3d5c3d2d completely and start **E3d5c3e1 — Clickable Construction Priorities**, beginning with a safe isolated test layer and forwarding to existing validated priority/selection commands only. Keep H/N/L alternatives.
+
+**Scope:** All **38/38 automated checks accepted**; regular sandbox manual gameplay smoke still pending. This is evidence only, with no live construction-services integration.

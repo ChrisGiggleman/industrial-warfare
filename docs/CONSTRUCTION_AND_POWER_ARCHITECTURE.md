@@ -605,3 +605,11 @@ This evidence demonstrates UI availability and observational safety, **not** phy
 The developer reran E3d5c3d2b on the default-on Factory Testing Sandbox and supplied Output evidence confirming **16/16 A–P** passing. Alongside E3d5c3d2d dedicated **12/12**, this gives **28/38 verified automatic checks**. Running-window screenshots continue to show nonoverlapping Production Debug / Construction Requirements / Factory Blueprints HUDs and correct UNKNOWN service statuses.
 
 The E3d5c3d2c HUD dock test with 10 A–J assertions remains pending on this default-on version. A physical mouse OPEN/CLOSE/REOPEN demonstration and normal sandbox blueprint/conveyor smoke also remain. Nothing in these checks grants power, workers or materials; sandbox debug bypass continues, and live readiness must remain NOT VERIFIED.
+
+### E3d5c3d2d — Automated Acceptance 38/38 (2026-11-11)
+
+The developer's updated E3d5c3d2c F6 screenshot confirms **10/10** adaptive HUD docking checks after default-on sandbox UI enablement. Coupled with E3d5c3d2d **12/12** and E3d5c3d2b **16/16**, all **38/38 current-code automated UI checks are accepted**. The existing selection, viewport docking and no-authority guarantees remain intact in these fixtures.
+
+**Still required for final gameplay acceptance:** a normal `factory_testing_sandbox.tscn` F6 session with physical mouse OPEN/CLOSE/REOPEN, normal selected/deselected blueprints and a short conveyor placement/turn/delete smoke test. Running an automated test scene with a special fixture is not an exact substitute for regular sandbox interaction. Continue to treat provider data as UNKNOWN, `live_construction_ready` as false and the sandbox debug bypass as intentional until genuine power, material transport and worker systems are connected.
+
+Once that manual smoke is confirmed, the next isolated implementation will be clickable High/Normal/Low selected-blueprint priority controls that reuse existing validated construction commands; no new construction readiness authority will be assigned to UI code.

@@ -2596,3 +2596,11 @@ Four developer screenshots show the updated E3d5c3d2b Godot 4.6.2 Output reporti
 The screenshots duplicate the **E3d5c3d2b** test, not the required **E3d5c3d2c HUD dock 10-check regression**. With the preceding E3d5c3d2d 12/12, the current default-on checkpoint stands at **28/38** tests verified.
 
 Remaining: run the E3d5c3d2c 10-check F6 suite and verify physical open/close/reopen plus blueprint and conveyor smoke in a normal Factory Testing Sandbox session. No code was altered for this documentation entry. The UI remains strictly observational, and `main.tscn` remains unaffected.
+
+### 2026-11-11 — E3d5c3d2d Full Automated Suite Accepted 38/38
+
+Developer's newest Godot 4.6.2 screenshot shows the post-enable E3d5c3d2c HUD docking suite passing all 10 A–J checks with `ALL 10 E3D5C3D2C SANDBOX REQUIREMENTS HUD DOCK TESTS PASSED`, and no visible errors. This completes the default-on requirements UI's updated automated checks: E3d5c3d2d **12/12**, E3d5c3d2b **16/16** and E3d5c3d2c **10/10**, totaling **38/38**.
+
+The HUD docking test confirms no overlap, responsive adaptive repositioning, intact sandbox debug gates and read-only reporting. The screenshot's `MANUAL:` lines are instructions and do not prove that physical mouse toggle or conveyor/build placement were exercised in the **regular sandbox**. Complete the manual OPEN/CLOSE/REOPEN, blueprint select/deselect and short conveyor smoke before declaring the entire default-on UI milestone fully accepted.
+
+No gameplay source changed in this documentation-only entry. `main.tscn` is unchanged. Future E3d5c3e1 will add clickable High/Normal/Low controls with existing priority logic, without granting real stock, power, worker slots or timer bypass.
