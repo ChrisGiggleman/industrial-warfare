@@ -841,3 +841,12 @@ Completed:
 - [ ] After acceptance, run E3d5b finite-worker (15), E3d5c2a escrow (16), and E3d5c3b2 power allocator (18) regressions. UI buttons, save/load, starter stock and physical drones remain future phases.
 
 **Hard safety boundary:** This coordinator is **not** instantiated in Main or the Factory Testing Sandbox and still relies on prototype generator **nameplate ratings**, not measured generation. It is an isolated integration test, not player-facing construction enforcement. Neither normal sandbox debug readiness nor logistics/combat code is changed.
+
+### E3d5c3c1 — Integrated Readiness Coordinator Accepted (2026-11-11)
+
+- [x] **Godot 4.6.2 F6: 18/18 A–R tests PASSED** in `res://tests/construction_readiness_coordinator_e3d5c3c1_test.tscn`, verified by developer-supplied Output screenshot. No new errors visible in Output.
+- [x] Isolated test confirms complete material escrow before power requests, actual power allocation before finite workers, priority ordering, non-preemption, pause/resume, cancellation refund, completed building activation, and conservation of test items.
+- [ ] **Compatibility acceptance pending:** rerun `res://tests/blueprint_construction_slots_e3d5b_test.tscn` (15 checks), `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` (16 checks), and `res://tests/finite_construction_power_e3d5c3b2_test.tscn` (18 checks), for **49 regression checks**. Prior passes predate the isolated coordinator.
+- [ ] Do not attach the coordinator to Factory Testing Sandbox/Main or remove the explicit sandbox debug requirement override until compatibility checks and live integration prerequisites (save/load escrow recovery, source validity, Main Hub starter inventory, actual energy/charging, construction UI and world destruction) have been resolved.
+
+**Status:** E3d5c3c1 dedicated integration F6 is **accepted 18/18**, but post-change **49/49 compatibility regression verification remains outstanding**. Finite allocation still derives from prototype nameplate ratings, not metered real power.
