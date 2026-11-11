@@ -899,3 +899,21 @@ Completed:
 - [ ] Next development checkpoint only after those regressions: safely plan a sandbox-only feature gate, persisted starter inventory / escrow recovery, material delivery, and real generated energy. Keep existing sandbox debug construction override unchanged until these are verified.
 
 **Acceptance scope:** E3d5c3c2 is accepted **in isolation**, not enabled in Main or the Factory Testing Sandbox. Do not claim live resource delivery or save/load integrity from this test.
+
+### E3d5c3c2 — Post-Change Compatibility Accepted (2026-11-11)
+
+- [x] **E3d5c3b1 completed power structures: 16/16 F6 passed**, developer screenshot on the updated Hub scene.
+- [x] **E3d5c3c1 construction readiness coordinator: 18/18 F6 passed**, developer screenshot on the updated Hub scene.
+- [x] **34/34 compatibility checks passed** after the E3d5c3c2 inventory addition and TSCN parser correction. With the starter-inventory suite's prior 16/16, the latest focused verification is **50/50 checks accepted**. No new errors visible in the submitted Output.
+- [x] Accept E3d5c3c2 as an isolated Hub bootstrap and inventory-ownership checkpoint; live sandbox integration is still OFF.
+
+### E3d5c3d1 — Read-Only Construction Requirements Inspection (Staged; F6 Pending)
+
+- [x] Add isolated `BlueprintConstructionRequirementsInspector.inspect()` for each valid ConstructionSite: show definition-owned material costs, exact stock deficits when a live inventory is supplied, actual per-job escrow ownership, prototype bounded power allocation, limited worker assignment, priority, progress and job state.
+- [x] Keep **warehouse sufficiency distinct from escrow** and **coverage distinct from power allocation**. A source outage can be observed even if the worker scheduler has not yet reconciled; inspection never mutates job state or resolves stale worker assignments.
+- [x] An all-gates-observed status is explicitly `prototype_gates_observed`. `live_construction_ready` remains **false** until real energy, persistence, delivery and worker-drone services are implemented; the sandbox debug requirements override is not authoritative.
+- [x] Stage `res://tests/construction_requirements_inspector_e3d5c3d1_test.tscn` with **18 A–R** automated checks for fail-closed missing providers, costs, shortages, escrow, allocated power, workers, outage, paused time and no side effects.
+- [ ] **Godot 4.6.2 F6 pending.** After passing, implement a separately gated, clickable sandbox requirements panel (read-only first); do not replace existing construction controls or debug bypass.
+- [ ] Longer-term: persistence, material transport to sites, real power generation/energy metering, physical worker drones, UI authorize/priority/cancel buttons, world destruction and in-game save/load.
+
+**Scope:** The new inspector and F6 scene are isolated: no edits to Main, Factory Testing Sandbox, WorldInteraction, existing construction jobs, the escrow, power network, worker scheduler or cargo/combat.

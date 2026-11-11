@@ -2500,3 +2500,11 @@ Developer's refreshed Godot 4.6.2 screenshots show the prototype Main Hub scene 
 Verified finite, one-time 20 Test Ingots and 8 Test Ore bootstrap, refusal to duplicate startup materials, nonempty-stock and damaged-Hub rejection, inventory transfer conservation, cost-based material escrow, cancellation refund, and real building-completion consumption. Existing Main and Factory Testing Sandbox remain unchanged.
 
 **Pending post-change regressions:** E3d5c3b1 completed power structures 16/16 and E3d5c3c1 readiness coordinator 18/18 (34 checks). Future gameplay enablement still requires reliable save/load of bootstrap marker and escrow, powered network service tied to actual demand, and physical construction material delivery.
+
+### 2026-11-11 — E3d5c3c2 Compatibility Passed 34/34; E3d5c3d1 Inspector Staged
+
+Developer Godot 4.6.2 Output screenshots show E3d5c3b1 **16/16** and E3d5c3c1 **18/18** passing after the Main Hub's inventory fix, for **34/34 compatibility checks**; adding starter inventory's dedicated 16/16 yields **50/50 relevant new and regression checks accepted**. The updated Main Hub retains normal electrical behavior, and the construction coordinator's priority, material reservation, worker gating and pause/cancellation tests remain passing.
+
+**Next small isolated feature:** A new `BlueprintConstructionRequirementsInspector` reads existing ConstructionSite/ConstructionJob metadata, validated per-definition costs, available inventory quantities, actual material escrow ownership, prototype allocation and worker scheduler snapshots. Unknown providers are reported as unknown and fail closed; enough warehouse stock is not a reservation. An all-prototype-gates-observed field is carefully separated from permanently false `live_construction_ready` because there is still no real delivered electricity, persistent escrow or physical construction drones. The inspector cannot authorize, debit, schedule, pause or advance work.
+
+Staged `res://tests/construction_requirements_inspector_e3d5c3d1_test.tscn` with 18 A–R checks pending developer F6. This is the model for a future clickable read-only sandbox requirements UI; no existing UI or world scene was touched.
