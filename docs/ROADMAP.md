@@ -1207,3 +1207,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] True delivered inventory, electrical energy, finite physical worker drones, cancelled-job escrow recovery under full/absent stock, and robust save/load still block real dispatch. This admission foundation is **not installed** in either playable scene.
 
 **Safety:** Existing prototype power allocator reports nameplate capacity, not electrical delivery. The isolated fixture may inject ingots into a test inventory, but the actual factory has not connected conveyor-delivered construction stock to escrow. Treat Live readiness as NOT VERIFIED.
+
+### E3d5c4b — Isolated Readiness Admission F6 Acceptance (2026-11-11)
+
+- [x] Developer screenshot confirms **ALL 16 E3D5C4B READINESS ADMISSION TESTS PASSED** in Godot 4.6.2, including default-off/test-only gating, already-authorized QUEUED-only admission, invalid demand rejection, priority-independent authorization, duplicate refusal, and no admission while sandbox debug bypass is active.
+- [x] The fixture's controlled 3-ingot transfer into test stock gives one High-priority escrow without generators or workers; jobs remain QUEUED with no progress.
+- [ ] Gameplay readiness remains unverified. This success does **not** test conveyor-delivered construction cargo, metered/delivered electricity, real worker drones, lossless persistence, or full recovery behavior in playable worlds.
+- [ ] Next isolated material-supply step: a bounded input/staging inventory that transfers real item units instead of directly granting test stock, then proves escrow conservation, blocked refunds, and rerouting recovery under missing power. It is **not** proof of conveyor connectivity and must not be wired into production.
