@@ -685,7 +685,8 @@ Completed:
 - [x] Add a stable waiting queue: **High → Normal → Low**, FIFO within each priority. Construction jobs enter only if their state is genuinely QUEUED; constructed/started/cancelled sites are pruned.
 - [x] Show selection priority counts, pending queue length and next queued job in the Factory Blueprints HUD.
 - [x] Retain sandbox's explicit debug requirement override: it still starts test construction immediately. Priority **does not** fabricate workers, reserve materials, create power, or throttle work before the worker system exists.
-- [ ] **Godot F6 validation required:** `res://tests/blueprint_construction_priority_e3d5a_test.tscn` (15 assertions/checkpoints), then manual sandbox Q → select → H/N/L priority assignment and E authorization.
+- [x] **Godot F6 validation:** `res://tests/blueprint_construction_priority_e3d5a_test.tscn` — **15/15 checkpoints passed** (developer screenshot, 2026-11-10).
+- [ ] Manual sandbox Q → select → H/N/L priority assignment and E authorization still pending.
 - [ ] Implement actual finite worker-drone dispatch, real availability providers, power/material checks and progression only after isolated tests. Don't enable the new queue in Main until those requirements exist.
 
-**Status: Implemented on GitHub main; local test and manual validation pending.**
+**Status: 15/15 automated checks passed; manual priority controls still pending validation.**
