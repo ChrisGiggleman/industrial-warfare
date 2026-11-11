@@ -2562,3 +2562,11 @@ Two developer Godot 4.6.2 screenshots show `ALL 16 E3D5C3D2B SANDBOX READ-ONLY R
 The same screenshots contain `Hit nothing`. Repository inspection locates this exact message in `scripts/world_interaction.gd` when a mouse-selection raycast misses a selectable object. It is routine debug feedback and not a construction error. The message alone cannot identify whether it came from a background click or UI interaction; manual click confirmation is still pending.
 
 Required before default-on: run standalone `res://tests/blueprint_requirements_panel_e3d5c3d2a_test.tscn` (18 checks) on the latest code, and verify that actual mouse clicks close/reopen the panel in the F6 game window. No source or scene files were modified in this documentation update.
+
+### 2026-11-11 — All 44/44 E3d5c3d2a/b/c UI Tests Passed on Current Code
+
+Developer Godot 4.6.2 screenshot shows `ALL 18 E3D5C3D2A READ-ONLY REQUIREMENTS PANEL TESTS PASSED` with PASS A–R, after the docking correction. The associated open-panel screenshot shows Test Storage bill/stock/escrow, prototype power and worker readings, and Live readiness NOT VERIFIED. Together with previously accepted post-docking E3d5c3d2b 16/16 and E3d5c3d2c 10/10, the current implementation has **44/44 automated UI checks passed**.
+
+The remaining manual acceptance is a direct physical mouse-click close/reopen verification in the running game window. Automated `pressed.emit()` tests prove signal handling but are not proof of human mouse interaction. Thus the regular Factory Testing Sandbox gate remains **OFF by default**. This is an evidence/documentation-only update; no source, construction, inventory, combat or scene files were modified.
+
+After confirmation, the next small checkpoint is a read-only UI default-on switch in Factory Testing Sandbox with F6/manual smoke tests, preserving its debug construction override and all existing gameplay input.

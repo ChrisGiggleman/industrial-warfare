@@ -577,3 +577,9 @@ Automated toggle signals pass but human mouse-click close/reopen is not document
 The developer reran `blueprint_requirements_sandbox_e3d5c3d2b_test.tscn` following the HUD dock changes; Godot Output confirms **16/16 checks A–P passed**. This adds to E3d5c3d2c's previously accepted 10/10. The standalone E3d5c3d2a 18-check suite has not yet been shown on the new dock code. The sandbox gate remains off by default.
 
 The extra `Hit nothing` message is the old WorldInteraction empty raycast-selection log, unrelated to any failing UI assertion. The direct cause of that particular click is not demonstrated. Physical mouse press close/reopen still needs confirmation before the panel can be enabled by default. All stock, escrow, electrical, and worker service readiness remains UNKNOWN in the opt-in sandbox.
+
+### E3d5c3d2a/b/c — UI Regression Matrix Complete (2026-11-11)
+
+A fresh developer Godot 4.6.2 F6 run of the standalone read-only panel passed **18/18** E3d5c3d2a A–R tests after the docking change. Together with current-code E3d5c3d2b **16/16** sandbox and E3d5c3d2c **10/10** docking tests, **44/44 UI automated checks** have passed. The visible standalone report accurately separates sufficient free inventory from held materials and does not assert genuine readiness.
+
+Only actual mouse close/reopen confirmation remains unverified. The sandbox's opt-in UI feature gate therefore remains OFF in the committed scene until physical interaction is confirmed, even though programmatic button signals have passed. No real inventory/escrow/power/worker providers are installed in regular sandbox gameplay; the UI must display UNKNOWN and Live readiness NOT VERIFIED. Real power delivery, material logistics, worker drones, save/load and non-debug construction remain separate milestones.

@@ -1009,3 +1009,15 @@ Completed:
 - [ ] Maintain the sandbox requirements feature gate disabled by default until both final checks pass. No live materials, power or workers should be inferred from read-only displays.
 
 **Current UI verification:** E3d5c3d2c 10/10 and updated E3d5c3d2b 16/16 = **26 current-code checks passed**; E3d5c3d2a 18 more required for 44/44.
+
+### E3d5c3d2a/b/c — All Post-Docking Automated UI Regressions Accepted (2026-11-11)
+
+- [x] **E3d5c3d2a standalone panel rerun: 18/18 A–R PASSED** in developer Godot 4.6.2 Output screenshot after the adaptive docking change, with no visible test failures.
+- [x] **E3d5c3d2b sandbox UI rerun: 16/16** accepted previously on the current code.
+- [x] **E3d5c3d2c adaptive HUD docking: 10/10** accepted previously on the current code.
+- [x] **44/44 current-code automated UI checks PASSED**, covering read-only inspection, selection fallback, visual-safe HUD positioning and the sandbox opt-in gate.
+- [x] Developer's new standalone screenshot shows legible Test Storage details (3 Test Ingots, warehouse sufficient but not reserved, prototype power/worker waiting and live readiness NOT VERIFIED).
+- [ ] **Physical mouse-click close/reopen confirmation remains outstanding.** The screenshots show the panel open and automated pressed signals, but not the real button's closed/reopened states in sequence.
+- [ ] Keep `enable_read_only_requirements_panel = false` in Factory Testing Sandbox until user confirms real mouse interaction. Do not enable production resource/power/worker readiness or remove `blueprint_sandbox_debug_requirements = true`.
+
+**Next controlled checkpoint after mouse acceptance:** enable the read-only panel by default ONLY in Factory Testing Sandbox, retain its ability to be closed, and test it in a regular F6 sandbox launch plus one controlled selection/conveyor/combat smoke test. Main and live construction authority remain unchanged.
