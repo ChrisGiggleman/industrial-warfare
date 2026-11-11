@@ -375,7 +375,7 @@ Godot acceptance gate: `res://tests/blueprint_construction_priority_e3d5a_test.t
 
 
 
-## E3d5b — Worker Slot Dispatch Foundation (Test Only; Verification Pending)
+## E3d5b — Worker Slot Dispatch Foundation (Test Only; 15/15 F6 Passed)
 
 `BlueprintConstructionSlotScheduler` is an isolated, explicitly configured worker-capacity scheduler built on the existing `ConstructionJob` state machine and `BlueprintConstructionPriorityQueue`. It records each authorized construction site once, retains FIFO registration order within High / Normal / Low tiers, and dispatches only jobs that have **explicit external power and material readiness snapshots**. Unknown readiness is treated as unavailable, not assumed available.
 
@@ -383,4 +383,4 @@ Each worker slot can service one currently constructing job. Jobs with missing p
 
 **Current boundary:** No actual power/material providers or worker drone entities are present in this checkpoint. All availability booleans in `res://tests/blueprint_construction_slots_e3d5b_test.tscn` are controlled test inputs. The service is **not activated** in Main or the Factory Testing Sandbox, protecting current immediate debug construction and preserving E3d5a/H-N-L selection and Ctrl+E behavior.
 
-**Validation gate:** The 15-check E3d5b F6 scene is committed and pending local Godot execution. Only after that should we connect verified power/material services and eventually assign actual worker drones.
+**Validation gate passed:** Developer-provided Godot 4.6.2 screenshot confirms all 15 E3d5b F6 checks passed on 2026-11-10. The scheduler remains isolated; the next gate is verified power/material services, followed by finite physical worker-drone dispatch.
