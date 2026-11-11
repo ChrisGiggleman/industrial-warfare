@@ -1137,3 +1137,5 @@ Completed:
 - [ ] Earlier post-inspection regressions E3d4a/b blueprint selection and E3d5c3d2b/c/d UI remain for a follow-up targeted batch before further gameplay construction integration.
 
 **This is still sandbox prototype UI**: no genuine materials/power/worker providers have been attached; `Live readiness: NOT VERIFIED` continues to apply.
+
+**2026-11-11 E3d5c3e1b test follow-up (F6 retest pending):** Test M initially failed because the synthetic H key event set `keycode` but not `physical_keycode` (the property read by `WorldInteraction`). The isolated test fixture now supplies both and cycles H → N → L → H, checking the unselected plan is unchanged. Gameplay input handling and the L/N/H dock were not modified. Re-pull `main` and rerun the 16-check F6 fixture, then the separate 12-check button fixture and manual mouse tests. Preserve construction readiness/worker/power safety gating.
