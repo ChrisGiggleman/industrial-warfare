@@ -90,6 +90,45 @@ func is_energized(node: ConstructionPowerNetworkNode) -> bool:
 	return get_energized_nodes().has(node)
 
 
+# Read-only topology traversal for the finite power budget prototype.
+# A component can exist without an online generator; in that case its
+# electrical budget is zero. Only explicit, range-valid edges are followed.
+func get_operational_component(
+	start: ConstructionPowerNetworkNode
+) -> Array[ConstructionPowerNetworkNode]:
+	var result: Array[ConstructionPowerNetworkNode] = []
+	if not _registered(start) or not start.operational:
+		return result
+	var pending: Array[ConstructionPowerNetworkNode] = [start]
+	while not pending.is_empty():
+		var current: ConstructionPowerNetworkNode = pending.pop_front()
+		if result.has(current) or not _registered(current) or not current.operational:
+			continue
+		result.append(current)
+		for edge: Dictionary in _edges:
+			var a: ConstructionPowerNetworkNode = (
+				(edge["a"] as WeakRef).get_ref() as ConstructionPowerNetworkNode
+			)
+			var b: ConstructionPowerNetworkNode = (
+				(edge["b"] as WeakRef).get_ref() as ConstructionPowerNetworkNode
+			)
+			if not _can_link(a, b):
+				continue
+			var neighbor: ConstructionPowerNetworkNode = null
+			if a == current:
+				neighbor = b
+			elif b == current:
+				neighbor = a
+			if (
+				is_instance_valid(neighbor) and _registered(neighbor)
+				and not result.has(neighbor) and not pending.has(neighbor)
+			):
+				pending.append(neighbor)
+	return result
+
+
+
+
 # A single energized node must contain the ENTIRE rotated construction
 # footprint. This conservative rule avoids falsely reporting coverage for
 # a building with an uncovered center or edge between overlapping circles.

@@ -789,3 +789,20 @@ Completed:
 - [x] Developer Godot 4.6.2 screenshot confirms **all 16/16 A–P checks passed** in `res://tests/completed_power_structures_e3d5c3b1_test.tscn`.
 - [x] Verified Hub source online state, physical pole activation only after construction completion, generator/service shutdown, relay health depletion, queued-for-removal protection and unchanged construction job gates.
 - [ ] **Compatibility gate remains outstanding:** rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) after the new owning-parent deletion guard. Do not proceed to energy demand allocation until compatibility is confirmed.
+
+### E3d5c3b1 — Completed Power Structures: Compatibility Accepted (2026-11-11)
+
+- [x] **Post-implementation E3d5c3a regression: 16/16 A–P PASSED** in developer Godot 4.6.2 screenshot, with no errors visible in Output.
+- [x] Together with the separate E3d5c3b1 16/16 acceptance, **32/32 power topology and completed-structure checks passed** on the current implementation.
+
+### E3d5c3b2 — Finite Construction Power Budget Prototype (Staged; F6 Pending)
+
+- [x] Add read-only `ConstructionPowerCoverageNetwork.get_operational_component()`, traversing explicit valid power links without granting permission or assuming sources exist.
+- [x] Add isolated `PrototypeConstructionPowerAllocator`: sum **online, intact, completed `PrototypePowerStructure` nameplate ratings** per connected component. Offline, destroyed, disconnected, or bare/synthetic test nodes supply **zero** available generation.
+- [x] Require an authorized live `ConstructionSite`, explicit positive integer-like demand in prototype service, and full rotated footprint coverage by an energized relay. Only grant whole demands; total allocations cannot exceed that component's current rating.
+- [x] Preserve active `CONSTRUCTING` jobs first (non-preemptive), then High → Normal → Low with stable FIFO ordering for waiting sites. Recompute as generator output, topology, health, and requests change. Power allocations are observations only and do **not** change `ConstructionJob`, actual inventory, escrow, worker slots, or timers.
+- [x] Stage `res://tests/finite_construction_power_e3d5c3b2_test.tscn` with **18 checks A–R**, including real completed sources, bounded demand, queued priorities, active-work preference, generator outage, multiple disconnected/connected sources, link loss, fake-source rejection, cancellation, and health depletion.
+- [ ] **Godot 4.6.2 F6 validation pending.** Then rerun E3d5c3a (16 checks) and E3d5c3b1 (16 checks) to validate the additive topology API.
+- [ ] Next: define production demand and realistic energy accounting (fuel/consumption, charging budgets), then a fail-closed sandbox-only coordinator using **per-site escrow ownership**, verified power allocation, and E3d5b worker slots. No Main integration until all component tests and regressions pass.
+
+**Safety:** This stage allocates prototype *nameplate budget*, NOT measured generated energy; no live supply/fuel model or persistent power reservation exists yet. The new allocator is never instantiated by Main or the Factory Testing Sandbox. No gameplay power, materials, worker service, or existing debug bypass is changed.

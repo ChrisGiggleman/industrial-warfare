@@ -2434,3 +2434,11 @@ Staged `res://tests/blueprint_construction_readiness_e3d5c1_test.tscn` (15 PASS 
 Developer's Godot 4.6.2 screenshot confirms PASS A–P and `ALL 16 E3D5C3B1 COMPLETED POWER STRUCTURE TESTS PASSED`. No errors visible in Output. Completed Hub/Pole runtime ownership, construction-gated activation, explicit links, source/service shutdown, health-depletion shutdown and deletion guard passed. This is a dedicated isolated test, **not** confirmation that the older E3d5c3a test passed after the code changes.
 
 **Next required acceptance:** rerun `res://tests/construction_power_coverage_e3d5c3a_test.tscn` (16 checks) and review Output/Debugger. Power supply-demand allocation and sandbox integration remain blocked pending that regression.
+
+### 2026-11-11 — E3d5c3b1 Compatibility Confirmed 16/16; E3d5c3b2 Power Budget Staged
+
+**Developer validation:** Reran `res://tests/construction_power_coverage_e3d5c3a_test.tscn` after E3d5c3b1 and confirmed all 16/16 A–P checks passed in Godot 4.6.2 with no visible Output errors. Together with previously accepted E3d5c3b1 16/16, 32/32 power regressions are now accepted.
+
+**New isolated E3d5c3b2 implementation:** Read-only `ConstructionPowerCoverageNetwork.get_operational_component()` traverses only explicit, currently valid operational links. `PrototypeConstructionPowerAllocator` computes per-component generation by summing enabled, intact, completed `PrototypePowerStructure.available_nameplate_generation()`, rejecting bare manually flagged nodes as generators. Each authorized construction site has a positive test-supplied energy demand, allocated in full or not at all to avoid overcommitting rated power. Active CONSTRUCTING jobs are preferred before queued priority High/Normal/Low, FIFO within ties; network changes and outages are reflected on each query. Neither worker scheduling nor job availability is touched.
+
+**Gate staged:** `res://tests/finite_construction_power_e3d5c3b2_test.tscn` with 18 scripted checks A–R, **pending local Godot F6**. Retest existing E3d5c3a and E3d5c3b1 afterward. This prototype handles *nameplate allocations only*; it does not represent fuel burn, actual power delivered, save/load, charging energy, or resource consumption. Main and Factory Testing Sandbox are unchanged.

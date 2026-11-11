@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/finite_construction_power_e3d5c3b2_test.gd" id="1_test"]
+
+[node name="FiniteConstructionPowerE3D5C3B2Test" type="Node3D"]
+script = ExtResource("1_test")
