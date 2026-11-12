@@ -1339,3 +1339,11 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] **Not integrated into Main or Factory Testing Sandbox.** A production receiver still needs real player placement, site demolition/cancellation ownership release, live delivered electricity, actual bounded worker drones, persisted escrow/receiver/cargo, and save/load recovery. No real construction readiness/dispatch may use this test adapter.
 
 **Safety:** This is *alignment to an actual planned site's port*, not a player-buildable receiver implementation. Test supplies come from an isolated synthetic source; E3d5c4g separately verified full mined/factory provenance.
+
+### E3d5c4i — Site-Aligned Receiver F6 Acceptance (2026-11-11)
+
+- [x] Developer Godot 4.6.2 Output screenshot confirms **ALL 16 E3D5C4I ANCHORED CONSTRUCTION RECEIVER TESTS PASSED** (A–P).
+- [x] Isolated real planned-port geometry, authorization-only attachment, exclusive staging ownership, connected belt travel, wrong cargo refusal, backpressure, shifted-site alignment rejection, cancellation cutoff and alternative material recovery all passed.
+- [x] Exact quantity conservation established for **7 ingots and 1 rejected ore** in the isolated source/receiver test. Missing production power and workers never permit construction.
+- [ ] Receiver cleanup remains **unverified after the ConstructionSite is actually freed**; E3d5c4i only guards intake and retains claimed/held stock. Next implement a fail-closed, read-only decommission/recovery audit that refuses site/receiver reuse until belt cargo, buffer and escrow are explicitly cleared. Do not release ownership merely because the site was cancelled.
+- [ ] Still no playable scene integration, production-delivered electricity, finite worker drones, or save/load.
