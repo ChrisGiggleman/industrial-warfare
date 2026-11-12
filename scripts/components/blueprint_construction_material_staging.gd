@@ -87,6 +87,15 @@ func accepts_delivered_item(item: ItemDefinition, count: int = 1) -> bool:
 	return space < 0 or space >= count
 
 
+
+# Read-only bill identity check for test-only per-site ownership. This
+# compares the COMPLETE material bill, not building names or priority.
+func matches_definition(definition: BuildingDefinition) -> bool:
+	if not enable_isolated_staging or not _live(_buffer):
+		return false
+	var costs: Dictionary = ConstructionMaterialBill.get_costs(definition)
+	return not costs.is_empty() and costs == _bill
+
 # The coordinator may receive this inventory only in an isolated fixture.
 # A valid buffer does NOT prove physical construction delivery or readiness.
 func get_staged_inventory() -> InventoryComponent:
