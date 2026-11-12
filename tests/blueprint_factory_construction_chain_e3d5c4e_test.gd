@@ -314,8 +314,13 @@ func _run_checks() -> void:
 	print("PASS O: Eight ore become exactly four ingots with no residual cargo")
 
 	assert(site.job.cancel())
-	assert(not escrow.has_reservation(hold))
+	# The staging buffer holds one item (capacity three); it cannot refund
+	# a full three-ingot bill. The escrow must survive for safe recovery.
+	assert(escrow.has_reservation(hold))
+	assert(escrow.needs_recovery(hold))
 	assert(buffer.get_amount(ingot) == 1)
+	assert(escrow.recover_to(hold, storage_inventory))
+	assert(not escrow.has_reservation(hold))
 	assert(storage_inventory.get_amount(ingot) == 3)
 	assert(not escrow.recover_to(hold))
 	assert(site.job.get_progress() == 0.0)
