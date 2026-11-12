@@ -109,6 +109,32 @@ func reserve_for_site(
 	return escrow.reserve(site, inventory, bill)
 
 
+# Read-only verification for quarantine/recovery inspection, including
+# after the original ConstructionSite object was freed. This DOES NOT
+# authorize, remove or retarget claims; no deletion API is exposed.
+func has_locked_pair(
+	staging: BlueprintConstructionMaterialStaging,
+	port: BlueprintConstructionStagingInputPort
+) -> bool:
+	if (
+		not enable_isolated_site_registry
+		or not _live(staging)
+		or not _live(port)
+	):
+		return false
+	var buffer: InventoryComponent = staging.get_staged_inventory()
+	if not _live(buffer):
+		return false
+	for entry: Dictionary in _claims:
+		if (
+			_claimed_ref(entry, "staging") == staging
+			and _claimed_ref(entry, "port") == port
+			and _claimed_ref(entry, "inventory") == buffer
+		):
+			return true
+	return false
+
+
 func claim_count() -> int:
 	return _claims.size()
 
