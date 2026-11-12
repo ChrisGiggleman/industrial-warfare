@@ -1245,3 +1245,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] **Still required:** attachment to actual built/authorized sites and footprint ownership, end-to-end generated cargo across a complete factory, material provenance/recovery under demolition, metered delivered electricity, finite real worker drones, save/load and robust transactional recovery. Do not route into Main or disable the sandbox debug gates.
 
 **Boundary:** This isolated synthetic output node and the physically connected belt prove the existing timed port-transfer mechanism can deliver to a construction-bill-filtered staging buffer. They do not prove that the player can construct or connect a receiver, that the origin is a real producing building, or that a complete game's construction readiness is verified.
+
+### E3d5c4d — Godot Physical-Conveyor Staging Acceptance (2026-11-11)
+
+- [x] Developer screenshot confirms **ALL 16 E3D5C4D PHYSICAL CONVEYOR STAGING TESTS PASSED**, A–P, in Godot 4.6.2.
+- [x] The isolated real conveyor segment validated reciprocal source/receiver ports, endpoint alignment, timed delivery, bill-filtering (ore rejected), three-ingot bounded staging, fourth-ingot backpressure, misalignment rejection and recovery, and escrow of physically received material. The job remained QUEUED with no energy/worker authority.
+- [ ] This does not yet test items genuinely manufactured by a real factory building nor the full source-building-to-smelter-to-staging path. Main and regular Factory Testing Sandbox are unchanged; production readiness remains NOT VERIFIED.
+- [ ] Next: isolate a real `TestStorage` → conveyor → `TestSmelter` recipe → multiple conveyors → bill-filtered staging → escrow chain in one F6 suite, with explicit inventory provenance and no production dispatch.
