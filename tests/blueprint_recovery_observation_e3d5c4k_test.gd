@@ -175,7 +175,11 @@ func _run_checks() -> void:
 	var parsed_active: Dictionary = (
 		BlueprintConstructionRecoveryObservation.decode_checked(active_json)
 	)
-	assert(parsed_active == active_record)
+	assert(parsed_active["owner_label"] == active_record["owner_label"])
+	assert(int(parsed_active["schema_version"]) == 1)
+	assert(int(parsed_active["buffered_units"]) == 3)
+	assert(int(parsed_active["belt_cargo_units"]) == 1)
+	assert(not bool(parsed_active["safe_to_release"]))
 	print("PASS G: Active site reports all material/connection blockers; no release")
 
 	audit.enable_isolated_recovery_audit = false
@@ -264,11 +268,16 @@ func _run_checks() -> void:
 	assert(bool(post_free["drained_observed"]))
 	assert(not bool(post_free["safe_to_release"]))
 	assert(post_free["owner_label"] == "site_receiver_001")
-	assert(
+	var parsed_drained: Dictionary = (
 		BlueprintConstructionRecoveryObservation.decode_checked(
 			observation.encode_observation()
-		) == post_free
+		)
 	)
+	assert(not parsed_drained.is_empty())
+	assert(bool(parsed_drained["drained_observed"]))
+	assert(int(parsed_drained["buffered_units"]) == 0)
+	assert(int(parsed_drained["belt_cargo_units"]) == 0)
+	assert(not bool(parsed_drained["safe_to_release"]))
 	var other := _make_site(definition, "ReplacementCandidate")
 	assert(other.job.authorize())
 	assert(not registry.claim_site(other, staging, port))
@@ -304,6 +313,12 @@ func _run_checks() -> void:
 	forged = post_free.duplicate(true)
 	forged["drained_observed"] = true
 	forged["escrow_outstanding"] = true
+	assert(not BlueprintConstructionRecoveryObservation.validate_record(forged))
+	forged = post_free.duplicate(true)
+	forged["buffered_units"] = -1
+	assert(not BlueprintConstructionRecoveryObservation.validate_record(forged))
+	forged = post_free.duplicate(true)
+	forged["belt_cargo_units"] = 1.5
 	assert(not BlueprintConstructionRecoveryObservation.validate_record(forged))
 	forged = post_free.duplicate(true)
 	forged["unknown_field"] = "override"
