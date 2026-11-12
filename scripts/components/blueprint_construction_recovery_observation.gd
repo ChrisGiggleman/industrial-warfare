@@ -104,8 +104,10 @@ static func validate_record(record: Dictionary) -> bool:
 	for key: String in keys:
 		if not record.has(key):
 			return false
+	# Godot's JSON parser represents all JSON numbers as float. Accept
+	# exact bounded whole numbers, but reject fractions and unsafe ranges.
 	if (
-		typeof(record["schema_version"]) != TYPE_INT
+		not _whole_number(record["schema_version"], SCHEMA_VERSION)
 		or int(record["schema_version"]) != SCHEMA_VERSION
 		or typeof(record["owner_label"]) != TYPE_STRING
 		or not _valid_label(str(record["owner_label"]))
@@ -118,7 +120,7 @@ static func validate_record(record: Dictionary) -> bool:
 		if typeof(record[key]) != TYPE_BOOL:
 			return false
 	for key: String in ["buffered_units", "belt_cargo_units"]:
-		if typeof(record[key]) != TYPE_INT or int(record[key]) < 0:
+		if not _whole_number(record[key], 1000000000):
 			return false
 	if not bool(record["claim_locked"]) or bool(record["safe_to_release"]):
 		return false
@@ -151,6 +153,17 @@ static func validate_record(record: Dictionary) -> bool:
 	if bool(record["drained_observed"]) != blockers.is_empty():
 		return false
 	return true
+
+
+static func _whole_number(value: Variant, upper_bound: int) -> bool:
+	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+		return false
+	var numeric: float = float(value)
+	return (
+		numeric >= 0.0
+		and numeric <= float(upper_bound)
+		and numeric == floorf(numeric)
+	)
 
 
 static func _valid_label(label: String) -> bool:
