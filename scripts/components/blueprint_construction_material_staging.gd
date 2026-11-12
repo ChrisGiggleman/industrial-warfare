@@ -71,6 +71,22 @@ func receive_item(item: ItemDefinition, count: int) -> int:
 	return _source.transfer_to(_buffer, item, count)
 
 
+# Read-only gate for a future physical input receiver. The existing isolated
+# receive_item() path remains separately testable. This check never transfers.
+func accepts_delivered_item(item: ItemDefinition, count: int = 1) -> bool:
+	if (
+		not enable_isolated_staging
+		or not _live(_source)
+		or not _live(_buffer)
+		or not is_instance_valid(item)
+		or not _bill.has(item)
+		or count <= 0
+	):
+		return false
+	var space: int = _buffer.get_available_space()
+	return space < 0 or space >= count
+
+
 # The coordinator may receive this inventory only in an isolated fixture.
 # A valid buffer does NOT prove physical construction delivery or readiness.
 func get_staged_inventory() -> InventoryComponent:
