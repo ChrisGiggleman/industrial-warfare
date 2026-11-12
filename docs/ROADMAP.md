@@ -1358,3 +1358,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] No player-usable decommissioning or receiver reuse exists yet. Real release needs atomic cleanup, transferred/recoverable belt cargo, persistence/save-load, owner UUIDs, and reliable failure rollback. Do **not** grant power, workers or construction dispatch from an audit.
 
 **Safety:** This audit does not mine, produce or deliver cargo from a full factory; E3d5c4g already verified mined factory supply. No Main or normal Factory Testing Sandbox scene changes. Drained observation is a diagnostic, **not** proof of safe deletion/reallocation across saved games.
+
+### E3d5c4j — Receiver Recovery Audit F6 Accepted (2026-11-12)
+
+- [x] Developer Godot 4.6.2 Output screenshot confirms **ALL 12 E3D5C4J RECEIVER RECOVERY AUDIT TESTS PASSED** (A–L).
+- [x] Audit refuses missing escrow and defaults OFF, tracks the site's cancellation and exact receiver/buffer ownership, and detects in-flight belt cargo, connected belt, staging stock and outstanding escrow independently.
+- [x] After explicit escrow refund, belt disconnect and separately returning all seven ingots, `drained_observed` becomes true **without** ever setting `safe_to_release`. The claim remains locked even after the site node is freed.
+- [ ] No production claim release, recovery persistence or automatic reuse is allowed. Next stage a **read-only, versioned recovery manifest contract** to describe these observed states without claiming actual save/load or authorization.
