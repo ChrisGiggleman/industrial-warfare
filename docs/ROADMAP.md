@@ -1276,3 +1276,14 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [x] Actual TestSmelter recipe produced **4 ingots from 8 seeded ore**, transported them through connected timed belts, escrowed three into an authorized construction job and buffered the fourth under backpressure. Cancellation recovered the full bill with no loss. The job remained QUEUED: real power and workers absent.
 - [ ] No claim of extractor-mined ore, production-delivered electrical power, physical construction workers, persistent recovery, or production scene readiness.
 - [ ] Next isolated source verification: actual Test Ore Deposit + TestExtractor → timed connected conveyor → Storage INPUT with backpressure and resource conservation, before expanding into a complete extractor→smelter→construction fixture.
+
+### E3d5c4f — Real Finite Ore Extraction to Storage by Conveyor (Staged; F6 Pending)
+
+- [x] Introduce **isolated test scene only** `res://tests/blueprint_extraction_storage_e3d5c4f_test.tscn`; production Main, regular Factory Testing Sandbox, blueprint authorization, conveyor and resource components are unchanged.
+- [x] Instantiate the actual `TestOreDeposit` finite node (starting **500 ore**) and `TestExtractor` scene. Require the existing `ExtractionArea` physics overlap scan to discover the actual deposit, then advance `ExtractorComponent._process()` to mine ore from its resource ledger; **no test ore is directly inserted into any inventory**.
+- [x] Connect actual Extractor OUTPUT → existing `ConveyorSegment` INPUT and its OUTPUT → actual `TestStorage` INPUT using reciprocal port ownership and `ConveyorBuildingSnap` endpoint geometry, then use the existing conveyor timer and cargo inventory to transport real mined ore.
+- [x] Stage **12 A–L F6 checks** for empty-deposit fail-closed behavior, finite depletion and mining time, reciprocal physical port connections, non-instant belt transit, three-item bounded Storage capacity, fourth-item backpressure, disconnection, clearance and reconnection recovery, and exact **500-unit conservation** across deposit remainder, extractor, belt, Storage and a drain inventory.
+- [ ] **Godot 4.6.2 F6 PENDING:** expect `ALL 12 E3D5C4F FINITE EXTRACTION AND STORAGE LOGISTICS TESTS PASSED` only after the developer's Godot run. Fix any isolated geometry/physics assertion that fails before combining with the Smelter chain.
+- [ ] After acceptance, build an extractor→storage→smelter→construction-staging *combined* test and re-run E3d5c4e, while keeping delivered electricity, finite real workers, cancellation recovery and save/load as separate production launch gates.
+
+**Boundary:** The new test intentionally isolates **extraction-to-storage**, rather than claiming one verified combined production chain. It does not install a playable receiver, readiness provider, worker drone or resource-power shortcut.
