@@ -2736,3 +2736,7 @@ The accepted E3d5c4d **16/16** conveyor-port tests established timed physical mo
 ### 2026-11-11 — E3d5c4e F6 PASS M Assertion Corrected
 
 The developer's initial Godot F6 run stopped at the `assert(site.job.get_wait_reasons().size() == 3)` immediately after material escrow. Code inspection confirmed a **test expectation error**, not an authority bypass: the existing coordinator calls the bounded scheduler to mirror true escrow ownership as `materials=true`, while `power=false` and `workers=false` keep construction QUEUED. Replaced the check with explicit two-reason assertions requiring `power` and `workers` and rejecting `materials`, while preserving zero active workers and zero job progress. No runtime scripts/scenes were edited. **Corrected fixture pending F6 rerun; no 16/16 acceptance yet.**
+
+### 2026-11-11 — E3d5c4e Real Smelter-to-Construction Chain Accepted 16/16
+
+The developer's rerun screenshot confirms all **16** E3d5c4e test assertions passed after a test-only PASS M correction. Actual TestSmelter recipe processing turned eight seeded Test Ore into four Test Ingots, moved them through physically connected input/output belts into the bill-filtered staging inventory, escrowed the full three-ingot material bill, paused on missing power/worker services and recovered cancellation stock. No runtime construction, inventory or conveyor code changed for the assertion fix. Live electrical delivery, workers, save/load and true extractor/resource-node provenance remain unverified; E3d5c4e is accepted as an isolated multi-belt logistics fixture.
