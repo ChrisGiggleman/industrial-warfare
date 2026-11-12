@@ -56,7 +56,7 @@ func observe() -> Dictionary:
 		return {}
 	var blockers: Array[String] = []
 	for entry: Variant in raw_blockers:
-		if typeof(entry) not in [TYPE_STRING, TYPE_STRING_NAME]:
+		if typeof(entry) != TYPE_STRING and typeof(entry) != TYPE_STRING_NAME:
 			return {}
 		blockers.append(str(entry))
 	var record: Dictionary = {
