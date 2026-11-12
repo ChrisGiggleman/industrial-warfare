@@ -1263,3 +1263,9 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] When accepted, re-run E3d5c4d physical input (16), E3d5c4c staging escrow (16), and representative smelter/conveyor regressions before wiring any live providers.
 
 **Limitations:** This proves a manufactured product can traverse a real multi-segment factory chain into construction material escrow; raw ore is still seeded into real Storage rather than mined from a real Extractor/resource node. The construction receiver is test-only, not player-buildable. Real delivered electricity, construction workers, dismantling recovery and save/load are not integrated; no automatic dispatch may be enabled.
+
+### E3d5c4e — Assertion Correction After Initial F6 Run (2026-11-11)
+
+- [x] Developer screenshot shows the first E3d5c4e F6 execution stopped at **line 286 / PASS M**, where the test incorrectly expected **three** missing readiness requirements *after* the isolated coordinator had successfully escrowed the full three-ingot material bill.
+- [x] Corrected the **test only**: `get_wait_reasons()` must contain precisely `power` and `workers` (2), **not** `materials`, once real escrow is held. The job must still be **QUEUED**, with zero active workers and zero timer progress.
+- [ ] **Rerun the updated E3d5c4e F6 fixture**. Do not count the first halted run as 16/16 and do not modify the coordinator to preserve an artificially missing materials flag. Construction readiness is still NOT VERIFIED for live gameplay.
