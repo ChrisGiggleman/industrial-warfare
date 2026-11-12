@@ -17,6 +17,9 @@ class_name BlueprintConstructionAnchoredStagingPort
 var _site_ref: WeakRef = null
 var _planned_ref: WeakRef = null
 var _registry_ref: WeakRef = null
+# Once cancellation or site destruction has been signalled, this latch stays
+# true even after the ConstructionSite object itself is freed.
+var _site_has_ended: bool = false
 
 
 func attach_to_authorized_site(
@@ -87,5 +90,10 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	return matches_attached_site() and super.can_accept_item(item, amount)
 
 
+func has_ended_site() -> bool:
+	return _site_ref != null and _site_has_ended
+
+
 func _disable_on_site_end() -> void:
+	_site_has_ended = true
 	enable_isolated_input = false
