@@ -1306,3 +1306,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] Production gating still requires player-buildable material receipt/ownership, real delivered electricity, bounded actual worker drones, destruction recovery, persisted escrow and save/load. Keep priority-only selection unable to authorize, and do not wire the coordinator into Main or Factory Testing Sandbox.
 
 **Scope:** This is the first staged *combined fixture* for actual finite mining → Storage → actual recipe → timed belts → staging → escrow. The fixture manually steps existing production methods for determinism; it does not prove autonomous player-placed infrastructure, real delivered electricity, worker construction, or recovery/persistence in a normal saved world.
+
+### E3d5c4g — Godot F6 Integrated Mining-to-Construction Acceptance (2026-11-11)
+
+- [x] Developer screenshot confirms **ALL 18 E3D5C4G MINED-ORE FACTORY-TO-CONSTRUCTION TESTS PASSED** (A–R) in Godot 4.6.2.
+- [x] Starting from a real finite 500-unit TestOreDeposit, the Extractor mined eight ore and existing reciprocal conveyor links delivered them to Storage, Smelter and construction staging as four recipe-produced ingots. Three ingots were escrowed; the fourth remained buffered after backpressure recovery.
+- [x] Confirmed 500-unit **ore-equivalent** balance (492 remaining ore + 4 ingots × 2 ore) and refund-on-cancel without duplication. Authorized work stayed QUEUED with no power/workers and zero construction progress.
+- [ ] This is verified **only as an isolated manually-stepped F6 factory fixture**, not as player-placed, saved construction logistics. Next stage: bind staging and input-port ownership to a particular authorized ConstructionSite without allowing cross-site reuse or automatically authorizing/dispatching jobs.
