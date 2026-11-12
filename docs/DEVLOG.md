@@ -2708,3 +2708,9 @@ Following the screenshot-confirmed 16/16 E3d5c4b readiness admission acceptance,
 Added `res://tests/blueprint_material_staging_e3d5c4c_test.tscn` with **16 F6 assertions staged, not yet executed in developer Godot**. The test starts with five ingots, delivers them in partial batches, reserves one three-ingot bill for an authorized High job, proves a second job cannot claim insufficient remaining stock, and verifies refund-full handling and alternate recovery without loss/duplication before the second job obtains its bill. A missing generator keeps both jobs QUEUED with no construction time advanced. Main, the normal sandbox, WorldInteraction, conveyor logistics and combat remain unchanged.
 
 **Important:** this is an inventory-conservation prototype and does not validate a physical belt delivery route, delivered electrical energy, real worker drones, or persistence. Those must remain fail-closed requirements before non-debug game integration.
+
+### 2026-11-11 — E3d5c4c Godot Staging/Recovery 16/16 Accepted
+
+Developer screenshot confirms `ALL 16 E3D5C4C MATERIAL STAGING AND RECOVERY TESTS PASSED`. Inventory source and staging buffer conserved all five Test Ingots through partial transfers, priority-based one-bill escrow, blocked full-buffer refund, explicit alternative recovery and subsequent next-job reservation. Missing electrical generation and workers kept construction jobs QUEUED. These are isolated test results, not playable cargo routing.
+
+**E3d5c4c accepted** as a bounded inventory-staging foundation. Next step is an isolated physical conveyor-to-staging input-port F6 fixture with reciprocal endpoint and travel-time validation, while keeping Main/sandbox behavior unchanged and real readiness NOT VERIFIED.
