@@ -1269,3 +1269,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [x] Developer screenshot shows the first E3d5c4e F6 execution stopped at **line 286 / PASS M**, where the test incorrectly expected **three** missing readiness requirements *after* the isolated coordinator had successfully escrowed the full three-ingot material bill.
 - [x] Corrected the **test only**: `get_wait_reasons()` must contain precisely `power` and `workers` (2), **not** `materials`, once real escrow is held. The job must still be **QUEUED**, with zero active workers and zero timer progress.
 - [ ] **Rerun the updated E3d5c4e F6 fixture**. Do not count the first halted run as 16/16 and do not modify the coordinator to preserve an artificially missing materials flag. Construction readiness is still NOT VERIFIED for live gameplay.
+
+### E3d5c4e — Factory-to-Construction Logistics F6 Accepted (2026-11-11)
+
+- [x] Developer-supplied Godot 4.6.2 screenshot confirms **ALL 16 E3D5C4E FACTORY-TO-CONSTRUCTION LOGISTICS TESTS PASSED** (A–P) following correction of the PASS M wait-reasons assertion.
+- [x] Actual TestSmelter recipe produced **4 ingots from 8 seeded ore**, transported them through connected timed belts, escrowed three into an authorized construction job and buffered the fourth under backpressure. Cancellation recovered the full bill with no loss. The job remained QUEUED: real power and workers absent.
+- [ ] No claim of extractor-mined ore, production-delivered electrical power, physical construction workers, persistent recovery, or production scene readiness.
+- [ ] Next isolated source verification: actual Test Ore Deposit + TestExtractor → timed connected conveyor → Storage INPUT with backpressure and resource conservation, before expanding into a complete extractor→smelter→construction fixture.
