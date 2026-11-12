@@ -38,6 +38,15 @@ func bind_staging(staging: BlueprintConstructionMaterialStaging) -> bool:
 	return true
 
 
+
+# Read-only identity used by the isolated per-site staging registry.
+func get_bound_staging() -> BlueprintConstructionMaterialStaging:
+	if not _live(_staging):
+		return null
+	if not _live(inventory) or inventory != _staging.get_staged_inventory():
+		return null
+	return _staging
+
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	if (
 		not enable_isolated_input
