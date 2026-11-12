@@ -1287,3 +1287,9 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] After acceptance, build an extractor→storage→smelter→construction-staging *combined* test and re-run E3d5c4e, while keeping delivered electricity, finite real workers, cancellation recovery and save/load as separate production launch gates.
 
 **Boundary:** The new test intentionally isolates **extraction-to-storage**, rather than claiming one verified combined production chain. It does not install a playable receiver, readiness provider, worker drone or resource-power shortcut.
+
+### E3d5c4f — Finite Extraction and Storage Logistics F6 Accepted (2026-11-11)
+
+- [x] Godot 4.6.2 developer Output screenshot confirms **ALL 12 E3D5C4F FINITE EXTRACTION AND STORAGE LOGISTICS TESTS PASSED** (A–L), including physics deposit discovery, timed mining, actual Extractor OUTPUT and Storage INPUT reciprocal conveyor connections, travel timing, three-unit capacity, fourth-item backpressure, physical disconnection and reconnection.
+- [x] Initial finite Test Ore Deposit **500** units conserved across **496** remaining deposit ore and **4** extracted units distributed between Storage and a drain inventory; no ore directly inserted into inventory in this isolated source fixture.
+- [ ] This is not a combined deposit→smelter→construction test, nor evidence of production-delivered power, physical worker capacity or save/load. Next: an isolated combined chain with mined ore and a real Smelter recipe; keep gameplay scenes unchanged.
