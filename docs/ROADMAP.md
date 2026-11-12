@@ -1226,3 +1226,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] Future physical connection must validate real conveyor endpoints, actual completed cargo movement, transfer ownership and refusal of disconnected/ghost sources. Metered delivered electrical power, worker drones, job recovery persistence/save-load remain separate production gates.
 
 **Do not enable this test staging model as a playable provider.** It only proves a bounded inventory transfer path into escrow under isolated conditions; it cannot prove cargo came from a conveyor or that a real worker received building supplies.
+
+### E3d5c4c — Developer F6 Acceptance (2026-11-11)
+
+- [x] Developer's Godot 4.6.2 Output screenshot confirms **ALL 16 E3D5C4C MATERIAL STAGING AND RECOVERY TESTS PASSED**, A–P.
+- [x] Test proves a bounded empty staging buffer, item filtering, partial transfer, High-priority escrow only after a complete three-ingot bill, conservation of all five ingots, blocked refund to a full buffer, alternate-source recovery and reuse by the second job. With no generated power/worker authority, the jobs remain QUEUED.
+- [ ] This confirms only **inventory-to-inventory** staging, not physically connected conveyor unloading, delivered electrical power, drones, save/load or production readiness.
+- [ ] Next isolated gate: validate a **real connected belt output endpoint and timed cargo** against a bill-filtering construction staging INPUT port, then escrow only what physically reaches that port. Keep playable scenes unchanged and do not claim live readiness.
