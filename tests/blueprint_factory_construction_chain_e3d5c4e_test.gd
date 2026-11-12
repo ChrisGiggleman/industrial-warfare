@@ -283,10 +283,16 @@ func _run_checks() -> void:
 	assert(int(escrow.held_materials(hold).get(ingot, 0)) == 3)
 	assert(buffer.get_total_amount() == 0)
 	assert(site.job.state == ConstructionJob.State.QUEUED)
-	assert(site.job.get_wait_reasons().size() == 3)
+	# The full bill is reserved, so materials are ready. Only actual power
+	# delivery and worker capacity remain unavailable; neither is invented.
+	var wait_reasons: Array[StringName] = site.job.get_wait_reasons()
+	assert(wait_reasons.size() == 2)
+	assert(wait_reasons.has(&"power"))
+	assert(wait_reasons.has(&"workers"))
+	assert(not wait_reasons.has(&"materials"))
 	assert(scheduler.get_active_count() == 0)
 	assert(site.job.get_progress() == 0.0)
-	print("PASS M: Three manufactured ingots escrow; no generator/worker means QUEUED")
+	print("PASS M: Real escrow clears materials wait; missing power/workers keep QUEUED")
 
 	var original: Transform3D = output_b.global_transform
 	output_b.position.x += 1.0
