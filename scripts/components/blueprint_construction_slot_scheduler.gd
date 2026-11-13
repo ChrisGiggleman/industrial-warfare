@@ -93,6 +93,22 @@ func has_drone_binding(drone: PrototypeConstructionWorkerDrone) -> bool:
 	return false
 
 
+# Read-only resource readiness snapshot for controlled fleet dispatch.
+# This is verified by the material/power coordinator, not the drone.
+func has_verified_requirements(site: ConstructionSite) -> bool:
+	if not _is_trackable(site) or not enable_isolated_drone_presence:
+		return false
+	var index: int = _find_entry_index(site)
+	if index < 0:
+		return false
+	var entry: Dictionary = _tracked[index]
+	return (
+		bool(entry["ready_known"])
+		and bool(entry["power"])
+		and bool(entry["materials"])
+	)
+
+
 # The drone's physical presence gates a real scheduler worker slot. Binding
 # does not call authorize(), change availability, or move an inventory item.
 # Only a queued site explicitly assigned to THIS live drone can bind.

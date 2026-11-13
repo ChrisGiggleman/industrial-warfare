@@ -117,6 +117,21 @@ func track_site(site: ConstructionSite, power_units: int) -> bool:
 	return true
 
 
+# Read-only cross-service identity check for the opt-in E3d5c4z tick driver.
+# A mismatched controller cannot advance a job from another scheduler/escrow.
+func matches_tick_services(
+	scheduler: BlueprintConstructionSlotScheduler,
+	escrow: BlueprintConstructionMaterialEscrow
+) -> bool:
+	return (
+		_configured and _owned_mode_latched
+		and enable_isolated_owned_staging
+		and _live(scheduler) and _live(escrow)
+		and _scheduler == scheduler and _escrow == escrow
+		and _owned_registry_ready()
+	)
+
+
 # Returns the number of newly dispatched worker slots. Does not advance time.
 # Invoke before the game's construction time step; after an outage this
 # immediately pauses the old job and releases its worker slot.

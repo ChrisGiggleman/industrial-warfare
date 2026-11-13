@@ -76,12 +76,14 @@ func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
 # Caller-driven, never automatic on priority change, frame, or authorization.
 # Even if a scheduler binding were to fail after a successful launch, that
 # flight stays quarantined as 'used' rather than being silently reassigned.
-func dispatch_waiting() -> int:
+func dispatch_waiting(require_verified_resources: bool = false) -> int:
 	if not _fleet_ready():
 		return 0
 	var sent: int = 0
 	for site: ConstructionSite in _queue.get_waiting_sites():
 		if not _valid_queued(site) or not _scheduler.is_tracking_site(site):
+			continue
+		if require_verified_resources and not _scheduler.has_verified_requirements(site):
 			continue
 		if get_drone_for_site(site) != null:
 			continue
@@ -185,6 +187,20 @@ func idle_count() -> int:
 		):
 			count += 1
 	return count
+
+
+# Read-only visibility for the opt-in driver, not an assignment capability.
+func registered_drones() -> Array[PrototypeConstructionWorkerDrone]:
+	var result: Array[PrototypeConstructionWorkerDrone] = []
+	for entry: Dictionary in _registered:
+		var worker := (entry["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
+		if _live(worker):
+			result.append(worker)
+	return result
+
+
+func matches_scheduler(scheduler: BlueprintConstructionSlotScheduler) -> bool:
+	return _fleet_ready() and is_instance_valid(scheduler) and _scheduler == scheduler
 
 
 func _fleet_ready() -> bool:
