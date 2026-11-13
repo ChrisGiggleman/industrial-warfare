@@ -1413,3 +1413,21 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 **Safety:** E3d5c4m never creates, deletes, reassigns or advances construction work. Main, regular Factory Testing Sandbox, authorization hotbar, conveyors and logistics runtime remain unchanged. Earlier E3d5c4l 16/16 screenshot acceptance remains historical evidence; the new suite is pending.
 
 **E3d5c4m fixture detail:** The pending 16-check test seeds **six** isolated ingots: three enter escrow and three refill staging before cancellation. Because staging is full, automatic escrow refund cannot succeed; the test must explicitly drain staging into supply and then recover the original escrow into supply. All six ingots must be conserved before the audit can report drained. This verifies existing recovery behavior without changing production code.
+
+### E3d5c4m — Developer F6 Acceptance (2026-11-12)
+
+- [x] Developer's Godot 4.6.2 screenshot confirms **ALL 16 E3D5C4M RECOVERY IDENTITY BINDING TESTS PASSED**, A–P.
+- [x] Only the ledger-issued ID of the same authorized site can bind to its recovery audit. Other-site identifiers or caller-labelled observers are rejected. The verified UUID, retained tombstone, and permanent receiver claim remain consistent after site cancellation/deletion.
+- [x] The tested six-ingot full-buffer escrow recovery succeeds without advancing construction, granting workers/power, or allowing receiver release.
+- [ ] No persistent save/load, release/restore permission, real worker capacity or delivered power is established.
+
+### E3d5c4n — Quarantined Material Ownership Checkpoint (Staged; F6 Pending)
+
+- [x] Add disabled-by-default `BlueprintConstructionRecoveryCheckpoint` capturing a versioned, itemized **read-only** record of exact staging inventory, physical belt cargo and outstanding escrow **only** when they match the E3d5c4j audit's original source references and an E3d5c4m verified session UUID.
+- [x] Record `ItemDefinition.item_id` and exact quantity separately for each location, plus E3d5c4k recovery status, retained claim and invariant `safe_to_release=false`. Parsing checks strict exact field sets, UUID/version format, nonnegative whole-number counts, duplicate/unsorted item rows and totals matching audited staging/cargo/escrow flags. Missing/disabled sources fail closed.
+- [x] Stage `res://tests/blueprint_recovery_checkpoint_e3d5c4n_test.tscn` **20 A–T checks** using seven test ingots distributed across escrow (3), staging (3), and belt cargo (1). Tests cover actual site cancellation/deletion, disabled-service refusal, full recovery to source with all seven units accounted for, drained-but-locked ownership and rejection of inconsistent/forged JSON.
+- [x] In the **isolated F6 test only**, write one descriptive JSON file to `user://industrial_warfare_e3d5c4n_test_only.json`, read/validate it and remove it. This is **not** playable-world saving/loading; there is no Node restoration, transaction log, item-id remapping or claim release.
+- [ ] **Developer Godot 4.6.2 F6 pending:** expect `ALL 20 E3D5C4N MATERIAL OWNERSHIP CHECKPOINT TESTS PASSED`. A passing file round-trip is not crash-safe persistence.
+- [ ] Before production save/load: verify item identifiers across definitions, full-source and outbound-cargo accounting, owned receiver/port transforms, electrical/worker state, atomic write/rollback, concurrent recovery and restart/corruption tests. Main and normal Factory Testing Sandbox remain unchanged.
+
+**Scope:** E3d5c4n produces only *descriptive quarantined test data*. Even a correctly parsed record cannot restore a saved site, issue a new ID, grant job readiness, refund escrow, or release a receiver. The snapshot contains only audited staging/belt/escrow, not the entire factory or arbitrary external recovery inventories.
