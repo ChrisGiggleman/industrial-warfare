@@ -67,6 +67,31 @@ func configure(
 	return true
 
 
+# Read-only proof required to bind a session UUID to THIS audit. A caller
+# must provide the original, live, authorized site while it is still QUEUED.
+# The audit's existing registry/receiver/staging links are compared directly;
+# an unrelated site cannot borrow its audit by passing an arbitrary label.
+func matches_queued_site(site: ConstructionSite) -> bool:
+	if (
+		not enable_isolated_recovery_audit
+		or not _live(site)
+		or site.job == null
+		or site.job.state != ConstructionJob.State.QUEUED
+		or _port_ref == null
+	):
+		return false
+	var registry := _get_node(_registry_ref) as BlueprintConstructionSiteStagingRegistry
+	var staging := _get_node(_staging_ref) as BlueprintConstructionMaterialStaging
+	var port := _get_node(_port_ref) as BlueprintConstructionAnchoredStagingPort
+	if not _live(registry) or not _live(staging) or not _live(port):
+		return false
+	return (
+		port.matches_attached_site()
+		and registry.has_locked_pair(staging, port)
+		and registry.inventory_for_site(site) == staging.get_staged_inventory()
+	)
+
+
 func inspect() -> Dictionary:
 	var blockers: Array[StringName] = []
 	var result: Dictionary = {
