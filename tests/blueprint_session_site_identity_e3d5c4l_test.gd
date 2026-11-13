@@ -88,10 +88,17 @@ func _run_checks() -> void:
 	assert(first.job.get_progress() == 0.0)
 	print("PASS G: High priority and stable ID never authorize construction")
 
+	# Put the comparison site under a different parent so Godot does
+	# not silently rename a same-name sibling in the SceneTree.
+	var other_group := Node3D.new()
+	other_group.name = "AlternateSiteGroup"
+	add_child(other_group)
 	var second := _make_site(
 		definition, "StoragePlanRenamed", first.position
 	)
-	add_child(second)
+	other_group.add_child(second)
+	assert(second.name == first.name)
+	assert(second.global_position.is_equal_approx(first.global_position))
 	var second_id: String = ledger.issue_id(second)
 	assert(BlueprintConstructionSiteIdentityLedger.is_valid_id(second_id))
 	assert(second_id != first_id)
