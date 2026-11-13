@@ -1465,3 +1465,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] This creates a **fresh in-process test Node**, not a restarted Godot application. SHA-256 remains an unkeyed corruption detector rather than authenticated saved-state proof. No game state, inventory, receiver, site UUID or escrow is restored; no worker/power/claim release authority is granted. Production Main and Factory Testing Sandbox remain unchanged.
 
 **Next persistence prerequisites:** crash/restart tests using a separate process, durable versioned site identity and inventory provenance, atomic multi-entity commit/rollback, lost/duplicated item recovery, and true world save/load. None is implied by a valid quarantined diagnostic history.
+
+### E3d5c4p — Cold-Reader Lineage F6 Accepted (2026-11-12)
+
+- [x] Developer Godot 4.6.2 output confirms **ALL 16 E3D5C4P COLD-READER LINEAGE TESTS PASSED** (A–P).
+- [x] Fresh in-process reader validates matching two-generation records, quarantines a newer file with a recomputed checksum but conflicting owner UUID, rejects newer-without-parent history, and marks older data STALE when a newer `.part` was interrupted.
+- [x] Earlier E3d5c4o 12-file checks also reran successfully inside E3d5c4p, and fixed test files were cleaned.
+- [ ] This does **not** test a fresh Godot OS process, durable gameplay state, recovery after power loss, or rehydration. Next isolated experiment: **two separate F6 scenes with a full Godot editor restart between writer and inspection reader**; records remain descriptive and no data may be imported into gameplay.
