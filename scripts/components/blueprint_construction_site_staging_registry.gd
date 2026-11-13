@@ -89,6 +89,40 @@ func inventory_for_site(site: ConstructionSite) -> InventoryComponent:
 	return null
 
 
+# Read-only check of a site's original buffer after QUEUED -> CONSTRUCTING
+# or PAUSED. Does not permit a second reservation or release a claim.
+func matches_owned_inventory(
+	site: ConstructionSite, expected: InventoryComponent
+) -> bool:
+	if (
+		not enable_isolated_site_registry or not _live(site)
+		or not _live(expected) or site.job == null
+		or not is_instance_valid(site.target_definition)
+		or site.job.state not in [
+			ConstructionJob.State.QUEUED,
+			ConstructionJob.State.CONSTRUCTING,
+			ConstructionJob.State.PAUSED
+		]
+	):
+		return false
+	for entry: Dictionary in _claims:
+		if _claimed_ref(entry, "site") != site:
+			continue
+		var staging := _claimed_ref(entry, "staging") as BlueprintConstructionMaterialStaging
+		var port := _claimed_ref(entry, "port") as BlueprintConstructionStagingInputPort
+		return (
+			_claimed_ref(entry, "inventory") == expected
+			and _live(staging) and _live(port)
+			and staging.enable_isolated_staging
+			and port.enable_isolated_input
+			and staging.matches_definition(site.target_definition)
+			and staging.get_staged_inventory() == expected
+			and port.get_bound_staging() == staging
+			and port.inventory == expected
+		)
+	return false
+
+
 # The ONLY reservation operation exposed by this registry. Never accepts an
 # arbitrary destination or item bill from callers. Existing atomic escrow
 # still owns debits, job-cancellation refunds and completion commits.

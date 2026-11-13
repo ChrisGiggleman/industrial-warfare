@@ -15,6 +15,11 @@ class_name BlueprintConstructionReadinessCoordinator
 # Keep this integration TEST ONLY until real power supply and recovery,
 # save/load and starter-resource policies have been implemented.
 
+@export var enable_isolated_owned_staging: bool = false
+# Once enabled, never silently fall back to the previous shared stock source.
+var _site_registry: BlueprintConstructionSiteStagingRegistry = null
+var _owned_mode_latched: bool = false
+
 var _queue: BlueprintConstructionPriorityQueue = null
 var _scheduler: BlueprintConstructionSlotScheduler = null
 var _escrow: BlueprintConstructionMaterialEscrow = null
@@ -52,6 +57,22 @@ func configure(
 	return true
 
 
+# Opt-in test-only source binding; the existing shared inventory mode is
+# unchanged unless the caller explicitly selects the site-owned mode.
+func configure_owned_staging(
+	registry: BlueprintConstructionSiteStagingRegistry
+) -> bool:
+	if (
+		not enable_isolated_owned_staging
+		or not _configured or _owned_mode_latched or not _entries.is_empty()
+		or not _live(registry) or not registry.enable_isolated_site_registry
+	):
+		return false
+	_site_registry = registry
+	_owned_mode_latched = true
+	return true
+
+
 func track_site(site: ConstructionSite, power_units: int) -> bool:
 	if not _configured or not _live(site):
 		return false
@@ -69,6 +90,15 @@ func track_site(site: ConstructionSite, power_units: int) -> bool:
 		return false
 	if ConstructionMaterialBill.get_costs(site.target_definition).is_empty():
 		return false
+	if enable_isolated_owned_staging != _owned_mode_latched:
+		return false
+	var pinned: InventoryComponent = null
+	if _owned_mode_latched:
+		if not _owned_registry_ready():
+			return false
+		pinned = _site_registry.inventory_for_site(site)
+		if not _live(pinned):
+			return false
 	_prune()
 	for entry: Dictionary in _entries:
 		if (entry["ref"] as WeakRef).get_ref() == site:
@@ -80,7 +110,8 @@ func track_site(site: ConstructionSite, power_units: int) -> bool:
 		"ref": weakref(site),
 		"order": _next_order,
 		"power_units": power_units,
-		"power_tracked": false
+		"power_tracked": false,
+		"owned_source": weakref(pinned) if pinned != null else null
 	})
 	_next_order += 1
 	return true
@@ -98,6 +129,8 @@ func reconcile() -> int:
 	if (
 		not _live(_queue) or not _live(_escrow)
 		or not _live(_power) or not _live(_source)
+		or enable_isolated_owned_staging != _owned_mode_latched
+		or (_owned_mode_latched and not _owned_registry_ready())
 	):
 		# Revoke readiness before returning if a required service vanishes.
 		# Otherwise already-active ConstructionSite._process would keep
@@ -132,11 +165,15 @@ func reconcile() -> int:
 			continue
 		var reservation_id: int = _escrow.reservation_for(site)
 		if reservation_id == 0 and site.job.state == ConstructionJob.State.QUEUED:
-			var bill: Dictionary = ConstructionMaterialBill.get_costs(
-				site.target_definition
-			)
-			if not bill.is_empty():
-				reservation_id = _escrow.reserve(site, _source, bill)
+			if _owned_mode_latched:
+				if _owned_claim_valid(site, entry):
+					reservation_id = _site_registry.reserve_for_site(site, _escrow)
+			else:
+				var bill: Dictionary = ConstructionMaterialBill.get_costs(
+					site.target_definition
+				)
+				if not bill.is_empty():
+					reservation_id = _escrow.reserve(site, _source, bill)
 		var owned: bool = _owns_materials(site)
 		if owned and not bool(entry["power_tracked"]):
 			if _power.track_site(site, int(entry["power_units"])):
@@ -186,11 +223,38 @@ func get_status(site: ConstructionSite) -> Dictionary:
 func _owns_materials(site: ConstructionSite) -> bool:
 	if not _valid_site(site) or not _live(_escrow):
 		return false
+	if _owned_mode_latched:
+		var valid_claim: bool = false
+		for entry: Dictionary in _entries:
+			if (entry["ref"] as WeakRef).get_ref() == site:
+				valid_claim = _owned_claim_valid(site, entry)
+				break
+		if not valid_claim:
+			return false
 	var id: int = _escrow.reservation_for(site)
 	if id <= 0 or not _escrow.has_reservation(id) or _escrow.needs_recovery(id):
 		return false
 	var expected: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
 	return not expected.is_empty() and _escrow.held_materials(id) == expected
+
+
+# A missing, disabled or replaced ownership claim revokes readiness, not escrow.
+func _owned_registry_ready() -> bool:
+	return (
+		_owned_mode_latched and enable_isolated_owned_staging
+		and _live(_site_registry)
+		and _site_registry.enable_isolated_site_registry
+	)
+
+
+func _owned_claim_valid(site: ConstructionSite, entry: Dictionary) -> bool:
+	if not _owned_registry_ready() or not _valid_site(site):
+		return false
+	var pinned_ref: WeakRef = entry.get("owned_source") as WeakRef
+	if pinned_ref == null:
+		return false
+	var pinned: InventoryComponent = pinned_ref.get_ref() as InventoryComponent
+	return _live(pinned) and _site_registry.matches_owned_inventory(site, pinned)
 
 
 func _prune() -> void:
