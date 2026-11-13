@@ -1376,3 +1376,9 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] Actual save/load, durable UUID generation and uniqueness, inventory-item serialization, reconstructible escrow, crash-safe material recovery, lifecycle cleanup and checked claim release are **not implemented**. Do not treat JSON observation as safe-to-release evidence or as permission to authorize, dispatch, or restore work. Production Main and Factory Testing Sandbox remain unchanged.
 
 **Scope:** Observation records are diagnostics intended to help design later persistence. They are not authoritative saved game state, nor a replacement for complete resource ownership and recovery transactions.
+
+### E3d5c4k — Recovery Observation Godot F6 Accepted (2026-11-12)
+
+- [x] Developer Godot 4.6.2 screenshot confirms **ALL 18 E3D5C4K RECOVERY OBSERVATION TESTS PASSED** (A–R), including JSON round-tripping, invalid owner-label rejection, disabled audit refusal, active/cancelled/drained observations, and rejection of forged recovery/release flags.
+- [x] A drained observation remains **descriptive only**; `safe_to_release=false` and the original material/receiver ownership lock remain intact after site deletion.
+- [ ] The caller-provided `site_...` string is NOT an authenticated or persisted identity. Next isolated checkpoint: runtime-issued, non-recycled per-site identity with tombstone records surviving the original site's destruction. Real save/load remains a later, separate milestone.
