@@ -1393,3 +1393,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] These IDs are **session-stable, NOT durable across game restarts**. Persisted owner uniqueness/identity restoration, complete material ledger, escrow and in-flight cargo serialization, crash-safe recovery and controlled receiver release are still unimplemented. No live production readiness integration.
 
 **Hard boundary:** This preparatory identity ledger is not attached to Main or Factory Testing Sandbox, has no ID import or storage API, and cannot reconstruct claims or authorize work. A saved game must eventually validate durable site IDs and complete ownership transactions, rather than infer release permission from a tombstone or a drained observation.
+
+### E3d5c4l — Session Site Identity F6 Accepted (2026-11-12)
+
+- [x] Developer Godot 4.6.2 screenshot confirms **ALL 16 E3D5C4L SESSION SITE IDENTITY TESTS PASSED**, A–P.
+- [x] Runtime-issued v4-style IDs remain stable across name, position, priority and explicit authorization; different sites with identical names/locations get separate IDs. Cancellation and direct tree exit retain separate non-recycled tombstones after site deletion.
+- [x] Default-off and Main/sandbox opt-out remain intact; no identity triggers construction, resource transfers, or claim release.
+- [ ] These IDs are session-only. Next isolated test must require the real identity ledger and recovery audit to refer to the **same live site** before binding the E3d5c4k observation, then continue to report the retained tombstone after deletion without granting release. No save/load yet.
