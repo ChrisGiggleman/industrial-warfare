@@ -82,6 +82,13 @@ func tick(delta: float, dock_power_verified: bool) -> Dictionary:
 	return result
 
 
+# Observation only. The sandbox bridge may verify that all existing
+# coordinator/worker/fleet ownership gates were configured by the test.
+# No external caller can activate an unconfigured controller with this query.
+func has_verified_services() -> bool:
+	return _services_ready()
+
+
 func _services_ready() -> bool:
 	return (
 		enable_isolated_ticks and _configured and is_inside_tree()
