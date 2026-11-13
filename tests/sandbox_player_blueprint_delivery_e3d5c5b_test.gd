@@ -134,7 +134,8 @@ func _checks() -> void:
 
 	assert(gate.attach_player_site_receiver(site, staging, registry) == null)
 	assert(registry.claim_count() == 1)
-	assert(not port.can_accept_item(load("res://data/items/test_ore.tres")))
+	var ore := load("res://data/items/test_ore.tres") as ItemDefinition
+	assert(ore != null and not port.can_accept_item(ore))
 	print("PASS J: Repeat ownership and incorrect material types are refused")
 
 	var belt_packed := load("res://scenes/logistics/conveyor_straight.tscn") as PackedScene
@@ -270,7 +271,7 @@ func _checks() -> void:
 	assert(warehouse.get_amount(ingot) == 9)
 	assert(registry.claim_count() == 1)
 	assert(not port.can_accept_item(ingot))
-	assert(not gate.attach_player_site_receiver(site, staging, registry))
+	assert(gate.attach_player_site_receiver(site, staging, registry) == null)
 	var main := (load("res://scenes/core/main.tscn") as PackedScene).instantiate()
 	assert(main.get_node_or_null("ConstructionDroneLifecycleGate") == null)
 	main.free()
