@@ -121,6 +121,11 @@ func _run_checks() -> void:
 	assert(not bool(only_older["can_restore"]))
 	print("PASS E: A single older slot is observable but never authoritative")
 
+	var wrong_owner: Dictionary = later.duplicate(true)
+	wrong_owner["site_id"] = "site_00000000000040008000000000000001"
+	wrong_owner["recovery"]["owner_label"] = wrong_owner["site_id"]
+	assert(BlueprintConstructionRecoveryCheckpoint.validate_record(wrong_owner))
+	assert(not journal.write_once(2, checkpoint, wrong_owner))
 	assert(journal.write_once(2, checkpoint, later))
 	var newest: Dictionary = journal.read_for_inspection()
 	assert(newest["status"] == "newer_valid_for_inspection")
@@ -145,10 +150,11 @@ func _run_checks() -> void:
 		FileAccess.get_file_as_string(slot_two)
 	)
 	assert(tampered is Dictionary)
-	(tampered as Dictionary)["sha256"] = "bad_checksum"
+	var damaged_envelope: Dictionary = tampered
+	damaged_envelope["sha256"] = "bad_checksum"
 	var file := FileAccess.open(slot_two, FileAccess.WRITE)
 	assert(file != null)
-	file.store_string(JSON.stringify(tampered))
+	file.store_string(JSON.stringify(damaged_envelope))
 	file.close()
 	assert(journal.read_slot(2).is_empty())
 	print("PASS H: Digest mismatch rejects otherwise well-formed newer file")
