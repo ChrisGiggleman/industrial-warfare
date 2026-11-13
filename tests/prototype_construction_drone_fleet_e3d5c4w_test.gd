@@ -113,7 +113,7 @@ func _run_checks() -> void:
 	assert(registry.claim_count() == 3)
 	assert(registry.inventory_for_site(low) != registry.inventory_for_site(normal))
 	assert(registry.inventory_for_site(normal) != registry.inventory_for_site(high))
-	assert(not registry.inventory_for_site(unapproved))
+	assert(registry.inventory_for_site(unapproved) == null)
 	print("PASS D: Three authorized sites exclusively own distinct staged material claims")
 
 	var warehouse := InventoryComponent.new()

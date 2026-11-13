@@ -52,7 +52,7 @@ func configure(
 
 
 func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
-	if not _ready() or not _live(drone):
+	if not _fleet_ready() or not _live(drone):
 		return false
 	if (
 		not drone.enable_isolated_drone
@@ -76,7 +76,7 @@ func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
 # Even if a scheduler binding were to fail after a successful launch, that
 # flight stays quarantined as 'used' rather than being silently reassigned.
 func dispatch_waiting() -> int:
-	if not _ready():
+	if not _fleet_ready():
 		return 0
 	var sent: int = 0
 	for site: ConstructionSite in _queue.get_waiting_sites():
@@ -151,7 +151,7 @@ func idle_count() -> int:
 	return count
 
 
-func _ready() -> bool:
+func _fleet_ready() -> bool:
 	return (
 		enable_isolated_fleet and _configured and is_inside_tree()
 		and _live(_queue) and _live(_scheduler)
