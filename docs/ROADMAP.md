@@ -1431,3 +1431,10 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] Before production save/load: verify item identifiers across definitions, full-source and outbound-cargo accounting, owned receiver/port transforms, electrical/worker state, atomic write/rollback, concurrent recovery and restart/corruption tests. Main and normal Factory Testing Sandbox remain unchanged.
 
 **Scope:** E3d5c4n produces only *descriptive quarantined test data*. Even a correctly parsed record cannot restore a saved site, issue a new ID, grant job readiness, refund escrow, or release a receiver. The snapshot contains only audited staging/belt/escrow, not the entire factory or arbitrary external recovery inventories.
+
+### E3d5c4n — Quarantined Material Checkpoint F6 Accepted (2026-11-13)
+
+- [x] Developer's Godot 4.6.2 screenshot confirms **ALL 20 E3D5C4N MATERIAL OWNERSHIP CHECKPOINT TESTS PASSED** (A–T).
+- [x] JSON test-file round-trip preserves a same-site session UUID and exact **3 escrowed + 3 staged + 1 belt ingot**, with tampered item counts, source swaps, schema and release flags rejected. Following explicit recovery all seven ingots were conserved, and receiver ownership remained locked.
+- [ ] This is **not** a restart-proof save/load transaction; files are descriptions only and do not restore items or claims.
+- [ ] Next isolated checkpoint: immutable two-generation test files, checked publish/readback, corrupt-newer detection and older snapshot fallback **for inspection only**. A fallback must never be treated as current game authority.
