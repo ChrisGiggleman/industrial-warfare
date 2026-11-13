@@ -70,6 +70,17 @@ func track_authorized_site(site: ConstructionSite) -> bool:
 	return true
 
 
+# Read-only handoff queries for E3d5c4w's explicit fleet dispatcher.
+# A dispatcher must not launch a one-shot drone for an untracked site or
+# accidentally mix two different priority queues.
+func uses_priority_queue(queue: BlueprintConstructionPriorityQueue) -> bool:
+	return is_instance_valid(queue) and _priority_queue == queue and capacity > 0
+
+
+func is_tracking_site(site: ConstructionSite) -> bool:
+	return _is_trackable(site) and _find_entry_index(site) >= 0
+
+
 # The drone's physical presence gates a real scheduler worker slot. Binding
 # does not call authorize(), change availability, or move an inventory item.
 # Only a queued site explicitly assigned to THIS live drone can bind.
