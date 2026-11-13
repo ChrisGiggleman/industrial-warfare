@@ -204,6 +204,18 @@ func _run_checks() -> void:
 	assert((live_record["staging_items"] as Array).is_empty())
 	assert((live_record["belt_items"] as Array).is_empty())
 	assert(int(live_record["escrow_items"][0]["quantity"]) == 3)
+	assert(checkpoint.capture(
+		binder, audit, staging, belt, escrow, hold + 1
+	).is_empty())
+	# A live, bill-matching but different staging buffer is not the audited
+	# source, even if its apparent stock eventually matches a real one.
+	var impostor_staging := BlueprintConstructionMaterialStaging.new()
+	impostor_staging.enable_isolated_staging = true
+	add_child(impostor_staging)
+	assert(impostor_staging.configure(source, definition, 3))
+	assert(checkpoint.capture(
+		binder, audit, impostor_staging, belt, escrow, hold
+	).is_empty())
 	print("PASS K: Live UUID-bound JSON round-trips without any release authority")
 
 	# Force the real cancellation path to hold escrow: a full staging
