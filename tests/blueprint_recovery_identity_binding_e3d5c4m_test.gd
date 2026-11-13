@@ -82,7 +82,7 @@ func _run_checks() -> void:
 	source.name = "FixtureSupply"
 	source.max_capacity = 10
 	add_child(source)
-	assert(source.add_item(ingot, 3) == 3)
+	assert(source.add_item(ingot, 6) == 6)
 	var staging := BlueprintConstructionMaterialStaging.new()
 	staging.enable_isolated_staging = true
 	add_child(staging)
@@ -145,7 +145,7 @@ func _run_checks() -> void:
 	assert(hold > 0)
 	assert(escrow.has_reservation(hold))
 	assert(buffer.get_total_amount() == 0)
-	assert(source.get_amount(ingot) == 0)
+	assert(source.get_amount(ingot) == 3)
 	assert(audit.configure(first, registry, staging, port, belt, escrow))
 	assert(audit.matches_queued_site(first))
 	assert(not audit.matches_queued_site(second))
@@ -191,6 +191,11 @@ func _run_checks() -> void:
 	assert(not bool(parsed["safe_to_release"]))
 	print("PASS K: Live UUID-bound JSON round-trips without any release authority")
 
+	# Force the real cancellation path to hold escrow: a full staging
+	# inventory cannot accept the original 3-ingot escrow refund.
+	assert(staging.receive_item(ingot, 3) == 3)
+	assert(buffer.get_amount(ingot) == 3)
+	assert(source.get_amount(ingot) == 0)
 	assert(first.job.cancel())
 	assert(port.has_ended_site())
 	assert(not port.enable_isolated_input)
@@ -199,6 +204,7 @@ func _run_checks() -> void:
 	assert(bool(cancelled["site_ended"]))
 	assert(cancelled["owner_label"] == first_id)
 	assert(bool(cancelled["escrow_outstanding"]))
+	assert(int(cancelled["buffered_units"]) == 3)
 	assert(not bool(cancelled["safe_to_release"]))
 	print("PASS L: Cancelled-site tombstone and audit match while escrow remains")
 
@@ -228,8 +234,12 @@ func _run_checks() -> void:
 	assert(binder.observe_verified()["owner_label"] == first_id)
 	print("PASS N: Disabling any identity/audit/observation gate fails closed")
 
-	assert(escrow.recover_to(hold, source))
+	assert(not escrow.recover_to(hold))
+	assert(buffer.transfer_to(source, ingot, 3) == 3)
 	assert(source.get_amount(ingot) == 3)
+	assert(escrow.recover_to(hold, source))
+	assert(source.get_amount(ingot) == 6)
+	assert(buffer.get_total_amount() == 0)
 	assert(not escrow.has_reservation(hold))
 	assert(belt.disconnect_building_port(port))
 	var drained: Dictionary = binder.observe_verified()
@@ -255,7 +265,8 @@ func _run_checks() -> void:
 	assert(sandbox.get_node_or_null("BlueprintConstructionSiteIdentityLedger") == null)
 	main.free()
 	sandbox.free()
-	assert(source.get_amount(ingot) == 3)
+	assert(source.get_amount(ingot) == 6)
+	assert(buffer.get_total_amount() == 0)
 	assert(escrow.held_count() == 0)
 	assert(not bool(drained["safe_to_release"]))
 	print("PASS P: Main/sandbox opt out; resources conserved and no work dispatched")
