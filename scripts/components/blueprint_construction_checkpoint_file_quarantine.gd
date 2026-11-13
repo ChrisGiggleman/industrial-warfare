@@ -142,8 +142,8 @@ func read_for_inspection() -> Dictionary:
 		return result
 
 	if older.is_empty():
-		if pending_old or pending_new:
-			result["status"] = "incomplete_files_for_inspection"
+		# Preserve the existing no-valid-checkpoint contract for stranded
+		# pending-only files. No material record is returned.
 		return result
 	if pending_old:
 		result["status"] = "pending_file_conflict_for_inspection"
