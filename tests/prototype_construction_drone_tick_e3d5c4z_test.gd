@@ -236,6 +236,10 @@ func _checks() -> void:
 	assert(second.job.get_progress() == 1.0)
 	print("PASS S: Second job requires fresh escrow and drone arrival, then completes")
 
+	# A completed job emits no cancellation signal. The first tick marks
+	# RETURNING; the following tick physically moves the worker to its dock.
+	assert(int(driver.tick(0.1, false)["recycled"]) == 0)
+	assert(drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RETURNING)
 	assert(int(driver.tick(5.0, false)["recycled"]) == 0)
 	assert(drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED)
 	assert(int(driver.tick(10.0, true)["recycled"]) == 1)
