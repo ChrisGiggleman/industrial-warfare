@@ -12,6 +12,8 @@ class_name BlueprintConstructionCheckpointFileQuarantine
 # authenticated data source, restoration engine, or release authority.
 # A digest detects accidental byte changes, NOT malicious rewriting.
 # Reading an older valid record is labelled STALE_FOR_INSPECTION.
+# A newer record without a matching, verified older generation is quarantined.
+# Unfinished .part files cannot silently imply a clean checkpoint history.
 # Never put this test-only component into Main or Factory Testing Sandbox.
 
 const ENVELOPE_VERSION: int = 1
@@ -117,21 +119,40 @@ func read_for_inspection() -> Dictionary:
 	}
 	if not enable_isolated_disk_test:
 		return result
+	var older: Dictionary = read_slot(1)
 	var newer: Dictionary = read_slot(2)
+	var pending_old: bool = FileAccess.file_exists(temp_path(1))
+	var pending_new: bool = FileAccess.file_exists(temp_path(2))
 	if not newer.is_empty():
+		# A newer record is never a coherent history without its same-owner
+		# parent, even if its own digest is internally correct. Never promote
+		# or return an orphan as current-game authority.
+		if older.is_empty():
+			result["status"] = "unverified_history_for_inspection"
+			return result
+		if str(older["site_id"]) != str(newer["site_id"]):
+			result["status"] = "owner_conflict_for_inspection"
+			return result
+		if pending_old or pending_new:
+			result["status"] = "pending_file_conflict_for_inspection"
+			return result
 		result["status"] = "newer_valid_for_inspection"
 		result["generation"] = 2
 		result["record"] = newer
 		return result
 
-	var older: Dictionary = read_slot(1)
 	if older.is_empty():
+		if pending_old or pending_new:
+			result["status"] = "incomplete_files_for_inspection"
+		return result
+	if pending_old:
+		result["status"] = "pending_file_conflict_for_inspection"
 		return result
 	result["generation"] = 1
 	result["record"] = older
 	result["status"] = (
 		"stale_fallback_for_inspection"
-		if FileAccess.file_exists(SLOT_TWO)
+		if FileAccess.file_exists(SLOT_TWO) or pending_new
 		else "older_only_for_inspection"
 	)
 	return result
