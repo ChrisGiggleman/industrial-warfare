@@ -1450,3 +1450,8 @@ These results supersede the earlier E3d5c4a pending-regression checklist, but **
 - [ ] Not yet crash-safe save/load: no multi-object atomicity, fsync guarantees, authenticated manifest, real restart simulation, full item/world identifiers, concurrency, transactional rollback or restoration. Production readiness, claim release, power and workers remain disabled/unverified.
 
 **Boundary:** E3d5c4n already verifies capture of real live audited inventories (20/20). E3d5c4o isolates file publication/error selection with consistent fabricated descriptions; passing it must not be misreported as actual construction state being saved, restored or crash-recovered.
+
+### E3d5c4o — Developer F6 Accepted (2026-11-13)
+
+- [x] Godot 4.6.2 screenshot confirms **ALL 12 E3D5C4O CHECKPOINT FILE QUARANTINE TESTS PASSED** (A–L). Verified immutable two-slot test files, same-site generation checks, digest corruption rejection, explicit stale older fallback, incomplete `.part` rejection and namespaced cleanup.
+- [ ] This is an isolated **synthetic** checkpoint file-I/O test; it does not reconstruct world state, durably commit across crashes, or permit release/recovery. Next verify a fresh reader instance never treats an orphaned newer slot, inconsistent parent owner, or interrupted newer `.part` as an unambiguous current history.
