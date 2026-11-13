@@ -81,6 +81,18 @@ func is_tracking_site(site: ConstructionSite) -> bool:
 	return _is_trackable(site) and _find_entry_index(site) >= 0
 
 
+# Read-only stale association check: terminal jobs must be pruned by
+# reconcile() before a physical worker can be explicitly recycled.
+func has_drone_binding(drone: PrototypeConstructionWorkerDrone) -> bool:
+	if not is_instance_valid(drone):
+		return false
+	for entry: Dictionary in _tracked:
+		var ref: WeakRef = entry.get("worker_drone") as WeakRef
+		if ref != null and ref.get_ref() == drone:
+			return true
+	return false
+
+
 # The drone's physical presence gates a real scheduler worker slot. Binding
 # does not call authorize(), change availability, or move an inventory item.
 # Only a queued site explicitly assigned to THIS live drone can bind.

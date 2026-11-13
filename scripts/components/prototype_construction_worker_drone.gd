@@ -22,6 +22,10 @@ const MAX_SPEED: float = 50.0
 # E3d5c4x: experimental battery is OFF by default; once configured, power
 # accounting stays latched even if this option is disabled.
 @export var enable_isolated_battery: bool = false
+# E3d5c4y guarded reuse. Does not release construction inventory ownership.
+@export var enable_isolated_reuse: bool = false
+var _assignment_job: ConstructionJob = null
+var _reuse_count: int = 0
 const RETURN_MARGIN_UNITS: float = 0.25
 var _battery_configured: bool = false
 var _battery_capacity: float = 0.0
@@ -162,6 +166,7 @@ func assign_to_site(
 		):
 			return false
 	_site_ref = weakref(site)
+	_assignment_job = site.job
 	_home = home_position
 	_speed = flight_speed
 	_hover_height = hover_height
@@ -277,6 +282,60 @@ func is_bound_to_site(site: ConstructionSite) -> bool:
 		and _site_ref.get_ref() == site
 		and _active_site(site)
 		and _state in [FlightState.OUTBOUND, FlightState.AT_SITE]
+	)
+
+
+# Explicit one-worker rearm. All legacy one-shot drones remain unchanged.
+# The *whole* escrow ledger must be clear, not just this worker's site;
+# this intentionally conservative test-only boundary blocks uncertain refunds.
+func release_docked_assignment(
+	escrow: BlueprintConstructionMaterialEscrow,
+	scheduler: BlueprintConstructionSlotScheduler
+) -> bool:
+	if (
+		not enable_isolated_reuse or not enable_isolated_drone
+		or not enable_isolated_battery or not _battery_configured
+		or _state != FlightState.DOCKED or not _site_ended
+		or _assignment_job == null
+		or _assignment_job.state not in [
+			ConstructionJob.State.COMPLETE,
+			ConstructionJob.State.CANCELLED
+		]
+		or not global_position.is_equal_approx(_home)
+		or _battery_units + 0.00001 < _battery_capacity
+		or not _live_release_service(escrow)
+		or not _live_release_service(scheduler)
+		or escrow.held_count() != 0
+		or scheduler.get_active_count() != 0
+		or scheduler.has_drone_binding(self)
+	):
+		return false
+	var old_site: ConstructionSite = _bound_site()
+	if is_instance_valid(old_site) and scheduler.is_tracking_site(old_site):
+		return false
+	# A queued-for-deletion old site may still emit tree_exiting later.
+	# Disconnect its callbacks before we allow any successor assignment.
+	if is_instance_valid(old_site):
+		if _assignment_job.job_cancelled.is_connected(_on_site_ended):
+			_assignment_job.job_cancelled.disconnect(_on_site_ended)
+		if old_site.tree_exiting.is_connected(_on_site_ended):
+			old_site.tree_exiting.disconnect(_on_site_ended)
+	_site_ref = null
+	_assignment_job = null
+	_site_ended = false
+	_state = FlightState.IDLE
+	_reuse_count += 1
+	return true
+
+
+func completed_rearms() -> int:
+	return _reuse_count
+
+
+func _live_release_service(node: Node) -> bool:
+	return (
+		is_instance_valid(node) and not node.is_queued_for_deletion()
+		and node.is_inside_tree()
 	)
 
 

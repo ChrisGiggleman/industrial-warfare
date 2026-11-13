@@ -15,6 +15,7 @@ class_name PrototypeConstructionDroneFleet
 # NO _process() and never installed in Main or Factory Testing Sandbox.
 
 @export var enable_isolated_fleet: bool = false
+@export var enable_isolated_reuse: bool = false
 
 var _queue: BlueprintConstructionPriorityQueue = null
 var _scheduler: BlueprintConstructionSlotScheduler = null
@@ -99,7 +100,8 @@ func dispatch_waiting() -> int:
 			_assignments.append({
 				"site": weakref(site),
 				"drone": weakref(worker),
-				"bound": bound
+				"bound": bound,
+				"released": false
 			})
 			if bound:
 				sent += 1
@@ -108,11 +110,45 @@ func dispatch_waiting() -> int:
 	return sent
 
 
+# Explicit terminal-job release only; charge and cleanup must be completed
+# by the caller. Never calls scheduler, job or escrow mutation methods.
+func recycle_docked_worker(
+	drone: PrototypeConstructionWorkerDrone,
+	escrow: BlueprintConstructionMaterialEscrow
+) -> bool:
+	if (
+		not enable_isolated_reuse or not _fleet_ready()
+		or not _live(drone) or not _live(escrow)
+	):
+		return false
+	var registered: Dictionary = {}
+	for entry: Dictionary in _registered:
+		if (entry["drone"] as WeakRef).get_ref() == drone:
+			registered = entry
+			break
+	if registered.is_empty() or not bool(registered["used"]):
+		return false
+	var prior: Dictionary = {}
+	for record: Dictionary in _assignments:
+		if (
+			bool(record["bound"])
+			and not bool(record.get("released", false))
+			and (record["drone"] as WeakRef).get_ref() == drone
+		):
+			prior = record
+			break
+	if prior.is_empty() or not drone.release_docked_assignment(escrow, _scheduler):
+		return false
+	prior["released"] = true
+	registered["used"] = false
+	return true
+
+
 func get_drone_for_site(site: ConstructionSite) -> PrototypeConstructionWorkerDrone:
 	if not is_instance_valid(site):
 		return null
 	for record: Dictionary in _assignments:
-		if not bool(record["bound"]):
+		if not bool(record["bound"]) or bool(record.get("released", false)):
 			continue
 		if (record["site"] as WeakRef).get_ref() != site:
 			continue
