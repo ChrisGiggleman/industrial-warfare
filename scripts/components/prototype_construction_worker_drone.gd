@@ -19,6 +19,16 @@ const MAX_SPEED: float = 50.0
 
 @export var enable_isolated_drone: bool = false
 
+# E3d5c4x: experimental battery is OFF by default; once configured, power
+# accounting stays latched even if this option is disabled.
+@export var enable_isolated_battery: bool = false
+const RETURN_MARGIN_UNITS: float = 0.25
+var _battery_configured: bool = false
+var _battery_capacity: float = 0.0
+var _battery_units: float = 0.0
+var _energy_per_meter: float = 0.0
+var _charge_units_per_second: float = 0.0
+
 var _state: FlightState = FlightState.IDLE
 var _site_ref: WeakRef = null
 var _home: Vector3 = Vector3.ZERO
@@ -49,6 +59,81 @@ func _ready() -> void:
 	add_child(frame)
 
 
+# Configure only at home, before an assignment. The first configuration
+# permanently latches metering; it is never safe to switch back to unmetered
+# motion for this worker. 'Powered' during charging is caller supplied.
+func configure_battery(
+	capacity_units: float,
+	starting_units: float,
+	units_per_meter: float,
+	charge_per_second: float
+) -> bool:
+	if (
+		not enable_isolated_battery or _battery_configured
+		or not is_inside_tree() or _state != FlightState.IDLE
+		or not global_position.is_finite()
+		or not is_finite(capacity_units) or capacity_units <= 0.0
+		or not is_finite(starting_units) or starting_units < 0.0
+		or starting_units > capacity_units
+		or not is_finite(units_per_meter) or units_per_meter <= 0.0
+		or not is_finite(charge_per_second) or charge_per_second <= 0.0
+	):
+		return false
+	_home = global_position
+	_battery_capacity = capacity_units
+	_battery_units = starting_units
+	_energy_per_meter = units_per_meter
+	_charge_units_per_second = charge_per_second
+	_battery_configured = true
+	return true
+
+
+# A battery-equipped drone must have enough energy for its outward trip,
+# a straight-line return to its registered home, and a small safety margin.
+# This is NOT a pathfinding/obstacle-safe endurance forecast.
+func has_round_trip_energy(site: ConstructionSite, hover_height: float) -> bool:
+	if (
+		not enable_isolated_battery or not _battery_configured
+		or not _valid_queued_site(site)
+		or not is_finite(hover_height)
+		or hover_height < 0.5 or hover_height > 10.0
+	):
+		return false
+	var destination: Vector3 = site.global_position + Vector3.UP * hover_height
+	var needed: float = (
+		2.0 * _home.distance_to(destination) * _energy_per_meter
+		+ RETURN_MARGIN_UNITS
+	)
+	return _battery_units + 0.00001 >= needed
+
+
+# Recharging is allowed ONLY while physically home and stationary.
+# The caller must supply a verified charging-power flag; this fixture does
+# not pretend to deliver actual electrical power or reserve grid capacity.
+func charge_at_home(delta: float, powered: bool) -> bool:
+	if (
+		not enable_isolated_battery or not _battery_configured
+		or not powered or not is_finite(delta) or delta <= 0.0
+		or _state not in [FlightState.IDLE, FlightState.DOCKED]
+		or global_position.distance_to(_home) > ARRIVAL_EPSILON
+		or _battery_units >= _battery_capacity
+	):
+		return false
+	_battery_units = minf(
+		_battery_capacity,
+		_battery_units + _charge_units_per_second * delta
+	)
+	return true
+
+
+func battery_units() -> float:
+	return _battery_units if _battery_configured else -1.0
+
+
+func battery_capacity() -> float:
+	return _battery_capacity if _battery_configured else 0.0
+
+
 # Bind ONCE to an already-authorized, currently queued site. Subsequent
 # cancellation/completion permanently retires this test drone's assignment.
 func assign_to_site(
@@ -68,6 +153,14 @@ func assign_to_site(
 		or hover_height < 0.5 or hover_height > 10.0
 	):
 		return false
+	if _battery_configured:
+		if (
+			not enable_isolated_battery
+			or not home_position.is_equal_approx(_home)
+			or not global_position.is_equal_approx(_home)
+			or not has_round_trip_energy(site, hover_height)
+		):
+			return false
 	_site_ref = weakref(site)
 	_home = home_position
 	_speed = flight_speed
@@ -89,14 +182,30 @@ func advance_flight(delta: float) -> bool:
 		return false
 
 	if _state == FlightState.RETURNING:
-		global_position = global_position.move_toward(_home, _speed * delta)
+		var distance_allowed: float = _speed * delta
+		if _battery_configured:
+			# Meter the actual return. If charge runs out, stop in place;
+			# never teleport a worker home or invent battery energy.
+			distance_allowed = minf(
+				distance_allowed, _battery_units / _energy_per_meter
+			)
+		var next_return: Vector3 = global_position.move_toward(_home, distance_allowed)
+		var return_distance: float = global_position.distance_to(next_return)
+		if return_distance <= 0.0:
+			return false
+		if _battery_configured:
+			_battery_units = maxf(
+				0.0, _battery_units - return_distance * _energy_per_meter
+			)
+		global_position = next_return
 		if global_position.distance_to(_home) <= ARRIVAL_EPSILON:
 			global_position = _home
 			_state = FlightState.DOCKED
 		return true
 
-	# Disabling experimental movement freezes outbound flight, not job gates.
-	if not enable_isolated_drone:
+	# Disabling experimental movement or a previously configured battery
+	# freezes outbound flight, but cannot silently give unlimited energy.
+	if not enable_isolated_drone or (_battery_configured and not enable_isolated_battery):
 		return false
 	var site: ConstructionSite = _bound_site()
 	if not _active_site(site):
@@ -109,7 +218,25 @@ func advance_flight(delta: float) -> bool:
 			return false
 		_state = FlightState.OUTBOUND
 
-	global_position = global_position.move_toward(target, _speed * delta)
+	var next_position: Vector3 = global_position.move_toward(
+		target, _speed * delta
+	)
+	if _battery_configured:
+		var flight_distance: float = global_position.distance_to(next_position)
+		var remaining_return: float = next_position.distance_to(_home)
+		var required_units: float = (
+			(flight_distance + remaining_return) * _energy_per_meter
+			+ RETURN_MARGIN_UNITS
+		)
+		if _battery_units + 0.00001 < required_units:
+			# A moved target or an unexpectedly long route must not spend
+			# the energy reserved for returning. Retire this trip early.
+			_state = FlightState.RETURNING
+			return false
+		_battery_units = maxf(
+			0.0, _battery_units - flight_distance * _energy_per_meter
+		)
+	global_position = next_position
 	if global_position.distance_to(target) <= ARRIVAL_EPSILON:
 		global_position = target
 		_state = FlightState.AT_SITE
@@ -118,6 +245,16 @@ func advance_flight(delta: float) -> bool:
 
 func is_at_site() -> bool:
 	if not enable_isolated_drone or _state != FlightState.AT_SITE:
+		return false
+	if (
+		_battery_configured and (
+			not enable_isolated_battery
+			or _battery_units + 0.00001 < (
+				global_position.distance_to(_home) * _energy_per_meter
+				+ RETURN_MARGIN_UNITS
+			)
+		)
+	):
 		return false
 	var site: ConstructionSite = _bound_site()
 	if not _active_site(site):
