@@ -37,6 +37,50 @@ func bind_verified_driver(driver: PrototypeConstructionDroneTickController) -> b
 	return true
 
 
+# E3d5c5b — explicit owned receiver installation for a REAL sandbox
+# WorldInteraction-placed blueprint. The site must already be authorized.
+# This is not a material source or a construction readiness provider.
+# The independent receiver is a child of the sandbox, NEVER the site,
+# so cancellation cannot silently discard refunded inventory.
+func attach_player_site_receiver(
+	site: ConstructionSite,
+	staging: BlueprintConstructionMaterialStaging,
+	registry: BlueprintConstructionSiteStagingRegistry
+) -> BlueprintConstructionAnchoredStagingPort:
+	if not _host_ready():
+		return null
+	var sandbox: Node3D = get_parent() as Node3D
+	var world: Node = sandbox.get_node_or_null("WorldInteraction")
+	if (
+		not is_instance_valid(site) or site.is_queued_for_deletion()
+		or site.get_parent() != sandbox or site.job == null
+		or site.job.state != ConstructionJob.State.QUEUED
+		or not world.call("_is_managed_blueprint", site)
+		or not is_instance_valid(staging)
+		or staging.is_queued_for_deletion()
+		or staging.get_parent() != sandbox
+		or not staging.enable_isolated_staging
+		or not is_instance_valid(registry)
+		or registry.is_queued_for_deletion()
+		or registry.get_parent() != sandbox
+		or not registry.enable_isolated_site_registry
+		or not is_instance_valid(staging.get_staged_inventory())
+	):
+		return null
+	var receiver := Node3D.new()
+	receiver.name = "SiteOwnedReceiver"
+	sandbox.add_child(receiver)
+	var port := BlueprintConstructionAnchoredStagingPort.new()
+	port.name = "ConstructionInputPort"
+	port.show_port_label = false
+	port.enable_isolated_input = true
+	receiver.add_child(port)
+	if not port.attach_to_authorized_site(site, staging, registry):
+		receiver.free()
+		return null
+	return port
+
+
 func tick_once(delta: float) -> Dictionary:
 	if (
 		not _host_ready()
