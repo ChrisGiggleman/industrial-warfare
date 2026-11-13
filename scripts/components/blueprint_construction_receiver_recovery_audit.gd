@@ -92,6 +92,29 @@ func matches_queued_site(site: ConstructionSite) -> bool:
 	)
 
 
+# Read-only provenance proof for a recovery checkpoint. These must be the
+# EXACT services and original escrow ID captured by configure(), not an
+# unrelated site's buffer or a caller-selected alternative reservation.
+# It continues to match after the belt is detached/site is destroyed.
+func matches_material_sources(
+	staging: BlueprintConstructionMaterialStaging,
+	belt: ConveyorSegment,
+	escrow: BlueprintConstructionMaterialEscrow,
+	reservation_id: int
+) -> bool:
+	return (
+		enable_isolated_recovery_audit
+		and reservation_id > 0
+		and _live(staging)
+		and _live(belt)
+		and _live(escrow)
+		and _reservation_id == reservation_id
+		and _get_node(_staging_ref) == staging
+		and _get_node(_belt_ref) == belt
+		and _get_node(_escrow_ref) == escrow
+	)
+
+
 func inspect() -> Dictionary:
 	var blockers: Array[StringName] = []
 	var result: Dictionary = {
