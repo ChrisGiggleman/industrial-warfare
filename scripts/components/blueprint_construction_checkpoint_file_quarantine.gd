@@ -58,6 +58,14 @@ func write_once(
 	var payload: String = checkpoint.encode_record(record)
 	if payload.is_empty() or payload.length() > 16384:
 		return false
+	# Generation 2 belongs to the SAME site as generation 1; an unrelated
+	# site's valid-looking checkpoint cannot replace this diagnostic history.
+	if generation == 2:
+		var older: Dictionary = _read_valid(SLOT_ONE, 1)
+		if older.is_empty():
+			return false
+		if str(older["site_id"]) != str(record["site_id"]):
+			return false
 	var envelope: Dictionary = {
 		"envelope_version": ENVELOPE_VERSION,
 		"generation": generation,
