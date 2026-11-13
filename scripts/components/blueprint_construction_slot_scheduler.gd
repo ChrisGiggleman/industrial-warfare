@@ -17,6 +17,12 @@ class_name BlueprintConstructionSlotScheduler
 # Active work is non-preemptive; losing readiness pauses and frees the slot.
 # A paused job may resume later without losing completed construction progress.
 
+# E3D5C4V: Existing scheduler remains unchanged with this OFF.
+# Once a physical worker is bound, disabling this option pauses that work;
+# it can never turn a drone-required job into an unguarded slot.
+@export var enable_isolated_drone_presence: bool = false
+var _drone_presence_latched: bool = false
+
 const MAX_CAPACITY: int = 16
 
 var capacity: int = 0
@@ -61,6 +67,36 @@ func track_authorized_site(site: ConstructionSite) -> bool:
 		"materials": false
 	})
 	_next_order += 1
+	return true
+
+
+# The drone's physical presence gates a real scheduler worker slot. Binding
+# does not call authorize(), change availability, or move an inventory item.
+# Only a queued site explicitly assigned to THIS live drone can bind.
+func bind_site_drone(
+	site: ConstructionSite,
+	drone: PrototypeConstructionWorkerDrone
+) -> bool:
+	if (
+		not enable_isolated_drone_presence
+		or not _is_trackable(site)
+		or site.job.state != ConstructionJob.State.QUEUED
+		or not is_instance_valid(drone)
+		or drone.is_queued_for_deletion()
+		or not drone.is_inside_tree()
+		or not drone.is_bound_to_site(site)
+		or _is_assigned(site)
+	):
+		return false
+	var index: int = _find_entry_index(site)
+	if index < 0 or _tracked[index].get("worker_drone") != null:
+		return false
+	for entry: Dictionary in _tracked:
+		var other: WeakRef = entry.get("worker_drone") as WeakRef
+		if other != null and other.get_ref() == drone:
+			return false
+	_tracked[index]["worker_drone"] = weakref(drone)
+	_drone_presence_latched = true
 	return true
 
 
@@ -224,10 +260,36 @@ func get_waiting_count() -> int:
 
 
 func _is_eligible(entry: Dictionary) -> bool:
+	if (
+		not bool(entry["ready_known"])
+		or not bool(entry["power"])
+		or not bool(entry["materials"])
+	):
+		return false
+	# Legacy isolated scheduler tests still work with the feature OFF.
+	# Enabling the gate requires EVERY tracked job to present its own drone.
+	# Any later opt-out remains fail-closed for previously bound jobs.
+	if not enable_isolated_drone_presence and not _drone_presence_latched:
+		return true
+	if not enable_isolated_drone_presence:
+		return false
+	var drone_ref: WeakRef = entry.get("worker_drone") as WeakRef
+	if drone_ref == null:
+		return false
+	var site_ref: WeakRef = entry["ref"] as WeakRef
+	if site_ref == null:
+		return false
+	var site: ConstructionSite = site_ref.get_ref() as ConstructionSite
+	var drone: PrototypeConstructionWorkerDrone = (
+		drone_ref.get_ref() as PrototypeConstructionWorkerDrone
+	)
 	return (
-		bool(entry["ready_known"])
-		and bool(entry["power"])
-		and bool(entry["materials"])
+		_is_trackable(site)
+		and is_instance_valid(drone)
+		and not drone.is_queued_for_deletion()
+		and drone.is_inside_tree()
+		and drone.is_bound_to_site(site)
+		and drone.is_at_site()
 	)
 
 

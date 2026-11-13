@@ -130,6 +130,19 @@ func get_flight_state() -> FlightState:
 	return _state
 
 
+# Observation-only identity check for the opt-in physical worker scheduler.
+# Never grants ConstructionJob worker availability by itself.
+func is_bound_to_site(site: ConstructionSite) -> bool:
+	return (
+		enable_isolated_drone
+		and not _site_ended
+		and _site_ref != null
+		and _site_ref.get_ref() == site
+		and _active_site(site)
+		and _state in [FlightState.OUTBOUND, FlightState.AT_SITE]
+	)
+
+
 # Physical arrival is observational ONLY, not a worker authorization token.
 func grants_worker_readiness() -> bool:
 	return false
