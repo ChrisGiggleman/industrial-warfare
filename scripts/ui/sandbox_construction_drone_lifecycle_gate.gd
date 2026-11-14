@@ -21,6 +21,10 @@ class_name SandboxConstructionDroneLifecycleGate
 # Separate opt-in: only PRE-REGISTERED site-owned staging may auto-attach
 # a guarded receiver after a genuine WorldInteraction authorization signal.
 @export var enable_isolated_authorization_autowire: bool = false
+# E3d5c5e: independently opt-in enrollment from an existing sandbox
+# physical OUTPUT port; never creates products or bypasses a real belt.
+@export var enable_isolated_output_enrollment: bool = false
+var _enrolled_output_refs: Array[WeakRef] = []
 
 var _driver: PrototypeConstructionDroneTickController = null
 var _auto_registry: BlueprintConstructionSiteStagingRegistry = null
@@ -159,6 +163,82 @@ func prepare_player_site_intake(
 	return true
 
 
+# E3d5c5e — reduce manual staging setup by enrolling an ALREADY EXISTING
+# output inventory. The only allocation is an EMPTY construction staging
+# buffer with capacity equal to the actual BuildingDefinition bill.
+# The material source must be a real same-sandbox owned OUTPUT port, not
+# the site's own staging inventory or an arbitrary external warehouse.
+# Physical conveyor delivery remains required: NO inventory transfer here.
+func prepare_player_site_from_output(
+	site: ConstructionSite,
+	output: ItemPortComponent
+) -> BlueprintConstructionMaterialStaging:
+	if (
+		not enable_isolated_output_enrollment
+		or not _autowire_ready()
+		or not _live_autowire_node(site)
+		or site.get_parent() != get_parent()
+		or site.job == null
+		or site.job.state != ConstructionJob.State.PLANNED
+		or not _valid_sandbox_output(output)
+	):
+		return null
+	var world: Node = get_parent().get_node_or_null("WorldInteraction")
+	if not is_instance_valid(world) or not world.call("_is_managed_blueprint", site):
+		return null
+	for existing: WeakRef in _enrolled_output_refs:
+		if existing.get_ref() == output:
+			return null
+	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	if bill.is_empty():
+		return null
+	var required: int = 0
+	for key: Variant in bill.keys():
+		required += int(bill[key])
+	if required < 1 or required > 100000:
+		return null
+	var source_inventory: InventoryComponent = output.inventory
+	var staging := BlueprintConstructionMaterialStaging.new()
+	staging.name = "PendingBlueprintStaging"
+	staging.enable_isolated_staging = true
+	get_parent().add_child(staging)
+	if not staging.configure(source_inventory, site.target_definition, required):
+		staging.free()
+		return null
+	if not prepare_player_site_intake(site, staging):
+		staging.free()
+		return null
+	# One physical output is reserved for one pending construction receiver
+	# in this test-only integration; a later splitter will require its own
+	# verified multi-output routing and reservation policy.
+	_enrolled_output_refs.append(weakref(output))
+	for entry: Dictionary in _auto_pending:
+		if (entry["site"] as WeakRef).get_ref() == site:
+			entry["source_output"] = weakref(output)
+			break
+	return staging
+
+
+func _valid_sandbox_output(output: ItemPortComponent) -> bool:
+	if (
+		not _live_autowire_node(output)
+		or output.direction != ItemPortComponent.PortDirection.OUTPUT
+	):
+		return false
+	var owner: Node = output.get_parent()
+	if not _live_autowire_node(owner) or owner.get_parent() != get_parent():
+		return false
+	var inventory: InventoryComponent = output.inventory
+	if not _live_autowire_node(inventory) or inventory.get_parent() != owner:
+		return false
+	# If the port belongs to a producer, its output must be the actual
+	# producer output inventory, never an injected unrelated component.
+	if is_instance_valid(output.producer_component):
+		if output.producer_component.output_inventory != inventory:
+			return false
+	return true
+
+
 # Observation only. Refuses ended sites, stale claims and foreign receivers.
 func receiver_for_authorized_site(
 	site: ConstructionSite
@@ -198,6 +278,16 @@ func _on_authorized_player_blueprint(site: ConstructionSite) -> void:
 			or _auto_escrow.reservation_for(site) != 0
 		):
 			return
+		# Source-based enrollments must not outlive their output port or
+		# have their separate opt-in disabled after pre-registration.
+		var source_ref: WeakRef = entry.get("source_output") as WeakRef
+		if source_ref != null:
+			var output: ItemPortComponent = source_ref.get_ref() as ItemPortComponent
+			if (
+				not enable_isolated_output_enrollment
+				or not _valid_sandbox_output(output)
+			):
+				return
 		var port: BlueprintConstructionAnchoredStagingPort = (
 			attach_player_site_receiver(site, staging, _auto_registry)
 		)
