@@ -29,7 +29,14 @@ var completed_to_c: int = 0
 
 # E3d5c5k: independent opt-in, no changes to normal item distribution.
 # Provenance is a per-item FIFO observation, not a second inventory.
-@export var enable_isolated_splitter_provenance: bool = false
+@export var enable_isolated_splitter_provenance: bool = false:
+	set(value):
+		if enable_isolated_splitter_provenance == value:
+			return
+		enable_isolated_splitter_provenance = value
+		_provenance_epoch += 1
+		_ledgers.clear()
+var _provenance_epoch: int = 0
 var _provenance_bound: bool = false
 var _pinned_buffers: Array[WeakRef] = []
 var _pinned_ports: Array[WeakRef] = []
@@ -88,6 +95,7 @@ func advance_split() -> bool:
 				_remove_observation(input_inventory, source_state, item)
 				if not proof.is_empty():
 					proof["splitter"] = weakref(self)
+					proof["splitter_epoch"] = _provenance_epoch
 					proof["output_port"] = weakref(port)
 				_append_observation(inventory, destination_state, item, proof)
 
@@ -263,3 +271,7 @@ func record_output_departure(port: ItemPortComponent, item: ItemDefinition, snap
 # Readiness for the narrow protected branch experiment. No item mutation.
 func is_verified_provenance_ready() -> bool:
 	return _provenance_ready()
+
+
+func accepts_splitter_provenance_epoch(epoch: int) -> bool:
+	return _provenance_ready() and epoch == _provenance_epoch

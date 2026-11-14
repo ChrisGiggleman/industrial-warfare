@@ -32,6 +32,14 @@ var completed_from_c: int = 0
 		_provenance_epoch += 1
 		_ledgers.clear()
 
+# E3d5c5o: separate, default-off admission of one splitter crossing.
+@export var enable_isolated_splitter_merger_provenance: bool = false:
+	set(value):
+		if enable_isolated_splitter_merger_provenance == value:
+			return
+		enable_isolated_splitter_merger_provenance = value
+		_provenance_epoch += 1
+		_ledgers.clear()
 var _provenance_bound: bool = false
 var _provenance_epoch: int = 0
 var _pinned_buffers: Array[WeakRef] = []
@@ -236,7 +244,16 @@ func snapshot_input_arrival(port: ItemPortComponent, transport: ConveyorTranspor
 	if not _provenance_ready() or _input_lane(port) < 0:
 		return {}
 	var proof: Dictionary = transport.physical_origin_snapshot()
-	# A junction proof is not a fresh linear origin; unknown cargo stays movable.
+	# Composite observations are nested; never overwrite the splitter lane.
+	if enable_isolated_splitter_merger_provenance:
+		if not proof.is_empty():
+			var ref := proof.get("port") as WeakRef
+			var source := ref.get_ref() as ItemPortComponent if ref != null else null
+			if not is_instance_valid(source) or source.get_parent().has_node("SplitterComponent") or source.get_parent().has_node("MergerComponent"):
+				proof = {}
+		if proof.is_empty():
+			proof = transport.splitter_merger_arrival_snapshot()
+	# Unknown cargo remains physically movable.
 	if not proof.is_empty():
 		proof["input_port"] = weakref(port)
 		proof["input_belt"] = weakref(transport.get_parent())
@@ -265,3 +282,7 @@ func record_output_departure(port: ItemPortComponent, item: ItemDefinition, snap
 # Receiver geometry may observe readiness without supplying an epoch.
 func is_verified_merger_provenance_ready() -> bool:
 	return _provenance_ready()
+
+
+func accepts_composite_epoch(epoch: int) -> bool:
+	return enable_isolated_splitter_merger_provenance and accepts_provenance_epoch(epoch)

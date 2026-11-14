@@ -350,6 +350,8 @@ func has_verified_splitter_load(
     var input_ref: WeakRef = _splitter_proof.get("input_port") as WeakRef
     if port_ref == null or stock_ref == null or splitter_ref == null or incoming_ref == null or output_ref == null or input_ref == null:
         return false
+    if not splitter.accepts_splitter_provenance_epoch(int(_splitter_proof.get("splitter_epoch", -1))):
+        return false
     var input := input_ref.get_ref() as ItemPortComponent
     var belt := get_parent() as ConveyorSegment
     return (
@@ -376,6 +378,12 @@ func splitter_forward_snapshot() -> Dictionary:
         return {}
     var origin := origin_ref.get_ref() as ItemPortComponent
     if not is_instance_valid(origin) or not is_instance_valid(origin.inventory) or stock_ref.get_ref() != origin.inventory:
+        return {}
+    var splitter_ref := _splitter_proof.get("splitter") as WeakRef
+    if splitter_ref == null:
+        return {}
+    var splitter := splitter_ref.get_ref() as ConveyorSplitterComponent
+    if not is_instance_valid(splitter) or not splitter.accepts_splitter_provenance_epoch(int(_splitter_proof.get("splitter_epoch", -1))):
         return {}
     var downstream: Array = _splitter_proof.get("downstream", [])
     if downstream.is_empty() or (downstream[-1] as WeakRef).get_ref() != get_parent():
@@ -471,7 +479,7 @@ func has_verified_merger_load(
     merger: ConveyorMergerComponent, incoming: ConveyorSegment,
     input: ItemPortComponent, output: ItemPortComponent
 ) -> bool:
-    if _merger_proof.is_empty() or _merger_cargo_ref == null:
+    if _merger_proof.is_empty() or _merger_cargo_ref == null or _merger_proof.has("splitter_crossing"):
         return false
     if not is_instance_valid(origin) or not is_instance_valid(origin.inventory):
         return false
@@ -499,7 +507,7 @@ func has_verified_merger_load(
 
 # E3d5c5n: preserve a separate merger observation across actual physical hops.
 func merger_forward_snapshot() -> Dictionary:
-    if _merger_proof.is_empty() or _merger_cargo_ref == null:
+    if _merger_proof.is_empty() or _merger_cargo_ref == null or _merger_proof.has("splitter_crossing"):
         return {}
     if not is_instance_valid(cargo_inventory) or _merger_cargo_ref.get_ref() != cargo_inventory:
         return {}
@@ -578,3 +586,83 @@ func has_verified_merger_route(
         if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
             return false
     return true
+
+
+# E3d5c5o: exactly one upstream belt, one splitter, one inter-junction belt.
+# Build a nested history only from an actual verified splitter output.
+func splitter_merger_arrival_snapshot() -> Dictionary:
+    var proof: Dictionary = splitter_forward_snapshot()
+    if proof.is_empty():
+        return {}
+    var upstream: Array = proof.get("route", [])
+    var between: Array = proof.get("downstream", [])
+    if upstream.size() != 1 or between.size() != 1:
+        return {}
+    var origin := _proof_node(proof, "port") as ItemPortComponent
+    var splitter := _proof_node(proof, "splitter") as ConveyorSplitterComponent
+    var incoming := _proof_node(proof, "input_belt") as ConveyorSegment
+    var output := _proof_node(proof, "output_port") as ItemPortComponent
+    if not has_verified_splitter_load(origin, get_held_item(), splitter, incoming, output):
+        return {}
+    if (upstream[0] as WeakRef).get_ref() != incoming or (between[0] as WeakRef).get_ref() == incoming:
+        return {}
+    var belt := get_parent() as ConveyorSegment
+    if not is_instance_valid(belt) or belt.has_meta("conveyor_turn") or belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
+        return {}
+    if not LogisticsConnectionGeometry.are_endpoints_aligned(output, belt.get_node_or_null("InputEndpoint"), ConveyorSegment.CONNECTION_GAP):
+        return {}
+    return {"port": proof["port"], "stock": proof["stock"], "item": proof["item"],
+        "splitter_crossing": proof.duplicate(true)}
+
+
+func _proof_node(proof: Dictionary, key: String) -> Object:
+    var ref := proof.get(key) as WeakRef
+    return ref.get_ref() if ref != null else null
+
+
+# Composite history is not eligible for direct, linear, splitter or
+# single-merger admission. This stage ends on the first merger output belt.
+func composite_forward_snapshot() -> Dictionary:
+    if not _merger_proof.has("splitter_crossing") or _merger_cargo_ref == null:
+        return {}
+    if not is_instance_valid(cargo_inventory) or _merger_cargo_ref.get_ref() != cargo_inventory:
+        return {}
+    if _merger_revision != cargo_inventory.get_mutation_revision() or get_held_item() != _merger_proof.get("item"):
+        return {}
+    var merger := _proof_node(_merger_proof, "merger") as ConveyorMergerComponent
+    if not is_instance_valid(merger) or not merger.accepts_composite_epoch(int(_merger_proof.get("epoch", -1))):
+        return {}
+    var first: Dictionary = _merger_proof["splitter_crossing"]
+    var splitter := _proof_node(first, "splitter") as ConveyorSplitterComponent
+    if not is_instance_valid(splitter) or not splitter.accepts_splitter_provenance_epoch(int(first.get("splitter_epoch", -1))):
+        return {}
+    var origin := _proof_node(_merger_proof, "port") as ItemPortComponent
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory) or _proof_node(_merger_proof, "stock") != origin.inventory:
+        return {}
+    if _proof_node(first, "port") != origin or _proof_node(first, "stock") != origin.inventory or first.get("item") != get_held_item():
+        return {}
+    var upstream: Array = first.get("route", [])
+    var between: Array = first.get("downstream", [])
+    var downstream: Array = _merger_proof.get("downstream", [])
+    if upstream.size() != 1 or between.size() != 1 or downstream.size() != 1:
+        return {}
+    var entry := _proof_node(first, "input_belt") as ConveyorSegment
+    var middle := _proof_node(_merger_proof, "input_belt") as ConveyorSegment
+    var final_belt := get_parent() as ConveyorSegment
+    if not is_instance_valid(entry) or not is_instance_valid(middle) or not is_instance_valid(final_belt):
+        return {}
+    if entry == middle or middle == final_belt or entry == final_belt:
+        return {}
+    if (upstream[0] as WeakRef).get_ref() != entry or (between[0] as WeakRef).get_ref() != middle or (downstream[0] as WeakRef).get_ref() != final_belt:
+        return {}
+    var split_input := _proof_node(first, "input_port") as ItemPortComponent
+    var split_output := _proof_node(first, "output_port") as ItemPortComponent
+    var merge_input := _proof_node(_merger_proof, "input_port") as ItemPortComponent
+    var merge_output := _proof_node(_merger_proof, "output_port") as ItemPortComponent
+    if not is_instance_valid(split_input) or not is_instance_valid(split_output) or not is_instance_valid(merge_input) or not is_instance_valid(merge_output):
+        return {}
+    if split_input.get_parent() != splitter.get_parent() or split_output.get_parent() != splitter.get_parent():
+        return {}
+    if merge_input.get_parent() != merger.get_parent() or merge_output.get_parent() != merger.get_parent():
+        return {}
+    return _merger_proof.duplicate(true)
