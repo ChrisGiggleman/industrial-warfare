@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/sandbox_factory_supplier_discovery_e3d5c5g_test.gd" id="1_test"]
+
+[node name="SandboxFactorySupplierDiscoveryE3d5c5gTest" type="Node3D"]
+script = ExtResource("1_test")

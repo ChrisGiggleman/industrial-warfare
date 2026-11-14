@@ -24,6 +24,9 @@ class_name SandboxConstructionDroneLifecycleGate
 # E3d5c5e: independently opt-in enrollment from an existing sandbox
 # physical OUTPUT port; never creates products or bypasses a real belt.
 @export var enable_isolated_output_enrollment: bool = false
+# E3d5c5g — opt-in, read-only scan of REAL same-sandbox building outputs.
+# Proximity ranks candidates but does NOT prove a conveyor route exists.
+@export var enable_isolated_supplier_discovery: bool = false
 var _enrolled_output_refs: Array[WeakRef] = []
 
 var _driver: PrototypeConstructionDroneTickController = null
@@ -189,6 +192,12 @@ func prepare_player_site_from_output(
 	for existing: WeakRef in _enrolled_output_refs:
 		if existing.get_ref() == output:
 			return null
+	# Reject two separate ports that expose the SAME underlying stock.
+	# Source reservations are exclusive by both output identity and inventory.
+	for pending: Dictionary in _auto_pending:
+		var stock_ref: WeakRef = pending.get("source_inventory") as WeakRef
+		if stock_ref != null and stock_ref.get_ref() == output.inventory:
+			return null
 	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
 	if bill.is_empty():
 		return null
@@ -218,6 +227,109 @@ func prepare_player_site_from_output(
 			entry["source_inventory"] = weakref(source_inventory)
 			break
 	return staging
+
+
+# E3d5c5g — read-only discovery, never calls prepare_player_site_intake(),
+# authorize(), receives inventory, creates logistics routes, or ticks drones.
+# Only a currently stocked OUTPUT with a COMPLETE exact construction bill
+# is eligible for this first single-supplier experiment. Multi-source bills
+# and producers waiting to make stock require a later routing policy.
+func discover_available_factory_outputs(
+	site: ConstructionSite
+) -> Array[ItemPortComponent]:
+	var found: Array[ItemPortComponent] = []
+	if (
+		not enable_isolated_supplier_discovery
+		or not enable_isolated_output_enrollment
+		or not _autowire_ready()
+		or not _live_autowire_node(site)
+		or site.get_parent() != get_parent()
+		or site.job == null
+		or site.job.state != ConstructionJob.State.PLANNED
+		or not is_instance_valid(site.target_definition)
+	):
+		return found
+	var world: Node = get_parent().get_node_or_null("WorldInteraction")
+	if not is_instance_valid(world) or not world.call("_is_managed_blueprint", site):
+		return found
+	for pending: Dictionary in _auto_pending:
+		if (pending["site"] as WeakRef).get_ref() == site:
+			return found
+	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	if bill.is_empty():
+		return found
+	for building: Node in get_parent().get_children():
+		if not building is Node3D or building is ConstructionSite:
+			continue
+		for candidate: Node in building.get_children():
+			var output := candidate as ItemPortComponent
+			if not _valid_sandbox_output(output):
+				continue
+			# Already wired outputs need their own route-verification system.
+			if output.connected_conveyor != null:
+				continue
+			if _discovery_output_is_reserved(output):
+				continue
+			if not _discovery_source_has_complete_bill(output.inventory, bill):
+				continue
+			# Deterministic nearest-first ordering using current port positions;
+			# it is NOT an obstacle-aware path or connectivity claim.
+			var distance: float = output.global_position.distance_squared_to(
+				site.global_position
+			)
+			var slot: int = found.size()
+			for index: int in range(found.size()):
+				var before: float = found[index].global_position.distance_squared_to(
+					site.global_position
+				)
+				if distance < before:
+					slot = index
+					break
+			found.insert(slot, output)
+	return found
+
+
+# Deliberate caller-triggered selection/enrollment; no automatic invocation
+# on blueprint placement or authorization. Delegates to the existing source
+# identity pinning, empty staging, and event-driven receiver admission.
+func prepare_player_site_from_discovery(
+	site: ConstructionSite
+) -> BlueprintConstructionMaterialStaging:
+	var candidates: Array[ItemPortComponent] = discover_available_factory_outputs(site)
+	if candidates.is_empty():
+		return null
+	return prepare_player_site_from_output(site, candidates[0])
+
+
+func _discovery_output_is_reserved(output: ItemPortComponent) -> bool:
+	for ref: WeakRef in _enrolled_output_refs:
+		if ref.get_ref() == output:
+			return true
+	for pending: Dictionary in _auto_pending:
+		var inventory_ref: WeakRef = pending.get("source_inventory") as WeakRef
+		if (
+			inventory_ref != null
+			and inventory_ref.get_ref() == output.inventory
+		):
+			return true
+	return false
+
+
+func _discovery_source_has_complete_bill(
+	inventory: InventoryComponent,
+	bill: Dictionary
+) -> bool:
+	if not _live_autowire_node(inventory) or bill.is_empty():
+		return false
+	for key: Variant in bill.keys():
+		var item := key as ItemDefinition
+		var required: int = int(bill[key])
+		if (
+			not is_instance_valid(item) or required <= 0
+			or inventory.get_amount(item) < required
+		):
+			return false
+	return true
 
 
 func _valid_sandbox_output(output: ItemPortComponent) -> bool:
