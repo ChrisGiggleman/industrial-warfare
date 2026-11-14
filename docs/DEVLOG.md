@@ -3194,3 +3194,23 @@ All seven developer Godot screenshots confirm E3d5c5k 16/16, E3d5c5h 26/26, E3d5
 Added independent default-OFF merger provenance to the real three-input merger, requiring explicit one-time configuration of empty pinned ports and inventories. Physical arrival snapshots preserve original linear source and exact incoming lane; per-item FIFO observations follow successful existing round-robin transfers to the one-unit shared output. The building-transfer helper records a distinct merger observation on the first outgoing belt, never promotes tracked unknown cargo to a new linear origin, and preserves normal opt-out transfer behavior. API mutations invalidate affected buffer observations. Feature opt-out changes a generation immediately, clearing ledgers and invalidating already-issued outgoing proof even during an off/on toggle without movement; fresh physical arrivals after re-enable can establish new observations. Ordinary physical distribution remains independent of proof.
 
 Added `res://tests/merger_cargo_provenance_e3d5c5m_test.tscn` with 18 A–R checks pending Godot F6: three real Storage suppliers, identical ingots with distinct sources and lanes, congestion and fairness, unknown FIFO item, output and outgoing belt replacement, mixed material types, disable/re-enable with no movement, fresh proof, exact conservation of eight ingots and one ore, safe empty demolition. Scope is one merger crossing to its first outgoing belt, not downstream propagation, branch receiver admission, combined junction chains, production routing, live sandbox activation or save/load. No playable scene changes. Separate proof is an in-process observation under normal APIs, not tamperproof identity, and arbitrary field mutations remain outside its guarantees. Shared building-transfer code and legacy merger/splitter behavior require targeted regression after local acceptance.
+
+### 2026-11-14 — E3d5c5m Merger Cargo Provenance Accepted (18/18)
+
+Developer Godot 4.6.2 screenshot confirms **ALL 18 E3D5C5M MERGER CARGO PROVENANCE TESTS PASSED**, A–R. Three real independent suppliers fed identical ingots into independent merger input queues. Exact origin and lane remained distinguishable through round-robin distribution and shared-output backpressure. Unknown same-type cargo, external output-buffer and outgoing-belt replacement, mixed material types, and immediate off/on invalidation of both issued and queued evidence were exercised. Fresh physical arrivals after re-enable acquired fresh observations. Eight ingots and one ore were conserved exactly, and safe empty merger demolition disconnected all four links. The merger proof remained separate from direct, linear and splitter proof.
+
+**Required targeted compatibility gate (128 checks across eight existing F6 scenes, pending):**
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+- `res://tests/splitter_cargo_provenance_e3d5c5k_test.tscn` — 16/16.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/conveyor_automatic_loading_test.tscn` — 10/10.
+- `res://tests/conveyor_automatic_unloading_test.tscn` — 9/9.
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/blueprint_mined_owned_construction_e3d5c4t_test.tscn` — 21/21.
+
+These regressions target the changed shared building-transfer and cargo observation code, ordinary junction behavior and protected receiver compatibility. They are not a full project suite.
+
+**Proposed E3d5c5n:** propagate merger-specific proof through subsequent physical belt hops and independently bind an authorized construction receiver to a verified original supplier, merger input lane, output and downstream path. Verify rejection of otherwise identical cargo from foreign suppliers, including after reconnection, and preserve such cargo for explicit recovery rather than destroying or silently redirecting it. A single-source protected receiver on a mixed-origin merger output may stall behind foreign cargo; this first route experiment should test that conservative backpressure behavior rather than assume automatic sorting or shared source allocation. Preserve existing priority, authorization, escrow, source ownership and default-off boundaries. No merger route implementation is staged by this documentation commit.
+
+Acceptance remains limited to one merger crossing to its first outgoing belt and in-process API observations. Combined junction chains, automatic routing, live sandbox orchestration, metered charging and persistent save/load remain outside scope.
