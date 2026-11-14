@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/sandbox_merger_route_e3d5c5n_test.gd" id="1_test"]
+
+[node name="SandboxMergerRouteE3d5c5nTest" type="Node3D"]
+script = ExtResource("1_test")

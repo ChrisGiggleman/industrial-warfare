@@ -42,6 +42,13 @@ var _branch_incoming_ref: WeakRef = null
 var _branch_input_ref: WeakRef = null
 var _branch_output_ref: WeakRef = null
 var _branch_route_refs: Array[WeakRef] = []
+# E3d5c5n: one merger crossing with a single enrolled origin and pinned lane.
+@export var enable_isolated_merger_route_guard: bool = false
+var _merger_route_merger_ref: WeakRef = null
+var _merger_route_incoming_ref: WeakRef = null
+var _merger_route_input_ref: WeakRef = null
+var _merger_route_output_ref: WeakRef = null
+var _merger_route_refs: Array[WeakRef] = []
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -239,7 +246,7 @@ func is_output_source_locked() -> bool:
 func bind_single_belt_route(belt: ConveyorSegment) -> bool:
 	if (
 		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
-		or _branch_selected()
+		or _branch_selected() or _merger_selected()
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
 		or enable_isolated_corner_route_guard
 		or not matches_attached_site() or _intake_escrow_ref == null
@@ -300,7 +307,7 @@ func has_verified_single_belt_route() -> bool:
 func bind_multi_belt_route(route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
-		or _branch_selected()
+		or _branch_selected() or _merger_selected()
 		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or not matches_attached_site() or _intake_escrow_ref == null
 		or _original_output_ref == null or is_output_source_locked()
@@ -516,7 +523,7 @@ func bind_splitter_branch(splitter: ConveyorSplitterComponent, incoming: Conveyo
 	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_splitter_branch_guard or _branch_splitter_ref != null
-		or _other_route_selected() or not matches_attached_site()
+		or _other_route_selected() or _merger_selected() or not matches_attached_site()
 		or _intake_escrow_ref == null or _original_output_ref == null
 		or is_escrow_intake_locked() or is_output_source_locked()
 		or not _branch_geometry(splitter, incoming, input, output, route)
@@ -555,7 +562,7 @@ func _bound_branch_route() -> Array[ConveyorSegment]:
 func has_verified_splitter_branch() -> bool:
 	if (
 		not enable_isolated_splitter_branch_guard or _branch_splitter_ref == null
-		or _other_route_selected() or not matches_attached_site() or is_output_source_locked()
+		or _other_route_selected() or _merger_selected() or not matches_attached_site() or is_output_source_locked()
 	):
 		return false
 	return _branch_geometry(
@@ -577,7 +584,7 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
-	if _branch_selected():
+	if _branch_selected() or _merger_selected():
 		return false
 	if (
 		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
@@ -589,6 +596,19 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	if _merger_selected():
+		if amount != 1 or not has_verified_merger_route() or not _accept_owned_item(item, amount):
+			return false
+		var merged_route: Array[ConveyorSegment] = _bound_merger_route()
+		if merged_route.is_empty() or merged_route[-1] != belt:
+			return false
+		var merged_cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		return _live(merged_cargo) and merged_cargo.has_verified_merger_route(
+			_original_output_ref.get_ref() as ItemPortComponent, item,
+			_merger_route_merger_ref.get_ref() as ConveyorMergerComponent,
+			_merger_route_incoming_ref.get_ref() as ConveyorSegment,
+			_merger_route_input_ref.get_ref() as ItemPortComponent,
+			_merger_route_output_ref.get_ref() as ItemPortComponent, merged_route)
 	if _branch_selected():
 		if amount != 1 or not has_verified_splitter_branch() or not _accept_owned_item(item, amount):
 			return false
@@ -633,3 +653,103 @@ func has_ended_site() -> bool:
 func _disable_on_site_end() -> void:
 	_site_has_ended = true
 	enable_isolated_input = false
+
+
+func _merger_selected() -> bool:
+	return enable_isolated_merger_route_guard or _merger_route_merger_ref != null
+
+
+func _merger_geometry(merger: ConveyorMergerComponent, incoming: ConveyorSegment,
+	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
+	if not _live(merger) or not _live(get_parent()) or not _live(merger.get_parent()):
+		return false
+	var building: Node = merger.get_parent()
+	if building.get_parent() != get_parent().get_parent() or not merger.is_verified_merger_provenance_ready():
+		return false
+	if not _live(input) or not _live(output) or input.get_parent() != building or output.get_parent() != building:
+		return false
+	if input != building.get_node_or_null("InputPortA") and input != building.get_node_or_null("InputPortB") and input != building.get_node_or_null("InputPortC"):
+		return false
+	if output != building.get_node_or_null("OutputPort"):
+		return false
+	if _original_output_ref == null or route.is_empty() or route.size() > 64:
+		return false
+	var origin := _original_output_ref.get_ref() as ItemPortComponent
+	if not _branch_straight(incoming) or not _branch_port_link(incoming, origin, true):
+		return false
+	if not _branch_port_link(incoming, input, false):
+		return false
+	var seen: Dictionary = {incoming: true}
+	for i: int in range(route.size()):
+		var belt: ConveyorSegment = route[i]
+		if not _branch_straight(belt) or seen.has(belt):
+			return false
+		seen[belt] = true
+		if i == 0:
+			if not _branch_port_link(belt, output, true):
+				return false
+		else:
+			var prior: ConveyorSegment = route[i - 1]
+			if belt.input_building_port != null or prior.output_building_port != null:
+				return false
+			if prior.next_segment != belt or belt.previous_segment != prior:
+				return false
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(
+				prior.get_node_or_null("OutputEndpoint"), belt.get_node_or_null("InputEndpoint"),
+				ConveyorSegment.CONNECTION_GAP):
+				return false
+	return _branch_port_link(route[-1], self, false)
+
+
+func bind_merger_route(merger: ConveyorMergerComponent, incoming: ConveyorSegment,
+	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
+	if (
+		not enable_isolated_merger_route_guard or _merger_route_merger_ref != null
+		or _other_route_selected() or _branch_selected() or not matches_attached_site()
+		or _intake_escrow_ref == null or _original_output_ref == null
+		or is_escrow_intake_locked() or is_output_source_locked()
+		or not _merger_geometry(merger, incoming, input, output, route)
+	):
+		return false
+	var all_belts: Array[ConveyorSegment] = [incoming]
+	all_belts.append_array(route)
+	for belt: ConveyorSegment in all_belts:
+		var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		if not _live(cargo) or not _live(cargo.cargo_inventory):
+			return false
+		if cargo.cargo_inventory.max_capacity != 1 or cargo.cargo_inventory.get_total_amount() != 0:
+			return false
+	for buffer: InventoryComponent in [merger.input_a, merger.input_b, merger.input_c, merger.output_inventory]:
+		if buffer.get_total_amount() != 0:
+			return false
+	_merger_route_merger_ref = weakref(merger)
+	_merger_route_incoming_ref = weakref(incoming)
+	_merger_route_input_ref = weakref(input)
+	_merger_route_output_ref = weakref(output)
+	for belt: ConveyorSegment in route:
+		_merger_route_refs.append(weakref(belt))
+	return true
+
+
+func _bound_merger_route() -> Array[ConveyorSegment]:
+	var route: Array[ConveyorSegment] = []
+	for ref: WeakRef in _merger_route_refs:
+		var belt := ref.get_ref() as ConveyorSegment
+		if not _live(belt):
+			return []
+		route.append(belt)
+	return route
+
+
+func has_verified_merger_route() -> bool:
+	if (
+		not enable_isolated_merger_route_guard or _merger_route_merger_ref == null
+		or _other_route_selected() or _branch_selected()
+		or not matches_attached_site() or is_output_source_locked()
+	):
+		return false
+	return _merger_geometry(
+		_merger_route_merger_ref.get_ref() as ConveyorMergerComponent,
+		_merger_route_incoming_ref.get_ref() as ConveyorSegment,
+		_merger_route_input_ref.get_ref() as ItemPortComponent,
+		_merger_route_output_ref.get_ref() as ItemPortComponent, _bound_merger_route())

@@ -445,7 +445,7 @@ func has_verified_splitter_branch(
     return true
 
 # E3d5c5m: separate observation for one merger crossing to the first
-# outgoing belt. Not eligible for linear or splitter receiver admission.
+# outgoing belt and E3d5c5n downstream hops. Never linear or splitter admission.
 var _merger_proof: Dictionary = {}
 var _merger_cargo_ref: WeakRef = null
 var _merger_revision: int = -1
@@ -461,6 +461,7 @@ func record_merger_building_load(proof: Dictionary, port: ItemPortComponent, ite
     if output_ref == null or output_ref.get_ref() != port or proof.get("item") != item:
         return
     _merger_proof = proof.duplicate()
+    _merger_proof["downstream"] = [weakref(get_parent())]
     _merger_cargo_ref = weakref(cargo_inventory)
     _merger_revision = cargo_inventory.get_mutation_revision()
 
@@ -494,3 +495,86 @@ func has_verified_merger_load(
         and input.connected_conveyor == incoming and incoming.output_building_port == input
         and output.connected_conveyor == belt and belt.input_building_port == output
     )
+
+
+# E3d5c5n: preserve a separate merger observation across actual physical hops.
+func merger_forward_snapshot() -> Dictionary:
+    if _merger_proof.is_empty() or _merger_cargo_ref == null:
+        return {}
+    if not is_instance_valid(cargo_inventory) or _merger_cargo_ref.get_ref() != cargo_inventory:
+        return {}
+    if _merger_revision != cargo_inventory.get_mutation_revision() or get_held_item() != _merger_proof.get("item"):
+        return {}
+    var merger_ref := _merger_proof.get("merger") as WeakRef
+    var origin_ref := _merger_proof.get("port") as WeakRef
+    var stock_ref := _merger_proof.get("stock") as WeakRef
+    if merger_ref == null or origin_ref == null or stock_ref == null:
+        return {}
+    var merger := merger_ref.get_ref() as ConveyorMergerComponent
+    var origin := origin_ref.get_ref() as ItemPortComponent
+    if not is_instance_valid(merger) or not merger.accepts_provenance_epoch(int(_merger_proof.get("epoch", -1))):
+        return {}
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory) or stock_ref.get_ref() != origin.inventory:
+        return {}
+    var downstream: Array = _merger_proof.get("downstream", [])
+    if downstream.is_empty() or (downstream[-1] as WeakRef).get_ref() != get_parent():
+        return {}
+    for ref: WeakRef in downstream:
+        if not is_instance_valid(ref.get_ref()):
+            return {}
+    return _merger_proof.duplicate()
+
+
+func record_merger_forward_load(proof: Dictionary, source: ConveyorSegment) -> void:
+    if proof.is_empty() or not is_instance_valid(source):
+        return
+    var destination := get_parent() as ConveyorSegment
+    if not is_instance_valid(destination) or not is_instance_valid(cargo_inventory):
+        return
+    if source.next_segment != destination or destination.previous_segment != source:
+        return
+    if get_held_item() == null or get_held_item() != proof.get("item"):
+        return
+    var downstream: Array = proof.get("downstream", [])
+    if downstream.is_empty() or downstream.size() >= 64 or (downstream[-1] as WeakRef).get_ref() != source:
+        return
+    for ref: WeakRef in downstream:
+        if not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+    var upstream: Array = proof.get("route", [])
+    for ref: WeakRef in upstream:
+        if not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+    _merger_proof = proof.duplicate()
+    var next_path: Array = downstream.duplicate()
+    next_path.append(weakref(destination))
+    _merger_proof["downstream"] = next_path
+    _merger_cargo_ref = weakref(cargo_inventory)
+    _merger_revision = cargo_inventory.get_mutation_revision()
+
+
+func has_verified_merger_route(
+    origin: ItemPortComponent, item: ItemDefinition,
+    merger: ConveyorMergerComponent, incoming: ConveyorSegment,
+    input: ItemPortComponent, output: ItemPortComponent,
+    downstream: Array[ConveyorSegment]
+) -> bool:
+    var proof: Dictionary = merger_forward_snapshot()
+    if proof.is_empty() or downstream.is_empty() or proof.get("item") != item:
+        return false
+    var expected: Dictionary = {"port": origin, "merger": merger,
+        "input_belt": incoming, "input_port": input, "output_port": output}
+    for key: Variant in expected:
+        var ref := proof.get(key) as WeakRef
+        if ref == null or not is_instance_valid(expected[key]) or ref.get_ref() != expected[key]:
+            return false
+    var upstream: Array = proof.get("route", [])
+    var visited: Array = proof.get("downstream", [])
+    if upstream.size() != 1 or (upstream[0] as WeakRef).get_ref() != incoming:
+        return false
+    if visited.size() != downstream.size() or downstream[-1] != get_parent():
+        return false
+    for i: int in range(downstream.size()):
+        if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
+            return false
+    return true

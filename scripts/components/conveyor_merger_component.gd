@@ -260,3 +260,8 @@ func record_output_departure(port: ItemPortComponent, item: ItemDefinition, snap
 	if snapshot.is_empty() or not _provenance_ready() or port != _pinned_ports[3].get_ref():
 		return
 	_remove_observation(output_inventory, snapshot["state"], item)
+
+
+# Receiver geometry may observe readiness without supplying an epoch.
+func is_verified_merger_provenance_ready() -> bool:
+	return _provenance_ready()
