@@ -285,14 +285,19 @@ func _on_authorized_player_blueprint(site: ConstructionSite) -> void:
 		# Source-based enrollments must not outlive their output port or
 		# have their separate opt-in disabled after pre-registration.
 		var source_ref: WeakRef = entry.get("source_output") as WeakRef
+		var output: ItemPortComponent = null
+		var enrolled_inventory: InventoryComponent = null
 		if source_ref != null:
-			var output: ItemPortComponent = source_ref.get_ref() as ItemPortComponent
+			output = source_ref.get_ref() as ItemPortComponent
 			var original_ref: WeakRef = entry.get("source_inventory") as WeakRef
+			if original_ref != null:
+				enrolled_inventory = original_ref.get_ref() as InventoryComponent
 			if (
 				not enable_isolated_output_enrollment
 				or not _valid_sandbox_output(output)
-				or original_ref == null
-				or output.inventory != original_ref.get_ref()
+				or not _live_autowire_node(enrolled_inventory)
+				or output.inventory != enrolled_inventory
+				or not staging.matches_source_inventory(enrolled_inventory)
 			):
 				return
 		var port: BlueprintConstructionAnchoredStagingPort = (
@@ -307,6 +312,15 @@ func _on_authorized_player_blueprint(site: ConstructionSite) -> void:
 			port.enable_isolated_input = false
 			push_error("Autowire failed after owner claim; receiver kept disabled")
 			return
+		if source_ref != null:
+			# Keep the new port fail-closed through its source guard binding.
+			# After an observed source fault, this receiver cannot silently
+			# switch to a new output or reopen by toggling a feature.
+			port.enable_isolated_output_source_guard = true
+			if not port.bind_output_source_guard(output, enrolled_inventory):
+				port.enable_isolated_input = false
+				push_error("Source guard bind failed; receiver claim quarantined")
+				return
 		_auto_attached.append({"site": weakref(site), "port": weakref(port)})
 		return
 

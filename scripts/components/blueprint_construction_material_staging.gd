@@ -96,6 +96,15 @@ func matches_definition(definition: BuildingDefinition) -> bool:
 	var costs: Dictionary = ConstructionMaterialBill.get_costs(definition)
 	return not costs.is_empty() and costs == _bill
 
+# E3d5c5f — read-only identity check for an enrolled physical source.
+# No inventory mutation or escrow authority is granted.
+func matches_source_inventory(expected: InventoryComponent) -> bool:
+	return (
+		enable_isolated_staging and _live(_source)
+		and _live(expected) and _source == expected
+	)
+
+
 # The coordinator may receive this inventory only in an isolated fixture.
 # A valid buffer does NOT prove physical construction delivery or readiness.
 func get_staged_inventory() -> InventoryComponent:
