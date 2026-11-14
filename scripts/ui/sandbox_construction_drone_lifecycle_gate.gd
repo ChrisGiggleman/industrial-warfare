@@ -215,6 +215,7 @@ func prepare_player_site_from_output(
 	for entry: Dictionary in _auto_pending:
 		if (entry["site"] as WeakRef).get_ref() == site:
 			entry["source_output"] = weakref(output)
+			entry["source_inventory"] = weakref(source_inventory)
 			break
 	return staging
 
@@ -226,7 +227,10 @@ func _valid_sandbox_output(output: ItemPortComponent) -> bool:
 	):
 		return false
 	var owner: Node = output.get_parent()
-	if not _live_autowire_node(owner) or owner.get_parent() != get_parent():
+	if (
+		not _live_autowire_node(owner) or not owner is Node3D
+		or owner is ConstructionSite or owner.get_parent() != get_parent()
+	):
 		return false
 	var inventory: InventoryComponent = output.inventory
 	if not _live_autowire_node(inventory) or inventory.get_parent() != owner:
@@ -283,9 +287,12 @@ func _on_authorized_player_blueprint(site: ConstructionSite) -> void:
 		var source_ref: WeakRef = entry.get("source_output") as WeakRef
 		if source_ref != null:
 			var output: ItemPortComponent = source_ref.get_ref() as ItemPortComponent
+			var original_ref: WeakRef = entry.get("source_inventory") as WeakRef
 			if (
 				not enable_isolated_output_enrollment
 				or not _valid_sandbox_output(output)
+				or original_ref == null
+				or output.inventory != original_ref.get_ref()
 			):
 				return
 		var port: BlueprintConstructionAnchoredStagingPort = (
