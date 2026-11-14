@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/sandbox_escrow_intake_lock_e3d5c5c_test.gd" id="1_test"]
+
+[node name="SandboxEscrowIntakeLockE3d5c5cTest" type="Node3D"]
+script = ExtResource("1_test")

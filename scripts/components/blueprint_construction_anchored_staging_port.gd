@@ -14,6 +14,12 @@ class_name BlueprintConstructionAnchoredStagingPort
 # receiver/buffer claims and ConveyorBuildingTransfer owns physical delivery.
 # Missing power/workers still prohibit construction; no readiness is granted.
 
+# E3d5c5c — test-only escrow intake gate. Default OFF preserves the
+# earlier E3d5c4i queued-buffer/refund fixture. Once the guard is bound,
+# disabling it never silently restores material intake.
+@export var enable_isolated_escrow_intake_lock: bool = false
+var _intake_escrow_ref: WeakRef = null
+
 var _site_ref: WeakRef = null
 var _planned_ref: WeakRef = null
 var _registry_ref: WeakRef = null
@@ -86,8 +92,57 @@ func matches_attached_site() -> bool:
 	return registry.inventory_for_site(site) == staged.get_staged_inventory()
 
 
+# Explicitly bind this already owned construction receiver to a live escrow
+# BEFORE materials are reserved. This cannot allocate, withdraw, or restore
+# materials; it only allows read-only admission checks from the belt.
+func bind_escrow_intake_lock(
+	escrow: BlueprintConstructionMaterialEscrow
+) -> bool:
+	if (
+		not enable_isolated_escrow_intake_lock
+		or _intake_escrow_ref != null
+		or not _live(escrow)
+		or not matches_attached_site()
+	):
+		return false
+	var site: ConstructionSite = _site_ref.get_ref() as ConstructionSite
+	var registry: BlueprintConstructionSiteStagingRegistry = (
+		_registry_ref.get_ref() as BlueprintConstructionSiteStagingRegistry
+	)
+	if (
+		not _live(site) or not _live(registry)
+		or not registry.matches_owned_inventory(site, inventory)
+		or escrow.reservation_for(site) != 0
+	):
+		return false
+	_intake_escrow_ref = weakref(escrow)
+	return true
+
+
+# Fail CLOSED if a bound guard is turned off, its escrow disappears, or the
+# site leaves the original, aligned QUEUED ownership state. Otherwise refuse
+# fresh conveyor delivery as soon as the complete bill is in escrow, even
+# while a physical drone is traveling to the still-QUEUED site.
+func is_escrow_intake_locked() -> bool:
+	if _intake_escrow_ref == null:
+		return enable_isolated_escrow_intake_lock
+	if not enable_isolated_escrow_intake_lock or not matches_attached_site():
+		return true
+	var escrow: BlueprintConstructionMaterialEscrow = (
+		_intake_escrow_ref.get_ref() as BlueprintConstructionMaterialEscrow
+	)
+	var site: ConstructionSite = _site_ref.get_ref() as ConstructionSite
+	if not _live(escrow) or not _live(site):
+		return true
+	return escrow.reservation_for(site) > 0
+
+
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
-	return matches_attached_site() and super.can_accept_item(item, amount)
+	return (
+		matches_attached_site()
+		and not is_escrow_intake_locked()
+		and super.can_accept_item(item, amount)
+	)
 
 
 func has_ended_site() -> bool:
