@@ -103,7 +103,9 @@ static func try_transfer_forward(
 	# occupancy, capacity and resource conservation.
 
 	var proof: Dictionary = source_transport.physical_origin_snapshot()
+	var branch_proof: Dictionary = source_transport.splitter_forward_snapshot()
 	var moved: bool = source_transport.try_move_to_buffer(destination_transport)
 	if moved:
 		destination_transport.record_physical_forward_load(proof, source)
+		destination_transport.record_splitter_forward_load(branch_proof, source)
 	return moved

@@ -35,6 +35,13 @@ var _linear_route_refs: Array[WeakRef] = []
 var _linear_input_transforms: Array[Transform3D] = []
 var _linear_output_transforms: Array[Transform3D] = []
 var _linear_corner_mode: bool = false
+# E3d5c5l: one tracked splitter, one upstream straight belt and downstream straight chain.
+@export var enable_isolated_splitter_branch_guard: bool = false
+var _branch_splitter_ref: WeakRef = null
+var _branch_incoming_ref: WeakRef = null
+var _branch_input_ref: WeakRef = null
+var _branch_output_ref: WeakRef = null
+var _branch_route_refs: Array[WeakRef] = []
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -232,6 +239,7 @@ func is_output_source_locked() -> bool:
 func bind_single_belt_route(belt: ConveyorSegment) -> bool:
 	if (
 		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or _branch_selected()
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
 		or enable_isolated_corner_route_guard
 		or not matches_attached_site() or _intake_escrow_ref == null
@@ -292,6 +300,7 @@ func has_verified_single_belt_route() -> bool:
 func bind_multi_belt_route(route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or _branch_selected()
 		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or not matches_attached_site() or _intake_escrow_ref == null
 		or _original_output_ref == null or is_output_source_locked()
@@ -421,6 +430,141 @@ func has_verified_multi_belt_route() -> bool:
 	return _linear_geometry_valid(_bound_linear_route())
 
 
+func _branch_selected() -> bool:
+	return enable_isolated_splitter_branch_guard or _branch_splitter_ref != null
+
+
+func _other_route_selected() -> bool:
+	return (
+		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or enable_isolated_corner_route_guard
+	)
+
+
+func _branch_straight(belt: ConveyorSegment) -> bool:
+	if not _live(belt) or belt.get_parent() != get_parent().get_parent():
+		return false
+	if belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn" or belt.has_meta("conveyor_turn"):
+		return false
+	var a := belt.get_node_or_null("InputEndpoint") as Marker3D
+	var z := belt.get_node_or_null("OutputEndpoint") as Marker3D
+	return _live(a) and _live(z) and _valid_linear_piece_geometry(belt, a, z)
+
+
+func _branch_port_link(belt: ConveyorSegment, port: ItemPortComponent, is_input: bool) -> bool:
+	if not _live(port) or port.connected_conveyor != belt:
+		return false
+	if is_input:
+		return (
+			port.direction == ItemPortComponent.PortDirection.OUTPUT
+			and belt.previous_segment == null and belt.input_building_port == port
+			and LogisticsConnectionGeometry.are_endpoints_aligned(
+				port, belt.get_node_or_null("InputEndpoint"), ConveyorSegment.CONNECTION_GAP)
+		)
+	return (
+		port.direction == ItemPortComponent.PortDirection.INPUT
+		and belt.next_segment == null and belt.output_building_port == port
+		and LogisticsConnectionGeometry.are_endpoints_aligned(
+			belt.get_node_or_null("OutputEndpoint"), port, ConveyorSegment.CONNECTION_GAP)
+	)
+
+
+func _branch_geometry(splitter: ConveyorSplitterComponent, incoming: ConveyorSegment,
+	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
+	if not _live(splitter) or not _live(get_parent()) or not _live(splitter.get_parent()):
+		return false
+	var building: Node = splitter.get_parent()
+	if building.get_parent() != get_parent().get_parent() or not splitter.is_verified_provenance_ready():
+		return false
+	if not _live(input) or not _live(output) or input.get_parent() != building or output.get_parent() != building:
+		return false
+	if input != building.get_node_or_null("InputPort"):
+		return false
+	if output != splitter.output_port_a and output != splitter.output_port_b and output != splitter.output_port_c:
+		return false
+	if _original_output_ref == null or route.is_empty() or route.size() > 64:
+		return false
+	var origin := _original_output_ref.get_ref() as ItemPortComponent
+	if not _branch_straight(incoming) or not _branch_port_link(incoming, origin, true):
+		return false
+	if not _branch_port_link(incoming, input, false):
+		return false
+	var seen: Dictionary = {incoming: true}
+	for i: int in range(route.size()):
+		var belt: ConveyorSegment = route[i]
+		if not _branch_straight(belt) or seen.has(belt):
+			return false
+		seen[belt] = true
+		if i == 0:
+			if not _branch_port_link(belt, output, true):
+				return false
+		else:
+			var prior: ConveyorSegment = route[i - 1]
+			if belt.input_building_port != null or prior.output_building_port != null:
+				return false
+			if prior.next_segment != belt or belt.previous_segment != prior:
+				return false
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(
+				prior.get_node_or_null("OutputEndpoint"), belt.get_node_or_null("InputEndpoint"),
+				ConveyorSegment.CONNECTION_GAP):
+				return false
+	return _branch_port_link(route[-1], self, false)
+
+
+func bind_splitter_branch(splitter: ConveyorSplitterComponent, incoming: ConveyorSegment,
+	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
+	if (
+		not enable_isolated_splitter_branch_guard or _branch_splitter_ref != null
+		or _other_route_selected() or not matches_attached_site()
+		or _intake_escrow_ref == null or _original_output_ref == null
+		or is_escrow_intake_locked() or is_output_source_locked()
+		or not _branch_geometry(splitter, incoming, input, output, route)
+	):
+		return false
+	var all_belts: Array[ConveyorSegment] = [incoming]
+	all_belts.append_array(route)
+	for belt: ConveyorSegment in all_belts:
+		var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		if not _live(cargo) or not _live(cargo.cargo_inventory):
+			return false
+		if cargo.cargo_inventory.max_capacity != 1 or cargo.cargo_inventory.get_total_amount() != 0:
+			return false
+	for buffer: InventoryComponent in [splitter.input_inventory, splitter.output_a, splitter.output_b, splitter.output_c]:
+		if buffer.get_total_amount() != 0:
+			return false
+	_branch_splitter_ref = weakref(splitter)
+	_branch_incoming_ref = weakref(incoming)
+	_branch_input_ref = weakref(input)
+	_branch_output_ref = weakref(output)
+	for belt: ConveyorSegment in route:
+		_branch_route_refs.append(weakref(belt))
+	return true
+
+
+func _bound_branch_route() -> Array[ConveyorSegment]:
+	var route: Array[ConveyorSegment] = []
+	for ref: WeakRef in _branch_route_refs:
+		var belt := ref.get_ref() as ConveyorSegment
+		if not _live(belt):
+			return []
+		route.append(belt)
+	return route
+
+
+func has_verified_splitter_branch() -> bool:
+	if (
+		not enable_isolated_splitter_branch_guard or _branch_splitter_ref == null
+		or _other_route_selected() or not matches_attached_site() or is_output_source_locked()
+	):
+		return false
+	return _branch_geometry(
+		_branch_splitter_ref.get_ref() as ConveyorSplitterComponent,
+		_branch_incoming_ref.get_ref() as ConveyorSegment,
+		_branch_input_ref.get_ref() as ItemPortComponent,
+		_branch_output_ref.get_ref() as ItemPortComponent, _bound_branch_route())
+
+
 func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 	return (
 		matches_attached_site()
@@ -433,6 +577,8 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
+	if _branch_selected():
+		return false
 	if (
 		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
@@ -443,6 +589,19 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	if _branch_selected():
+		if amount != 1 or not has_verified_splitter_branch() or not _accept_owned_item(item, amount):
+			return false
+		var branch: Array[ConveyorSegment] = _bound_branch_route()
+		if branch.is_empty() or branch[-1] != belt:
+			return false
+		var branch_cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		return _live(branch_cargo) and branch_cargo.has_verified_splitter_branch(
+			_original_output_ref.get_ref() as ItemPortComponent, item,
+			_branch_splitter_ref.get_ref() as ConveyorSplitterComponent,
+			_branch_incoming_ref.get_ref() as ConveyorSegment,
+			_branch_input_ref.get_ref() as ItemPortComponent,
+			_branch_output_ref.get_ref() as ItemPortComponent, branch)
 	if (
 		enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
 		or enable_isolated_corner_route_guard

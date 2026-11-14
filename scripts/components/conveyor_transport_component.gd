@@ -304,7 +304,7 @@ func has_verified_physical_route(
 
 # E3d5c5k: separate proof type for ONE tracked splitter crossing.
 # Not a linear-route stamp: old protected receivers must not accept it.
-# Downstream propagation and complete branch admission are future work.
+# E3d5c5l: separately propagate ordered downstream belt history.
 var _splitter_proof: Dictionary = {}
 var _splitter_cargo_ref: WeakRef = null
 var _splitter_revision: int = -1
@@ -320,6 +320,7 @@ func record_splitter_building_load(proof: Dictionary, port: ItemPortComponent, i
     if output_ref == null or output_ref.get_ref() != port or proof.get("item") != item:
         return
     _splitter_proof = proof.duplicate()
+    _splitter_proof["downstream"] = [weakref(get_parent())]
     _splitter_cargo_ref = weakref(cargo_inventory)
     _splitter_revision = cargo_inventory.get_mutation_revision()
 
@@ -360,3 +361,85 @@ func has_verified_splitter_load(
         and input.connected_conveyor == incoming and incoming.output_building_port == input
         and output.connected_conveyor == belt and belt.input_building_port == output
     )
+
+# Separate snapshot; never convert a splitter observation into linear proof.
+func splitter_forward_snapshot() -> Dictionary:
+    if _splitter_proof.is_empty() or _splitter_cargo_ref == null:
+        return {}
+    if not is_instance_valid(cargo_inventory) or _splitter_cargo_ref.get_ref() != cargo_inventory:
+        return {}
+    if _splitter_revision != cargo_inventory.get_mutation_revision() or get_held_item() != _splitter_proof.get("item"):
+        return {}
+    var origin_ref := _splitter_proof.get("port") as WeakRef
+    var stock_ref := _splitter_proof.get("stock") as WeakRef
+    if origin_ref == null or stock_ref == null:
+        return {}
+    var origin := origin_ref.get_ref() as ItemPortComponent
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory) or stock_ref.get_ref() != origin.inventory:
+        return {}
+    var downstream: Array = _splitter_proof.get("downstream", [])
+    if downstream.is_empty() or (downstream[-1] as WeakRef).get_ref() != get_parent():
+        return {}
+    for ref: WeakRef in downstream:
+        if not is_instance_valid(ref.get_ref()):
+            return {}
+    return _splitter_proof.duplicate()
+
+
+func record_splitter_forward_load(proof: Dictionary, source: ConveyorSegment) -> void:
+    if proof.is_empty() or not is_instance_valid(source):
+        return
+    var destination := get_parent() as ConveyorSegment
+    if not is_instance_valid(destination) or not is_instance_valid(cargo_inventory):
+        return
+    if source.next_segment != destination or destination.previous_segment != source:
+        return
+    if get_held_item() == null or get_held_item() != proof.get("item"):
+        return
+    var downstream: Array = proof.get("downstream", [])
+    if downstream.is_empty() or downstream.size() >= 64:
+        return
+    if (downstream[-1] as WeakRef).get_ref() != source:
+        return
+    for ref: WeakRef in downstream:
+        if not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+    var upstream: Array = proof.get("route", [])
+    for ref: WeakRef in upstream:
+        if not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+    _splitter_proof = proof.duplicate()
+    var next_path: Array = downstream.duplicate()
+    next_path.append(weakref(destination))
+    _splitter_proof["downstream"] = next_path
+    _splitter_cargo_ref = weakref(cargo_inventory)
+    _splitter_revision = cargo_inventory.get_mutation_revision()
+
+
+# Narrow first branch experiment: exactly one upstream belt, one splitter,
+# and an exact ordered downstream chain. Geometry checked by the receiver.
+func has_verified_splitter_branch(
+    origin: ItemPortComponent, item: ItemDefinition,
+    splitter: ConveyorSplitterComponent, incoming: ConveyorSegment,
+    input: ItemPortComponent, output: ItemPortComponent,
+    downstream: Array[ConveyorSegment]
+) -> bool:
+    var proof: Dictionary = splitter_forward_snapshot()
+    if proof.is_empty() or downstream.is_empty() or proof.get("item") != item:
+        return false
+    var expected: Dictionary = {"port": origin, "splitter": splitter,
+        "input_belt": incoming, "input_port": input, "output_port": output}
+    for key: Variant in expected:
+        var ref := proof.get(key) as WeakRef
+        if ref == null or not is_instance_valid(expected[key]) or ref.get_ref() != expected[key]:
+            return false
+    var upstream: Array = proof.get("route", [])
+    var visited: Array = proof.get("downstream", [])
+    if upstream.size() != 1 or (upstream[0] as WeakRef).get_ref() != incoming:
+        return false
+    if visited.size() != downstream.size() or downstream[-1] != get_parent():
+        return false
+    for i: int in range(downstream.size()):
+        if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
+            return false
+    return true

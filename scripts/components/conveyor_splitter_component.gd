@@ -259,3 +259,7 @@ func record_output_departure(port: ItemPortComponent, item: ItemDefinition, snap
 	if port != output_port_a and port != output_port_b and port != output_port_c:
 		return
 	_remove_observation(port.inventory, snapshot["state"], item)
+
+# Readiness for the narrow protected branch experiment. No item mutation.
+func is_verified_provenance_ready() -> bool:
+	return _provenance_ready()
