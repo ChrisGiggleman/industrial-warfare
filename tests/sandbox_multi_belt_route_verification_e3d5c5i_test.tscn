@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.gd" id="1_test"]
+
+[node name="SandboxMultiBeltRouteVerificationE3d5c5iTest" type="Node3D"]
+script = ExtResource("1_test")

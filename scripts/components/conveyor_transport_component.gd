@@ -177,12 +177,15 @@ func try_move_to_buffer(
 # E3d5c5h: ephemeral observation of the most recent successful physical
 # building load. The inventory revision invalidates a stamp on any later
 # add/remove via the public inventory API, even for the same item type.
-# Belt-to-belt movement intentionally does not propagate this direct-load stamp.
+# E3d5c5i: only the physical link helper can carry a valid stamp forward.
+# Each stamp records an ordered segment history (bounded to 64 segments).
+# Ordinary buffer transfers remain unstamped.
 var _loaded_port_ref: WeakRef = null
 var _loaded_stock_ref: WeakRef = null
 var _loaded_cargo_ref: WeakRef = null
 var _loaded_item: ItemDefinition = null
 var _loaded_revision: int = -1
+var _loaded_route: Array[WeakRef] = []
 
 
 func record_physical_building_load(port: ItemPortComponent, item: ItemDefinition) -> void:
@@ -195,9 +198,22 @@ func record_physical_building_load(port: ItemPortComponent, item: ItemDefinition
     _loaded_cargo_ref = weakref(cargo_inventory)
     _loaded_item = item
     _loaded_revision = cargo_inventory.get_mutation_revision()
+    _loaded_route.clear()
+    var segment := get_parent() as ConveyorSegment
+    if is_instance_valid(segment):
+        _loaded_route.append(weakref(segment))
 
 
 func has_physical_building_load(port: ItemPortComponent, item: ItemDefinition) -> bool:
+    # Preserve E3d5c5h: a propagated stamp is not a direct building load.
+    return (
+        _loaded_route.size() == 1
+        and _loaded_route[0].get_ref() == get_parent()
+        and _matches_origin(port, item)
+    )
+
+
+func _matches_origin(port: ItemPortComponent, item: ItemDefinition) -> bool:
     return (
         is_instance_valid(port) and is_instance_valid(port.inventory)
         and is_instance_valid(cargo_inventory)
@@ -209,3 +225,79 @@ func has_physical_building_load(port: ItemPortComponent, item: ItemDefinition) -
         and _loaded_item == item and get_held_item() == item
         and _loaded_revision == cargo_inventory.get_mutation_revision()
     )
+
+# Snapshot BEFORE a successful physical forward move invalidates the old
+# cargo revision. Returns no proof for an injected/replaced/unknown item.
+func physical_origin_snapshot() -> Dictionary:
+    if _loaded_port_ref == null or _loaded_stock_ref == null or _loaded_route.is_empty():
+        return {}
+    var port := _loaded_port_ref.get_ref() as ItemPortComponent
+    if not _matches_origin(port, get_held_item()):
+        return {}
+    if _loaded_route[-1].get_ref() != get_parent():
+        return {}
+    for ref: WeakRef in _loaded_route:
+        if not is_instance_valid(ref.get_ref()):
+            return {}
+    return {
+        "port": _loaded_port_ref,
+        "stock": _loaded_stock_ref,
+        "item": _loaded_item,
+        "route": _loaded_route.duplicate()
+    }
+
+
+# Called after the physical link helper has moved exactly one item.
+# Never used by low-level buffer transfers or splitter/merger inventories.
+func record_physical_forward_load(proof: Dictionary, source: ConveyorSegment) -> void:
+    if proof.is_empty() or not is_instance_valid(source):
+        return
+    var destination := get_parent() as ConveyorSegment
+    if not is_instance_valid(destination) or not is_instance_valid(cargo_inventory):
+        return
+    if source.next_segment != destination or destination.previous_segment != source:
+        return
+    var port_ref: WeakRef = proof.get("port") as WeakRef
+    var stock_ref: WeakRef = proof.get("stock") as WeakRef
+    var item := proof.get("item") as ItemDefinition
+    var route: Array = proof.get("route", [])
+    if port_ref == null or stock_ref == null or item == null or get_held_item() != item:
+        return
+    var origin := port_ref.get_ref() as ItemPortComponent
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory):
+        return
+    if stock_ref.get_ref() != origin.inventory:
+        return
+    if route.is_empty() or route.size() >= 64:
+        return
+    var last: WeakRef = route[-1] as WeakRef
+    if last == null or last.get_ref() != source:
+        return
+    var next_route: Array[WeakRef] = []
+    for value: Variant in route:
+        var ref: WeakRef = value as WeakRef
+        if ref == null or not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+        next_route.append(ref)
+    next_route.append(weakref(destination))
+    _loaded_port_ref = port_ref
+    _loaded_stock_ref = stock_ref
+    _loaded_item = item
+    _loaded_cargo_ref = weakref(cargo_inventory)
+    _loaded_revision = cargo_inventory.get_mutation_revision()
+    _loaded_route = next_route
+
+
+func has_verified_physical_route(
+    port: ItemPortComponent,
+    item: ItemDefinition,
+    route: Array[ConveyorSegment]
+) -> bool:
+    if not _matches_origin(port, item) or route.size() != _loaded_route.size():
+        return false
+    if route.is_empty() or route[-1] != get_parent():
+        return false
+    for i: int in range(route.size()):
+        if not is_instance_valid(route[i]) or _loaded_route[i].get_ref() != route[i]:
+            return false
+    return true

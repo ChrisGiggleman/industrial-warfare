@@ -102,6 +102,8 @@ static func try_transfer_forward(
 	# The existing cargo buffer component handles
 	# occupancy, capacity and resource conservation.
 
-	return source_transport.try_move_to_buffer(
-		destination_transport
-	)
+	var proof: Dictionary = source_transport.physical_origin_snapshot()
+	var moved: bool = source_transport.try_move_to_buffer(destination_transport)
+	if moved:
+		destination_transport.record_physical_forward_load(proof, source)
+	return moved

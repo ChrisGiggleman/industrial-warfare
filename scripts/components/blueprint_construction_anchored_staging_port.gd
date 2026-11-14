@@ -27,6 +27,9 @@ var _output_source_compromised: bool = false
 # E3d5c5h — explicit single-straight-belt verification only.
 @export var enable_isolated_single_belt_route_guard: bool = false
 var _direct_belt_ref: WeakRef = null
+# E3d5c5i: independent opt-in; an exact linear route of 2–64 straight belts.
+@export var enable_isolated_multi_belt_route_guard: bool = false
+var _linear_route_refs: Array[WeakRef] = []
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -224,6 +227,7 @@ func is_output_source_locked() -> bool:
 func bind_single_belt_route(belt: ConveyorSegment) -> bool:
 	if (
 		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
 		or not matches_attached_site() or _intake_escrow_ref == null
 		or _original_output_ref == null or is_output_source_locked()
 		or is_escrow_intake_locked() or not _single_belt_geometry_valid(belt)
@@ -276,6 +280,95 @@ func has_verified_single_belt_route() -> bool:
 	return _single_belt_geometry_valid(_direct_belt_ref.get_ref() as ConveyorSegment)
 
 
+# Bind the complete path in source-to-receiver order while every buffer
+# is empty. No segment may repeat, branch, or belong to another sandbox.
+func bind_multi_belt_route(route: Array[ConveyorSegment]) -> bool:
+	if (
+		not enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or not matches_attached_site() or _intake_escrow_ref == null
+		or _original_output_ref == null or is_output_source_locked()
+		or is_escrow_intake_locked() or not _linear_geometry_valid(route)
+	):
+		return false
+	for segment: ConveyorSegment in route:
+		var cargo := segment.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		if not _live(cargo) or not _live(cargo.cargo_inventory):
+			return false
+		if cargo.cargo_inventory.get_total_amount() != 0 or cargo.cargo_inventory.max_capacity != 1:
+			return false
+	for segment: ConveyorSegment in route:
+		_linear_route_refs.append(weakref(segment))
+	return true
+
+
+func _linear_geometry_valid(route: Array[ConveyorSegment]) -> bool:
+	if route.size() < 2 or route.size() > 64 or not _live(get_parent()):
+		return false
+	if _original_output_ref == null:
+		return false
+	var source := _original_output_ref.get_ref() as ItemPortComponent
+	if not _live(source) or not _live(source.get_parent()):
+		return false
+	if source.direction != ItemPortComponent.PortDirection.OUTPUT or direction != ItemPortComponent.PortDirection.INPUT:
+		return false
+	var seen: Dictionary = {}
+	for i: int in range(route.size()):
+		var segment: ConveyorSegment = route[i]
+		if not _live(segment) or seen.has(segment):
+			return false
+		seen[segment] = true
+		if (
+			segment.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn"
+			or segment.get_parent() != get_parent().get_parent()
+		):
+			return false
+		var incoming := segment.get_node_or_null("InputEndpoint") as Marker3D
+		var outgoing := segment.get_node_or_null("OutputEndpoint") as Marker3D
+		if not _live(incoming) or not _live(outgoing):
+			return false
+		if i == 0:
+			if segment.previous_segment != null or segment.input_building_port != source or source.connected_conveyor != segment:
+				return false
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(source, incoming, ConveyorSegment.CONNECTION_GAP):
+				return false
+		else:
+			var previous: ConveyorSegment = route[i - 1]
+			if segment.previous_segment != previous or previous.next_segment != segment or segment.input_building_port != null:
+				return false
+			var previous_output := previous.get_node_or_null("OutputEndpoint") as Marker3D
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(previous_output, incoming, ConveyorSegment.CONNECTION_GAP):
+				return false
+		if i == route.size() - 1:
+			if segment.next_segment != null or segment.output_building_port != self or connected_conveyor != segment:
+				return false
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(outgoing, self, ConveyorSegment.CONNECTION_GAP):
+				return false
+		elif segment.output_building_port != null:
+			return false
+	return true
+
+
+func _bound_linear_route() -> Array[ConveyorSegment]:
+	var route: Array[ConveyorSegment] = []
+	for ref: WeakRef in _linear_route_refs:
+		var segment := ref.get_ref() as ConveyorSegment
+		if not _live(segment):
+			return []
+		route.append(segment)
+	return route
+
+
+func has_verified_multi_belt_route() -> bool:
+	if (
+		not enable_isolated_multi_belt_route_guard or _linear_route_refs.is_empty()
+		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or not matches_attached_site() or is_output_source_locked()
+	):
+		return false
+	return _linear_geometry_valid(_bound_linear_route())
+
+
 func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 	return (
 		matches_attached_site()
@@ -288,12 +381,24 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
-	if enable_isolated_single_belt_route_guard or _direct_belt_ref != null:
+	if (
+		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+	):
 		return false
 	return _accept_owned_item(item, amount)
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	if enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty():
+		if amount != 1 or not has_verified_multi_belt_route() or not _accept_owned_item(item, amount):
+			return false
+		var route: Array[ConveyorSegment] = _bound_linear_route()
+		if route.is_empty() or route[-1] != belt:
+			return false
+		var origin := _original_output_ref.get_ref() as ItemPortComponent
+		var final_cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		return _live(final_cargo) and final_cargo.has_verified_physical_route(origin, item, route)
 	if not enable_isolated_single_belt_route_guard and _direct_belt_ref == null:
 		return can_accept_item(item, amount)
 	if (
