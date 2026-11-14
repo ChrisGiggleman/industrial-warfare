@@ -144,10 +144,13 @@ static func try_load_into_belt(
 		# InventoryComponent.transfer_to() handles
 		# safe inventory accounting.
 
-		return transport.try_receive_from_inventory(
+		var loaded: bool = transport.try_receive_from_inventory(
 			port.inventory,
 			item
 		)
+		if loaded:
+			transport.record_physical_building_load(port, item)
+		return loaded
 
 	# No eligible item was available.
 
@@ -268,7 +271,7 @@ static func try_unload_from_belt(
 	#
 	# Also checks destination inventory capacity.
 
-	if not port.can_accept_item(item, 1):
+	if not port.can_accept_belt_item(belt, item, 1):
 		return false
 
 	# =============================================================================

@@ -24,6 +24,9 @@ class_name BlueprintConstructionAnchoredStagingPort
 var _original_output_ref: WeakRef = null
 var _original_output_inventory_ref: WeakRef = null
 var _output_source_compromised: bool = false
+# E3d5c5h — explicit single-straight-belt verification only.
+@export var enable_isolated_single_belt_route_guard: bool = false
+var _direct_belt_ref: WeakRef = null
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -216,13 +219,91 @@ func is_output_source_locked() -> bool:
 	return not good
 
 
-func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
+# Pin a specific empty straight belt after verifying both physical ends.
+# No automatic route placement, stock mutation or construction authority.
+func bind_single_belt_route(belt: ConveyorSegment) -> bool:
+	if (
+		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
+		or not matches_attached_site() or _intake_escrow_ref == null
+		or _original_output_ref == null or is_output_source_locked()
+		or is_escrow_intake_locked() or not _single_belt_geometry_valid(belt)
+	):
+		return false
+	var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+	if not _live(cargo) or not _live(cargo.cargo_inventory):
+		return false
+	if cargo.cargo_inventory.max_capacity != 1 or cargo.cargo_inventory.get_total_amount() != 0:
+		return false
+	_direct_belt_ref = weakref(belt)
+	return true
+
+
+func _single_belt_geometry_valid(belt: ConveyorSegment) -> bool:
+	if not _live(belt) or _original_output_ref == null or not _live(get_parent()):
+		return false
+	var source := _original_output_ref.get_ref() as ItemPortComponent
+	if not _live(source) or not _live(source.get_parent()):
+		return false
+	if (
+		belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn"
+		or belt.get_parent() != get_parent().get_parent()
+		or belt.previous_segment != null or belt.next_segment != null
+		or belt.input_building_port != source or source.connected_conveyor != belt
+		or belt.output_building_port != self or connected_conveyor != belt
+		or direction != ItemPortComponent.PortDirection.INPUT
+		or source.direction != ItemPortComponent.PortDirection.OUTPUT
+	):
+		return false
+	var input := belt.get_node_or_null("InputEndpoint") as Marker3D
+	var output := belt.get_node_or_null("OutputEndpoint") as Marker3D
+	return (
+		_live(input) and _live(output)
+		and LogisticsConnectionGeometry.are_endpoints_aligned(
+			source, input, ConveyorSegment.CONNECTION_GAP
+		)
+		and LogisticsConnectionGeometry.are_endpoints_aligned(
+			output, self, ConveyorSegment.CONNECTION_GAP
+		)
+	)
+
+
+func has_verified_single_belt_route() -> bool:
+	if (
+		not enable_isolated_single_belt_route_guard or _direct_belt_ref == null
+		or not matches_attached_site() or is_output_source_locked()
+	):
+		return false
+	return _single_belt_geometry_valid(_direct_belt_ref.get_ref() as ConveyorSegment)
+
+
+func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 	return (
 		matches_attached_site()
 		and not is_escrow_intake_locked()
 		and not is_output_source_locked()
 		and super.can_accept_item(item, amount)
 	)
+
+
+func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
+	# A guard-bound receiver requires transport context; direct port-to-port
+	# transfer is never an alternate route, even with valid material types.
+	if enable_isolated_single_belt_route_guard or _direct_belt_ref != null:
+		return false
+	return _accept_owned_item(item, amount)
+
+
+func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	if not enable_isolated_single_belt_route_guard and _direct_belt_ref == null:
+		return can_accept_item(item, amount)
+	if (
+		amount != 1 or not has_verified_single_belt_route()
+		or _direct_belt_ref.get_ref() != belt or not _accept_owned_item(item, amount)
+	):
+		return false
+	var source := _original_output_ref.get_ref() as ItemPortComponent
+	var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+	return _live(cargo) and cargo.has_physical_building_load(source, item)
 
 
 func has_ended_site() -> bool:

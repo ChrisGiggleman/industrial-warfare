@@ -217,6 +217,12 @@ func can_accept_item(
 	return available_space == -1 or available_space >= amount
 
 
+# Context-aware physical delivery hook. All existing inputs retain their
+# original acceptance policy unless a subclass explicitly opts in.
+func can_accept_belt_item(_belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	return can_accept_item(item, amount)
+
+
 # =============================================================================
 # OUTPUT PORT AVAILABILITY CHECK
 # =============================================================================

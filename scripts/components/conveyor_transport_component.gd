@@ -173,3 +173,39 @@ func try_move_to_buffer(
     )
 
     return transferred == 1
+
+# E3d5c5h: ephemeral observation of the most recent successful physical
+# building load. The inventory revision invalidates a stamp on any later
+# add/remove via the public inventory API, even for the same item type.
+# Belt-to-belt movement intentionally does not propagate this direct-load stamp.
+var _loaded_port_ref: WeakRef = null
+var _loaded_stock_ref: WeakRef = null
+var _loaded_cargo_ref: WeakRef = null
+var _loaded_item: ItemDefinition = null
+var _loaded_revision: int = -1
+
+
+func record_physical_building_load(port: ItemPortComponent, item: ItemDefinition) -> void:
+    if not is_instance_valid(port) or not is_instance_valid(port.inventory):
+        return
+    if not is_instance_valid(cargo_inventory) or get_held_item() != item:
+        return
+    _loaded_port_ref = weakref(port)
+    _loaded_stock_ref = weakref(port.inventory)
+    _loaded_cargo_ref = weakref(cargo_inventory)
+    _loaded_item = item
+    _loaded_revision = cargo_inventory.get_mutation_revision()
+
+
+func has_physical_building_load(port: ItemPortComponent, item: ItemDefinition) -> bool:
+    return (
+        is_instance_valid(port) and is_instance_valid(port.inventory)
+        and is_instance_valid(cargo_inventory)
+        and _loaded_port_ref != null and _loaded_stock_ref != null
+        and _loaded_cargo_ref != null
+        and _loaded_port_ref.get_ref() == port
+        and _loaded_stock_ref.get_ref() == port.inventory
+        and _loaded_cargo_ref.get_ref() == cargo_inventory
+        and _loaded_item == item and get_held_item() == item
+        and _loaded_revision == cargo_inventory.get_mutation_revision()
+    )

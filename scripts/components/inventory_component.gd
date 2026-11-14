@@ -30,6 +30,14 @@ class_name InventoryComponent
 
 var items: Dictionary = {}
 
+# Monotonic in-process API mutation revision. Does not change inventory
+# quantities, persistence or capacity and is NOT a durable item identity.
+var _mutation_revision: int = 0
+
+
+func get_mutation_revision() -> int:
+	return _mutation_revision
+
 
 
 # =============================================================================
@@ -69,6 +77,7 @@ func add_item(item: ItemDefinition, amount: int) -> int:
 	var current_amount: int = get_amount(item)
 
 	items[item] = current_amount + accepted_amount
+	_mutation_revision += 1
 
 	return accepted_amount
 
@@ -99,6 +108,7 @@ func remove_item(item: ItemDefinition, amount: int) -> bool:
 	else:
 		items[item] = remaining_amount
 
+	_mutation_revision += 1
 	return true
 
 
