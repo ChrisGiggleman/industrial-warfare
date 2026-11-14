@@ -27,9 +27,14 @@ var _output_source_compromised: bool = false
 # E3d5c5h — explicit single-straight-belt verification only.
 @export var enable_isolated_single_belt_route_guard: bool = false
 var _direct_belt_ref: WeakRef = null
-# E3d5c5i: independent opt-in; an exact linear route of 2–64 straight belts.
+# E3d5c5i: independent opt-in; an exact linear route of 2–64 belts.
 @export var enable_isolated_multi_belt_route_guard: bool = false
+# E3d5c5j: allow actual in-place left/right conversions only by separate opt-in.
+@export var enable_isolated_corner_route_guard: bool = false
 var _linear_route_refs: Array[WeakRef] = []
+var _linear_input_transforms: Array[Transform3D] = []
+var _linear_output_transforms: Array[Transform3D] = []
+var _linear_corner_mode: bool = false
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -228,6 +233,7 @@ func bind_single_belt_route(belt: ConveyorSegment) -> bool:
 	if (
 		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or enable_isolated_corner_route_guard
 		or not matches_attached_site() or _intake_escrow_ref == null
 		or _original_output_ref == null or is_output_source_locked()
 		or is_escrow_intake_locked() or not _single_belt_geometry_valid(belt)
@@ -250,6 +256,7 @@ func _single_belt_geometry_valid(belt: ConveyorSegment) -> bool:
 		return false
 	if (
 		belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn"
+		or belt.has_meta("conveyor_turn")
 		or belt.get_parent() != get_parent().get_parent()
 		or belt.previous_segment != null or belt.next_segment != null
 		or belt.input_building_port != source or source.connected_conveyor != belt
@@ -299,6 +306,11 @@ func bind_multi_belt_route(route: Array[ConveyorSegment]) -> bool:
 			return false
 	for segment: ConveyorSegment in route:
 		_linear_route_refs.append(weakref(segment))
+		var input := segment.get_node("InputEndpoint") as Marker3D
+		var output := segment.get_node("OutputEndpoint") as Marker3D
+		_linear_input_transforms.append(input.transform)
+		_linear_output_transforms.append(output.transform)
+	_linear_corner_mode = enable_isolated_corner_route_guard
 	return true
 
 
@@ -327,6 +339,16 @@ func _linear_geometry_valid(route: Array[ConveyorSegment]) -> bool:
 		var outgoing := segment.get_node_or_null("OutputEndpoint") as Marker3D
 		if not _live(incoming) or not _live(outgoing):
 			return false
+		if not _valid_linear_piece_geometry(segment, incoming, outgoing):
+			return false
+		if not _linear_route_refs.is_empty():
+			if (
+				i >= _linear_input_transforms.size()
+				or i >= _linear_output_transforms.size()
+				or not incoming.transform.is_equal_approx(_linear_input_transforms[i])
+				or not outgoing.transform.is_equal_approx(_linear_output_transforms[i])
+			):
+				return false
 		if i == 0:
 			if segment.previous_segment != null or segment.input_building_port != source or source.connected_conveyor != segment:
 				return false
@@ -349,6 +371,35 @@ func _linear_geometry_valid(route: Array[ConveyorSegment]) -> bool:
 	return true
 
 
+# Real automatic corner conversion preserves the straight PackedScene path
+# and records conveyor_turn on the same node. Check local marker geometry
+# as well as that tag, rather than trusting scene_file_path alone.
+# The two original turn templates remain the authoritative local shape.
+func _valid_linear_piece_geometry(
+	segment: ConveyorSegment, incoming: Marker3D, outgoing: Marker3D
+) -> bool:
+	if not incoming.position.is_equal_approx(Vector3(0.0, 0.5, 0.5)):
+		return false
+	var in_forward: Vector3 = (incoming.transform.basis * Vector3.FORWARD).normalized()
+	var out_forward: Vector3 = (outgoing.transform.basis * Vector3.FORWARD).normalized()
+	if not segment.has_meta("conveyor_turn"):
+		return (
+			outgoing.position.is_equal_approx(Vector3(0.0, 0.5, -0.5))
+			and in_forward.dot(out_forward) < -0.98
+		)
+	if not enable_isolated_corner_route_guard:
+		return false
+	var turn: int = int(segment.get_meta("conveyor_turn"))
+	var expected: Vector3
+	if turn == ConveyorTurnIntent.Turn.RIGHT:
+		expected = Vector3(0.5, 0.5, 0.0)
+	elif turn == ConveyorTurnIntent.Turn.LEFT:
+		expected = Vector3(-0.5, 0.5, 0.0)
+	else:
+		return false
+	return outgoing.position.is_equal_approx(expected) and absf(in_forward.dot(out_forward)) < 0.02
+
+
 func _bound_linear_route() -> Array[ConveyorSegment]:
 	var route: Array[ConveyorSegment] = []
 	for ref: WeakRef in _linear_route_refs:
@@ -362,6 +413,7 @@ func _bound_linear_route() -> Array[ConveyorSegment]:
 func has_verified_multi_belt_route() -> bool:
 	if (
 		not enable_isolated_multi_belt_route_guard or _linear_route_refs.is_empty()
+		or enable_isolated_corner_route_guard != _linear_corner_mode
 		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or not matches_attached_site() or is_output_source_locked()
 	):
@@ -384,13 +436,17 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	if (
 		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or enable_isolated_corner_route_guard
 	):
 		return false
 	return _accept_owned_item(item, amount)
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
-	if enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty():
+	if (
+		enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
+		or enable_isolated_corner_route_guard
+	):
 		if amount != 1 or not has_verified_multi_belt_route() or not _accept_owned_item(item, amount):
 			return false
 		var route: Array[ConveyorSegment] = _bound_linear_route()
