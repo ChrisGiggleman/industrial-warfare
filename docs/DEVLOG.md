@@ -3240,3 +3240,7 @@ Developer Godot F6 screenshot confirms **ALL 28 E3D5C5N MERGER ROUTE VERIFICATIO
 - `res://tests/conveyor_splitter_test.tscn` — 10/10.
 
 Gate targets modified shared belt forwarding, merger proof readiness, mutually exclusive receiver route guards and unchanged ordinary junction transport; not a full project regression. Proposed E3d5c5o: isolated splitter-to-merger composite cargo provenance, preserving an ordered two-junction history, original origin and both lane identities without minting a new source. Start with one straight inter-junction path and exact stock conservation; defer protected composite receiver admission, reverse junction order, automatic sorting, arbitrary graphs and gameplay integration until separate validation. No composite implementation staged by this acceptance commit.
+
+### 2026-11-14 — E3d5c5n Merger Route Compatibility Accepted (153/153)
+
+Developer confirmed all eight local Godot F6 regression suites passed: merger provenance 18/18, splitter branch 26/26, single-belt 26/26, multi-belt 27/27, mixed corners 29/29, connected transport 7/7, ordinary merger 10/10 and ordinary splitter 10/10. Together with the new 28-check route fixture, 181 successful targeted outcomes (not a full project suite). This regression acceptance is based on developer confirmation, not independent execution. Proceed to isolated E3d5c5o splitter-to-merger composite provenance.
