@@ -4,6 +4,11 @@ extends Node
 # This never authorizes a job or changes area-selection membership.
 signal blueprint_inspection_requested(site: ConstructionSite)
 
+# E3d5c5d: Emits only after an explicitly authorized, managed blueprint.
+# No permission, inventory, power or workers are granted by the signal.
+# Main has no listener; sandbox receiver auto-wiring requires separate opt-ins.
+signal blueprint_site_authorized(site: ConstructionSite)
+
 
 # =============================================================================
 # CONSTANTS
@@ -3722,6 +3727,7 @@ func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 		site.job.set_availability(true, true, true)
 		print("BLUEPRINT DEBUG: Requirements bypassed in testing sandbox")
 	print("BLUEPRINT AUTHORIZED: ", site.target_definition.display_name)
+	blueprint_site_authorized.emit(site)
 	return true
 
 

@@ -18,7 +18,16 @@ class_name SandboxConstructionDroneLifecycleGate
 # invent charger watts, recycle with imaginary energy, or release inventory.
 
 @export var enable_isolated_bridge: bool = false
+# Separate opt-in: only PRE-REGISTERED site-owned staging may auto-attach
+# a guarded receiver after a genuine WorldInteraction authorization signal.
+@export var enable_isolated_authorization_autowire: bool = false
+
 var _driver: PrototypeConstructionDroneTickController = null
+var _auto_registry: BlueprintConstructionSiteStagingRegistry = null
+var _auto_escrow: BlueprintConstructionMaterialEscrow = null
+var _auto_configured: bool = false
+var _auto_pending: Array[Dictionary] = []
+var _auto_attached: Array[Dictionary] = []
 
 
 func bind_verified_driver(driver: PrototypeConstructionDroneTickController) -> bool:
@@ -79,6 +88,149 @@ func attach_player_site_receiver(
 		receiver.free()
 		return null
 	return port
+
+
+# E3d5c5d — Explicitly supply existing receiver-ownership and escrow
+# services. Does not make a stock buffer, feed items or grant readiness.
+# These services are not attached to the committed sandbox by default.
+func configure_authorization_autowire(
+	registry: BlueprintConstructionSiteStagingRegistry,
+	escrow: BlueprintConstructionMaterialEscrow
+) -> bool:
+	if (
+		not _host_ready() or not enable_isolated_authorization_autowire
+		or _auto_configured
+		or not _live_autowire_node(registry)
+		or not _live_autowire_node(escrow)
+		or registry.get_parent() != get_parent()
+		or escrow.get_parent() != get_parent()
+		or not registry.enable_isolated_site_registry
+	):
+		return false
+	var world: Node = get_parent().get_node_or_null("WorldInteraction")
+	if not is_instance_valid(world) or not world.has_signal(&"blueprint_site_authorized"):
+		return false
+	if world.connect(&"blueprint_site_authorized", _on_authorized_player_blueprint) != OK:
+		return false
+	_auto_registry = registry
+	_auto_escrow = escrow
+	_auto_configured = true
+	return true
+
+
+# Register real, preconfigured staging for one MANAGED and still-PLANNED site.
+# A separate builder/factory inventory must supply this staging; the gate
+# never invents stock or automatically places construction buildings.
+func prepare_player_site_intake(
+	site: ConstructionSite,
+	staging: BlueprintConstructionMaterialStaging
+) -> bool:
+	if (
+		not _autowire_ready()
+		or not _live_autowire_node(site)
+		or site.get_parent() != get_parent()
+		or not _live_autowire_node(staging)
+		or staging.get_parent() != get_parent()
+		or site.job == null
+		or site.job.state != ConstructionJob.State.PLANNED
+		or not staging.enable_isolated_staging
+		or not staging.matches_definition(site.target_definition)
+		or not _live_autowire_node(staging.get_staged_inventory())
+	):
+		return false
+	var world: Node = get_parent().get_node_or_null("WorldInteraction")
+	if not is_instance_valid(world) or not world.call("_is_managed_blueprint", site):
+		return false
+	for entry: Dictionary in _auto_pending:
+		var prior_site: ConstructionSite = (
+			(entry["site"] as WeakRef).get_ref() as ConstructionSite
+		)
+		var prior_staging: BlueprintConstructionMaterialStaging = (
+			(entry["staging"] as WeakRef).get_ref()
+			as BlueprintConstructionMaterialStaging
+		)
+		if prior_site == site or prior_staging == staging:
+			return false
+	_auto_pending.append({
+		"site": weakref(site),
+		"staging": weakref(staging),
+		"attempted": false
+	})
+	return true
+
+
+# Observation only. Refuses ended sites, stale claims and foreign receivers.
+func receiver_for_authorized_site(
+	site: ConstructionSite
+) -> BlueprintConstructionAnchoredStagingPort:
+	if not _autowire_ready() or not _live_autowire_node(site):
+		return null
+	for entry: Dictionary in _auto_attached:
+		if (entry["site"] as WeakRef).get_ref() != site:
+			continue
+		var port: BlueprintConstructionAnchoredStagingPort = (
+			(entry["port"] as WeakRef).get_ref()
+			as BlueprintConstructionAnchoredStagingPort
+		)
+		if _live_autowire_node(port) and port.matches_attached_site():
+			return port
+	return null
+
+
+# No _process(): this signal is triggered ONLY by the existing E/Ctrl+E
+# authorization path. Every other blueprint remains untouched.
+func _on_authorized_player_blueprint(site: ConstructionSite) -> void:
+	if not _autowire_ready() or not _live_autowire_node(site):
+		return
+	for entry: Dictionary in _auto_pending:
+		if (entry["site"] as WeakRef).get_ref() != site:
+			continue
+		if bool(entry["attempted"]):
+			return
+		# Permanent one-attempt admission: never reconstruct a live claim.
+		entry["attempted"] = true
+		var staging: BlueprintConstructionMaterialStaging = (
+			(entry["staging"] as WeakRef).get_ref()
+			as BlueprintConstructionMaterialStaging
+		)
+		if (
+			not _live_autowire_node(staging)
+			or _auto_escrow.reservation_for(site) != 0
+		):
+			return
+		var port: BlueprintConstructionAnchoredStagingPort = (
+			attach_player_site_receiver(site, staging, _auto_registry)
+		)
+		if port == null:
+			return
+		# Fail closed during the synchronous callback: no belt can accept
+		# material between receiver creation and its original escrow binding.
+		port.enable_isolated_escrow_intake_lock = true
+		if not port.bind_escrow_intake_lock(_auto_escrow):
+			port.enable_isolated_input = false
+			push_error("Autowire failed after owner claim; receiver kept disabled")
+			return
+		_auto_attached.append({"site": weakref(site), "port": weakref(port)})
+		return
+
+
+func _autowire_ready() -> bool:
+	return (
+		_auto_configured and enable_isolated_authorization_autowire
+		and _host_ready()
+		and _live_autowire_node(_auto_registry)
+		and _live_autowire_node(_auto_escrow)
+		and _auto_registry.get_parent() == get_parent()
+		and _auto_escrow.get_parent() == get_parent()
+		and _auto_registry.enable_isolated_site_registry
+	)
+
+
+func _live_autowire_node(node: Node) -> bool:
+	return (
+		is_instance_valid(node) and not node.is_queued_for_deletion()
+		and node.is_inside_tree()
+	)
 
 
 func tick_once(delta: float) -> Dictionary:
