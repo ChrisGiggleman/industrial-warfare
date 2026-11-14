@@ -3224,3 +3224,19 @@ Developer reported all eight local Godot F6 regression suites passed: merger 10/
 Added distinct merger proof propagation over the existing reciprocal, aligned belt-transfer helper, carrying original supplier, selected input lane, merger epoch, output and ordered downstream history without treating junction stock as a fresh linear/splitter observation. Receiver binds once to one original supplier, one upstream straight belt, a configured merger lane/output and an empty straight downstream route (1–64 belts). The separate default-OFF guard rejects competing modes, retains original ownership and escrow checks and blocks direct port bypass even after a bound guard is disabled. No playable scene defaults changed.
 
 New `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` has 28 A–AB checks pending local Godot F6, including existing sandbox source discovery/authorization setup, exact empty binding, mixed-origin congestion, explicit inventory recovery, foreign source reconnection on the pinned lane, low-level unstamped transfer, broken reciprocity, guard toggle and merger epoch invalidation, same-type replacement, three accepted ingots, fourth-item escrow blocking, cancellation/refund and conservation. It uses real physical transfer helpers, not an autonomous timed gameplay run; automatic sorting, combined multi-crossing networks, general recovery UI and durable identity/save remain out of scope. No Godot runtime execution by assistant; acceptance and regressions remain pending.
+
+### 2026-11-14 — E3d5c5n Protected Merger Route Accepted (28/28)
+
+Developer Godot F6 screenshot confirms **ALL 28 E3D5C5N MERGER ROUTE VERIFICATION TESTS PASSED** (C–AB and aggregate visible; A/B above viewport), followed by debugger shutdown. The actual sandbox fixture demonstrated separate opt-in and empty route binding, rejection of wrong lane/reversed route/competing modes, foreign same-type cargo congestion with explicit conserved recovery, supplier reconnection on the same lane, rejection of unstamped low-level transfers, broken reciprocity, disabled guard and merger epoch invalidation, same-item replacement, three legitimate deliveries, fourth-item escrow backpressure, cancellation refund, conservation of nine ingots and nine ore, independent site protection and safe empty merger demolition. Acceptance is limited to one merger crossing and one pinned original source with a straight downstream path; direct physical helper tests do not establish autonomous timed gameplay, general recovery UI, automatic sorting or persistent identity.
+
+**Required targeted compatibility gate (153 checks across eight existing F6 scenes, pending):**
+- `res://tests/merger_cargo_provenance_e3d5c5m_test.tscn` — 18/18.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` — 27/27.
+- `res://tests/sandbox_corner_route_verification_e3d5c5j_test.tscn` — 29/29.
+- `res://tests/conveyor_connected_transport_test.tscn` — 7/7.
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+
+Gate targets modified shared belt forwarding, merger proof readiness, mutually exclusive receiver route guards and unchanged ordinary junction transport; not a full project regression. Proposed E3d5c5o: isolated splitter-to-merger composite cargo provenance, preserving an ordered two-junction history, original origin and both lane identities without minting a new source. Start with one straight inter-junction path and exact stock conservation; defer protected composite receiver admission, reverse junction order, automatic sorting, arbitrary graphs and gameplay integration until separate validation. No composite implementation staged by this acceptance commit.
