@@ -3132,3 +3132,13 @@ Developer Godot 4.6.2 F6 screenshot confirms **ALL 29 E3D5C5J MIXED CORNER ROUTE
 - `res://tests/conveyor_full_chain_test.tscn` — 8/8.
 
 The narrower gate is appropriate because E3d5c5j modified only the protected receiver and added its isolated test, without changing shared inventory, transport, or placement helpers. Next proposed E3d5c5k: isolated splitter provenance across actual input queue, round-robin distribution, and outgoing inventory, with exact source accounting, backpressure, and no bypass of protected receiver/escrow rules. Merger provenance remains a subsequent separate experiment. No branching changes are staged by this acceptance. Automatic route placement, live sandbox orchestration, durable cargo/claim identity, and save/load remain unimplemented.
+
+### 2026-11-14 — E3d5c5j Corner Route Regression Accepted (69/69)
+
+Developer screenshots confirm E3d5c5h 26/26, E3d5c5i 27/27, corner conversion 8/8 and full chain 8/8. All 69 targeted compatibility checks passed; combined with the 29 new mixed-route tests, 98 successful outcomes.
+
+### 2026-11-14 — E3d5c5k Splitter Cargo Provenance Staged (16 F6 Pending)
+
+Added default-OFF tracking on actual ConveyorSplitterComponent, requiring explicit configuration with empty original buffers. Real physical unload captures the incoming linear origin snapshot, per-item FIFO observations accompany successful round-robin inventory transfers, and the physical outgoing load records a separate splitter-crossing proof (source, upstream belt, exact splitter and output lane). External inventory API mutations invalidate observations for the affected buffer, leaving unknown items movable but unverified. Opting out during observed distribution clears ledger evidence and does not turn tracked outputs into fresh independent source stamps. No new item creation or scheduling. Ordinary default-OFF splitter behavior retains existing transfer policy.
+
+The isolated `res://tests/splitter_cargo_provenance_e3d5c5k_test.tscn` has 16 A–P checks pending local F6: real Storage supplier and four splitter-connected belts, empty bind, three-lane round-robin, backpressure, distinct branch proof, denial of linear proof, unknown same-type FIFO, output and outgoing cargo mutation, two material types, toggle behavior and conservation. Scope is ONE splitter crossing to its first outgoing belts, not proof across subsequent belt hops, a full branch receiver path, merger provenance, route planning or persistent identity. Existing protected receiver verification is unchanged and does not admit the new splitter proof. Shared building transfer and splitter code changed, so a fresh ordinary splitter and logistics regression is required after acceptance. No playable scene defaults changed.

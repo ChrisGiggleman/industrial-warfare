@@ -144,12 +144,21 @@ static func try_load_into_belt(
 		# InventoryComponent.transfer_to() handles
 		# safe inventory accounting.
 
+		var splitter := port.get_parent().get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
+		var tracked: bool = is_instance_valid(splitter) and splitter.uses_splitter_provenance()
+		var departure: Dictionary = {}
+		if tracked:
+			departure = splitter.snapshot_output_departure(port, item)
 		var loaded: bool = transport.try_receive_from_inventory(
 			port.inventory,
 			item
 		)
 		if loaded:
-			transport.record_physical_building_load(port, item)
+			if tracked:
+				splitter.record_output_departure(port, item, departure)
+				transport.record_splitter_building_load(departure.get("proof", {}), port, item)
+			else:
+				transport.record_physical_building_load(port, item)
 		return loaded
 
 	# No eligible item was available.
@@ -281,6 +290,11 @@ static func try_unload_from_belt(
 	# Existing InventoryComponent handles resource
 	# conservation and destination capacity.
 
+	var splitter := port.get_parent().get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
+	var tracked: bool = is_instance_valid(splitter) and splitter.uses_splitter_provenance()
+	var arrival: Dictionary = {}
+	if tracked:
+		arrival = splitter.snapshot_input_arrival(port, transport)
 	var transferred: int = (
 		transport.cargo_inventory.transfer_to(
 			port.inventory,
@@ -289,4 +303,6 @@ static func try_unload_from_belt(
 		)
 	)
 
+	if transferred == 1 and tracked:
+		splitter.record_input_arrival(port, item, arrival)
 	return transferred == 1

@@ -301,3 +301,62 @@ func has_verified_physical_route(
         if not is_instance_valid(route[i]) or _loaded_route[i].get_ref() != route[i]:
             return false
     return true
+
+# E3d5c5k: separate proof type for ONE tracked splitter crossing.
+# Not a linear-route stamp: old protected receivers must not accept it.
+# Downstream propagation and complete branch admission are future work.
+var _splitter_proof: Dictionary = {}
+var _splitter_cargo_ref: WeakRef = null
+var _splitter_revision: int = -1
+
+
+func record_splitter_building_load(proof: Dictionary, port: ItemPortComponent, item: ItemDefinition) -> void:
+    _splitter_proof.clear()
+    _splitter_cargo_ref = null
+    _splitter_revision = -1
+    if proof.is_empty() or not is_instance_valid(port) or get_held_item() != item:
+        return
+    var output_ref: WeakRef = proof.get("output_port") as WeakRef
+    if output_ref == null or output_ref.get_ref() != port or proof.get("item") != item:
+        return
+    _splitter_proof = proof.duplicate()
+    _splitter_cargo_ref = weakref(cargo_inventory)
+    _splitter_revision = cargo_inventory.get_mutation_revision()
+
+
+func has_verified_splitter_load(
+    origin: ItemPortComponent,
+    item: ItemDefinition,
+    splitter: ConveyorSplitterComponent,
+    incoming: ConveyorSegment,
+    output: ItemPortComponent
+) -> bool:
+    if _splitter_proof.is_empty() or _splitter_cargo_ref == null:
+        return false
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory):
+        return false
+    if not is_instance_valid(splitter) or not is_instance_valid(incoming) or not is_instance_valid(output):
+        return false
+    if get_held_item() != item or _splitter_cargo_ref.get_ref() != cargo_inventory:
+        return false
+    if _splitter_revision != cargo_inventory.get_mutation_revision():
+        return false
+    var port_ref: WeakRef = _splitter_proof.get("port") as WeakRef
+    var stock_ref: WeakRef = _splitter_proof.get("stock") as WeakRef
+    var splitter_ref: WeakRef = _splitter_proof.get("splitter") as WeakRef
+    var incoming_ref: WeakRef = _splitter_proof.get("input_belt") as WeakRef
+    var output_ref: WeakRef = _splitter_proof.get("output_port") as WeakRef
+    var input_ref: WeakRef = _splitter_proof.get("input_port") as WeakRef
+    if port_ref == null or stock_ref == null or splitter_ref == null or incoming_ref == null or output_ref == null or input_ref == null:
+        return false
+    var input := input_ref.get_ref() as ItemPortComponent
+    var belt := get_parent() as ConveyorSegment
+    return (
+        port_ref.get_ref() == origin and stock_ref.get_ref() == origin.inventory
+        and splitter_ref.get_ref() == splitter and incoming_ref.get_ref() == incoming
+        and output_ref.get_ref() == output and _splitter_proof.get("item") == item
+        and is_instance_valid(input) and is_instance_valid(belt)
+        and input.get_parent() == splitter.get_parent() and output.get_parent() == splitter.get_parent()
+        and input.connected_conveyor == incoming and incoming.output_building_port == input
+        and output.connected_conveyor == belt and belt.input_building_port == output
+    )
