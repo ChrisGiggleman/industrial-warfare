@@ -146,9 +146,13 @@ static func try_load_into_belt(
 
 		var splitter := port.get_parent().get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
 		var tracked: bool = is_instance_valid(splitter) and splitter.uses_splitter_provenance()
+		var merger := port.get_parent().get_node_or_null("MergerComponent") as ConveyorMergerComponent
+		var merge_tracked: bool = is_instance_valid(merger) and merger.uses_merger_provenance()
 		var departure: Dictionary = {}
 		if tracked:
 			departure = splitter.snapshot_output_departure(port, item)
+		elif merge_tracked:
+			departure = merger.snapshot_output_departure(port, item)
 		var loaded: bool = transport.try_receive_from_inventory(
 			port.inventory,
 			item
@@ -157,6 +161,9 @@ static func try_load_into_belt(
 			if tracked:
 				splitter.record_output_departure(port, item, departure)
 				transport.record_splitter_building_load(departure.get("proof", {}), port, item)
+			elif merge_tracked:
+				merger.record_output_departure(port, item, departure)
+				transport.record_merger_building_load(departure.get("proof", {}), port, item)
 			else:
 				transport.record_physical_building_load(port, item)
 		return loaded
@@ -292,9 +299,13 @@ static func try_unload_from_belt(
 
 	var splitter := port.get_parent().get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
 	var tracked: bool = is_instance_valid(splitter) and splitter.uses_splitter_provenance()
+	var merger := port.get_parent().get_node_or_null("MergerComponent") as ConveyorMergerComponent
+	var merge_tracked: bool = is_instance_valid(merger) and merger.uses_merger_provenance()
 	var arrival: Dictionary = {}
 	if tracked:
 		arrival = splitter.snapshot_input_arrival(port, transport)
+	elif merge_tracked:
+		arrival = merger.snapshot_input_arrival(port, transport)
 	var transferred: int = (
 		transport.cargo_inventory.transfer_to(
 			port.inventory,
@@ -303,6 +314,9 @@ static func try_unload_from_belt(
 		)
 	)
 
-	if transferred == 1 and tracked:
-		splitter.record_input_arrival(port, item, arrival)
+	if transferred == 1:
+		if tracked:
+			splitter.record_input_arrival(port, item, arrival)
+		elif merge_tracked:
+			merger.record_input_arrival(port, item, arrival)
 	return transferred == 1

@@ -443,3 +443,54 @@ func has_verified_splitter_branch(
         if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
             return false
     return true
+
+# E3d5c5m: separate observation for one merger crossing to the first
+# outgoing belt. Not eligible for linear or splitter receiver admission.
+var _merger_proof: Dictionary = {}
+var _merger_cargo_ref: WeakRef = null
+var _merger_revision: int = -1
+
+
+func record_merger_building_load(proof: Dictionary, port: ItemPortComponent, item: ItemDefinition) -> void:
+    _merger_proof.clear()
+    _merger_cargo_ref = null
+    _merger_revision = -1
+    if proof.is_empty() or not is_instance_valid(port) or get_held_item() != item:
+        return
+    var output_ref := proof.get("output_port") as WeakRef
+    if output_ref == null or output_ref.get_ref() != port or proof.get("item") != item:
+        return
+    _merger_proof = proof.duplicate()
+    _merger_cargo_ref = weakref(cargo_inventory)
+    _merger_revision = cargo_inventory.get_mutation_revision()
+
+
+func has_verified_merger_load(
+    origin: ItemPortComponent, item: ItemDefinition,
+    merger: ConveyorMergerComponent, incoming: ConveyorSegment,
+    input: ItemPortComponent, output: ItemPortComponent
+) -> bool:
+    if _merger_proof.is_empty() or _merger_cargo_ref == null:
+        return false
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory):
+        return false
+    if not is_instance_valid(merger) or not merger.accepts_provenance_epoch(int(_merger_proof.get("epoch", -1))):
+        return false
+    if not is_instance_valid(cargo_inventory) or _merger_cargo_ref.get_ref() != cargo_inventory:
+        return false
+    if _merger_revision != cargo_inventory.get_mutation_revision() or get_held_item() != item or _merger_proof.get("item") != item:
+        return false
+    var expected: Dictionary = {"port": origin, "stock": origin.inventory,
+        "merger": merger, "input_belt": incoming, "input_port": input, "output_port": output}
+    for key: Variant in expected:
+        var ref := _merger_proof.get(key) as WeakRef
+        if ref == null or not is_instance_valid(expected[key]) or ref.get_ref() != expected[key]:
+            return false
+    var belt := get_parent() as ConveyorSegment
+    if not is_instance_valid(belt):
+        return false
+    return (
+        input.get_parent() == merger.get_parent() and output.get_parent() == merger.get_parent()
+        and input.connected_conveyor == incoming and incoming.output_building_port == input
+        and output.connected_conveyor == belt and belt.input_building_port == output
+    )
