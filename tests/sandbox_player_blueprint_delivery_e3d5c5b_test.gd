@@ -239,16 +239,23 @@ func _checks() -> void:
 	assert(warehouse.get_amount(ingot) == 9)
 	print("PASS Q: Owned escrow and power dispatch a drone, but flight does not start work")
 
+	# Escrow makes space in the site's three-unit buffer while the drone is
+	# still traveling, so QUEUED ports can still receive excess stock.
+	# Keep the fourth ingot IN TRANSIT until the drone physically arrives.
+	# The post-arrival receiver must reject delivery while CONSTRUCTING.
+	# A future separately gated intake lock must block excess cargo as soon
+	# as the material escrow reservation exists.
 	timer._process(0.01)
 	assert(transport.get_held_item() == ingot)
-	assert(not timer.advance_transport(1.0))
 	assert(transport.cargo_inventory.get_amount(ingot) == 1)
 	assert(int(gate.tick_once(5.0)["advanced"]) == 1)
 	assert(drone.is_at_site())
 	assert(site.job.state == ConstructionJob.State.CONSTRUCTING)
 	assert(is_equal_approx(site.job.get_progress(), 0.5))
 	assert(not port.can_accept_item(ingot))
-	print("PASS R: Arrived drone advances real player plan; extra belt cargo stays blocked")
+	assert(not timer.advance_transport(1.0))
+	assert(transport.cargo_inventory.get_amount(ingot) == 1)
+	print("PASS R: Arrived drone builds; fourth belt ingot is then blocked and retained")
 
 	assert(hub.set_generator_enabled(false))
 	assert(int(gate.tick_once(1.0)["advanced"]) == 0)
