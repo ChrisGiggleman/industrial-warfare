@@ -3093,3 +3093,20 @@ Developer provided all nine Godot 4.6.2 F6 screenshots. Inventory transfer print
 Added independent default-OFF multi-belt receiver guard with explicit one-time empty-path binding (2–64 straight segments). Both endpoints and every consecutive physical link must be reciprocal and aligned, same sandbox, no repeats, conflicting building ends, reversed links or cycles. Existing single-belt guard and legacy opt-out remain separate. Shared ConveyorTransportLink now snapshots valid origin before an ordinary conserved move and propagates the ordered weak-reference segment history only after successful physical forward transfer. A low-level buffer move does not carry history. A cargo mutation invalidates its stamp, and the protected receiver checks exact source and full pinned path at final delivery. This is in-process observation, not tamperproof or persistent item identity. No normal routing, inventory creation, auto-build or playable scene defaults changed.
 
 Added `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` with 27 A–AA checks pending F6. Three real straight segments carry test-seeded stock from an actual Storage output to a source-enrolled receiver; wrong source, repaired connections with wrong history, missing physical hop, misalignment, cyclic/nonreciprocal current chain, unbound/nonempty path and same-item cargo replacement are denied. Valid multi-hop delivery, escrow blocking and cancellation recovery are tested. Branching, corner route binding, persistent origin, live sandbox integration and automatic route placement remain outside scope. Require fresh single-belt, connected/timed transport and legacy logistics checks before accepting further shared changes.
+
+### 2026-11-14 — E3d5c5i Multi-Segment Straight Route Verification Accepted (27/27)
+
+Developer Godot 4.6.2 screenshot confirms **ALL 27 E3D5C5I MULTI BELT ROUTE VERIFICATION TESTS PASSED** (C–AA and aggregate visible; A/B above viewport). The isolated three-straight-segment path preserved original supplier and ordered physical hop history through successful timed transfers. Unbound/nonempty admission, duplicate/reversed/nonreciprocal paths, foreign cargo after reconnection, direct low-level buffer transfers, misalignment, cyclic or broken upstream chains, disabled bound guard and same-item replacement were rejected. Three verified ingots reached only their owned staging; escrow blocked the fourth and cancellation/recovery conserved stock. Main and committed normal sandbox behavior remain outside the opt-in receiver experiment. This does not validate every path length, corners, branching, persistent identity or gameplay automation.
+
+**Required targeted compatibility gate (108 checks across nine F6 scenes, pending):**
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/conveyor_connected_transport_test.tscn` — 7/7.
+- `res://tests/conveyor_timed_transport_test.tscn` — 8/8.
+- `res://tests/conveyor_transport_buffer_test.tscn` — 7/7.
+- `res://tests/conveyor_automatic_loading_test.tscn` — 10/10.
+- `res://tests/conveyor_automatic_unloading_test.tscn` — 9/9.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+- `res://tests/blueprint_mined_owned_construction_e3d5c4t_test.tscn` — 21/21.
+
+This gate targets shared transport/link behavior and legacy ports; it is not a full-project suite. Next proposed E3d5c5j: mixed straight/left/right corner route verification with actual endpoint geometry, exact segment identity and cargo history. No corner routing implementation is staged yet. Maintain the existing authorization, source ownership, escrow, default-off and resource conservation safeguards. Before live integration, still address cargo timer identity under externally manipulated buffers, source enrollment lifecycle, authenticated branching paths and save/load.
