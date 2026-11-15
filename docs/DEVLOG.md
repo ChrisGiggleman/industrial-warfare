@@ -3303,3 +3303,20 @@ Developer confirmed all nine local Godot F6 regressions passed: composite proven
 Added independent default-OFF reverse composite admission on the tracked splitter. A verified single-merger crossing with one straight upstream belt and one straight inter-junction belt is nested in the splitter observation, preserving the original supplier, merger input/output, inter-junction belt and exact splitter input/output. Both junction epochs and the reverse feature flag must remain valid. Reverse proof is excluded from existing linear, splitter, merger and forward-composite proof queries, and is not forwarded beyond the first splitter output belt. Unknown cargo remains physically movable; ordinary distribution and playable scene defaults are unchanged.
 
 New `res://tests/merger_splitter_reverse_composite_e3d5c5q_test.tscn` has 18 A–R local F6 checks pending with three real suppliers, one merger, one splitter and seven actual straight belts. Checks independent opt-ins, mixed-origin round-robin through both junctions, all three exact output identities, incorrect source/lane attribution, separation from existing proof, output congestion and recovery, unstamped inter-junction cargo, each epoch toggle, same-type replacement, fresh observations, second material type, seven ingots and one ore conservation and empty demolition. This uses explicit physical transfer helpers, not autonomous timing. Protected reverse receiver admission, downstream reverse proof forwarding, arbitrary junction graphs, automatic sorting, live gameplay and persistence remain outside scope. Godot execution and focused compatibility regression remain pending developer validation.
+
+### 2026-11-14 — E3d5c5q Reverse Merger-to-Splitter Composite Provenance Accepted (18/18)
+
+Developer confirmed all 18 local Godot F6 checks passed. Acceptance is based on written developer confirmation, not independent execution or screenshot review. Three original suppliers, mixed-origin round-robin distribution through both junctions, all three splitter output identities, distinct proof modes, backpressure and recovery, unknown cargo, epoch toggles, same-type replacement, fresh observations, exact material conservation and empty demolition passed in the isolated fixture. Scope is one merger then one splitter and first output belts only.
+
+**Required targeted compatibility gate (162 checks across nine existing F6 scenes, pending):**
+- `res://tests/splitter_cargo_provenance_e3d5c5k_test.tscn` — 16/16.
+- `res://tests/merger_cargo_provenance_e3d5c5m_test.tscn` — 18/18.
+- `res://tests/splitter_merger_composite_provenance_e3d5c5o_test.tscn` — 18/18.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` — 28/28.
+- `res://tests/sandbox_composite_route_e3d5c5p_test.tscn` — 29/29.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+- `res://tests/conveyor_connected_transport_test.tscn` — 7/7.
+
+Gate targets the modified splitter admission and shared cargo proof queries, both earlier junction orders, existing protected receiver behavior and ordinary physical transport. This is not a full project regression. Proposed E3d5c5r: separate default-OFF reverse composite downstream forwarding and exact protected receiver binding to one enrolled origin, merger input/output, inter-junction belt, splitter output and downstream path, retaining ownership, escrow, cancellation and competing-mode protections. Foreign materials remain physical and recoverable; no automatic sorting or arbitrary graphs. No new reverse receiver implementation staged by this acceptance commit. After reverse route validation, evaluate consolidation into one bounded general route model and integrated gameplay rather than proliferating specialized guards for every topology.
