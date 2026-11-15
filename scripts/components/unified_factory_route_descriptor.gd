@@ -209,3 +209,64 @@ func belt_count() -> int:
 
 func junction_count() -> int:
 	return _steps.size() - belt_count()
+
+
+# E3d5c5t: adapter over the existing observed cargo proof, not admission.
+# Validate the captured physical path before consulting the exact legacy
+# query for its topology. No stamping, transfer, authorization or reservation.
+func matches_legacy_cargo(belt: ConveyorSegment, item: ItemDefinition) -> bool:
+	if item == null or not _live(belt) or not validate():
+		return false
+	var origin := _origin.get_ref() as ItemPortComponent
+	var final_step: Dictionary = _steps[-1]
+	if final_step["kind"] != "belt" or _object(final_step, "node") != belt:
+		return false
+	var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+	if not _live(cargo) or not _live(cargo.cargo_inventory) or cargo.get_held_item() != item:
+		return false
+	var entry := _object(_steps[0], "node") as ConveyorSegment
+	var middle: ConveyorSegment = null
+	var downstream: Array[ConveyorSegment] = []
+	var crossings: Array[Dictionary] = []
+	for step: Dictionary in _steps:
+		if step["kind"] == "belt":
+			var segment := _object(step, "node") as ConveyorSegment
+			downstream.append(segment)
+		else:
+			if crossings.size() == 1:
+				middle = downstream[0]
+			crossings.append(step)
+			downstream.clear()
+	if crossings.is_empty():
+		if downstream.size() == 1:
+			return cargo.has_physical_building_load(origin, item)
+		return cargo.has_verified_physical_route(origin, item, downstream)
+	var first: Dictionary = crossings[0]
+	var building := _object(first, "node") as Node
+	var first_in := _object(first, "input") as ItemPortComponent
+	var first_out := _object(first, "output") as ItemPortComponent
+	var splitter := building.get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
+	var merger := building.get_node_or_null("MergerComponent") as ConveyorMergerComponent
+	if crossings.size() == 1:
+		if _live(splitter):
+			return cargo.has_verified_splitter_branch(origin, item, splitter, entry, first_in, first_out, downstream)
+		if _live(merger):
+			return cargo.has_verified_merger_route(origin, item, merger, entry, first_in, first_out, downstream)
+		return false
+	if crossings.size() != 2 or not _live(middle):
+		return false
+	var second: Dictionary = crossings[1]
+	var second_building := _object(second, "node") as Node
+	var second_in := _object(second, "input") as ItemPortComponent
+	var second_out := _object(second, "output") as ItemPortComponent
+	if _live(splitter):
+		merger = second_building.get_node_or_null("MergerComponent") as ConveyorMergerComponent
+		if not _live(merger):
+			return false
+		return cargo.has_verified_composite_route(origin, item, splitter, entry, first_in, first_out, middle, merger, second_in, second_out, downstream)
+	if _live(merger):
+		splitter = second_building.get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
+		if not _live(splitter):
+			return false
+		return cargo.has_verified_reverse_composite_route(origin, item, splitter, entry, second_in, second_out, middle, merger, first_in, first_out, downstream)
+	return false
