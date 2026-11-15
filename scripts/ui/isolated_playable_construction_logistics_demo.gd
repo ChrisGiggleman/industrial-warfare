@@ -109,15 +109,29 @@ func start_demo() -> bool:
 	var layer := CanvasLayer.new()
 	layer.layer = 12
 	add_child(layer)
+	var panel := PanelContainer.new()
+	panel.position = Vector2(16, 70)
+	layer.add_child(panel)
+	var rows := VBoxContainer.new()
+	panel.add_child(rows)
 	_label = Label.new()
-	_label.position = Vector2(16, 70)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.add_theme_color_override("font_color", Color(0.9, 0.97, 1))
 	_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	_label.add_theme_constant_override("shadow_offset_x", 2)
 	_label.add_theme_constant_override("shadow_offset_y", 2)
-	layer.add_child(_label)
-	_status = "Build mode + P: place Test Storage at cyan marker, default rotation. Hover it and press F7."
+	rows.add_child(_label)
+	var actions := HBoxContainer.new()
+	rows.add_child(actions)
+	var prepare := Button.new()
+	prepare.text = "Prepare marked plan (F7)"
+	prepare.pressed.connect(_prepare_marked_plan)
+	actions.add_child(prepare)
+	var bind := Button.new()
+	bind.text = "Bind connected belt (F8)"
+	bind.pressed.connect(_bind_connected_belt)
+	actions.add_child(bind)
+	_status = "Build mode + P: place Test Storage at cyan marker, default rotation. Prepare marked plan."
 	set_process(true)
 	set_process_unhandled_input(true)
 	return true
@@ -163,7 +177,7 @@ func _on_authorized(candidate: ConstructionSite) -> void:
 	# Close all intake until explicit empty-route enrollment.
 	receiver.enable_isolated_unified_route_adapter = true
 	receiver.enable_isolated_unified_receiver_consolidation = true
-	_status = "Authorized. P off; place one real straight conveyor at green marker, facing from starter toward plan. F8 binds."
+	_status = "Authorized. P off; place one straight belt at green marker, facing starter to plan. Then Bind."
 
 
 func bind_player_belt(belt: ConveyorSegment) -> bool:
@@ -196,6 +210,20 @@ func bind_player_belt(belt: ConveyorSegment) -> bool:
 	return true
 
 
+func _prepare_marked_plan() -> void:
+	for child: Node in get_parent().get_children():
+		var candidate := child as ConstructionSite
+		if _live(candidate) and candidate.global_transform.is_equal_approx(Transform3D(Basis.IDENTITY, SITE_POSITION)):
+			if prepare_site(candidate):
+				return
+	_status = "Prepare refused: place the unapproved Storage plan at the cyan marker, with no preconnected belt."
+
+
+func _bind_connected_belt() -> void:
+	if not _live(supply) or not bind_player_belt(supply.connected_conveyor):
+		_status = "Bind refused: authorize first, place one empty straight belt snapped to starter OUT toward plan."
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not enable_isolated_playable_demo or not _started or not event is InputEventKey:
 		return
@@ -206,8 +234,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_status = "F7 refused: hover the unapproved Storage plan at cyan marker; no preconnected belt."
 		get_viewport().set_input_as_handled()
 	elif event.physical_keycode == KEY_F8:
-		if not _live(supply) or not bind_player_belt(supply.connected_conveyor):
-			_status = "F8 refused: authorize first, place one empty straight belt snapped to starter OUT toward plan."
+		_bind_connected_belt()
 		get_viewport().set_input_as_handled()
 
 
@@ -221,4 +248,4 @@ func _process(_delta: float) -> void:
 		var cargo := bound_belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
 		if _live(cargo):
 			in_transit = cargo.cargo_inventory.get_amount(INGOT)
-	_label.text = "CONSTRUCTION LOGISTICS DEMO — F7 prepare / E authorize / F8 bind\n%s\nStarter: %d | Belt: %d | Staged: %d / 3\nNo worker or power supplied. Cancel with X; no automatic completion." % [_status, stock, in_transit, delivered]
+	_label.text = "CONSTRUCTION LOGISTICS DEMO — Prepare / E authorize / Bind\n%s\nStarter: %d | Belt: %d | Staged: %d / 3\nNo worker or power supplied. Cancel with X; no automatic completion." % [_status, stock, in_transit, delivered]
