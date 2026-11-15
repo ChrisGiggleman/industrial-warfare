@@ -82,12 +82,12 @@ func _convert_before(
 
 func _checks() -> void:
 	for mode: String in ["single", "linear", "corners", "splitter", "merger", "forward", "reverse"]:
-		_case(mode)
+		assert(_case(mode))
 	print("ALL 28 E3D5C5S UNIFIED FACTORY ROUTE VERIFICATION TESTS PASSED")
 	print("TEST ONLY: structural parity; no unified cargo proof or construction authority.")
 
 
-func _case(mode: String) -> void:
+func _case(mode: String) -> bool:
 	var definition := load("res://data/buildings/test_storage.tres") as BuildingDefinition
 	var ingot := load("res://data/items/test_ingot.tres") as ItemDefinition
 	var ore := load("res://data/items/test_ore.tres") as ItemDefinition
@@ -565,3 +565,4 @@ func _case(mode: String) -> void:
 	sandbox.free()
 	assert(not descriptor.validate())
 	print("PASS ", mode, " 4: Read-only state preserved; deleted route invalidates weak references")
+	return true
