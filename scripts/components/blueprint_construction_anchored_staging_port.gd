@@ -62,6 +62,10 @@ const UnifiedRouteDescriptor = preload("res://scripts/components/unified_factory
 @export var enable_isolated_unified_route_adapter: bool = false
 var _unified_descriptor: RefCounted = null
 var _unified_bound_mode: String = ""
+# E3d5c5v: select the consolidated admission strategy at empty-route binding.
+# The choice cannot be changed by a flag toggle after binding.
+@export var enable_isolated_unified_receiver_consolidation: bool = false
+var _unified_bound_consolidated: bool = false
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -595,7 +599,7 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 
 
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
-	if enable_isolated_unified_route_adapter or _unified_descriptor != null:
+	if enable_isolated_unified_route_adapter or enable_isolated_unified_receiver_consolidation or _unified_descriptor != null:
 		return false
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
@@ -612,15 +616,24 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
 	# Default-off and never bound: exactly the previous admission behavior.
-	if not enable_isolated_unified_route_adapter and _unified_descriptor == null:
+	if not enable_isolated_unified_route_adapter and not enable_isolated_unified_receiver_consolidation and _unified_descriptor == null:
 		return _legacy_can_accept_belt_item(belt, item, amount)
-	# Once bound, disabling the adapter cannot silently bypass it.
+	# Once bound, neither toggling off nor changing strategy can bypass checks.
 	if not enable_isolated_unified_route_adapter or _unified_descriptor == null or amount != 1:
+		return false
+	if enable_isolated_unified_receiver_consolidation != _unified_bound_consolidated:
 		return false
 	if _selected_unified_mode() != _unified_bound_mode:
 		return false
-	if not _legacy_can_accept_belt_item(belt, item, amount):
-		return false
+	if _unified_bound_consolidated:
+		# Retain route readiness and legacy ownership/escrow as authority.
+		# The descriptor alone dispatches the cargo-history query.
+		if not _unified_legacy_route_ready(_unified_bound_mode) or not _accept_owned_item(item, amount):
+			return false
+	else:
+		# Previous dual strategy, preserved for compatibility.
+		if not _legacy_can_accept_belt_item(belt, item, amount):
+			return false
 	return bool(_unified_descriptor.call("matches_legacy_cargo", belt, item))
 
 
@@ -1075,40 +1088,43 @@ func _selected_unified_mode() -> String:
 	return modes[0] if modes.size() == 1 else ""
 
 
+# Share the authoritative bound-mode readiness test between enrollment and
+# consolidated admission; this is not cargo proof or material permission.
+func _unified_legacy_route_ready(mode: String) -> bool:
+	match mode:
+		"single": return has_verified_single_belt_route()
+		"linear": return has_verified_multi_belt_route()
+		"splitter": return has_verified_splitter_branch()
+		"merger": return has_verified_merger_route()
+		"forward": return has_verified_composite_route()
+		"reverse": return has_verified_reverse_composite_route()
+	return false
+
+
 func _unified_steps(mode: String) -> Array:
+	if not _unified_legacy_route_ready(mode):
+		return []
 	var steps: Array = []
 	match mode:
 		"single":
-			if not has_verified_single_belt_route():
-				return []
 			steps.append(_direct_belt_ref.get_ref())
 		"linear":
-			if not has_verified_multi_belt_route():
-				return []
 			steps.append_array(_bound_linear_route())
 		"splitter":
-			if not has_verified_splitter_branch():
-				return []
 			steps = [_branch_incoming_ref.get_ref(),
 				{"input": _branch_input_ref.get_ref(), "output": _branch_output_ref.get_ref()}]
 			steps.append_array(_bound_branch_route())
 		"merger":
-			if not has_verified_merger_route():
-				return []
 			steps = [_merger_route_incoming_ref.get_ref(),
 				{"input": _merger_route_input_ref.get_ref(), "output": _merger_route_output_ref.get_ref()}]
 			steps.append_array(_bound_merger_route())
 		"forward":
-			if not has_verified_composite_route():
-				return []
 			steps = [_composite_node("entry"),
 				{"input": _composite_node("split_input"), "output": _composite_node("split_output")},
 				_composite_node("middle"),
 				{"input": _composite_node("merge_input"), "output": _composite_node("merge_output")}]
 			steps.append_array(_bound_composite_route())
 		"reverse":
-			if not has_verified_reverse_composite_route():
-				return []
 			steps = [_reverse_composite_node("entry"),
 				{"input": _reverse_composite_node("merge_input"), "output": _reverse_composite_node("merge_output")},
 				_reverse_composite_node("middle"),
@@ -1162,8 +1178,13 @@ func bind_unified_route_adapter() -> bool:
 		return false
 	_unified_descriptor = descriptor
 	_unified_bound_mode = mode
+	_unified_bound_consolidated = enable_isolated_unified_receiver_consolidation
 	return true
 
 
 func has_bound_unified_route_adapter() -> bool:
 	return _unified_descriptor != null
+
+
+func has_bound_unified_receiver_consolidation() -> bool:
+	return _unified_descriptor != null and _unified_bound_consolidated
