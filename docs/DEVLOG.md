@@ -3266,3 +3266,7 @@ Developer confirmed all 18 local Godot F6 checks passed. Screenshot was unavaila
 - `res://tests/conveyor_merger_test.tscn` — 10/10.
 
 The gate targets changes to splitter epoch invalidation, merger admission and shared transport proof queries; it is not a full project regression. Proposed E3d5c5p: explicitly opt-in composite proof forwarding across downstream straight belts and independently bind a protected construction receiver to the exact source, splitter crossing, inter-junction belt, merger crossing and downstream path; preserve ownership, escrow and cancellation protections, fail closed on competing modes, and retain foreign cargo for explicit recovery. Reverse-order junctions, automatic sorting, live gameplay and persistent identity remain later work. No composite receiver implementation staged by this acceptance commit.
+
+### 2026-11-14 — E3d5c5o Composite Provenance Compatibility Accepted (141/141)
+
+Developer confirmed all eight local Godot F6 regressions passed: splitter provenance 16/16, merger provenance 18/18, protected splitter branch 26/26, protected merger route 28/28, single-belt route 26/26, connected transport 7/7, ordinary splitter 10/10 and ordinary merger 10/10. Combined with 18 new composite provenance checks, 159 targeted successful outcomes, not the full project suite. Acceptance is based on developer-reported results. Proceed to isolated E3d5c5p protected composite receiver and downstream forwarding.
