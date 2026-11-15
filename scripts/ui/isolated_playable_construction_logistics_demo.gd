@@ -46,6 +46,7 @@ var receiver: BlueprintConstructionAnchoredStagingPort = null
 var bound_belt: ConveyorSegment = null
 var _started: bool = false
 var _status: String = ""
+var _bind_error: String = ""
 var _label: Label = null
 
 
@@ -112,7 +113,7 @@ func start_demo() -> bool:
 	layer.layer = 12
 	add_child(layer)
 	var panel := PanelContainer.new()
-	panel.position = Vector2(16, 70)
+	panel.position = Vector2(16, 275)
 	layer.add_child(panel)
 	var rows := VBoxContainer.new()
 	panel.add_child(rows)
@@ -168,12 +169,17 @@ func _guide(message: String, at: Vector3, color: Color) -> void:
 	label.global_position = at
 
 
+# Permit tiny ground-ray float offsets; never move a player blueprint.
+func _marked_plan(candidate: ConstructionSite) -> bool:
+	return _live(candidate) and candidate.target_definition == STORAGE and candidate.global_transform.basis.is_equal_approx(Basis.IDENTITY) and candidate.global_position.distance_to(SITE_POSITION) <= 0.025
+
+
 func prepare_site(candidate: ConstructionSite) -> bool:
 	if not enable_isolated_playable_demo or not _started or site != null or not _live(candidate) or not _live(supply):
 		return false
 	if not world.call("_is_managed_blueprint", candidate) or candidate.job.state != ConstructionJob.State.PLANNED:
 		return false
-	if candidate.target_definition != STORAGE or not candidate.global_transform.is_equal_approx(Transform3D(Basis.IDENTITY, SITE_POSITION)):
+	if not _marked_plan(candidate):
 		return false
 	if supply.inventory.get_amount(INGOT) != 4 or supply.connected_conveyor != null:
 		return false
@@ -199,29 +205,46 @@ func _on_authorized(candidate: ConstructionSite) -> void:
 	_status = "Authorized. P off; place one straight belt at green marker, facing starter to plan. Then Bind."
 
 
+func _refuse_bind(reason: String) -> bool:
+	_bind_error = reason
+	return false
+
+
 func bind_player_belt(belt: ConveyorSegment) -> bool:
-	if not enable_isolated_playable_demo or not _started or bound_belt != null or not _live(receiver) or not _live(supply):
-		return false
-	if not receiver.matches_attached_site() or not _live(belt) or belt.get_parent() != get_parent() or not belt.is_in_group("player_built") or belt.is_in_group("construction_preview"):
-		return false
+	_bind_error = ""
+	if not enable_isolated_playable_demo or not _started:
+		return _refuse_bind("Demo is not active.")
+	if _live(bound_belt):
+		return _refuse_bind("Route is already bound. Watch the counters.")
+	if not _live(site):
+		return _refuse_bind("No prepared blueprint. Restart; click Prepare BEFORE pressing E.")
+	if not _live(receiver) or not receiver.matches_attached_site():
+		return _refuse_bind("Prepared plan has no active authorized receiver. Hover prepared plan and press E.")
+	if not _live(supply):
+		return _refuse_bind("Starter output is missing.")
+	if not _live(belt):
+		return _refuse_bind("No real belt connected to starter OUT. Turn P OFF and place a straight belt on green tile.")
+	if belt.get_parent() != get_parent() or not belt.is_in_group("player_built") or belt.is_in_group("construction_preview"):
+		return _refuse_bind("Belt is not a committed player-built conveyor.")
 	if belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn" or belt.has_meta("conveyor_turn") or belt.previous_segment != null or belt.next_segment != null:
-		return false
+		return _refuse_bind("Only one isolated straight conveyor is supported.")
 	if belt.input_building_port != supply or supply.connected_conveyor != belt:
-		return false
+		return _refuse_bind("Starter OUT and belt IN do not share a reciprocal connection.")
 	if belt.output_building_port != null and belt.output_building_port != receiver:
-		return false
+		return _refuse_bind("Belt OUT is connected to a different destination.")
 	var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
 	if not _live(cargo) or not _live(cargo.cargo_inventory) or cargo.cargo_inventory.get_total_amount() != 0:
-		return false
-	if not LogisticsConnectionGeometry.are_endpoints_aligned(belt.get_node_or_null("OutputEndpoint"), receiver, ConveyorSegment.CONNECTION_GAP):
-		return false
+		return _refuse_bind("Conveyor cargo buffer unavailable or not empty.")
+	var endpoint := belt.get_node_or_null("OutputEndpoint") as Marker3D
+	if not LogisticsConnectionGeometry.are_endpoints_aligned(endpoint, receiver, ConveyorSegment.CONNECTION_GAP):
+		return _refuse_bind("Belt OUT does not align with blueprint IN. Check cyan placement and belt rotation.")
 	if belt.output_building_port == null and not belt.try_connect_building_port(receiver):
-		return false
+		return _refuse_bind("Physical destination connection rejected.")
 	receiver.enable_isolated_single_belt_route_guard = true
 	if not receiver.has_verified_single_belt_route() and not receiver.bind_single_belt_route(belt):
-		return false
+		return _refuse_bind("Legacy single-belt route verification rejected.")
 	if not receiver.bind_unified_route_adapter():
-		return false
+		return _refuse_bind("Consolidated route verification rejected.")
 	bound_belt = belt
 	supply.route = weakref(belt)
 	supply.receiver = weakref(receiver)
@@ -229,18 +252,49 @@ func bind_player_belt(belt: ConveyorSegment) -> bool:
 	return true
 
 
+# The explicit Bind action may connect an already-placed, exactly aligned
+# empty straight belt if normal placement did not snap its source.
+# No teleportation, auto placement, or choice between ambiguous candidates.
+func _connect_aligned_player_belt() -> ConveyorSegment:
+	if not _live(receiver) or not receiver.matches_attached_site() or not _live(supply) or supply.connected_conveyor != null:
+		return null
+	var candidates: Array[ConveyorSegment] = []
+	for child: Node in get_parent().get_children():
+		var belt := child as ConveyorSegment
+		if not _live(belt) or not belt.is_in_group("player_built") or belt.is_in_group("construction_preview"):
+			continue
+		if belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn" or belt.has_meta("conveyor_turn") or belt.previous_segment != null or belt.next_segment != null or belt.input_building_port != null or belt.output_building_port != null:
+			continue
+		var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		if not _live(cargo) or not _live(cargo.cargo_inventory) or cargo.cargo_inventory.get_total_amount() != 0:
+			continue
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(supply, belt.get_node_or_null("InputEndpoint"), ConveyorSegment.CONNECTION_GAP):
+			continue
+		if not LogisticsConnectionGeometry.are_endpoints_aligned(belt.get_node_or_null("OutputEndpoint"), receiver, ConveyorSegment.CONNECTION_GAP):
+			continue
+		candidates.append(belt)
+	if candidates.size() != 1:
+		return null
+	var candidate := candidates[0]
+	return candidate if candidate.try_connect_building_port(supply) else null
+
+
 func _prepare_marked_plan() -> void:
 	for child: Node in get_parent().get_children():
 		var candidate := child as ConstructionSite
-		if _live(candidate) and candidate.global_transform.is_equal_approx(Transform3D(Basis.IDENTITY, SITE_POSITION)):
+		if _marked_plan(candidate):
 			if prepare_site(candidate):
 				return
 	_status = "Prepare refused: place the unapproved Storage plan at the cyan marker, with no preconnected belt."
 
 
 func _bind_connected_belt() -> void:
-	if not _live(supply) or not bind_player_belt(supply.connected_conveyor):
-		_status = "Bind refused: authorize first, place one empty straight belt snapped to starter OUT toward plan."
+	var belt: ConveyorSegment = supply.connected_conveyor if _live(supply) else null
+	if belt == null:
+		belt = _connect_aligned_player_belt()
+	if not bind_player_belt(belt):
+		_status = "Bind refused: " + _bind_error
+		print("DEMO BIND: ", _bind_error)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -267,4 +321,7 @@ func _process(_delta: float) -> void:
 		var cargo := bound_belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
 		if _live(cargo):
 			in_transit = cargo.cargo_inventory.get_amount(INGOT)
-	_label.text = "CONSTRUCTION LOGISTICS DEMO — Prepare / E authorize / Bind\n%s\nStarter: %d | Belt: %d | Staged: %d / 3\nNo worker or power supplied. Cancel with X; no automatic completion." % [_status, stock, in_transit, delivered]
+	var phase: String = "Not prepared"
+	if _live(site):
+		phase = "Prepared — press E" if not _live(receiver) else ("Authorized — bind belt" if not _live(bound_belt) else "Route bound")
+	_label.text = "CONSTRUCTION LOGISTICS DEMO — %s\n%s\nStarter: %d | Belt: %d | Staged: %d / 3\nNo worker or power supplied. Cancel with X; no automatic completion." % [phase, _status, stock, in_transit, delivered]
