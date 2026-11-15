@@ -332,7 +332,7 @@ func has_verified_splitter_load(
     incoming: ConveyorSegment,
     output: ItemPortComponent
 ) -> bool:
-    if _splitter_proof.is_empty() or _splitter_cargo_ref == null:
+    if _splitter_proof.is_empty() or _splitter_cargo_ref == null or _splitter_proof.has("merger_crossing"):
         return false
     if not is_instance_valid(origin) or not is_instance_valid(origin.inventory):
         return false
@@ -366,7 +366,7 @@ func has_verified_splitter_load(
 
 # Separate snapshot; never convert a splitter observation into linear proof.
 func splitter_forward_snapshot() -> Dictionary:
-    if _splitter_proof.is_empty() or _splitter_cargo_ref == null:
+    if _splitter_proof.is_empty() or _splitter_cargo_ref == null or _splitter_proof.has("merger_crossing"):
         return {}
     if not is_instance_valid(cargo_inventory) or _splitter_cargo_ref.get_ref() != cargo_inventory:
         return {}
@@ -734,3 +734,87 @@ func has_verified_composite_route(origin: ItemPortComponent, item: ItemDefinitio
         if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
             return false
     return true
+
+
+# E3d5c5q: exactly one merger crossing, one straight entry and one
+# straight inter-junction belt. Never reinterpret a junction as a supplier.
+func merger_splitter_arrival_snapshot() -> Dictionary:
+    var proof: Dictionary = merger_forward_snapshot()
+    if proof.is_empty():
+        return {}
+    var upstream: Array = proof.get("route", [])
+    var between: Array = proof.get("downstream", [])
+    if upstream.size() != 1 or between.size() != 1:
+        return {}
+    var origin := _proof_node(proof, "port") as ItemPortComponent
+    var merger := _proof_node(proof, "merger") as ConveyorMergerComponent
+    var entry := _proof_node(proof, "input_belt") as ConveyorSegment
+    var input := _proof_node(proof, "input_port") as ItemPortComponent
+    var output := _proof_node(proof, "output_port") as ItemPortComponent
+    if not is_instance_valid(origin) or not is_instance_valid(entry):
+        return {}
+    if origin.get_parent().has_node("SplitterComponent") or origin.get_parent().has_node("MergerComponent"):
+        return {}
+    if not has_verified_merger_load(origin, get_held_item(), merger, entry, input, output):
+        return {}
+    var middle := get_parent() as ConveyorSegment
+    if not is_instance_valid(middle) or middle == entry:
+        return {}
+    if (upstream[0] as WeakRef).get_ref() != entry or (between[0] as WeakRef).get_ref() != middle:
+        return {}
+    for belt: ConveyorSegment in [entry, middle]:
+        if belt.has_meta("conveyor_turn") or belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
+            return {}
+    if not LogisticsConnectionGeometry.are_endpoints_aligned(output, middle.get_node_or_null("InputEndpoint"), ConveyorSegment.CONNECTION_GAP):
+        return {}
+    return {"port": proof["port"], "stock": proof["stock"], "item": proof["item"],
+        "merger_crossing": proof.duplicate(true)}
+
+
+# No downstream forwarding or receiver admission in this first experiment.
+func reverse_composite_snapshot() -> Dictionary:
+    if not _splitter_proof.has("merger_crossing") or _splitter_cargo_ref == null:
+        return {}
+    if not is_instance_valid(cargo_inventory) or _splitter_cargo_ref.get_ref() != cargo_inventory:
+        return {}
+    if _splitter_revision != cargo_inventory.get_mutation_revision() or get_held_item() != _splitter_proof.get("item"):
+        return {}
+    var splitter := _proof_node(_splitter_proof, "splitter") as ConveyorSplitterComponent
+    if not is_instance_valid(splitter) or not splitter.accepts_reverse_composite_epoch(int(_splitter_proof.get("splitter_epoch", -1))):
+        return {}
+    var first: Dictionary = _splitter_proof["merger_crossing"]
+    var merger := _proof_node(first, "merger") as ConveyorMergerComponent
+    if not is_instance_valid(merger) or not merger.accepts_provenance_epoch(int(first.get("epoch", -1))):
+        return {}
+    var origin := _proof_node(_splitter_proof, "port") as ItemPortComponent
+    if not is_instance_valid(origin) or not is_instance_valid(origin.inventory) or _proof_node(_splitter_proof, "stock") != origin.inventory:
+        return {}
+    if _proof_node(first, "port") != origin or _proof_node(first, "stock") != origin.inventory or first.get("item") != get_held_item():
+        return {}
+    var upstream: Array = first.get("route", [])
+    var between: Array = first.get("downstream", [])
+    var downstream: Array = _splitter_proof.get("downstream", [])
+    if upstream.size() != 1 or between.size() != 1 or downstream.size() != 1:
+        return {}
+    var entry := _proof_node(first, "input_belt") as ConveyorSegment
+    var middle := _proof_node(_splitter_proof, "input_belt") as ConveyorSegment
+    var final_belt := get_parent() as ConveyorSegment
+    if not is_instance_valid(entry) or not is_instance_valid(middle) or not is_instance_valid(final_belt):
+        return {}
+    if entry == middle or middle == final_belt or entry == final_belt:
+        return {}
+    if (upstream[0] as WeakRef).get_ref() != entry or (between[0] as WeakRef).get_ref() != middle or (downstream[0] as WeakRef).get_ref() != final_belt:
+        return {}
+    var merge_input := _proof_node(first, "input_port") as ItemPortComponent
+    var merge_output := _proof_node(first, "output_port") as ItemPortComponent
+    var split_input := _proof_node(_splitter_proof, "input_port") as ItemPortComponent
+    var split_output := _proof_node(_splitter_proof, "output_port") as ItemPortComponent
+    if not is_instance_valid(merge_input) or not is_instance_valid(merge_output) or not is_instance_valid(split_input) or not is_instance_valid(split_output):
+        return {}
+    if merge_input.get_parent() != merger.get_parent() or merge_output.get_parent() != merger.get_parent():
+        return {}
+    if split_input.get_parent() != splitter.get_parent() or split_output.get_parent() != splitter.get_parent():
+        return {}
+    if final_belt.has_meta("conveyor_turn") or final_belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
+        return {}
+    return _splitter_proof.duplicate(true)

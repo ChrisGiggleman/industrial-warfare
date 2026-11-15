@@ -36,6 +36,14 @@ var completed_to_c: int = 0
 		enable_isolated_splitter_provenance = value
 		_provenance_epoch += 1
 		_ledgers.clear()
+# E3d5c5q: independent, default-OFF reverse composite mode.
+@export var enable_isolated_merger_splitter_provenance: bool = false:
+	set(value):
+		if enable_isolated_merger_splitter_provenance == value:
+			return
+		enable_isolated_merger_splitter_provenance = value
+		_provenance_epoch += 1
+		_ledgers.clear()
 var _provenance_epoch: int = 0
 var _provenance_bound: bool = false
 var _pinned_buffers: Array[WeakRef] = []
@@ -240,6 +248,14 @@ func snapshot_input_arrival(port: ItemPortComponent, transport: ConveyorTranspor
 	if not _provenance_ready() or port != _pinned_ports[0].get_ref():
 		return {}
 	var proof: Dictionary = transport.physical_origin_snapshot()
+	if enable_isolated_merger_splitter_provenance:
+		if not proof.is_empty():
+			var ref := proof.get("port") as WeakRef
+			var source := ref.get_ref() as ItemPortComponent if ref != null else null
+			if not is_instance_valid(source) or source.get_parent().has_node("SplitterComponent") or source.get_parent().has_node("MergerComponent"):
+				proof = {}
+		if proof.is_empty():
+			proof = transport.merger_splitter_arrival_snapshot()
 	if not proof.is_empty():
 		proof["input_port"] = weakref(port)
 		proof["input_belt"] = weakref(transport.get_parent())
@@ -275,3 +291,7 @@ func is_verified_provenance_ready() -> bool:
 
 func accepts_splitter_provenance_epoch(epoch: int) -> bool:
 	return _provenance_ready() and epoch == _provenance_epoch
+
+
+func accepts_reverse_composite_epoch(epoch: int) -> bool:
+	return enable_isolated_merger_splitter_provenance and accepts_splitter_provenance_epoch(epoch)
