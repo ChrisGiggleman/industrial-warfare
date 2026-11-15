@@ -3293,3 +3293,7 @@ Developer confirmed all 29 local Godot F6 checks passed. Acceptance is based on 
 - `res://tests/conveyor_merger_test.tscn` — 10/10.
 
 Gate targets shared transport forwarding and mutually exclusive protected receiver modes, including ordinary junction behavior. This is not a full project regression. Proposed E3d5c5q: isolated reverse-order merger-to-splitter composite provenance, preserving original supplier, merger input/output, inter-junction belt and splitter output lane with distinct proof, epoch invalidation, mixed-origin fairness and conservation. Keep protected reverse-route receiver admission separate until provenance passes; no automatic sorting, arbitrary graphs, gameplay integration or save/load. No reverse-order implementation staged by this acceptance commit.
+
+### 2026-11-14 — E3d5c5p Protected Composite Route Compatibility Accepted (181/181)
+
+Developer confirmed all nine local Godot F6 regressions passed: composite provenance 18/18, protected splitter 26/26, protected merger 28/28, single-belt 26/26, multi-belt 27/27, mixed corners 29/29, connected transport 7/7, ordinary splitter 10/10 and ordinary merger 10/10. Together with 29 new composite route checks, 210 successful targeted outcomes, not a full project suite. Acceptance is based on developer-reported results. Proceed to isolated E3d5c5q reverse merger-to-splitter composite provenance.
