@@ -3408,3 +3408,7 @@ Developer confirmed all 49 Godot F6 labeled check groups passed across seven lay
 - `res://tests/sandbox_factory_supplier_discovery_e3d5c5g_test.tscn` — 20/20.
 
 This gate targets both unified descriptor/adapter behavior and existing default-off receiver admission, source ownership, discovery, escrow and authorization lifecycle. It is not a full project regression; standalone transport/provenance scripts were unchanged this stage. On reported compatibility success, record acceptance and proceed to E3d5c5v: consolidate the opt-in receiver admission path to share common descriptor-driven verification while preserving authoritative ownership, escrow, one-time exact route binding, route-mode conflicts, default-off behavior and fail-closed rollback. Retain baseline legacy path for differential tests; do not expand supported graphs or activate normal gameplay in that step. No E3d5c5v code staged by this acceptance commit.
+
+### 2026-11-15 — E3d5c5u Unified Receiver Compatibility Accepted (401/401)
+
+Developer confirmed all 16 local Godot F6 regression suites passed: unified structural verification 28/28, cargo adapter 42/42, seven specialized protected route suites 194/194, and seven receiver lifecycle/authority suites 137/137. Combined with 49 integration check groups, 450 targeted successful outcomes, not a full project suite. Acceptance is based on developer-reported results. Proceed to E3d5c5v opt-in unified receiver consolidation with the legacy comparison path preserved.
