@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/unified_factory_route_verification_e3d5c5s_test.gd" id="1_test"]
+
+[node name="UnifiedFactoryRouteVerificationE3d5c5sTest" type="Node3D"]
+script = ExtResource("1_test")
