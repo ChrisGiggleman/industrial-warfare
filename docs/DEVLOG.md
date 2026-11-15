@@ -3330,3 +3330,21 @@ Developer confirmed all nine local Godot F6 regression suites passed: splitter p
 Added reverse-specific downstream straight-belt proof forwarding (1–64 distinct segments) via the same reciprocal, aligned physical transfer helper. Separate default-OFF receiver guard binds once to the enrolled original source, merger input/output, one connecting straight belt, splitter input/output and exact empty downstream path. Current geometry, sandbox ownership, both tracking epochs, reverse flag, existing staging ownership and escrow are checked. All previous protected modes and the new reverse guard exclude competing modes; disabling a bound guard cannot fall back to direct intake. No playable scene changes.
 
 New `res://tests/sandbox_reverse_composite_route_e3d5c5r_test.tscn` has 29 A–AC local F6 checks pending, using the previously accepted sandbox setup, two suppliers, one merger, one splitter with one connected output branch, and two downstream belts. Includes wrong lane/reversed/nonempty binding, forward-composite and merger guard conflicts, foreign reverse cargo congestion/recovery, foreign origin after source reconnection, unstamped raw movement, broken geometry, both junction and reverse feature toggles, same-type substitution, three legitimate deliveries, fourth-item escrow refusal, cancellation/refund, exact conservation and independent site protection. Explicit physical transfers, not autonomous gameplay. No automatic sorting, arbitrary graphs, persistent identity, or live gameplay. Runtime acceptance and compatibility gate remain pending. Following acceptance, evaluate a bounded unified route model before further junction combinations.
+
+### 2026-11-14 — E3d5c5r Protected Reverse Composite Route Accepted (29/29)
+
+Developer confirmed all 29 local Godot F6 checks passed. Acceptance is based on written developer confirmation, not independent execution or screenshot review. The fixture exercised exact empty route binding, incompatible guard modes, wrong source and lane rejection, foreign reverse cargo congestion/recovery, source reconnection, raw movement without proof, broken geometry, both junction and reverse feature epochs, same-type replacement, three legitimate ingot deliveries, fourth-item escrow refusal, cancellation/refund, exact conservation and independent site protection. Scope remains one merger followed by one splitter with one connecting straight belt and straight downstream path, not autonomous timed gameplay.
+
+**Required targeted compatibility gate (210 checks across ten existing F6 scenes, pending):**
+- `res://tests/merger_splitter_reverse_composite_e3d5c5q_test.tscn` — 18/18.
+- `res://tests/sandbox_composite_route_e3d5c5p_test.tscn` — 29/29.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` — 28/28.
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` — 27/27.
+- `res://tests/sandbox_corner_route_verification_e3d5c5j_test.tscn` — 29/29.
+- `res://tests/conveyor_connected_transport_test.tscn` — 7/7.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+
+Gate targets shared forwarding and all prior protected receiver modes plus basic junction distribution; not a full project regression. Proposed E3d5c5s: unified bounded route descriptor and read-only validation in an isolated test harness. Represent original source, ordered belts and junction crossings with exact ports; validate reciprocal alignment, repeated-node rejection, finite length and known route shapes. Start with parity against already accepted routes; do not replace live proof mechanisms, mint cargo stamps, mutate inventories, modify escrow, or enable gameplay. Use the accepted legacy tests as a reference baseline. Follow with compatibility adapter and incremental migration only after parity. Avoid creating new specialized guard variants for every topology. No unified implementation staged by this acceptance commit.
