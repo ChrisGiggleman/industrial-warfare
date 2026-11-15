@@ -3418,3 +3418,34 @@ Developer confirmed all 16 local Godot F6 regression suites passed: unified stru
 Adds independent default-OFF enable_isolated_unified_receiver_consolidation on the anchored receiver. The strategy is selected at the existing explicit one-time empty-route adapter binding and pinned for its lifetime. When consolidated intake is selected, retain authoritative legacy route readiness (including exact mode, geometry and junction readiness), source/ownership/site checks and escrow/capacity protections, but perform the cargo proof dispatch only through the bound unified descriptor. The earlier dual-verification and default-off legacy paths remain available for receivers bound to those strategies or never bound, respectively. Changing the strategy flag after binding fails closed instead of falling back; restoring the originally selected flag restores eligibility only if all other checks still pass. No direct intake, implicit authority, new cargo stamps, new route shapes, gameplay activation or playable scene changes. This consolidates duplicate cargo-query execution, not the legacy route bindings/readiness functions or topology-specific provenance implementation.
 
 New `res://tests/unified_receiver_consolidation_e3d5c5v_test.tscn` has eight labeled check groups per seven real layouts (56). Reuses accepted integration fixtures and adds consolidated default-off behavior, consolidation-only refusal on otherwise owned second receiver, pinned strategy selection, fail-closed strategy toggle with actual unload refusal, genuine cargo admission after restoring selected strategy, legacy comparison for applicable accepted and denied cargo cases, source/geometry/epoch/substitution checks, authorized delivery, escrow, cancellation and conservation. Each fixture must return true before aggregate success. Runtime validation pending developer execution; production receiver script changed, so targeted compatibility verification is required after local acceptance. No further route expansion or gameplay changes staged.
+
+### 2026-11-15 — E3d5c5v Unified Receiver Consolidation Local Acceptance (56/56)
+
+Developer confirmed all 56 local Godot F6 labeled check groups passed across seven real sandbox route arrangements. Acceptance is based on written developer confirmation, not independent execution. Consolidated cargo-query dispatch, retained legacy route readiness and ownership checks, pinned strategy and fail-closed flag changes, foreign/stale cargo, geometry, epoch invalidation, escrow, cancellation and conservation passed in the fixture. Compatibility acceptance remains pending.
+
+**Required targeted compatibility gate: 450 checks across 17 existing F6 scenes (pending).** Paths verified against main's repository tree and totals verified against each test script's aggregate success message.
+
+**Unified structural, cargo and dual receiver — 119 checks**
+- `res://tests/unified_receiver_integration_e3d5c5u_test.tscn` — 49/49.
+- `res://tests/unified_factory_route_verification_e3d5c5s_test.tscn` — 28/28.
+- `res://tests/unified_cargo_provenance_adapter_e3d5c5t_test.tscn` — 42/42.
+
+**Specialized protected routes — 194 checks**
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` — 27/27.
+- `res://tests/sandbox_corner_route_verification_e3d5c5j_test.tscn` — 29/29.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` — 28/28.
+- `res://tests/sandbox_composite_route_e3d5c5p_test.tscn` — 29/29.
+- `res://tests/sandbox_reverse_composite_route_e3d5c5r_test.tscn` — 29/29.
+
+**Receiver lifecycle and authority — 137 checks**
+- `res://tests/blueprint_anchored_receiver_e3d5c4i_test.tscn` — 16/16.
+- `res://tests/sandbox_player_blueprint_delivery_e3d5c5b_test.tscn` — 20/20.
+- `res://tests/sandbox_escrow_intake_lock_e3d5c5c_test.tscn` — 24/24.
+- `res://tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn` — 19/19.
+- `res://tests/sandbox_output_source_enrollment_e3d5c5e_test.tscn` — 18/18.
+- `res://tests/sandbox_factory_source_validation_e3d5c5f_test.tscn` — 20/20.
+- `res://tests/sandbox_factory_supplier_discovery_e3d5c5g_test.tscn` — 20/20.
+
+This gate repeats the receiver-facing suites because the receiver script changed; includes the previously accepted dual-verification integration to ensure its strategy remains available. No standalone transport/provenance scripts changed. This is not a full project regression. On success record compatibility acceptance and proceed to E3d5c5w playable sandbox construction logistics bridge: explicitly gated, bounded player-placed route enrollment into the consolidated receiver, using existing supported layouts and real conveyor movement. Begin with one simple known route and actual player blueprint authorization; retain legacy modes and all ownership, escrow, worker/power readiness and cancellation protections. Do not expand arbitrary junction graphs or activate main gameplay yet. Inspect existing sandbox APIs and choose a minimal playable slice before coding. No E3d5c5w implementation staged by this commit.
