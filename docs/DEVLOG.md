@@ -3276,3 +3276,20 @@ Developer confirmed all eight local Godot F6 regressions passed: splitter proven
 Added composite-specific proof propagation via the existing reciprocal, aligned physical belt helper. Preserves nested splitter history, merger epoch and ordered downstream straight-belt identities (1–64), rejecting repeated segments and raw buffer transfers. A new independent default-OFF receiver guard binds once to the enrolled factory origin, exact splitter input/output, single inter-junction belt, merger input/output and empty downstream route. Checks current reciprocal geometry, same sandbox, both junction readiness flags, exact historic cargo observations, existing site ownership, escrow and cancellation. Other route modes cannot replace a bound composite guard; direct intake remains closed if disabled. No playable scene default changes.
 
 New `res://tests/sandbox_composite_route_e3d5c5p_test.tscn` has 29 A–AC local F6 checks pending. Uses real sandbox blueprint discovery, explicit authorization, one splitter, one merger, one connecting belt, two downstream straight belts and an independent foreign supplier. Covers wrong lane/reversed/nonempty binding, competing modes, foreign single-merger backpressure and explicit recovery, foreign composite origin after reconnection, raw buffer transfer, broken downstream and inter-junction geometry, guard opt-out, splitter/merger/composite epoch changes, same-type replacement, three legitimate ingots, fourth-item escrow blocking, cancellation refund, stock conservation and independent site protection. Uses explicit physical transfer helpers, not autonomous timing. Reverse merger-to-splitter order, arbitrary graphs, automatic sorting, player-facing recovery, gameplay orchestration and persistence remain outside scope. Godot execution and compatibility regression pending developer validation.
+
+### 2026-11-14 — E3d5c5p Protected Composite Route Accepted (29/29)
+
+Developer confirmed all 29 local Godot F6 checks passed. Acceptance is based on the developer's written confirmation, not independent execution or screenshot review. The isolated fixture covers separately enabled and exact empty route binding, wrong lanes, competing modes, foreign direct and composite cargo, recovery under congestion, original supplier reconnection, raw buffer movement, broken downstream and inter-junction connections, epoch invalidation, same-type replacement, three successful owned deliveries, fourth-item escrow protection, cancellation/refund, stock conservation and independent site protection. Scope remains one splitter followed by one merger with one inter-junction straight belt and a straight downstream path; no autonomous gameplay, automatic sorting or persistent identity.
+
+**Required targeted compatibility gate (181 checks across nine existing F6 scenes, pending):**
+- `res://tests/splitter_merger_composite_provenance_e3d5c5o_test.tscn` — 18/18.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` — 28/28.
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` — 27/27.
+- `res://tests/sandbox_corner_route_verification_e3d5c5j_test.tscn` — 29/29.
+- `res://tests/conveyor_connected_transport_test.tscn` — 7/7.
+- `res://tests/conveyor_splitter_test.tscn` — 10/10.
+- `res://tests/conveyor_merger_test.tscn` — 10/10.
+
+Gate targets shared transport forwarding and mutually exclusive protected receiver modes, including ordinary junction behavior. This is not a full project regression. Proposed E3d5c5q: isolated reverse-order merger-to-splitter composite provenance, preserving original supplier, merger input/output, inter-junction belt and splitter output lane with distinct proof, epoch invalidation, mixed-origin fairness and conservation. Keep protected reverse-route receiver admission separate until provenance passes; no automatic sorting, arbitrary graphs, gameplay integration or save/load. No reverse-order implementation staged by this acceptance commit.
