@@ -45,6 +45,8 @@ var staging: BlueprintConstructionMaterialStaging = null
 var receiver: BlueprintConstructionAnchoredStagingPort = null
 var bound_belt: ConveyorSegment = null
 var _started: bool = false
+var _prepared_once: bool = false
+var _bound_once: bool = false
 var _status: String = ""
 var _bind_error: String = ""
 var _label: Label = null
@@ -55,8 +57,9 @@ func _ready() -> void:
 	set_process_unhandled_input(false)
 
 
-func _live(node: Node) -> bool:
-	return is_instance_valid(node) and node.is_inside_tree() and not node.is_queued_for_deletion()
+func _live(node: Variant) -> bool:
+	# Freed Object references must be checked before any typed Node coercion.
+	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
 
 
 func start_demo() -> bool:
@@ -175,7 +178,7 @@ func _marked_plan(candidate: ConstructionSite) -> bool:
 
 
 func prepare_site(candidate: ConstructionSite) -> bool:
-	if not enable_isolated_playable_demo or not _started or site != null or not _live(candidate) or not _live(supply):
+	if not enable_isolated_playable_demo or not _started or _prepared_once or not _live(candidate) or not _live(supply):
 		return false
 	if not world.call("_is_managed_blueprint", candidate) or candidate.job.state != ConstructionJob.State.PLANNED:
 		return false
@@ -188,6 +191,7 @@ func prepare_site(candidate: ConstructionSite) -> bool:
 		return false
 	site = candidate
 	staging = prepared
+	_prepared_once = true
 	_status = "Prepared. Hover the plan and press E to authorize. F7 does not authorize."
 	return true
 
@@ -214,8 +218,8 @@ func bind_player_belt(belt: ConveyorSegment) -> bool:
 	_bind_error = ""
 	if not enable_isolated_playable_demo or not _started:
 		return _refuse_bind("Demo is not active.")
-	if _live(bound_belt):
-		return _refuse_bind("Route is already bound. Watch the counters.")
+	if _bound_once:
+		return _refuse_bind("Route was already bound. Restart the demo to enroll another route.")
 	if not _live(site):
 		return _refuse_bind("No prepared blueprint. Restart; click Prepare BEFORE pressing E.")
 	if not _live(receiver) or not receiver.matches_attached_site():
@@ -246,6 +250,7 @@ func bind_player_belt(belt: ConveyorSegment) -> bool:
 	if not receiver.bind_unified_route_adapter():
 		return _refuse_bind("Consolidated route verification rejected.")
 	bound_belt = belt
+	_bound_once = true
 	supply.route = weakref(belt)
 	supply.receiver = weakref(receiver)
 	_status = "Route bound. Real conveyor timer delivers automatically. Blueprint waits for power and worker."
@@ -324,4 +329,7 @@ func _process(_delta: float) -> void:
 	var phase: String = "Not prepared"
 	if _live(site):
 		phase = "Prepared — press E" if not _live(receiver) else ("Authorized — bind belt" if not _live(bound_belt) else "Route bound")
+	elif _prepared_once:
+		phase = "Site ended — restart to prepare another"
+		_status = "Existing staged stock retained; no further construction intake."
 	_label.text = "CONSTRUCTION LOGISTICS DEMO — %s\n%s\nStarter: %d | Belt: %d | Staged: %d / 3\nNo worker or power supplied. Cancel with X; no automatic completion." % [phase, _status, stock, in_transit, delivered]

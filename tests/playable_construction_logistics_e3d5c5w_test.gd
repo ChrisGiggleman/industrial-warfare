@@ -101,4 +101,17 @@ func _checks() -> void:
 	assert(wrong.job.state == ConstructionJob.State.PLANNED)
 	assert(not gate.has_bound_driver())
 	print("PASS L: All four ingots conserved; separate site and worker readiness untouched")
-	print("ALL 12 E3D5C5W PLAYABLE CONSTRUCTION LOGISTICS TESTS PASSED")
+	# Cancellation queues the scene node for deletion. Exercise multiple
+	# subsequent frames before declaring success, including HUD observation.
+	var canceled_ref: WeakRef = weakref(site)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert(canceled_ref.get_ref() == null)
+	assert(not demo._live(demo.site))
+	demo._process(0.0)
+	assert(demo._label.text.contains("Site ended"))
+	assert(demo._label.text.contains("Starter: 0 | Belt: 1 | Staged: 3 / 3"))
+	assert(not demo.prepare_site(wrong) and not demo.bind_player_belt(belt))
+	assert(demo.staging.get_staged_inventory().get_amount(INGOT) == 3)
+	print("PASS M: Post-deletion HUD is safe and enrollment stays closed")
+	print("ALL 13 E3D5C5W PLAYABLE CONSTRUCTION LOGISTICS TESTS PASSED")
