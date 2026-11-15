@@ -103,6 +103,8 @@ func start_demo() -> bool:
 	if stock.add_item(INGOT, 4) != 4:
 		return false
 	_started = true
+	_ground_marker(SITE_POSITION, Color(0.12, 0.65, 0.85, 0.35), Vector2(1, 3))
+	_ground_marker(BELT_POSITION, Color(0.15, 0.85, 0.35, 0.45), Vector2(1, 1))
 	_guide("STARTER: 4 INGOTS", SOURCE_POSITION + Vector3.UP * 1.5, Color(1, 0.75, 0.25))
 	_guide("PLACE STORAGE PLAN HERE", SITE_POSITION + Vector3.UP * 1.2, Color(0.35, 0.9, 1))
 	_guide("ONE STRAIGHT BELT", BELT_POSITION + Vector3.UP * 0.45, Color(0.35, 1, 0.55))
@@ -115,6 +117,8 @@ func start_demo() -> bool:
 	var rows := VBoxContainer.new()
 	panel.add_child(rows)
 	_label = Label.new()
+	_label.custom_minimum_size = Vector2(430, 92)
+	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.add_theme_color_override("font_color", Color(0.9, 0.97, 1))
 	_label.add_theme_color_override("font_shadow_color", Color.BLACK)
@@ -135,6 +139,21 @@ func start_demo() -> bool:
 	set_process(true)
 	set_process_unhandled_input(true)
 	return true
+
+
+# Non-colliding ground tiles show the exact required placement centers.
+func _ground_marker(at: Vector3, color: Color, size: Vector2) -> void:
+	var mesh := PlaneMesh.new()
+	mesh.size = size * 0.92
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = color
+	var marker := MeshInstance3D.new()
+	marker.mesh = mesh
+	marker.material_override = material
+	add_child(marker)
+	marker.global_position = at + Vector3.UP * 0.025
 
 
 func _guide(message: String, at: Vector3, color: Color) -> void:
