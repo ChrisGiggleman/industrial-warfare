@@ -3378,3 +3378,33 @@ Developer confirmed all 42 local Godot F6 labeled check groups passed across sev
 Adds default-OFF enable_isolated_unified_route_adapter and explicit one-time bind on the existing anchored construction receiver. Binding derives the descriptor exclusively from the already pinned and currently verified legacy route and enrolled source: no caller-supplied replacement identities. Requires authorized owned site, existing escrow/source guards, no competing route selection, empty single-capacity conveyor buffers and empty crossed junction buffers. With the adapter enabled and bound, physical intake requires both the unchanged legacy admission decision and the captured descriptor's cargo proof. Enabled but unbound and bound but disabled states fail closed; conflicting modes and direct port intake are refused. Default-off never-bound behavior remains on the legacy path. No automatic route creation, new stamps, authority, reservations, transfers, live gameplay activation or playable scene changes. Existing legacy query cleanup behavior remains. This is deliberately a dual-verification migration step, not removal of the legacy route modes.
 
 New `res://tests/unified_receiver_integration_e3d5c5u_test.tscn` has seven labeled check groups per seven real route arrangements (49 groups). Reuses the accepted E3d5c5t fixtures with explicit integration checks for default-off compatibility, no independently created route, unbound and nonempty binding refusal, competing modes, exact one-time binding, genuine cargo accepted by both, bound opt-out denial, foreign and stale proof refusal, geometry failure, same-type substitution, epoch invalidation, ownership, escrow blocking, actual deliveries and cancellation/refund with exact resource conservation. Each case must return true before aggregate success. Godot parse/runtime and broad regression validation pending. This stage changes the production receiver script, so after 49/49 local acceptance require targeted legacy and unified regression suites before considering further migration or gameplay integration.
+
+### 2026-11-15 — E3d5c5u Unified Receiver Integration Local Acceptance (49/49)
+
+Developer confirmed all 49 Godot F6 labeled check groups passed across seven layouts. Acceptance is based on written developer confirmation, not independent execution. Explicit binding, default-off compatibility, no unbound intake, competing modes, bound opt-out denial, genuine and foreign cargo, geometry, epochs, substitution, actual authorized delivery, escrow/cancellation and stock conservation passed in the integration fixture. Full milestone compatibility remains pending.
+
+**Required targeted compatibility gate: 401 labeled checks across 16 existing scenes (pending).** Scene paths verified against the main repository tree and expected totals verified against each test script's final success message.
+
+**Unified verification — 70 checks**
+- `res://tests/unified_factory_route_verification_e3d5c5s_test.tscn` — 28/28.
+- `res://tests/unified_cargo_provenance_adapter_e3d5c5t_test.tscn` — 42/42.
+
+**Specialized protected routes — 194 checks**
+- `res://tests/sandbox_single_belt_route_verification_e3d5c5h_test.tscn` — 26/26.
+- `res://tests/sandbox_multi_belt_route_verification_e3d5c5i_test.tscn` — 27/27.
+- `res://tests/sandbox_corner_route_verification_e3d5c5j_test.tscn` — 29/29.
+- `res://tests/sandbox_splitter_branch_route_e3d5c5l_test.tscn` — 26/26.
+- `res://tests/sandbox_merger_route_e3d5c5n_test.tscn` — 28/28.
+- `res://tests/sandbox_composite_route_e3d5c5p_test.tscn` — 29/29.
+- `res://tests/sandbox_reverse_composite_route_e3d5c5r_test.tscn` — 29/29.
+
+**Receiver lifecycle and authority — 137 checks**
+- `res://tests/blueprint_anchored_receiver_e3d5c4i_test.tscn` — 16/16.
+- `res://tests/sandbox_player_blueprint_delivery_e3d5c5b_test.tscn` — 20/20.
+- `res://tests/sandbox_escrow_intake_lock_e3d5c5c_test.tscn` — 24/24.
+- `res://tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn` — 19/19.
+- `res://tests/sandbox_output_source_enrollment_e3d5c5e_test.tscn` — 18/18.
+- `res://tests/sandbox_factory_source_validation_e3d5c5f_test.tscn` — 20/20.
+- `res://tests/sandbox_factory_supplier_discovery_e3d5c5g_test.tscn` — 20/20.
+
+This gate targets both unified descriptor/adapter behavior and existing default-off receiver admission, source ownership, discovery, escrow and authorization lifecycle. It is not a full project regression; standalone transport/provenance scripts were unchanged this stage. On reported compatibility success, record acceptance and proceed to E3d5c5v: consolidate the opt-in receiver admission path to share common descriptor-driven verification while preserving authoritative ownership, escrow, one-time exact route binding, route-mode conflicts, default-off behavior and fail-closed rollback. Retain baseline legacy path for differential tests; do not expand supported graphs or activate normal gameplay in that step. No E3d5c5v code staged by this acceptance commit.
