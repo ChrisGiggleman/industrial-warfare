@@ -56,6 +56,12 @@ var _reverse_composite_refs: Dictionary = {}
 var _reverse_composite_route_refs: Array[WeakRef] = []
 var _composite_refs: Dictionary = {}
 var _composite_route_refs: Array[WeakRef] = []
+# E3d5c5u: optional dual verification of the already bound legacy route.
+# Never installs a route, grants authorization, or changes old default behavior.
+const UnifiedRouteDescriptor = preload("res://scripts/components/unified_factory_route_descriptor.gd")
+@export var enable_isolated_unified_route_adapter: bool = false
+var _unified_descriptor: RefCounted = null
+var _unified_bound_mode: String = ""
 var _intake_escrow_ref: WeakRef = null
 
 var _site_ref: WeakRef = null
@@ -589,6 +595,8 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 
 
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
+	if enable_isolated_unified_route_adapter or _unified_descriptor != null:
+		return false
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
 	if _branch_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected():
@@ -603,6 +611,20 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	# Default-off and never bound: exactly the previous admission behavior.
+	if not enable_isolated_unified_route_adapter and _unified_descriptor == null:
+		return _legacy_can_accept_belt_item(belt, item, amount)
+	# Once bound, disabling the adapter cannot silently bypass it.
+	if not enable_isolated_unified_route_adapter or _unified_descriptor == null or amount != 1:
+		return false
+	if _selected_unified_mode() != _unified_bound_mode:
+		return false
+	if not _legacy_can_accept_belt_item(belt, item, amount):
+		return false
+	return bool(_unified_descriptor.call("matches_legacy_cargo", belt, item))
+
+
+func _legacy_can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
 	if _reverse_composite_selected():
 		if amount != 1 or not has_verified_reverse_composite_route() or not _accept_owned_item(item, amount):
 			return false
@@ -1032,3 +1054,116 @@ func has_verified_reverse_composite_route() -> bool:
 		_reverse_composite_node("merger") as ConveyorMergerComponent,
 		_reverse_composite_node("merge_input") as ItemPortComponent,
 		_reverse_composite_node("merge_output") as ItemPortComponent, _bound_reverse_composite_route())
+
+
+# Count selected modes including any already-bound but disabled guard.
+# A corner opt-in is a property of linear mode, not a second route.
+func _selected_unified_mode() -> String:
+	var modes: Array[String] = []
+	if enable_isolated_single_belt_route_guard or _direct_belt_ref != null:
+		modes.append("single")
+	if enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty() or enable_isolated_corner_route_guard:
+		modes.append("linear")
+	if _branch_selected():
+		modes.append("splitter")
+	if _merger_selected():
+		modes.append("merger")
+	if _composite_selected():
+		modes.append("forward")
+	if _reverse_composite_selected():
+		modes.append("reverse")
+	return modes[0] if modes.size() == 1 else ""
+
+
+func _unified_steps(mode: String) -> Array:
+	var steps: Array = []
+	match mode:
+		"single":
+			if not has_verified_single_belt_route():
+				return []
+			steps.append(_direct_belt_ref.get_ref())
+		"linear":
+			if not has_verified_multi_belt_route():
+				return []
+			steps.append_array(_bound_linear_route())
+		"splitter":
+			if not has_verified_splitter_branch():
+				return []
+			steps = [_branch_incoming_ref.get_ref(),
+				{"input": _branch_input_ref.get_ref(), "output": _branch_output_ref.get_ref()}]
+			steps.append_array(_bound_branch_route())
+		"merger":
+			if not has_verified_merger_route():
+				return []
+			steps = [_merger_route_incoming_ref.get_ref(),
+				{"input": _merger_route_input_ref.get_ref(), "output": _merger_route_output_ref.get_ref()}]
+			steps.append_array(_bound_merger_route())
+		"forward":
+			if not has_verified_composite_route():
+				return []
+			steps = [_composite_node("entry"),
+				{"input": _composite_node("split_input"), "output": _composite_node("split_output")},
+				_composite_node("middle"),
+				{"input": _composite_node("merge_input"), "output": _composite_node("merge_output")}]
+			steps.append_array(_bound_composite_route())
+		"reverse":
+			if not has_verified_reverse_composite_route():
+				return []
+			steps = [_reverse_composite_node("entry"),
+				{"input": _reverse_composite_node("merge_input"), "output": _reverse_composite_node("merge_output")},
+				_reverse_composite_node("middle"),
+				{"input": _reverse_composite_node("split_input"), "output": _reverse_composite_node("split_output")}]
+			steps.append_array(_bound_reverse_composite_route())
+	return steps
+
+
+# Bind only the exact route already pinned by the authoritative legacy guard.
+# No caller-supplied path, origin or receiver can replace those identities.
+func bind_unified_route_adapter() -> bool:
+	if not enable_isolated_unified_route_adapter or _unified_descriptor != null:
+		return false
+	if _intake_escrow_ref == null or _original_output_ref == null or not matches_attached_site():
+		return false
+	if is_escrow_intake_locked() or is_output_source_locked():
+		return false
+	var mode: String = _selected_unified_mode()
+	if mode.is_empty():
+		return false
+	var steps: Array = _unified_steps(mode)
+	if steps.is_empty():
+		return false
+	for step: Variant in steps:
+		if step is ConveyorSegment:
+			var cargo := step.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+			if not _live(cargo) or not _live(cargo.cargo_inventory) or cargo.cargo_inventory.max_capacity != 1 or cargo.cargo_inventory.get_total_amount() != 0:
+				return false
+		elif step is Dictionary:
+			var port := step["input"] as ItemPortComponent
+			if not _live(port):
+				return false
+			var building := port.get_parent()
+			var splitter := building.get_node_or_null("SplitterComponent") as ConveyorSplitterComponent
+			var merger := building.get_node_or_null("MergerComponent") as ConveyorMergerComponent
+			var buffers: Array[InventoryComponent] = []
+			if _live(splitter):
+				buffers = [splitter.input_inventory, splitter.output_a, splitter.output_b, splitter.output_c]
+			elif _live(merger):
+				buffers = [merger.input_a, merger.input_b, merger.input_c, merger.output_inventory]
+			else:
+				return false
+			for buffer: InventoryComponent in buffers:
+				if not _live(buffer) or buffer.get_total_amount() != 0:
+					return false
+		else:
+			return false
+	var origin := _original_output_ref.get_ref() as ItemPortComponent
+	var descriptor: RefCounted = UnifiedRouteDescriptor.capture(origin, self, steps, mode == "linear" and _linear_corner_mode)
+	if descriptor == null:
+		return false
+	_unified_descriptor = descriptor
+	_unified_bound_mode = mode
+	return true
+
+
+func has_bound_unified_route_adapter() -> bool:
+	return _unified_descriptor != null

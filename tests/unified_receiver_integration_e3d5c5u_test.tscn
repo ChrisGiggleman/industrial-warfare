@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/unified_receiver_integration_e3d5c5u_test.gd" id="1_test"]
+
+[node name="UnifiedReceiverIntegrationE3d5c5uTest" type="Node3D"]
+script = ExtResource("1_test")
