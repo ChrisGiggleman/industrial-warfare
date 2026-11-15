@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/sandbox_reverse_composite_route_e3d5c5r_test.gd" id="1_test"]
+
+[node name="SandboxReverseCompositeRouteE3d5c5rTest" type="Node3D"]
+script = ExtResource("1_test")

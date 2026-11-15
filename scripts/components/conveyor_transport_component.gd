@@ -771,7 +771,7 @@ func merger_splitter_arrival_snapshot() -> Dictionary:
         "merger_crossing": proof.duplicate(true)}
 
 
-# No downstream forwarding or receiver admission in this first experiment.
+# E3d5c5r: bounded downstream straight hops, separate from every older proof.
 func reverse_composite_snapshot() -> Dictionary:
     if not _splitter_proof.has("merger_crossing") or _splitter_cargo_ref == null:
         return {}
@@ -794,7 +794,7 @@ func reverse_composite_snapshot() -> Dictionary:
     var upstream: Array = first.get("route", [])
     var between: Array = first.get("downstream", [])
     var downstream: Array = _splitter_proof.get("downstream", [])
-    if upstream.size() != 1 or between.size() != 1 or downstream.size() != 1:
+    if upstream.size() != 1 or between.size() != 1 or downstream.is_empty() or downstream.size() > 64:
         return {}
     var entry := _proof_node(first, "input_belt") as ConveyorSegment
     var middle := _proof_node(_splitter_proof, "input_belt") as ConveyorSegment
@@ -803,7 +803,7 @@ func reverse_composite_snapshot() -> Dictionary:
         return {}
     if entry == middle or middle == final_belt or entry == final_belt:
         return {}
-    if (upstream[0] as WeakRef).get_ref() != entry or (between[0] as WeakRef).get_ref() != middle or (downstream[0] as WeakRef).get_ref() != final_belt:
+    if (upstream[0] as WeakRef).get_ref() != entry or (between[0] as WeakRef).get_ref() != middle or (downstream[-1] as WeakRef).get_ref() != final_belt:
         return {}
     var merge_input := _proof_node(first, "input_port") as ItemPortComponent
     var merge_output := _proof_node(first, "output_port") as ItemPortComponent
@@ -815,6 +815,73 @@ func reverse_composite_snapshot() -> Dictionary:
         return {}
     if split_input.get_parent() != splitter.get_parent() or split_output.get_parent() != splitter.get_parent():
         return {}
-    if final_belt.has_meta("conveyor_turn") or final_belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
-        return {}
+    var seen: Dictionary = {entry: true, middle: true}
+    for value: Variant in downstream:
+        var ref := value as WeakRef
+        if ref == null:
+            return {}
+        var belt := ref.get_ref() as ConveyorSegment
+        if not is_instance_valid(belt) or seen.has(belt) or belt.has_meta("conveyor_turn") or belt.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
+            return {}
+        seen[belt] = true
     return _splitter_proof.duplicate(true)
+
+
+func record_reverse_composite_forward_load(proof: Dictionary, source: ConveyorSegment) -> void:
+    if not proof.has("merger_crossing") or not is_instance_valid(source):
+        return
+    var destination := get_parent() as ConveyorSegment
+    if not is_instance_valid(destination) or not is_instance_valid(cargo_inventory):
+        return
+    if source.next_segment != destination or destination.previous_segment != source:
+        return
+    if destination.has_meta("conveyor_turn") or destination.scene_file_path != "res://scenes/logistics/conveyor_straight.tscn":
+        return
+    if get_held_item() == null or get_held_item() != proof.get("item"):
+        return
+    var first: Dictionary = proof["merger_crossing"]
+    if _proof_node(first, "input_belt") == destination or _proof_node(proof, "input_belt") == destination:
+        return
+    var downstream: Array = proof.get("downstream", [])
+    if downstream.is_empty() or downstream.size() >= 64 or (downstream[-1] as WeakRef).get_ref() != source:
+        return
+    for ref: WeakRef in downstream:
+        if not is_instance_valid(ref.get_ref()) or ref.get_ref() == destination:
+            return
+    _splitter_proof = proof.duplicate(true)
+    var next_path: Array = downstream.duplicate()
+    next_path.append(weakref(destination))
+    _splitter_proof["downstream"] = next_path
+    _splitter_cargo_ref = weakref(cargo_inventory)
+    _splitter_revision = cargo_inventory.get_mutation_revision()
+
+
+func has_verified_reverse_composite_route(origin: ItemPortComponent, item: ItemDefinition,
+    splitter: ConveyorSplitterComponent, entry: ConveyorSegment,
+    split_input: ItemPortComponent, split_output: ItemPortComponent,
+    middle: ConveyorSegment, merger: ConveyorMergerComponent,
+    merge_input: ItemPortComponent, merge_output: ItemPortComponent,
+    downstream: Array[ConveyorSegment]) -> bool:
+    var proof: Dictionary = reverse_composite_snapshot()
+    if proof.is_empty() or proof.get("item") != item or downstream.is_empty():
+        return false
+    var first: Dictionary = proof["merger_crossing"]
+    var first_expected: Dictionary = {"port": origin, "merger": merger,
+        "input_belt": entry, "input_port": merge_input, "output_port": merge_output}
+    var second_expected: Dictionary = {"port": origin, "splitter": splitter,
+        "input_belt": middle, "input_port": split_input, "output_port": split_output}
+    for key: String in first_expected:
+        if not is_instance_valid(first_expected[key]) or _proof_node(first, key) != first_expected[key]:
+            return false
+    for key: String in second_expected:
+        if not is_instance_valid(second_expected[key]) or _proof_node(proof, key) != second_expected[key]:
+            return false
+    var visited: Array = proof.get("downstream", [])
+    if visited.size() != downstream.size() or downstream[-1] != get_parent():
+        return false
+    for i: int in range(downstream.size()):
+        if not is_instance_valid(downstream[i]) or (visited[i] as WeakRef).get_ref() != downstream[i]:
+            return false
+    return true
+
+

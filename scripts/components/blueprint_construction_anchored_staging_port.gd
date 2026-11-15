@@ -51,6 +51,9 @@ var _merger_route_output_ref: WeakRef = null
 var _merger_route_refs: Array[WeakRef] = []
 # E3d5c5p: independent protected composite path; no automatic enrollment.
 @export var enable_isolated_composite_route_guard: bool = false
+@export var enable_isolated_reverse_composite_route_guard: bool = false
+var _reverse_composite_refs: Dictionary = {}
+var _reverse_composite_route_refs: Array[WeakRef] = []
 var _composite_refs: Dictionary = {}
 var _composite_route_refs: Array[WeakRef] = []
 var _intake_escrow_ref: WeakRef = null
@@ -250,7 +253,7 @@ func is_output_source_locked() -> bool:
 func bind_single_belt_route(belt: ConveyorSegment) -> bool:
 	if (
 		not enable_isolated_single_belt_route_guard or _direct_belt_ref != null
-		or _branch_selected() or _merger_selected() or _composite_selected()
+		or _branch_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected()
 		or enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
 		or enable_isolated_corner_route_guard
 		or not matches_attached_site() or _intake_escrow_ref == null
@@ -311,7 +314,7 @@ func has_verified_single_belt_route() -> bool:
 func bind_multi_belt_route(route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_multi_belt_route_guard or not _linear_route_refs.is_empty()
-		or _branch_selected() or _merger_selected() or _composite_selected()
+		or _branch_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected()
 		or enable_isolated_single_belt_route_guard or _direct_belt_ref != null
 		or not matches_attached_site() or _intake_escrow_ref == null
 		or _original_output_ref == null or is_output_source_locked()
@@ -527,7 +530,7 @@ func bind_splitter_branch(splitter: ConveyorSplitterComponent, incoming: Conveyo
 	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_splitter_branch_guard or _branch_splitter_ref != null
-		or _other_route_selected() or _merger_selected() or _composite_selected() or not matches_attached_site()
+		or _other_route_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected() or not matches_attached_site()
 		or _intake_escrow_ref == null or _original_output_ref == null
 		or is_escrow_intake_locked() or is_output_source_locked()
 		or not _branch_geometry(splitter, incoming, input, output, route)
@@ -566,7 +569,7 @@ func _bound_branch_route() -> Array[ConveyorSegment]:
 func has_verified_splitter_branch() -> bool:
 	if (
 		not enable_isolated_splitter_branch_guard or _branch_splitter_ref == null
-		or _other_route_selected() or _merger_selected() or _composite_selected() or not matches_attached_site() or is_output_source_locked()
+		or _other_route_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected() or not matches_attached_site() or is_output_source_locked()
 	):
 		return false
 	return _branch_geometry(
@@ -588,7 +591,7 @@ func _accept_owned_item(item: ItemDefinition, amount: int) -> bool:
 func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 	# A guard-bound receiver requires transport context; direct port-to-port
 	# transfer is never an alternate route, even with valid material types.
-	if _branch_selected() or _merger_selected() or _composite_selected():
+	if _branch_selected() or _merger_selected() or _composite_selected() or _reverse_composite_selected():
 		return false
 	if (
 		enable_isolated_single_belt_route_guard or _direct_belt_ref != null
@@ -600,6 +603,23 @@ func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
 
 
 func can_accept_belt_item(belt: ConveyorSegment, item: ItemDefinition, amount: int = 1) -> bool:
+	if _reverse_composite_selected():
+		if amount != 1 or not has_verified_reverse_composite_route() or not _accept_owned_item(item, amount):
+			return false
+		var combined: Array[ConveyorSegment] = _bound_reverse_composite_route()
+		if combined.is_empty() or combined[-1] != belt:
+			return false
+		var combined_cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		return _live(combined_cargo) and combined_cargo.has_verified_reverse_composite_route(
+			_original_output_ref.get_ref() as ItemPortComponent, item,
+			_reverse_composite_node("splitter") as ConveyorSplitterComponent,
+			_reverse_composite_node("entry") as ConveyorSegment,
+			_reverse_composite_node("split_input") as ItemPortComponent,
+			_reverse_composite_node("split_output") as ItemPortComponent,
+			_reverse_composite_node("middle") as ConveyorSegment,
+			_reverse_composite_node("merger") as ConveyorMergerComponent,
+			_reverse_composite_node("merge_input") as ItemPortComponent,
+			_reverse_composite_node("merge_output") as ItemPortComponent, combined)
 	if _composite_selected():
 		if amount != 1 or not has_verified_composite_route() or not _accept_owned_item(item, amount):
 			return false
@@ -726,7 +746,7 @@ func bind_merger_route(merger: ConveyorMergerComponent, incoming: ConveyorSegmen
 	input: ItemPortComponent, output: ItemPortComponent, route: Array[ConveyorSegment]) -> bool:
 	if (
 		not enable_isolated_merger_route_guard or _merger_route_merger_ref != null
-		or _other_route_selected() or _branch_selected() or _composite_selected() or not matches_attached_site()
+		or _other_route_selected() or _branch_selected() or _composite_selected() or _reverse_composite_selected() or not matches_attached_site()
 		or _intake_escrow_ref == null or _original_output_ref == null
 		or is_escrow_intake_locked() or is_output_source_locked()
 		or not _merger_geometry(merger, incoming, input, output, route)
@@ -765,7 +785,7 @@ func _bound_merger_route() -> Array[ConveyorSegment]:
 func has_verified_merger_route() -> bool:
 	if (
 		not enable_isolated_merger_route_guard or _merger_route_merger_ref == null
-		or _other_route_selected() or _branch_selected() or _composite_selected()
+		or _other_route_selected() or _branch_selected() or _composite_selected() or _reverse_composite_selected()
 		or not matches_attached_site() or is_output_source_locked()
 	):
 		return false
@@ -845,7 +865,7 @@ func bind_composite_route(splitter: ConveyorSplitterComponent, entry: ConveyorSe
 	route: Array[ConveyorSegment]) -> bool:
 	if not enable_isolated_composite_route_guard or not _composite_refs.is_empty():
 		return false
-	if _other_route_selected() or _branch_selected() or _merger_selected() or not matches_attached_site():
+	if _other_route_selected() or _branch_selected() or _merger_selected() or _reverse_composite_selected() or not matches_attached_site():
 		return false
 	if _intake_escrow_ref == null or _original_output_ref == null or is_escrow_intake_locked() or is_output_source_locked():
 		return false
@@ -882,7 +902,7 @@ func _bound_composite_route() -> Array[ConveyorSegment]:
 func has_verified_composite_route() -> bool:
 	if not enable_isolated_composite_route_guard or _composite_refs.is_empty():
 		return false
-	if _other_route_selected() or _branch_selected() or _merger_selected() or not matches_attached_site() or is_output_source_locked():
+	if _other_route_selected() or _branch_selected() or _merger_selected() or _reverse_composite_selected() or not matches_attached_site() or is_output_source_locked():
 		return false
 	return _composite_geometry(
 		_composite_node("splitter") as ConveyorSplitterComponent,
@@ -893,3 +913,122 @@ func has_verified_composite_route() -> bool:
 		_composite_node("merger") as ConveyorMergerComponent,
 		_composite_node("merge_input") as ItemPortComponent,
 		_composite_node("merge_output") as ItemPortComponent, _bound_composite_route())
+
+
+func _reverse_composite_selected() -> bool:
+	return enable_isolated_reverse_composite_route_guard or not _reverse_composite_refs.is_empty()
+
+
+func _reverse_composite_node(key: String) -> Object:
+	var ref := _reverse_composite_refs.get(key) as WeakRef
+	return ref.get_ref() if ref != null else null
+
+
+func _reverse_composite_geometry(splitter: ConveyorSplitterComponent, entry: ConveyorSegment,
+	split_input: ItemPortComponent, split_output: ItemPortComponent, middle: ConveyorSegment,
+	merger: ConveyorMergerComponent, merge_input: ItemPortComponent, merge_output: ItemPortComponent,
+	route: Array[ConveyorSegment]) -> bool:
+	if not _live(get_parent()) or not _live(splitter) or not _live(merger):
+		return false
+	var sb: Node = splitter.get_parent()
+	var mb: Node = merger.get_parent()
+	if not _live(sb) or not _live(mb) or sb == mb:
+		return false
+	if sb.get_parent() != get_parent().get_parent() or mb.get_parent() != get_parent().get_parent():
+		return false
+	if not splitter.is_verified_provenance_ready() or not merger.is_verified_merger_provenance_ready() or not splitter.enable_isolated_merger_splitter_provenance:
+		return false
+	if not _live(split_input) or not _live(split_output) or not _live(merge_input) or not _live(merge_output):
+		return false
+	if split_input.get_parent() != sb or split_output.get_parent() != sb or merge_input.get_parent() != mb or merge_output.get_parent() != mb:
+		return false
+	if split_input != sb.get_node_or_null("InputPort"):
+		return false
+	if split_output != splitter.output_port_a and split_output != splitter.output_port_b and split_output != splitter.output_port_c:
+		return false
+	if merge_input != mb.get_node_or_null("InputPortA") and merge_input != mb.get_node_or_null("InputPortB") and merge_input != mb.get_node_or_null("InputPortC"):
+		return false
+	if merge_output != mb.get_node_or_null("OutputPort") or _original_output_ref == null:
+		return false
+	if route.is_empty() or route.size() > 64 or entry == middle:
+		return false
+	var origin := _original_output_ref.get_ref() as ItemPortComponent
+	if not _branch_straight(entry) or not _branch_port_link(entry, origin, true) or not _branch_port_link(entry, merge_input, false):
+		return false
+	if not _branch_straight(middle) or not _branch_port_link(middle, merge_output, true) or not _branch_port_link(middle, split_input, false):
+		return false
+	var seen: Dictionary = {entry: true, middle: true}
+	for i: int in range(route.size()):
+		var belt: ConveyorSegment = route[i]
+		if not _branch_straight(belt) or seen.has(belt):
+			return false
+		seen[belt] = true
+		if i == 0:
+			if not _branch_port_link(belt, split_output, true):
+				return false
+		else:
+			var prior: ConveyorSegment = route[i - 1]
+			if belt.input_building_port != null or prior.output_building_port != null:
+				return false
+			if prior.next_segment != belt or belt.previous_segment != prior:
+				return false
+			if not LogisticsConnectionGeometry.are_endpoints_aligned(
+				prior.get_node_or_null("OutputEndpoint"), belt.get_node_or_null("InputEndpoint"), ConveyorSegment.CONNECTION_GAP):
+				return false
+	return _branch_port_link(route[-1], self, false)
+
+
+func bind_reverse_composite_route(splitter: ConveyorSplitterComponent, entry: ConveyorSegment,
+	split_input: ItemPortComponent, split_output: ItemPortComponent, middle: ConveyorSegment,
+	merger: ConveyorMergerComponent, merge_input: ItemPortComponent, merge_output: ItemPortComponent,
+	route: Array[ConveyorSegment]) -> bool:
+	if not enable_isolated_reverse_composite_route_guard or not _reverse_composite_refs.is_empty():
+		return false
+	if _other_route_selected() or _branch_selected() or _merger_selected() or _composite_selected() or not matches_attached_site():
+		return false
+	if _intake_escrow_ref == null or _original_output_ref == null or is_escrow_intake_locked() or is_output_source_locked():
+		return false
+	if not _reverse_composite_geometry(splitter, entry, split_input, split_output, middle, merger, merge_input, merge_output, route):
+		return false
+	var all_belts: Array[ConveyorSegment] = [entry, middle]
+	all_belts.append_array(route)
+	for belt: ConveyorSegment in all_belts:
+		var cargo := belt.get_node_or_null("ConveyorTransportComponent") as ConveyorTransportComponent
+		if not _live(cargo) or not _live(cargo.cargo_inventory) or cargo.cargo_inventory.max_capacity != 1 or cargo.cargo_inventory.get_total_amount() != 0:
+			return false
+	for buffer: InventoryComponent in [splitter.input_inventory, splitter.output_a, splitter.output_b, splitter.output_c,
+		merger.input_a, merger.input_b, merger.input_c, merger.output_inventory]:
+		if not _live(buffer) or buffer.get_total_amount() != 0:
+			return false
+	_reverse_composite_refs = {"splitter": weakref(splitter), "entry": weakref(entry),
+		"split_input": weakref(split_input), "split_output": weakref(split_output), "middle": weakref(middle),
+		"merger": weakref(merger), "merge_input": weakref(merge_input), "merge_output": weakref(merge_output)}
+	for belt: ConveyorSegment in route:
+		_reverse_composite_route_refs.append(weakref(belt))
+	return true
+
+
+func _bound_reverse_composite_route() -> Array[ConveyorSegment]:
+	var route: Array[ConveyorSegment] = []
+	for ref: WeakRef in _reverse_composite_route_refs:
+		var belt := ref.get_ref() as ConveyorSegment
+		if not _live(belt):
+			return []
+		route.append(belt)
+	return route
+
+
+func has_verified_reverse_composite_route() -> bool:
+	if not enable_isolated_reverse_composite_route_guard or _reverse_composite_refs.is_empty():
+		return false
+	if _other_route_selected() or _branch_selected() or _merger_selected() or _composite_selected() or not matches_attached_site() or is_output_source_locked():
+		return false
+	return _reverse_composite_geometry(
+		_reverse_composite_node("splitter") as ConveyorSplitterComponent,
+		_reverse_composite_node("entry") as ConveyorSegment,
+		_reverse_composite_node("split_input") as ItemPortComponent,
+		_reverse_composite_node("split_output") as ItemPortComponent,
+		_reverse_composite_node("middle") as ConveyorSegment,
+		_reverse_composite_node("merger") as ConveyorMergerComponent,
+		_reverse_composite_node("merge_input") as ItemPortComponent,
+		_reverse_composite_node("merge_output") as ItemPortComponent, _bound_reverse_composite_route())
