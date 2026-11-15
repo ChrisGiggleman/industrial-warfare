@@ -31,7 +31,9 @@ func _checks() -> void:
 	assert(wrong != null and not demo.prepare_site(wrong))
 	var site := world.call("_create_blueprint_site", STORAGE, Transform3D(Basis.IDENTITY, Demo.SITE_POSITION)) as ConstructionSite
 	assert(site != null and site.job.state == ConstructionJob.State.PLANNED)
-	assert(demo.prepare_site(site) and not demo.prepare_site(site))
+	# Exercise the actual button callback, not only the direct helper.
+	demo._prepare_marked_plan()
+	assert(demo.site == site and not demo.prepare_site(site))
 	assert(demo.staging.get_staged_inventory().get_total_amount() == 0 and demo.registry.claim_count() == 0)
 	print("PASS C: Real planned blueprint prepared once; wrong position rejected")
 	assert(site.job.set_priority(ConstructionJob.Priority.HIGH))
@@ -59,7 +61,13 @@ func _checks() -> void:
 	assert(cargo.get_held_item() == null and demo.supply.inventory.get_amount(INGOT) == 4)
 	assert(not demo.bind_player_belt(null))
 	print("PASS F: Connected actual live belt remains empty until enrollment")
-	assert(demo.bind_player_belt(belt) and not demo.bind_player_belt(belt))
+	# Simulate a committed, aligned live belt for which placement did not
+	# establish the source snap. The button can recover this exact link.
+	assert(belt.disconnect_building_port(demo.supply))
+	assert(demo.supply.connected_conveyor == null)
+	demo._bind_connected_belt()
+	assert(demo.bound_belt == belt and demo.supply.connected_conveyor == belt)
+	assert(not demo.bind_player_belt(belt))
 	assert(receiver.has_bound_unified_receiver_consolidation())
 	assert(belt.output_building_port == receiver)
 	assert(demo.supply.can_provide_item(INGOT))
