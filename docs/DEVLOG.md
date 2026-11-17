@@ -3546,3 +3546,7 @@ Developer explicitly confirmed all 12/12 supplier reservation checks passed loca
 - `res://tests/drone_storage_discovery_e3d5c5x3_test.tscn` — 12
 - `res://tests/world_salvage_destruction_test.tscn` — 12
 - `res://tests/destruction_cargo_recovery_test.tscn` — 12
+
+### 2026-11-17 — E3d5c5x4a Targeted Compatibility Acceptance (207/207)
+
+Developer explicitly confirmed all 16 previously enumerated F6 compatibility suites passed, 207/207 check groups. Combined with the accepted 12/12 source reservation test, 219/219 targeted checks accepted by developer report, not independently executed or full-project regression. Proceed to x4b isolated return-capacity claims. Timed conveyor contention with active claims and active-claim destruction recovery remain separate integration work before live activation.

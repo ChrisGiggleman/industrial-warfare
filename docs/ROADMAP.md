@@ -7,7 +7,7 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] Playable direct conveyor material delivery and power accepted; build-only drone automated suites 33/33, manual complete building and return verified.
 - [x] E3d5c5x2 manual power pause/resume, completion, 31% cancellation/refund and drone return accepted 2026-11-17; automated 33/33.
 - [x] E3d5c5x3 Storage docks, read-only pickup/return discovery and route-energy forecast: 12/12 Godot F6 checks accepted 2026-11-17.
-- [ ] E3d5c5x4a source stock claims accepted (12/12); 16-suite 207-check targeted compatibility gate pending: default-off inventory reservation protection and exact-owner service. E3d5c5x4b return-capacity claims, then physical pickup/site delivery; keep construction readiness unchanged.
+- [ ] E3d5c5x4a source stock claims accepted (12/12); 16-suite 207/207 targeted compatibility gate accepted: default-off inventory reservation protection and exact-owner service. E3d5c5x4b return-capacity claims, then physical pickup/site delivery; keep construction readiness unchanged.
 - [ ] Nearest eligible Storage cargo return on cancellation, safe retention/reroute and next-job-or-Hub selection after unloading.
 - [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
