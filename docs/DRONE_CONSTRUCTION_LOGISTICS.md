@@ -41,7 +41,7 @@ Maintain current build coverage, finite generation, outage pause/resume and expl
 
 1. Completed: E3d5c5x2 manual resume and cancellation gate (2026-11-17).
 2. E3d5c5x3 (accepted, 12/12 F6 checks, 2026-11-17): isolated supplier eligibility/discovery and one physical pickup/return dock contract on existing Storage, including deterministic nearest eligible selection and read-only actual battery forecast. No reservation or movement.
-3. Atomic source claims, competing consumer protection, cargo ownership and return-capacity reservations.
+3. E3d5c5x4a staged (12 F6 checks pending): source stock claims, competing ordinary consumer protection and lifecycle release. E3d5c5x4b planned: return-capacity claims. Physical cargo custody and arrival transactions follow; no pickup in x4a.
 4. One drone: Hub -> Storage -> authorized site; finite cargo pickup, delivery, and existing escrow/power/worker construction; no direct belt-to-site required.
 5. In-flight cancellation and nearest compatible storage recovery, destination invalidation, insufficient capacity/battery and no receiver tests. Empty cargo before next-job reevaluation.
 6. Verified finite charging and repeated assignments; multi-trip delivery and multiple drones/sites.
