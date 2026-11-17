@@ -11,7 +11,8 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x4b return capacity fully accepted (259/259: 14 isolated + 245 across 20 compatibility suites).
 - [x] E3d5c5x5a isolated physical pickup accepted (12/12 developer-confirmed Godot checks; 2026-11-17).
 - [x] E3d5c5x5a fully accepted 409/409 (12 isolated + 397 across 28 compatibility suites).
-- [ ] E3d5c5x5b guarded physical site delivery into exact owned staging staged (13 isolated checks pending); preserve readiness; worker integration follows.
+- [x] E3d5c5x5b isolated physical delivery accepted (13/13 developer-confirmed Godot checks, 2026-11-17).
+- [ ] E3d5c5x5b targeted compatibility pending (35 suites, 503 checks; see [current handoff](HANDOFF.md)); then x5c delivered-drone worker/readiness integration.
 - [ ] Nearest eligible Storage cargo return on cancellation, safe retention/reroute and next-job-or-Hub selection after unloading.
 - [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.

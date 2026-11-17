@@ -3612,3 +3612,44 @@ Developer explicitly confirmed all 28 compatibility suites and 397 check groups 
 ### 2026-11-17 — E3d5c5x5b Physical Delivery Staged (13 Checks Pending)
 
 Pin original site/job/definition at successful x5a pickup. Separate default-off delivery states and explicit metered movement do not grant legacy worker authority. Require exact original queued site with missing materials, one scope-local registry and escrow, pinned receiver identity, remaining bill, ordinary capacity, port acceptance, no held escrow and safe straight-line battery route; recheck before movement and unload. On verified arrival transfer actual whole-load cargo into owned staging, reduce custody by accepted amount, refuse duplicates; legacy escrow is separately invoked, with no automatic readiness/timer. Interrupted delivery retains cargo; successful delivery leaves worker in DELIVERED pending worker/build integration. No in-flight site demand reservation, autonomous dispatch, return unloading, destruction recovery, persistence or Main activation. Isolated scene res://tests/drone_physical_delivery_e3d5c5x5b_test.tscn stages 13 checks A–M including exact site, actual flight, moved arrival, staging, escrow/refund, cancellation, competing intake, held bill and conservation. Godot parse/runtime pending; assistant did not independently execute. After isolated acceptance targeted compatibility, then integrate delivery with worker/readiness through separate gate before x6 recovery.
+
+
+### 2026-11-17 — E3d5c5x5b Isolated Physical Delivery Acceptance (13/13); Compatibility Gate Pending
+
+Developer explicitly confirmed all 13 isolated physical delivery checks passed in local Godot on implementation 5e2fbbc. Accept delivery flight, actual battery use, original site and receiver validation, exact-once unloading, escrow/refund and cancellation custody in tested scenarios; not independently executed or full project regression. Rerun all 28 x5a compatibility suites (397), x5a physical pickup (12), and six targeted staging/port/registry/readiness/recovery suites (94), for 35 suites and 503 groups. Added counts verified from source PASS groups and scene paths. Upon explicit confirmation record x5b 516/516 including isolated checks. No gameplay changes. Successful unload remains separate DELIVERED state with no worker authority; subsequent x5c integration must use existing readiness, escrow and finite power/worker rules. Return routing/unloading, in-flight demand reservations, drone destruction recovery, persistence and Main activation remain pending. See HANDOFF for gate tracking.
+
+- `res://tests/inventory_trasnfer_test.tscn` — 4
+- `res://tests/item_port_transfer_test.tscn` — 7
+- `res://tests/manufacturing_transaction_test.tscn` — 9
+- `res://tests/recipe_output_capacity_test.tscn` — 11
+- `res://tests/conveyor_automatic_loading_test.tscn` — 10
+- `res://tests/conveyor_automatic_unloading_test.tscn` — 9
+- `res://tests/conveyor_connected_transport_test.tscn` — 7
+- `res://tests/conveyor_splitter_test.tscn` — 10
+- `res://tests/conveyor_merger_test.tscn` — 10
+- `res://tests/conveyor_physical_only_conservation_test.tscn` — 9
+- `res://tests/timed_storage_conveyor_delivery_test.tscn` — 6
+- `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` — 16
+- `res://tests/unified_receiver_consolidation_e3d5c5v_test.tscn` — 56
+- `res://tests/playable_construction_logistics_e3d5c5w_test.tscn` — 13
+- `res://tests/playable_construction_power_e3d5c5x1_test.tscn` — 9
+- `res://tests/playable_construction_drone_e3d5c5x2_test.tscn` — 11
+- `res://tests/drone_storage_discovery_e3d5c5x3_test.tscn` — 12
+- `res://tests/drone_supplier_reservations_e3d5c5x4a_test.tscn` — 12
+- `res://tests/world_salvage_destruction_test.tscn` — 12
+- `res://tests/destruction_cargo_recovery_test.tscn` — 12
+- `res://tests/drone_return_reservations_e3d5c5x4b_test.tscn` — 14
+- `res://tests/prototype_construction_worker_drone_e3d5c4u_test.tscn` — 16
+- `res://tests/prototype_drone_worker_readiness_e3d5c4v_test.tscn` — 21
+- `res://tests/prototype_construction_drone_fleet_e3d5c4w_test.tscn` — 21
+- `res://tests/prototype_drone_battery_dock_e3d5c4x_test.tscn` — 20
+- `res://tests/prototype_construction_drone_reuse_e3d5c4y_test.tscn` — 20
+- `res://tests/prototype_construction_drone_tick_e3d5c4z_test.tscn` — 20
+- `res://tests/sandbox_construction_drone_bridge_e3d5c5a_test.tscn` — 20
+- `res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn` — 12
+- `res://tests/blueprint_material_staging_e3d5c4c_test.tscn` — 16
+- `res://tests/blueprint_physical_staging_e3d5c4d_test.tscn` — 16
+- `res://tests/blueprint_site_staging_ownership_e3d5c4h_test.tscn` — 16
+- `res://tests/blueprint_anchored_receiver_e3d5c4i_test.tscn` — 16
+- `res://tests/blueprint_owned_readiness_e3d5c4r_test.tscn` — 18
+- `res://tests/blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` — 12
