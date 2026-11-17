@@ -3568,3 +3568,37 @@ Developer explicitly confirmed all 20 compatibility suites in HANDOFF passed loc
 ### 2026-11-17 — E3d5c5x5a Physical Pickup Staged (12 Checks Pending)
 
 Split x5 into pickup and delivery gates because legacy worker dispatch expects an already authorized site and worker wait state. Add explicit default-off cargo pickup mode and append flight states without renumbering legacy states. Exact private source claim admits physical battery-metered dock travel; source service revalidates original owner/job/dock/inventory, stock and route forecast on every advance and collection. At verified arrival, consume exact claimed amount once and hold finite single-item cargo on worker, with no site readiness, unloading or automatic reassignment. Pre-pickup cancellation releases unpicked claim and returns empty worker; after pickup cancellation retains cargo in CARGO_HELD state. No cargo transfer to site, actual return deposit, loaded-drone destruction/persistence or normal scene activation yet. Isolated res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn stages 12 A–L checks. Godot parse/runtime pending; no independent Godot execution. After acceptance rerun source/return reservation, shared inventory, battery and existing drone regressions before x5b delivery. No full project regression claimed.
+
+
+### 2026-11-17 — E3d5c5x5a Isolated Physical Pickup Acceptance (12/12); Compatibility Gate Pending
+
+Developer explicitly confirmed all 12 x5a physical drone pickup checks passed locally in Godot on implementation 6ed2e2b. Accepted isolated movement, battery, exact-claim collection, cargo custody and cancellation behavior; not independently executed or full-project regression. The following 28 F6 suites (397 check groups) are required before x5b. Reuse all 20 prior compatibility suites (245), x4b isolated return claims (14), plus seven direct worker flight/readiness/fleet/battery/reuse/tick/sandbox bridge suites (138). Counts of added suites checked against source PASS groups. Prior x4b 259/259 remains historical; new gate tests must be rerun on x5a. After all pass, record 409/409 targeted including 12 accepted isolated checks. See [HANDOFF](HANDOFF.md) for progress. No gameplay code changes. Loaded drone stays at source; delivery/staging, return unloading, loaded-drone destruction and persistence remain separate gates.
+
+- `res://tests/inventory_trasnfer_test.tscn` — 4
+- `res://tests/item_port_transfer_test.tscn` — 7
+- `res://tests/manufacturing_transaction_test.tscn` — 9
+- `res://tests/recipe_output_capacity_test.tscn` — 11
+- `res://tests/conveyor_automatic_loading_test.tscn` — 10
+- `res://tests/conveyor_automatic_unloading_test.tscn` — 9
+- `res://tests/conveyor_connected_transport_test.tscn` — 7
+- `res://tests/conveyor_splitter_test.tscn` — 10
+- `res://tests/conveyor_merger_test.tscn` — 10
+- `res://tests/conveyor_physical_only_conservation_test.tscn` — 9
+- `res://tests/timed_storage_conveyor_delivery_test.tscn` — 6
+- `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` — 16
+- `res://tests/unified_receiver_consolidation_e3d5c5v_test.tscn` — 56
+- `res://tests/playable_construction_logistics_e3d5c5w_test.tscn` — 13
+- `res://tests/playable_construction_power_e3d5c5x1_test.tscn` — 9
+- `res://tests/playable_construction_drone_e3d5c5x2_test.tscn` — 11
+- `res://tests/drone_storage_discovery_e3d5c5x3_test.tscn` — 12
+- `res://tests/drone_supplier_reservations_e3d5c5x4a_test.tscn` — 12
+- `res://tests/world_salvage_destruction_test.tscn` — 12
+- `res://tests/destruction_cargo_recovery_test.tscn` — 12
+- `res://tests/drone_return_reservations_e3d5c5x4b_test.tscn` — 14
+- `res://tests/prototype_construction_worker_drone_e3d5c4u_test.tscn` — 16
+- `res://tests/prototype_drone_worker_readiness_e3d5c4v_test.tscn` — 21
+- `res://tests/prototype_construction_drone_fleet_e3d5c4w_test.tscn` — 21
+- `res://tests/prototype_drone_battery_dock_e3d5c4x_test.tscn` — 20
+- `res://tests/prototype_construction_drone_reuse_e3d5c4y_test.tscn` — 20
+- `res://tests/prototype_construction_drone_tick_e3d5c4z_test.tscn` — 20
+- `res://tests/sandbox_construction_drone_bridge_e3d5c5a_test.tscn` — 20

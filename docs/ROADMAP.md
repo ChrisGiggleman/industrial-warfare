@@ -8,8 +8,9 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x2 manual power pause/resume, completion, 31% cancellation/refund and drone return accepted 2026-11-17; automated 33/33.
 - [x] E3d5c5x3 Storage docks, read-only pickup/return discovery and route-energy forecast: 12/12 Godot F6 checks accepted 2026-11-17.
 - [x] E3d5c5x4a source stock claims and targeted compatibility accepted (219/219: 12 isolated + 207 across 16 suites).
-- [x] E3d5c5x4b isolated return-capacity claims accepted (14/14 developer-confirmed).
-- [ ] E3d5c5x4b targeted compatibility gate pending (20 suites, 245 checks; see [current handoff](HANDOFF.md)); then E3d5c5x5 guarded physical pickup/site delivery; keep readiness unchanged.
+- [x] E3d5c5x4b return capacity fully accepted (259/259: 14 isolated + 245 across 20 compatibility suites).
+- [x] E3d5c5x5a isolated physical pickup accepted (12/12 developer-confirmed Godot checks; 2026-11-17).
+- [ ] E3d5c5x5a targeted compatibility pending (28 suites, 397 checks; see [current handoff](HANDOFF.md)); then x5b physical site delivery; keep readiness unchanged.
 - [ ] Nearest eligible Storage cargo return on cancellation, safe retention/reroute and next-job-or-Hub selection after unloading.
 - [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
