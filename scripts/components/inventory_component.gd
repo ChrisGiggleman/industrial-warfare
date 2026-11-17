@@ -34,6 +34,49 @@ var items: Dictionary = {}
 # quantities, persistence or capacity and is NOT a durable item identity.
 var _mutation_revision: int = 0
 
+# E3d5c5x4a: opt-in source claims protect physical stock from ordinary
+# removal/transfer. Stock and capacity counts remain physical. Disabling
+# new claims never releases existing claims.
+@export var enable_isolated_drone_claims: bool = false
+var _drone_stock_claims: Dictionary = {}
+
+
+func get_reserved_amount(item: ItemDefinition) -> int:
+	var total: int = 0
+	for claim: Dictionary in _drone_stock_claims.values():
+		if claim["item"] == item:
+			total += int(claim["amount"])
+	return total
+
+
+func get_unreserved_amount(item: ItemDefinition) -> int:
+	return maxi(0, get_amount(item) - get_reserved_amount(item))
+
+
+# Tokens are unique runtime RefCounted identities, held by the isolated
+# reservation service. No stock movement, no consumption, no revision bump.
+func reserve_drone_stock(token: RefCounted, item: ItemDefinition, amount: int, minimum_retained: int = 0) -> bool:
+	if not enable_isolated_drone_claims or not is_inside_tree() or is_queued_for_deletion() or token == null or _drone_stock_claims.has(token):
+		return false
+	if item == null or item.item_id == &"" or amount <= 0 or minimum_retained < 0 or get_unreserved_amount(item) - minimum_retained < amount:
+		return false
+	_drone_stock_claims[token] = {"item": item, "amount": amount}
+	return true
+
+
+func has_drone_stock_claim(token: RefCounted, item: ItemDefinition, amount: int) -> bool:
+	if token == null or not _drone_stock_claims.has(token):
+		return false
+	var claim: Dictionary = _drone_stock_claims[token]
+	return claim["item"] == item and claim["amount"] == amount
+
+
+func release_drone_stock(token: RefCounted) -> bool:
+	if token == null or not _drone_stock_claims.has(token):
+		return false
+	_drone_stock_claims.erase(token)
+	return true
+
 
 func get_mutation_revision() -> int:
 	return _mutation_revision
@@ -98,7 +141,7 @@ func remove_item(item: ItemDefinition, amount: int) -> bool:
 
 	var current_amount: int = get_amount(item)
 
-	if current_amount < amount:
+	if get_unreserved_amount(item) < amount:
 		return false
 
 	var remaining_amount: int = current_amount - amount
@@ -138,7 +181,7 @@ func has_amount(item: ItemDefinition, amount: int) -> bool:
 	if amount <= 0:
 		return false
 
-	return get_amount(item) >= amount
+	return get_unreserved_amount(item) >= amount
 
 
 # =============================================================================
@@ -237,7 +280,7 @@ func transfer_to(
 	# Never transfer more items than the source actually contains.
 	var transferable_amount: int = mini(
 		amount,
-		get_amount(item)
+		get_unreserved_amount(item)
 	)
 
 	# Respect the destination's available capacity.

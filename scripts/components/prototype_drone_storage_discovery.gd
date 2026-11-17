@@ -68,7 +68,7 @@ func _entries_for(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition,
 # One requested item and one full-load supplier. Claim-free snapshot only.
 # Total travel energy (current -> dock -> site hover -> registered home)
 # is primary, distance from dock to site secondary, registration order last.
-func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, item: ItemDefinition, amount: int, cargo_capacity: int, hover_height: float = 2.0) -> Dictionary:
+func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, item: ItemDefinition, amount: int, cargo_capacity: int, hover_height: float = 2.0, require_claimable: bool = false) -> Dictionary:
 	if not _ready_scope() or not _live(site) or site.get_parent() != get_parent() or site.job == null or site.job.state != ConstructionJob.State.QUEUED:
 		return {}
 	if not site.job.get_wait_reasons().has(&"materials") or not _live(drone) or drone.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
@@ -85,7 +85,9 @@ func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite
 	for candidate: Dictionary in _entries_for(drone, item, amount):
 		var dock: PrototypeDroneStorageDock = candidate["dock"]
 		var inventory: InventoryComponent = candidate["inventory"]
-		if not dock.allow_pickup or inventory.get_amount(item) - dock.minimum_retained < amount:
+		if require_claimable and not inventory.enable_isolated_drone_claims:
+			continue
+		if not dock.allow_pickup or inventory.get_unreserved_amount(item) - dock.minimum_retained < amount:
 			continue
 		var waypoints: Array[Vector3] = [dock.global_position, destination]
 		var energy: float = drone.estimate_route_energy(waypoints)
