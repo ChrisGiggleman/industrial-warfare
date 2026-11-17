@@ -1,5 +1,8 @@
 # Industrial Warfare — Game Design
 
+> **2026-11-17 agreed construction direction:** [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) defines permanent conveyor production versus physical drone construction supply, research-unlocked Storage docking, bulk silos, supply depots, and nearest eligible Storage cargo return on cancellation. Earlier belt-to-blueprint experiments remain validated compatibility paths, not the intended normal construction workflow. See the linked staged plan for pending work.
+
+
 > **Game vision:** Read [GAME_VISION.md](GAME_VISION.md) first for the long-term design pillars, agreed Chat 07 decisions (recipe-controlled inputs, physical conveyors, universal slot-based storage, dedicated splitter/merger buildings), ammunition-focused factory objectives, and structure-based enemy spawns. This document records detailed mechanics and current implementation; early proximity transfers are temporary scaffolding, not final logistics.
 
 ## High-Level Concept

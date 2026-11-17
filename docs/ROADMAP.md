@@ -1,5 +1,20 @@
 # Industrial Warfare — Development Roadmap
 
+## Active construction logistics direction — 2026-11-17
+
+The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) design takes precedence over historical next-phase construction logistics proposals in this file. Preserve existing completed conveyor and drone baseline implementations.
+
+- [x] Playable direct conveyor material delivery and power accepted; build-only drone automated suites 33/33, manual complete building and return verified.
+- [ ] Finish E3d5c5x2 manual power resume and cancellation/refund. Power-loss pause with drone at site reported and pictured; resume not yet confirmed.
+- [ ] Proposed E3d5c5x3: isolated Storage pickup dock eligibility, read-only supplier discovery and deterministic nearest eligible routing.
+- [ ] Atomic supplier reservations and cargo inventory/return capacity; real pickup and site delivery; keep construction readiness unchanged.
+- [ ] Nearest eligible Storage cargo return on cancellation, safe retention/reroute and next-job-or-Hub selection after unloading.
+- [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
+- [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
+
+Detailed acceptance boundaries and proposed sequencing are in the linked design. No production implementation implied.
+
+
 ---
 
 ## Active Next Phase — Universal Construction, Blueprint Planning, Power (2026-11-08)
