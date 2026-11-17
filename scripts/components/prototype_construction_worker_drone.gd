@@ -12,7 +12,7 @@ class_name PrototypeConstructionWorkerDrone
 # No _process / physics step: F6 fixture explicitly calls advance_flight().
 # Not installed in Main or Factory Testing Sandbox.
 
-enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED }
+enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD }
 
 const ARRIVAL_EPSILON: float = 0.05
 const MAX_SPEED: float = 50.0
@@ -24,6 +24,14 @@ const MAX_SPEED: float = 50.0
 @export var enable_isolated_battery: bool = false
 # E3d5c4y guarded reuse. Does not release construction inventory ownership.
 @export var enable_isolated_reuse: bool = false
+# x5a: isolated, single whole-load cargo. No site unload or return deposit.
+@export var enable_isolated_cargo_pickup: bool = false
+var _pickup_token: RefCounted
+var _pickup_dock: WeakRef
+var _pickup_capacity: int = 0
+var _cargo_item: ItemDefinition
+var _cargo_amount: int = 0
+
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
 const RETURN_MARGIN_UNITS: float = 0.25
@@ -199,6 +207,8 @@ func assign_to_site(
 # Manual movement only. Returning the drone HOME never unlocks any
 # construction resource or claim.
 func advance_flight(delta: float) -> bool:
+	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD]:
+		return false # Only the exact reservation service advances pickup.
 	if (
 		not is_finite(delta) or delta <= 0.0
 		or _state in [FlightState.IDLE, FlightState.DOCKED]
@@ -397,3 +407,74 @@ func _valid_queued_site(site: ConstructionSite) -> bool:
 		and site.job.state == ConstructionJob.State.QUEUED
 		and site.job.get_wait_reasons().has(&"workers")
 	)
+
+
+# x5a: source reservation service is the sole caller with the private token.
+func cargo_amount() -> int:
+	return _cargo_amount
+
+
+func cargo_item() -> ItemDefinition:
+	return _cargo_item
+
+
+func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity: int, speed: float) -> bool:
+	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not is_inside_tree() or is_queued_for_deletion():
+		return false
+	if _state != FlightState.IDLE or _site_ref != null or _pickup_token != null or _cargo_amount != 0 or not global_position.is_equal_approx(_home):
+		return false
+	if token == null or not is_instance_valid(dock) or not dock.is_inside_tree() or dock.is_queued_for_deletion() or not dock.global_position.is_finite():
+		return false
+	if capacity <= 0 or capacity > 100000 or not is_finite(speed) or speed <= 0.0 or speed > MAX_SPEED:
+		return false
+	_pickup_token = token
+	_pickup_dock = weakref(dock)
+	_pickup_capacity = capacity
+	_speed = speed
+	_state = FlightState.PICKUP_OUTBOUND
+	return true
+
+
+func _owns_pickup(token: RefCounted, dock: PrototypeDroneStorageDock) -> bool:
+	return enable_isolated_cargo_pickup and enable_isolated_drone and enable_isolated_battery and _battery_configured and token != null and _pickup_token == token and _pickup_dock != null and is_instance_valid(dock) and _pickup_dock.get_ref() == dock and _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP] and _cargo_amount == 0
+
+
+func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: float) -> bool:
+	if not _owns_pickup(token, dock) or not is_finite(delta) or delta <= 0.0 or not dock.global_position.is_finite():
+		return false
+	var target: Vector3 = dock.global_position
+	var distance: float = global_position.distance_to(target)
+	var step: float = minf(distance, _speed * delta)
+	var next: Vector3 = global_position.move_toward(target, step)
+	var required: float = (step + next.distance_to(_home)) * _energy_per_meter + RETURN_MARGIN_UNITS
+	if _battery_units + 0.00001 < required:
+		return false
+	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	global_position = next
+	_state = FlightState.AT_PICKUP if global_position.is_equal_approx(target) else FlightState.PICKUP_OUTBOUND
+	return true
+
+
+func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory: InventoryComponent, item: ItemDefinition, amount: int) -> bool:
+	if not _owns_pickup(token, dock) or _state != FlightState.AT_PICKUP or not global_position.is_equal_approx(dock.global_position):
+		return false
+	if not is_instance_valid(inventory) or amount <= 0 or amount > _pickup_capacity:
+		return false
+	if not inventory.consume_drone_stock_claim(token, item, amount):
+		return false
+	_cargo_item = item
+	_cargo_amount = amount
+	_pickup_token = null
+	_pickup_dock = null
+	_pickup_capacity = 0
+	_state = FlightState.CARGO_HELD
+	return true
+
+
+func _cancel_pickup(token: RefCounted) -> void:
+	if token == null or _pickup_token != token:
+		return
+	_pickup_token = null
+	_pickup_dock = null
+	_pickup_capacity = 0
+	_state = FlightState.DOCKED if global_position.is_equal_approx(_home) else FlightState.RETURNING

@@ -124,6 +124,26 @@ func release_drone_stock(token: RefCounted) -> bool:
 	return true
 
 
+# x5a: exact-token, whole-load debit. Never releases other owners' claims.
+# No signal/await between debit and custody assignment by the isolated drone.
+func consume_drone_stock_claim(token: RefCounted, item: ItemDefinition, amount: int) -> bool:
+	if not enable_isolated_drone_claims or not is_inside_tree() or is_queued_for_deletion():
+		return false
+	if item == null or amount <= 0 or not has_drone_stock_claim(token, item, amount):
+		return false
+	var physical: int = get_amount(item)
+	if physical < get_reserved_amount(item):
+		return false
+	_drone_stock_claims.erase(token)
+	var remaining: int = physical - amount
+	if remaining == 0:
+		items.erase(item)
+	else:
+		items[item] = remaining
+	_mutation_revision += 1
+	return true
+
+
 func get_mutation_revision() -> int:
 	return _mutation_revision
 

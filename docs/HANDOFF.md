@@ -9,8 +9,12 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - E3d5c5x3 Storage supplier discovery accepted (12/12).
 - E3d5c5x4a source reservations fully accepted (12/12 isolated and 207/207 across 16 targeted compatibility suites; 219/219). Acceptance commit [2987d49](https://github.com/ChrisGiggleman/industrial-warfare/commit/2987d497bfdd5bca2050ea35bd47f580b1b73245).
 - E3d5c5x4b return capacity reservations isolated accepted (14/14 A–N, developer explicitly confirmed all 14 passed in Godot). Implementation [d6d1ed9](https://github.com/ChrisGiggleman/industrial-warfare/commit/d6d1ed9d74af73aaffa175ec9748e77671325d10); staging documentation [1fec87a](https://github.com/ChrisGiggleman/industrial-warfare/commit/1fec87aa4b72a37603215314b1f19ed2cd65d81e).
-- **E3d5c5x4b fully accepted: 259/259 (14 isolated + 245 across 20 targeted compatibility suites).** Developer confirmed every suite on 2026-11-17. Current next milestone: E3d5c5x5 guarded physical cargo pickup and delivery.
+- **E3d5c5x4b fully accepted: 259/259 (14 isolated + 245 across 20 targeted compatibility suites).** Developer confirmed every suite on 2026-11-17. Current next milestone: E3d5c5x5a guarded physical pickup staged; 12 isolated checks pending.
 - No independent runtime execution by assistant; evidence is developer's local Godot report. No production code changes in this handoff update.
+
+## Current next action — E3d5c5x5a pickup testing
+
+Code staged: exact-claim pickup, battery-metered travel, finite cargo custody. Open `res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn`, press F6. Expected `ALL 12 E3D5C5X5A DRONE PHYSICAL PICKUP TESTS PASSED`. 12 isolated checks pending; verify local parse/runtime, then targeted compatibility before x5b. Loaded drone remains stationary at source pending delivery/recovery implementation. No Main activation. Pull only with clean working tree.
 
 ## Completed compatibility gate — x4b
 
@@ -49,7 +53,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 - Preserve sandbox-only/default-off feature gates and Main opt-out. No unreviewed production activation.
 - Incoming capacity and outgoing stock claims are independent; physical inventory remains unchanged by reserving or releasing. Current return claim is whole single-material load, exact owner/Storage/dock/inventory identity, and newest excess claims released first after capacity reduction.
 - On cancellation, an actual loaded drone should retain its cargo and select nearest eligible Storage with reserved capacity and safe battery forecast; do not discard or duplicate material. Re-evaluate assignment only after safe unloading. Researchable docking retrofits, silos and depots remain agreed future features.
-- Physical cargo custody, actual unloading, active-claim destruction recovery and persistence are not implemented/accepted yet. No assumption of pathfinding safety or production activation.
+- Physical pickup/cargo custody is staged, not yet accepted; site delivery, actual unloading, active-claim destruction recovery and persistence are not implemented/accepted yet. No assumption of pathfinding safety or production activation.
 
 ## Roadmap from here
 

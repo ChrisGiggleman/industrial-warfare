@@ -62,7 +62,7 @@ func reserve(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, it
 	_claims[id] = {
 		"token": token, "drone": weakref(drone), "site": weakref(site),
 		"job": site.job, "inventory": weakref(inventory), "dock": weakref(dock),
-		"storage": weakref(candidate["storage"]), "item": item, "amount": amount
+		"storage": weakref(candidate["storage"]), "item": item, "amount": amount, "cargo_capacity": cargo_capacity
 	}
 	# Unpicked stock stays at source; cancellation releases only the claim.
 	site.job.job_cancelled.connect(_on_ended.bind(id))
@@ -80,6 +80,9 @@ func _release(id: int) -> bool:
 		return false
 	var claim: Dictionary = _claims[id]
 	_claims.erase(id)
+	var drone := (claim["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
+	if is_instance_valid(drone):
+		drone._cancel_pickup(claim["token"])
 	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
 	if is_instance_valid(inventory):
 		inventory.release_drone_stock(claim["token"])
@@ -116,7 +119,7 @@ func _valid(claim: Dictionary, discovery: PrototypeDroneStorageDiscovery) -> boo
 	var building := (claim["storage"] as WeakRef).get_ref() as Node3D
 	if not _live(drone) or not _live(site) or not _live(dock) or not _live(inventory) or not _live(building):
 		return false
-	if site.get_parent() != get_parent() or site.job != claim["job"] or site.job.state != ConstructionJob.State.QUEUED or not site.job.get_wait_reasons().has(&"materials") or drone.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
+	if site.get_parent() != get_parent() or site.job != claim["job"] or site.job.state != ConstructionJob.State.QUEUED or not site.job.get_wait_reasons().has(&"materials") or (drone.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE and not drone._owns_pickup(claim["token"], dock)):
 		return false
 	var item: ItemDefinition = claim["item"]
 	var amount: int = claim["amount"]
@@ -159,3 +162,39 @@ func _exit_tree() -> void:
 	var scope: Node = get_parent()
 	if is_instance_valid(scope) and scope.has_meta(SCOPE_KEY) and (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() == self:
 		scope.remove_meta(SCOPE_KEY)
+
+
+# x5a: same claim, same worker, actual battery-metered arrival; no caller
+# provided inventory, token, coordinates or item quantity may authorize debit.
+func _owned_valid(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
+	return _claims.has(id) and _live(drone) and (_claims[id]["drone"] as WeakRef).get_ref() == drone and _valid(_claims[id], _service())
+
+
+func begin_pickup(id: int, drone: PrototypeConstructionWorkerDrone, speed: float) -> bool:
+	if not _owned_valid(id, drone):
+		return false
+	var claim: Dictionary = _claims[id]
+	var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
+	return drone._begin_pickup(claim["token"], dock, claim["cargo_capacity"], speed)
+
+
+func advance_pickup(id: int, drone: PrototypeConstructionWorkerDrone, delta: float) -> bool:
+	if not _owned_valid(id, drone):
+		if _claims.has(id) and is_instance_valid(drone) and (_claims[id]["drone"] as WeakRef).get_ref() == drone:
+			_release(id)
+		return false
+	var claim: Dictionary = _claims[id]
+	var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
+	return drone._advance_pickup(claim["token"], dock, delta)
+
+
+func collect_pickup(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
+	if not _owned_valid(id, drone):
+		return false
+	var claim: Dictionary = _claims[id]
+	var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
+	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
+	if not drone._take_pickup(claim["token"], dock, inventory, claim["item"], claim["amount"]):
+		return false
+	_release(id)
+	return true
