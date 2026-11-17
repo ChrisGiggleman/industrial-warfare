@@ -35,11 +35,11 @@ Permanent physical conveyors move raw resources, manufactured items, fuel and am
 
 ## Power and verification
 
-Maintain current build coverage, finite generation, outage pause/resume and explicit player authorization. Flight is battery powered; a safe return need not require energized site power. Existing build-only demo is retained as a regression baseline. Current manual E3d5c5x2 screenshot shows paused red construction site with drone present following user-reported power loss; manual resume and cancellation still pending. Automated 33/33 already accepted.
+Maintain current build coverage, finite generation, outage pause/resume and explicit player authorization. Flight is battery powered; a safe return need not require energized site power. Existing build-only demo is retained as a regression baseline. E3d5c5x2 manual pause/resume, completion, cancellation at 31%, full refund and return accepted 2026-11-17. Automated 33/33 accepted.
 
 ## Proposed staged implementation
 
-1. Close current E3d5c5x2 manual resume and cancellation gate.
+1. Completed: E3d5c5x2 manual resume and cancellation gate (2026-11-17).
 2. E3d5c5x3 (proposed): isolated supplier eligibility/discovery and one physical pickup/return dock contract on existing Storage, including deterministic nearest eligible selection. Read-only discovery before any reservation or movement.
 3. Atomic source claims, competing consumer protection, cargo ownership and return-capacity reservations.
 4. One drone: Hub -> Storage -> authorized site; finite cargo pickup, delivery, and existing escrow/power/worker construction; no direct belt-to-site required.
