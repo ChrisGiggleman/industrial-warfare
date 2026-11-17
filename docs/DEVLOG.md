@@ -3525,3 +3525,24 @@ Developer Godot 4.6.2 Output screenshot confirms PASS A–L and ALL 12 E3D5C5X3 
 ### 2026-11-17 — E3d5c5x4a Source Stock Reservations Staged (12 Checks Pending)
 
 Isolate source-side claims before destination capacity claims or physical pickup. InventoryComponent now has default-off opt-in runtime token claims; get_amount/total/space and mutation revision continue to represent physical stock, while has_amount, remove_item and transfer_to respect unreserved quantity. Existing claims remain protective when the flag is disabled. Discovery subtracts existing claims plus the requested material's dock retention floor, and can require an opt-in claimable inventory. New PrototypeDroneSupplierReservations is explicitly configured once per fixture scope; re-queries discovery before claiming, binds exact drone/site/job/storage/dock/inventory/item/count, allows one outstanding claim per drone and site, uses monotonically issued service-local IDs and private token identities, releases unpicked claims on cancellation/tree exit or exact-owner cancellation, and explicitly reconciles stale eligibility. No cargo debit, flight, staging, escrow grant, charging, power or job readiness. Source claims do not represent new inventory; production scene defaults remain unchanged. Retention floor protects stock from drone reservations, not ordinary factory consumption. Test res://tests/drone_supplier_reservations_e3d5c5x4a_test.tscn stages 12 A–L groups: opt-in/exclusive service, authorization and bill bounds, exact count/revision, competition, ordinary output port and transfer protection, toggle/owner release, cancellation, stale dock, freed claimant, damage, teardown/conservation and default compatibility. Godot validation pending. No timed belt attempt independently asserted by this test; run targeted inventory/conveyor and existing drone regressions after isolated acceptance. Raw dictionary mutation/destruction recovery and persistence are not covered by this runtime claim API. Next E3d5c5x4b: return capacity and then guarded arrival/pickup.
+
+### 2026-11-17 — E3d5c5x4a Supplier Reservation Acceptance and Compatibility Gate
+
+Developer explicitly confirmed all 12/12 supplier reservation checks passed locally in Godot. Isolated source claims accepted by developer report; not independently executed. Because shared InventoryComponent.has_amount/remove_item/transfer_to and discovery availability changed, require the following 16 existing F6 suites (207 check groups) before advancing to x4b return capacity. Counts verified from repository test scripts; inventory scene's historical filename typo is intentional and its four PASS groups do not print an ALL banner. Manufacturing prints an unnumbered ALL banner after nine PASS groups. This is targeted compatibility, not a full project regression. No additional code changes or runtime claims in this entry. Existing tests do not prove timed conveyor contention with active claims, raw inventory dictionary mutation or active-claim destruction recovery; these require separate integration checks before live activation.
+
+- `res://tests/inventory_trasnfer_test.tscn` — 4
+- `res://tests/item_port_transfer_test.tscn` — 7
+- `res://tests/conveyor_automatic_loading_test.tscn` — 10
+- `res://tests/conveyor_connected_transport_test.tscn` — 7
+- `res://tests/conveyor_splitter_test.tscn` — 10
+- `res://tests/conveyor_merger_test.tscn` — 10
+- `res://tests/conveyor_physical_only_conservation_test.tscn` — 9
+- `res://tests/manufacturing_transaction_test.tscn` — 9
+- `res://tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn` — 16
+- `res://tests/unified_receiver_consolidation_e3d5c5v_test.tscn` — 56
+- `res://tests/playable_construction_logistics_e3d5c5w_test.tscn` — 13
+- `res://tests/playable_construction_power_e3d5c5x1_test.tscn` — 9
+- `res://tests/playable_construction_drone_e3d5c5x2_test.tscn` — 11
+- `res://tests/drone_storage_discovery_e3d5c5x3_test.tscn` — 12
+- `res://tests/world_salvage_destruction_test.tscn` — 12
+- `res://tests/destruction_cargo_recovery_test.tscn` — 12
