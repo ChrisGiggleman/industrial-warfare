@@ -120,12 +120,7 @@ func allocated_power() -> int:
 func _refresh_power() -> void:
 	if not _power_started:
 		return
-	if _live(site) and _live(receiver) and receiver.matches_attached_site() and site.job.state == ConstructionJob.State.QUEUED:
-		if not _tracked:
-			_tracked = allocator.track_site(site, DEMAND)
-		# Power-only readiness observation. Materials require separate
-		# escrow/worker coordination; neither is granted in this experiment.
-		site.job.set_availability(allocated_power() == DEMAND, false, false)
+	_update_site_power_readiness()
 	var online: bool = _live(hub) and hub.available_nameplate_generation() > 0
 	var energized: bool = _live(pole) and network.is_energized(pole.get_power_node())
 	var generation: int = hub.available_nameplate_generation() if _live(hub) else 0
@@ -144,3 +139,13 @@ func _process(delta: float) -> void:
 	_refresh_power()
 	if is_instance_valid(_label):
 		_label.text = _label.text.replace("No worker or power supplied. Cancel with X; no automatic completion.", "Power test below. No worker or material escrow readiness. Cancel with X.")
+
+
+# Default power-only behavior; drone tutorial delegates readiness to its coordinator.
+func _update_site_power_readiness() -> void:
+	if _live(site) and _live(receiver) and receiver.matches_attached_site() and site.job.state == ConstructionJob.State.QUEUED:
+		if not _tracked:
+			_tracked = allocator.track_site(site, DEMAND)
+		# Power-only readiness observation. Materials require separate
+		# escrow/worker coordination; neither is granted in this experiment.
+		site.job.set_availability(allocated_power() == DEMAND, false, false)
