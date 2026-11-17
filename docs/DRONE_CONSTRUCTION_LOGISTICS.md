@@ -40,11 +40,11 @@ Maintain current build coverage, finite generation, outage pause/resume and expl
 ## Proposed staged implementation
 
 1. Completed: E3d5c5x2 manual resume and cancellation gate (2026-11-17).
-2. E3d5c5x3 (proposed): isolated supplier eligibility/discovery and one physical pickup/return dock contract on existing Storage, including deterministic nearest eligible selection. Read-only discovery before any reservation or movement.
+2. E3d5c5x3 (staged, 12 F6 checks pending): isolated supplier eligibility/discovery and one physical pickup/return dock contract on existing Storage, including deterministic nearest eligible selection and read-only actual battery forecast. No reservation or movement.
 3. Atomic source claims, competing consumer protection, cargo ownership and return-capacity reservations.
 4. One drone: Hub -> Storage -> authorized site; finite cargo pickup, delivery, and existing escrow/power/worker construction; no direct belt-to-site required.
 5. In-flight cancellation and nearest compatible storage recovery, destination invalidation, insufficient capacity/battery and no receiver tests. Empty cargo before next-job reevaluation.
 6. Verified finite charging and repeated assignments; multi-trip delivery and multiple drones/sites.
 7. Research-unlocked storage attachments, dedicated depots and bulk silo types, expanded power/charging and permanent conveyor handoff. Persistence, destruction recovery and playable Main activation require their own acceptance gates.
 
-Milestones beyond the next isolated discovery step are sequencing proposals. Preserve all existing regression baselines; no code changed by this design decision.
+Milestones beyond the next isolated discovery step are sequencing proposals. Preserve all existing regression baselines. E3d5c5x3 is staged separately from the design decision; see DEVLOG for verification status.

@@ -6,7 +6,7 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 
 - [x] Playable direct conveyor material delivery and power accepted; build-only drone automated suites 33/33, manual complete building and return verified.
 - [x] E3d5c5x2 manual power pause/resume, completion, 31% cancellation/refund and drone return accepted 2026-11-17; automated 33/33.
-- [ ] Proposed E3d5c5x3: isolated Storage pickup dock eligibility, read-only supplier discovery and deterministic nearest eligible routing.
+- [ ] E3d5c5x3 staged: default-off Storage docks, read-only pickup/return discovery, route-energy forecast; 12 F6 checks pending (`res://tests/drone_storage_discovery_e3d5c5x3_test.tscn`).
 - [ ] Atomic supplier reservations and cargo inventory/return capacity; real pickup and site delivery; keep construction readiness unchanged.
 - [ ] Nearest eligible Storage cargo return on cancellation, safe retention/reroute and next-job-or-Hub selection after unloading.
 - [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
