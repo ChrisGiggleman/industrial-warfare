@@ -3558,3 +3558,8 @@ Added separate default-off incoming space claims to InventoryComponent. Physical
 ### 2026-11-17 — E3d5c5x4b Isolated Return Capacity Acceptance (14/14); Compatibility Gate Pending
 
 Developer explicitly confirmed all 14 local Godot checks passed; no independent runtime execution. Accept isolated return capacity reservation suite only. Previous x4a 219/219 remains historical acceptance. The next targeted gate is 20 suites / 245 groups, comprising all 16 prior compatibility suites (207), x4a supplier reservation suite (12), automatic unloading (9), timed Storage conveyor delivery (6), and recipe output capacity (11). Full list and pending statuses in [HANDOFF.md](HANDOFF.md). After explicit confirmation, record x4b 259/259 (14 + 245); do not advance to x5 before the gate passes. No production or gameplay code changes. Remaining cargo custody, actual return unloading, active-claim destruction recovery and persistence limitations unchanged.
+
+
+### 2026-11-17 — E3d5c5x4b Full Targeted Acceptance (259/259)
+
+Developer explicitly confirmed all 20 compatibility suites in HANDOFF passed locally in Godot, 245/245 check groups, plus previously confirmed 14/14 isolated return capacity groups: 259/259. Category totals: inventory/manufacturing 31, conveyor 61, construction 94, drones 35, destruction/recovery 24. Evidence is developer report, not independent execution or full project regression. Tested implementation d6d1ed9; gate documentation at 0d987bb. Proceed to E3d5c5x5 in isolated stages: exact-token pickup transaction, physical flight and authorized-site staging, then integration. No Main activation; active-claim destruction/persistence and actual canceled cargo unloading remain separate gates.
