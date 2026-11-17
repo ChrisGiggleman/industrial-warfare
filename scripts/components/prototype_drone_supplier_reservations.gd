@@ -194,7 +194,7 @@ func collect_pickup(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
 	var claim: Dictionary = _claims[id]
 	var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
 	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
-	if not drone._take_pickup(claim["token"], dock, inventory, claim["item"], claim["amount"]):
+	if not drone._take_pickup(claim["token"], dock, inventory, claim["item"], claim["amount"], (claim["site"] as WeakRef).get_ref() as ConstructionSite):
 		return false
 	_release(id)
 	return true

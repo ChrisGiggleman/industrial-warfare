@@ -212,3 +212,22 @@ func _live(node: Node) -> bool:
 		and not node.is_queued_for_deletion()
 		and node.is_inside_tree()
 	)
+
+
+# x5b read-only intake guard. Unlike legacy staging transfers, a drone
+# delivers only its whole load, within the outstanding per-item bill.
+# No authority to debit cargo, fill a buffer, reserve escrow or start work.
+func can_receive_drone_delivery(site: ConstructionSite, expected: InventoryComponent, item: ItemDefinition, amount: int) -> bool:
+	if not _live(expected) or not is_instance_valid(item) or amount <= 0 or inventory_for_site(site) != expected:
+		return false
+	var costs: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	if int(costs.get(item, 0)) - expected.get_amount(item) < amount:
+		return false
+	var space: int = expected.get_available_space()
+	if space >= 0 and space < amount:
+		return false
+	for entry: Dictionary in _claims:
+		if _claimed_ref(entry, "site") == site:
+			var port := _claimed_ref(entry, "port") as BlueprintConstructionStagingInputPort
+			return _live(port) and port.can_accept_item(item, amount)
+	return false

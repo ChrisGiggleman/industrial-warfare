@@ -12,7 +12,7 @@ class_name PrototypeConstructionWorkerDrone
 # No _process / physics step: F6 fixture explicitly calls advance_flight().
 # Not installed in Main or Factory Testing Sandbox.
 
-enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD }
+enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED }
 
 const ARRIVAL_EPSILON: float = 0.05
 const MAX_SPEED: float = 50.0
@@ -31,6 +31,14 @@ var _pickup_dock: WeakRef
 var _pickup_capacity: int = 0
 var _cargo_item: ItemDefinition
 var _cargo_amount: int = 0
+# x5b: immutable original pickup assignment; separately enabled delivery.
+@export var enable_isolated_cargo_delivery: bool = false
+var _cargo_site: WeakRef
+var _cargo_job: ConstructionJob
+var _cargo_definition: BuildingDefinition
+var _delivery_registry: WeakRef
+var _delivery_escrow: WeakRef
+var _delivery_buffer: WeakRef
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -207,8 +215,8 @@ func assign_to_site(
 # Manual movement only. Returning the drone HOME never unlocks any
 # construction resource or claim.
 func advance_flight(delta: float) -> bool:
-	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD]:
-		return false # Only the exact reservation service advances pickup.
+	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED]:
+		return false # Cargo legs are distinct from legacy worker flight.
 	if (
 		not is_finite(delta) or delta <= 0.0
 		or _state in [FlightState.IDLE, FlightState.DOCKED]
@@ -455,15 +463,20 @@ func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: 
 	return true
 
 
-func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory: InventoryComponent, item: ItemDefinition, amount: int) -> bool:
+func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory: InventoryComponent, item: ItemDefinition, amount: int, site: ConstructionSite) -> bool:
 	if not _owns_pickup(token, dock) or _state != FlightState.AT_PICKUP or not global_position.is_equal_approx(dock.global_position):
 		return false
 	if not is_instance_valid(inventory) or amount <= 0 or amount > _pickup_capacity:
+		return false
+	if not is_instance_valid(site) or not site.is_inside_tree() or site.is_queued_for_deletion() or site.get_parent() != get_parent() or site.job == null or site.job.state != ConstructionJob.State.QUEUED or not is_instance_valid(site.target_definition):
 		return false
 	if not inventory.consume_drone_stock_claim(token, item, amount):
 		return false
 	_cargo_item = item
 	_cargo_amount = amount
+	_cargo_site = weakref(site)
+	_cargo_job = site.job
+	_cargo_definition = site.target_definition
 	_pickup_token = null
 	_pickup_dock = null
 	_pickup_capacity = 0
@@ -478,3 +491,111 @@ func _cancel_pickup(token: RefCounted) -> void:
 	_pickup_dock = null
 	_pickup_capacity = 0
 	_state = FlightState.DOCKED if global_position.is_equal_approx(_home) else FlightState.RETURNING
+
+
+# E3d5c5x5b: delivery is never the legacy worker/readiness state.
+# The original pickup site/job/definition are pinned by the source service.
+# The fixture must have one authoritative registry and one escrow ledger.
+func _delivery_live(node: Node) -> bool:
+	return is_instance_valid(node) and node.is_inside_tree() and not node.is_queued_for_deletion()
+
+
+func _delivery_target(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> InventoryComponent:
+	if not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+		return null
+	if _cargo_amount <= 0 or not is_instance_valid(_cargo_item) or _cargo_site == null or _cargo_site.get_ref() != site:
+		return null
+	if not _delivery_live(site) or site.get_parent() != get_parent() or site.job == null or site.job != _cargo_job or site.target_definition != _cargo_definition or site.job.state != ConstructionJob.State.QUEUED:
+		return null
+	if not site.job.get_wait_reasons().has(&"materials"):
+		return null
+	if not _delivery_live(registry) or not _delivery_live(escrow) or registry.get_parent() != get_parent() or escrow.get_parent() != get_parent() or not registry.enable_isolated_site_registry:
+		return null
+	var registry_count: int = 0
+	var escrow_count: int = 0
+	for child: Node in get_parent().get_children():
+		if child is BlueprintConstructionSiteStagingRegistry and _delivery_live(child):
+			registry_count += 1
+		if child is BlueprintConstructionMaterialEscrow and _delivery_live(child):
+			escrow_count += 1
+	if registry_count != 1 or escrow_count != 1 or escrow.reservation_for(site) != 0:
+		return null
+	var buffer: InventoryComponent = registry.inventory_for_site(site)
+	if not _delivery_live(buffer) or not registry.matches_owned_inventory(site, buffer):
+		return null
+	if not registry.can_receive_drone_delivery(site, buffer, _cargo_item, _cargo_amount):
+		return null
+	if _delivery_registry != null and (_delivery_registry.get_ref() != registry or _delivery_escrow.get_ref() != escrow or _delivery_buffer.get_ref() != buffer):
+		return null
+	return buffer
+
+
+func _delivery_energy_ok(site: ConstructionSite) -> bool:
+	var target: Vector3 = site.global_position + Vector3.UP * 2.0
+	var points: Array[Vector3] = [target]
+	var energy: float = estimate_route_energy(points)
+	return energy >= 0.0 and energy <= _battery_units + 0.00001
+
+
+func begin_delivery(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if _state != FlightState.CARGO_HELD:
+		return false
+	var buffer := _delivery_target(site, registry, escrow)
+	if buffer == null or not _delivery_energy_ok(site):
+		return false
+	if _delivery_registry == null:
+		_delivery_registry = weakref(registry)
+		_delivery_escrow = weakref(escrow)
+		_delivery_buffer = weakref(buffer)
+	_state = FlightState.DELIVERY_OUTBOUND
+	return true
+
+
+func _delivery_site() -> ConstructionSite:
+	return _cargo_site.get_ref() as ConstructionSite if _cargo_site != null else null
+
+
+func _pinned_delivery_target() -> InventoryComponent:
+	if _delivery_registry == null or _delivery_escrow == null or _delivery_buffer == null:
+		return null
+	return _delivery_target(_delivery_site(), _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry, _delivery_escrow.get_ref() as BlueprintConstructionMaterialEscrow)
+
+
+func advance_delivery(delta: float) -> bool:
+	if _state not in [FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY] or not is_finite(delta) or delta <= 0.0:
+		return false
+	var site := _delivery_site()
+	if _pinned_delivery_target() == null or not _delivery_energy_ok(site):
+		_state = FlightState.CARGO_HELD
+		return false
+	var target: Vector3 = site.global_position + Vector3.UP * 2.0
+	var step: float = minf(global_position.distance_to(target), _speed * delta)
+	var next: Vector3 = global_position.move_toward(target, step)
+	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	global_position = next
+	_state = FlightState.AT_DELIVERY if global_position.distance_to(target) <= 0.00001 else FlightState.DELIVERY_OUTBOUND
+	return true
+
+
+func unload_delivery() -> bool:
+	if _state != FlightState.AT_DELIVERY:
+		return false
+	var buffer := _pinned_delivery_target()
+	var site := _delivery_site()
+	if buffer == null or not _delivery_energy_ok(site):
+		_state = FlightState.CARGO_HELD
+		return false
+	if global_position.distance_to(site.global_position + Vector3.UP * 2.0) > 0.00001:
+		_state = FlightState.DELIVERY_OUTBOUND
+		return false
+	# Registry checked exact remaining bill and ordinary unreserved capacity.
+	# InventoryComponent.add_item is synchronous and has no signals/await.
+	# Debit only what was actually accepted, including defensive short writes.
+	var accepted: int = buffer.add_item(_cargo_item, _cargo_amount)
+	_cargo_amount -= accepted
+	if _cargo_amount != 0:
+		_state = FlightState.CARGO_HELD
+		return false
+	_cargo_item = null
+	_state = FlightState.DELIVERED
+	return true
