@@ -137,6 +137,25 @@ func battery_units() -> float:
 func battery_capacity() -> float:
 	return _battery_capacity if _battery_configured else 0.0
 
+# E3d5c5x3: read-only straight-line forecast, including registered home
+# and return reserve. Never moves the drone, admits a job or spends energy.
+func estimate_route_energy(waypoints: Array[Vector3]) -> float:
+	if not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not is_inside_tree() or is_queued_for_deletion():
+		return -1.0
+	if waypoints.is_empty() or waypoints.size() > 8 or not global_position.is_finite() or not _home.is_finite():
+		return -1.0
+	var previous: Vector3 = global_position
+	var distance: float = 0.0
+	for point: Vector3 in waypoints:
+		if not point.is_finite():
+			return -1.0
+		distance += previous.distance_to(point)
+		previous = point
+	distance += previous.distance_to(_home)
+	var needed: float = distance * _energy_per_meter + RETURN_MARGIN_UNITS
+	return needed if is_finite(needed) else -1.0
+
+
 
 # Bind ONCE to an already-authorized, currently queued site. Subsequent
 # cancellation/completion permanently retires this test drone's assignment.

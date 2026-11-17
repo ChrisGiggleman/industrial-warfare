@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/drone_storage_discovery_e3d5c5x3_test.gd" id="1_test"]
+
+[node name="DroneStorageDiscoveryTest" type="Node3D"]
+script = ExtResource("1_test")
