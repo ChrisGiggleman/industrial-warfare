@@ -40,6 +40,52 @@ var _mutation_revision: int = 0
 @export var enable_isolated_drone_claims: bool = false
 var _drone_stock_claims: Dictionary = {}
 
+# E3d5c5x4b: incoming space claims are independent of outgoing stock
+# claims. Neither represents extra items. A disabled flag blocks new
+# reservations but does not expose already reserved capacity.
+@export var enable_isolated_drone_return_claims: bool = false
+var _drone_return_claims: Dictionary = {}
+
+
+func get_reserved_return_space() -> int:
+	var total: int = 0
+	for claim: Dictionary in _drone_return_claims.values():
+		total += int(claim["amount"])
+	return total
+
+
+func reserve_drone_return_space(token: RefCounted, item: ItemDefinition, amount: int) -> bool:
+	if not enable_isolated_drone_return_claims or not is_inside_tree() or is_queued_for_deletion() or token == null or _drone_return_claims.has(token):
+		return false
+	if item == null or item.item_id == &"" or amount <= 0 or amount > 100000 or max_capacity < 0:
+		return false
+	var space: int = get_available_space()
+	if space >= 0 and space < amount:
+		return false
+	_drone_return_claims[token] = {"item": item, "amount": amount}
+	return true
+
+
+func has_drone_return_claim(token: RefCounted, item: ItemDefinition, amount: int) -> bool:
+	if token == null or not _drone_return_claims.has(token):
+		return false
+	var claim: Dictionary = _drone_return_claims[token]
+	return claim["item"] == item and claim["amount"] == amount
+
+
+func release_drone_return_space(token: RefCounted) -> bool:
+	if token == null or not _drone_return_claims.has(token):
+		return false
+	_drone_return_claims.erase(token)
+	return true
+
+
+# Physical free space excludes no reservations; -1 remains unlimited.
+func get_physical_available_space() -> int:
+	if max_capacity == 0:
+		return -1
+	return maxi(0, max_capacity - get_total_amount())
+
 
 func get_reserved_amount(item: ItemDefinition) -> int:
 	var total: int = 0
@@ -204,29 +250,29 @@ func get_total_amount() -> int:
 # AVAILABLE INVENTORY SPACE
 # =============================================================================
 
-# Returns the number of additional item units that can fit.
-#
+# Returns ordinary intake space after outstanding incoming claims.
+# Physical occupancy remains get_total_amount().
 # A return value of -1 means unlimited capacity.
 
 func get_available_space() -> int:
-	if max_capacity == 0:
+	var physical: int = get_physical_available_space()
+	if physical == -1:
 		return -1
-
-	return maxi(0, max_capacity - get_total_amount())
+	return maxi(0, physical - get_reserved_return_space())
 
 
 # =============================================================================
 # INVENTORY FULL CHECK
 # =============================================================================
 
-# Returns true when an inventory with a capacity limit is full.
+# Returns true when ordinary intake has no room (including claims).
 # Unlimited inventories never report themselves as full.
 
 func is_full() -> bool:
 	if max_capacity == 0:
 		return false
 
-	return get_total_amount() >= max_capacity
+	return get_available_space() == 0
 
 
 # =============================================================================

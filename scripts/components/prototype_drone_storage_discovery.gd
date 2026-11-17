@@ -105,11 +105,13 @@ func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite
 # assert that the current prototype drone actually carries these items.
 # Primary rank is actual current-position -> dock distance; battery must
 # also cover dock -> home. No capacity is reserved or cargo deposited.
-func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, amount: int) -> Dictionary:
+func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, amount: int, require_claimable: bool = false) -> Dictionary:
 	var best: Dictionary = {}
 	for candidate: Dictionary in _entries_for(drone, item, amount):
 		var dock: PrototypeDroneStorageDock = candidate["dock"]
 		var inventory: InventoryComponent = candidate["inventory"]
+		if require_claimable and not inventory.enable_isolated_drone_return_claims:
+			continue
 		var space: int = inventory.get_available_space()
 		if not dock.allow_returns or (space >= 0 and space < amount):
 			continue
