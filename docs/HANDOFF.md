@@ -14,6 +14,10 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5b isolated physical delivery accepted (13/13)**, developer confirmed all checks in Godot 2026-11-17. Implementation [5e2fbbc](https://github.com/ChrisGiggleman/industrial-warfare/commit/5e2fbbc122f2f72329d7f811504cecf0698b7616). Full targeted acceptance 516/516 (13 isolated + 503 across 35 compatibility suites), developer-confirmed.
 - No independent runtime execution by assistant; evidence is developer's local Godot report. No production code changes in this handoff update.
 
+## Current next action — E3d5c5x5c delivered-worker integration testing
+
+Staged: explicit handoff of empty delivered drone into the existing owned-material coordinator and finite worker scheduler, exact escrow provenance, physical arrival and return energy, pause/resume and empty return. Run `res://tests/drone_delivered_worker_e3d5c5x5c_test.tscn` with F6; expect `ALL 16 E3D5C5X5C DELIVERED DRONE WORKER INTEGRATION TESTS PASSED`. 16 isolated checks pending. No normal gameplay activation. After isolated acceptance rerun targeted compatibility, then x6 cancellation cargo return. Pull with clean working tree.
+
 ## Completed compatibility gate — x5b
 
 All 35 compatibility suites and 503/503 groups passed in local Godot; 516/516 including 13 isolated checks. Next x5c delivered-drone worker/readiness integration.
@@ -93,7 +97,7 @@ All 28 suites and 397 check groups passed in local Godot, plus 12 isolated check
 | `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Passed |
 | **Total (28 suites)** | **397** | Passed |
 
-x5b fully accepted; successful unload leaves drone in DELIVERED, no worker authority yet. Cancellation return unloading, loaded-drone destruction/persistence and Main activation remain separate gates.
+x5b fully accepted; x5c delivered-worker handoff staged, not accepted. Successful unload remains DELIVERED until explicit coordinator handoff. Cancellation return unloading, loaded-drone destruction/persistence and Main activation remain separate gates.
 
 ## Completed compatibility gate — x4b
 
@@ -137,7 +141,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 ## Roadmap from here
 
 1. x4b compatibility acceptance — complete.
-2. E3d5c5x5a fully accepted; x5b fully accepted. Next x5c guarded delivered-drone worker/readiness integration before x6.
+2. E3d5c5x5a fully accepted; x5b fully accepted. x5c guarded delivered-drone worker/readiness integration staged; 16 checks pending before compatibility and x6.
 3. E3d5c5x6 canceled-job cargo recovery, safe retention/rerouting and return unloading.
 4. E3d5c5x7 charging and repeated assignments.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.

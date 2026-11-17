@@ -176,3 +176,18 @@ func _valid_costs(costs: Dictionary) -> bool:
 		if typeof(quantity) != TYPE_INT or int(quantity) <= 0:
 			return false
 	return true
+
+
+# x5c: read-only provenance of a held, complete bill. No caller-provided
+# quantities or alternate buffer can substitute for the actual debit source.
+func matches_site_source_bill(site: ConstructionSite, source: InventoryComponent) -> bool:
+	if not is_instance_valid(site) or not _live(source) or not is_instance_valid(site.target_definition):
+		return false
+	var id: int = reservation_for(site)
+	if id <= 0 or not _records.has(id) or needs_recovery(id):
+		return false
+	var record: Dictionary = _records[id]
+	if (record["source"] as WeakRef).get_ref() != source:
+		return false
+	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	return not bill.is_empty() and record["costs"] == bill

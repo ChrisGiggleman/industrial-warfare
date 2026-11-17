@@ -306,3 +306,23 @@ func _live(node: Node) -> bool:
 		and not node.is_queued_for_deletion()
 		and node.is_inside_tree()
 	)
+
+
+# x5c: accept a physically delivered, empty drone only through this
+# coordinator's already tracked exact owned site and escrow. It may wait
+# for power or a finite worker slot. No availability or timer mutations.
+func admit_delivered_worker(site: ConstructionSite, drone: PrototypeConstructionWorkerDrone) -> bool:
+	if not _configured or not _owned_registry_ready() or not _live(_scheduler) or not _live(_escrow) or not _live(drone) or not _valid_site(site):
+		return false
+	if site.job.state != ConstructionJob.State.QUEUED or not _owns_materials(site):
+		return false
+	for entry: Dictionary in _entries:
+		if (entry["ref"] as WeakRef).get_ref() != site:
+			continue
+		if not _owned_claim_valid(site, entry):
+			return false
+		var buffer := (entry["owned_source"] as WeakRef).get_ref() as InventoryComponent
+		if not _escrow.matches_site_source_bill(site, buffer):
+			return false
+		return _scheduler.bind_delivered_site_drone(site, drone, _site_registry, _escrow)
+	return false

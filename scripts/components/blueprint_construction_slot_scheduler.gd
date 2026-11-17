@@ -381,3 +381,21 @@ func _prune() -> void:
 		if _is_trackable(site):
 			remaining.append(entry)
 	_tracked = remaining
+
+
+# x5c: preflight the same exclusivity checks before changing a delivered
+# drone's state. The normal bind/reconcile path remains the sole worker gate.
+func bind_delivered_site_drone(site: ConstructionSite, drone: PrototypeConstructionWorkerDrone, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if not enable_isolated_drone_presence or not _is_trackable(site) or site.job.state != ConstructionJob.State.QUEUED or _is_assigned(site):
+		return false
+	if not is_instance_valid(drone) or not drone.is_inside_tree() or drone.is_queued_for_deletion() or drone.get_parent() != get_parent() or site.get_parent() != get_parent():
+		return false
+	var index: int = _find_entry_index(site)
+	if index < 0 or _tracked[index].get("worker_drone") != null or has_drone_binding(drone):
+		return false
+	if not drone._promote_delivered_worker(site, registry, escrow):
+		return false
+	if not bind_site_drone(site, drone):
+		drone._rollback_delivered_worker(site)
+		return false
+	return true

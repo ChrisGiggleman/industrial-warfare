@@ -39,6 +39,9 @@ var _cargo_definition: BuildingDefinition
 var _delivery_registry: WeakRef
 var _delivery_escrow: WeakRef
 var _delivery_buffer: WeakRef
+# x5c: explicit handoff into the existing physical worker gate.
+@export var enable_isolated_delivered_worker: bool = false
+var _delivered_worker_latched: bool = false
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -253,6 +256,8 @@ func advance_flight(delta: float) -> bool:
 	if not _active_site(site):
 		_on_site_ended()
 		return false
+	if _delivered_worker_latched and not _delivered_worker_valid(site):
+		return false
 
 	var target: Vector3 = site.global_position + Vector3.UP * _hover_height
 	if _state == FlightState.AT_SITE:
@@ -288,6 +293,8 @@ func advance_flight(delta: float) -> bool:
 func is_at_site() -> bool:
 	if not enable_isolated_drone or _state != FlightState.AT_SITE:
 		return false
+	if _delivered_worker_latched and not _delivered_worker_valid(_bound_site()):
+		return false
 	if (
 		_battery_configured and (
 			not enable_isolated_battery
@@ -315,6 +322,7 @@ func is_bound_to_site(site: ConstructionSite) -> bool:
 	return (
 		enable_isolated_drone
 		and not _site_ended
+		and (not _delivered_worker_latched or _delivered_worker_valid(site))
 		and _site_ref != null
 		and _site_ref.get_ref() == site
 		and _active_site(site)
@@ -331,6 +339,7 @@ func release_docked_assignment(
 ) -> bool:
 	if (
 		not enable_isolated_reuse or not enable_isolated_drone
+		or _delivered_worker_latched # x7 will define cargo-worker rearm
 		or not enable_isolated_battery or not _battery_configured
 		or _state != FlightState.DOCKED or not _site_ended
 		or _assignment_job == null
@@ -599,3 +608,57 @@ func unload_delivery() -> bool:
 	_cargo_item = null
 	_state = FlightState.DELIVERED
 	return true
+
+
+# x5c: observe original job, exact owned buffer and actual escrow. A valid
+# handoff is not a readiness grant. The existing scheduler owns that grant.
+func _delivered_worker_valid(site: ConstructionSite) -> bool:
+	if not enable_isolated_delivered_worker or not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+		return false
+	if _cargo_amount != 0 or _cargo_item != null or _cargo_site == null or _cargo_site.get_ref() != site or not _delivery_live(site):
+		return false
+	if site.get_parent() != get_parent() or site.job == null or site.job != _cargo_job or site.target_definition != _cargo_definition or not _active_site(site):
+		return false
+	if _delivery_registry == null or _delivery_escrow == null or _delivery_buffer == null:
+		return false
+	var registry := _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry
+	var escrow := _delivery_escrow.get_ref() as BlueprintConstructionMaterialEscrow
+	var buffer := _delivery_buffer.get_ref() as InventoryComponent
+	if not _delivery_live(registry) or not _delivery_live(escrow) or not _delivery_live(buffer):
+		return false
+	if registry.get_parent() != get_parent() or escrow.get_parent() != get_parent() or not registry.matches_owned_inventory(site, buffer):
+		return false
+	return escrow.matches_site_source_bill(site, buffer)
+
+
+func _promote_delivered_worker(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if _state != FlightState.DELIVERED or _delivered_worker_latched or _site_ref != null or _assignment_job != null:
+		return false
+	if not _delivered_worker_valid(site) or site.job.state != ConstructionJob.State.QUEUED or not site.job.get_wait_reasons().has(&"workers"):
+		return false
+	if _delivery_registry.get_ref() != registry or _delivery_escrow.get_ref() != escrow:
+		return false
+	if not _delivery_energy_ok(site) or global_position.distance_to(site.global_position + Vector3.UP * 2.0) > 0.00001:
+		return false
+	_site_ref = weakref(site)
+	_assignment_job = site.job
+	_hover_height = 2.0
+	_delivered_worker_latched = true
+	_state = FlightState.AT_SITE
+	site.job.job_cancelled.connect(_on_site_ended)
+	site.tree_exiting.connect(_on_site_ended)
+	return true
+
+
+# Defensive synchronous rollback if binding fails after promotion.
+func _rollback_delivered_worker(site: ConstructionSite) -> void:
+	if not _delivered_worker_latched or _state != FlightState.AT_SITE or _bound_site() != site:
+		return
+	if _assignment_job.job_cancelled.is_connected(_on_site_ended):
+		_assignment_job.job_cancelled.disconnect(_on_site_ended)
+	if site.tree_exiting.is_connected(_on_site_ended):
+		site.tree_exiting.disconnect(_on_site_ended)
+	_site_ref = null
+	_assignment_job = null
+	_delivered_worker_latched = false
+	_state = FlightState.DELIVERED
