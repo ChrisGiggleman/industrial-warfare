@@ -46,6 +46,10 @@ var _delivered_worker_latched: bool = false
 @export var enable_isolated_cargo_recovery: bool = false
 var _return_token: RefCounted
 var _return_dock: WeakRef
+# x7a: one latched finite charging authority; legacy boolean charge is blocked.
+@export var enable_isolated_finite_charging: bool = false
+var _charging_owner: WeakRef
+var _charging_token: RefCounted
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -138,6 +142,8 @@ func has_round_trip_energy(site: ConstructionSite, hover_height: float) -> bool:
 # The caller must supply a verified charging-power flag; this fixture does
 # not pretend to deliver actual electrical power or reserve grid capacity.
 func charge_at_home(delta: float, powered: bool) -> bool:
+	if enable_isolated_finite_charging or _charging_owner != null:
+		return false
 	if (
 		not enable_isolated_battery or not _battery_configured
 		or not powered or not is_finite(delta) or delta <= 0.0
@@ -753,3 +759,36 @@ func _advance_recovery_home(delta: float) -> bool:
 		_state = FlightState.DOCKED
 		return true
 	return step > 0.0
+
+
+# x7a: bind once at the exact registered home, no battery mutation.
+func _bind_finite_charging(owner: Node, token: RefCounted, at: Vector3) -> bool:
+	if not enable_isolated_finite_charging or not _battery_configured or not _delivery_live(self) or not _delivery_live(owner):
+		return false
+	if not enable_isolated_drone or not enable_isolated_battery or _charging_owner != null or token == null or owner.get_parent() != get_parent():
+		return false
+	if _state not in [FlightState.IDLE, FlightState.DOCKED] or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
+		return false
+	if not at.is_finite() or global_position.distance_to(_home) > 0.00001 or _home.distance_to(at) > 0.00001:
+		return false
+	_charging_owner = weakref(owner)
+	_charging_token = token
+	return true
+
+
+# Called only by the registered authority with its exact runtime token.
+# Both the battery's own rate/headroom and the shared tick budget apply.
+func _accept_finite_charge(owner: Node, token: RefCounted, at: Vector3, delta: float, budget: float) -> float:
+	if not enable_isolated_finite_charging or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self) or not _delivery_live(owner):
+		return 0.0
+	if token == null or token != _charging_token or _charging_owner == null or _charging_owner.get_ref() != owner or owner.get_parent() != get_parent():
+		return 0.0
+	if _state not in [FlightState.IDLE, FlightState.DOCKED] or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
+		return 0.0
+	if not at.is_finite() or not global_position.is_finite() or global_position.distance_to(_home) > 0.00001 or _home.distance_to(at) > 0.00001:
+		return 0.0
+	if not is_finite(delta) or delta <= 0.0 or not is_finite(budget) or budget <= 0.0:
+		return 0.0
+	var accepted: float = minf(budget, minf(_charge_units_per_second * delta, maxf(0.0, _battery_capacity - _battery_units)))
+	_battery_units += accepted
+	return accepted
