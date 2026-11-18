@@ -55,6 +55,11 @@ var _charging_token: RefCounted
 var _cargo_reuse_latched: bool = false
 var _cargo_recovered: bool = false
 var _delivered_scheduler: WeakRef
+# x7c1: opt-in provenance for a flight canceled before physical debit.
+@export var enable_isolated_pre_pickup_rearm: bool = false
+var _pre_pickup_rearm_latched: bool = false
+var _pre_pickup_cancelled: bool = false
+var _pre_pickup_supplier: WeakRef
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -259,7 +264,7 @@ func advance_flight(delta: float) -> bool:
 				0.0, _battery_units - return_distance * _energy_per_meter
 			)
 		global_position = next_return
-		if global_position.distance_to(_home) <= ARRIVAL_EPSILON:
+		if global_position.distance_to(_home) <= (0.00001 if _pre_pickup_cancelled else ARRIVAL_EPSILON):
 			global_position = _home
 			_state = FlightState.DOCKED
 		return true
@@ -465,6 +470,7 @@ func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity:
 	_pickup_token = token
 	_pickup_dock = weakref(dock)
 	_pickup_capacity = capacity
+	_pre_pickup_rearm_latched = enable_isolated_pre_pickup_rearm and enable_isolated_cargo_reuse
 	_speed = speed
 	_state = FlightState.PICKUP_OUTBOUND
 	return true
@@ -504,6 +510,7 @@ func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory:
 	_cargo_site = weakref(site)
 	_cargo_job = site.job
 	_cargo_definition = site.target_definition
+	_pre_pickup_rearm_latched = false
 	_pickup_token = null
 	_pickup_dock = null
 	_pickup_capacity = 0
@@ -511,13 +518,25 @@ func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory:
 	return true
 
 
-func _cancel_pickup(token: RefCounted) -> void:
+func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservations = null, original_site: WeakRef = null, original_job: ConstructionJob = null) -> void:
 	if token == null or _pickup_token != token:
 		return
+	# Only the exact active claim release can establish terminal provenance.
+	# Forecast-only reservations never enter this branch. Source failure or
+	# nonterminal site loss does not authorize rearm in x7c1.
+	if _pre_pickup_rearm_latched and _cargo_amount == 0 and _cargo_item == null and _cargo_job == null and original_site != null and original_job != null and original_job.state == ConstructionJob.State.CANCELLED and _delivery_live(supplier) and supplier.get_parent() == get_parent():
+		_cargo_site = original_site
+		_cargo_job = original_job
+		_pre_pickup_cancelled = true
+		_pre_pickup_supplier = weakref(supplier)
+	_pre_pickup_rearm_latched = false
 	_pickup_token = null
 	_pickup_dock = null
 	_pickup_capacity = 0
-	_state = FlightState.DOCKED if global_position.is_equal_approx(_home) else FlightState.RETURNING
+	if _pre_pickup_cancelled:
+		_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
+	else:
+		_state = FlightState.DOCKED if global_position.is_equal_approx(_home) else FlightState.RETURNING
 
 
 # E3d5c5x5b: delivery is never the legacy worker/readiness state.
@@ -857,6 +876,9 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 			return false
 		if _delivery_escrow == null or _delivery_escrow.get_ref() != escrow or _delivered_scheduler == null or _delivered_scheduler.get_ref() != scheduler:
 			return false
+	elif _pre_pickup_cancelled:
+		if not enable_isolated_pre_pickup_rearm or _pre_pickup_supplier == null or _pre_pickup_supplier.get_ref() != supplier or _cargo_job.state != ConstructionJob.State.CANCELLED or _assignment_job != null or _site_ref != null or _cargo_recovered:
+			return false
 	elif not _cargo_recovered or _cargo_job.state != ConstructionJob.State.CANCELLED or _assignment_job != null or _site_ref != null:
 		return false
 	if _delivery_escrow != null and _delivery_escrow.get_ref() != escrow:
@@ -879,6 +901,9 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	_delivered_scheduler = null
 	_delivered_worker_latched = false
 	_cargo_recovered = false
+	_pre_pickup_cancelled = false
+	_pre_pickup_supplier = null
+	_pre_pickup_rearm_latched = false
 	_cargo_reuse_latched = true
 	_state = FlightState.IDLE
 	_reuse_count += 1
