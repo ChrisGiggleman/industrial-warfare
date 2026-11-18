@@ -210,3 +210,25 @@ func _valid_site(site: ConstructionSite) -> bool:
 			ConstructionJob.State.CONSTRUCTING
 		]
 	)
+
+
+# x7a: read-only remaining nameplate rate in the exact energized component.
+# Construction allocations retain their existing precedence. No synthetic
+# source or uncovered site can contribute generation to a charging tick.
+func spare_generation_for(node: ConstructionPowerNetworkNode) -> int:
+	if not is_inside_tree() or is_queued_for_deletion() or not is_instance_valid(_network) or not _network.is_inside_tree() or _network.is_queued_for_deletion() or _network.get_parent() != get_parent():
+		return 0
+	if not is_instance_valid(node) or not _network.is_energized(node):
+		return 0
+	var component: Array[ConstructionPowerNetworkNode] = _network.get_operational_component(node)
+	var generation: int = 0
+	for power_node: ConstructionPowerNetworkNode in component:
+		var parent := power_node.get_parent() as PrototypePowerStructure
+		if is_instance_valid(parent) and not parent.is_queued_for_deletion() and parent.get_power_node() == power_node:
+			generation += maxi(0, parent.available_nameplate_generation())
+	var energized: Array[ConstructionPowerNetworkNode] = _network.get_energized_nodes()
+	var allocations: Dictionary = get_allocations()
+	for site: ConstructionSite in allocations:
+		if component.has(_find_covering_node(site, energized)):
+			generation -= int(allocations[site])
+	return maxi(0, generation)
