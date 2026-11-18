@@ -18,14 +18,65 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; **Fully accepted 657/657 (16 isolated + 641 across 44 compatibility suites)**.
 - **E3d5c5x7c1 pre-pickup cancellation isolated accepted (12/12)**, developer-confirmed local Godot; **Fully accepted 669/669 (12 isolated + 657 across 45 compatibility suites)**.
 - **E3d5c5x7c2 post-delivery cancellation isolated accepted (13/13)**, developer-confirmed local Godot; **Fully accepted 682/682 (13 isolated + 669 across 46 compatibility suites)**.
-- E3d5c5x7c3 lost original-site recovery staged (14 isolated checks pending).
+- **E3d5c5x7c3 lost original-site recovery isolated accepted (14/14)**, developer-confirmed local Godot; 47 compatibility suites / 682 checks pending.
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
-## Current next action — E3d5c5x7c3 nonterminal original-site loss
+## Current next action — E3d5c5x7c3 targeted compatibility
 
-**Staged; 14 isolated checks pending.** Implementation and scene [31e2e7c](https://github.com/ChrisGiggleman/industrial-warfare/commit/31e2e7cf7234e3e5a21519f71b2d54d7c5cd7ec7); code refinement 89696e1. Default-off x7c3 opt-in latched at actual pickup launch with cargo reuse enabled. Nonterminal reuse requires exact original site WeakRef to resolve null (object freed), never merely detached, queued for deletion, reparented, moved, changed job identity or temporary service failure. Exact supplier site-exit callback distinguishes lost pre-pickup claim from source failure; reservation-only loss stays idle, launched empty return is metered, no source debit. Opted-in loaded drone may use existing x6 reserved physical recovery only after original nonterminal site is freed (terminal cancellations retain existing path); no eligible Storage means protected wait. Unloaded and unadmitted drone uses explicit begin_lost_delivery_return only after actual loss; original staging lock/refund preserved. Admitted worker revokes old job readiness on site end, returns empty, and must clear scheduler binding; orphan job is paused rather than falsely marked terminal. Existing full finite charge, exact home, authoritative ledger/coordinator/scheduler, unresolved escrow/slot/claim and current opt-in checks remain. Pinned delivery registry, buffer lock and escrow identity required where a delivery was started; prior to delivery only exact source-release or actual returned cargo provenance qualifies. No receiver unlock/retarget, automatic recovery of staged materials, automatic dispatch, fleet scheduling, live scene wiring, persistence or full destruction integration. Fixture exercises five lost assignments on one drone and a fresh successful build, six rearms, all 15 original ingots accounted for (3 stock, 9 locked staging, 3 committed).
+**Isolated accepted: 14/14 A–N**, developer explicitly reported all 14 tests passed in local Godot. No screenshot supplied for this checkpoint; no independent execution. Implementation and scene [31e2e7c](https://github.com/ChrisGiggleman/industrial-warfare/commit/31e2e7cf7234e3e5a21519f71b2d54d7c5cd7ec7), code refinement 89696e1, documentation checkpoint 51f8da5. Fixture confirms default-off/late opt-in, forecast-only loss, detachment denial, lost pre-pickup no debit, healthy/detached loaded refusal, protected loaded recovery and return, full finite charge/original ownership gate, unloaded site loss, blocked refund and explicit refund, lost worker readiness revocation and scheduler cleanup, fresh authorized build, conservation and replay denial, normal scene opt-out. Five lost assignments followed by one successful build, six rearms, all 15 ingots accounted for (3 source stock, 9 locked staging, 3 committed).
 
-Run `res://tests/drone_lost_site_recovery_e3d5c5x7c3_test.tscn` with F6. Expected `ALL 14 E3D5C5X7C3 LOST SITE RECOVERY TESTS PASSED`. Checks A–N: default-off/late opt-in, forecast-only loss, detached original no reuse, freed pre-pickup site no debit, healthy/detached loaded refusal, protected loaded recovery and return, finite charge/original ownership gate, unloaded site loss, blocked refund, explicit exact refund and rearm, lost admitted worker readiness/cleanup, fresh authorized build, conservation/replay, normal-scene opt-out. No independent Godot compilation/runtime execution. After isolated and targeted compatibility acceptance proceed to x8 automatic priority-based assignment selection, preserving conservative scheduling boundaries. Pull with clean tracked working tree.
+**Pending: 47 compatibility suites / 682 checks.** Rerun x7c2's 46 compatibility suites (669), plus x7c2 isolated post-delivery cancellation (13; source count and scene verified). Prior results are historical, not x7c3 regression. If all pass, x7c3 targeted acceptance is 696/696 (14 isolated + 682 compatibility); not full-project regression. Run each scene with F6 and report pass/fail. No gameplay code changes in this checkpoint. Next x8 automatic priority-based dispatch after acceptance, preferably in a fresh development chat following this handoff. Start with isolated serialized dispatch and preserve player authorization, High/Normal/Low priorities, exact original job and claim identity, finite energy, whole-scope cleanup, existing worker/power/escrow gates and normal-scene opt-out. Multi-trip, simultaneous fleet scheduling, canceled staging recovery, destruction/salvage integration and persistence remain separate.
+
+| Scene under res://tests/ | Expected check groups | Result |
+|---|---:|---|
+| `inventory_trasnfer_test.tscn` | 4 | Pending |
+| `item_port_transfer_test.tscn` | 7 | Pending |
+| `manufacturing_transaction_test.tscn` | 9 | Pending |
+| `recipe_output_capacity_test.tscn` | 11 | Pending |
+| `conveyor_automatic_loading_test.tscn` | 10 | Pending |
+| `conveyor_automatic_unloading_test.tscn` | 9 | Pending |
+| `conveyor_connected_transport_test.tscn` | 7 | Pending |
+| `conveyor_splitter_test.tscn` | 10 | Pending |
+| `conveyor_merger_test.tscn` | 10 | Pending |
+| `conveyor_physical_only_conservation_test.tscn` | 9 | Pending |
+| `timed_storage_conveyor_delivery_test.tscn` | 6 | Pending |
+| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Pending |
+| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Pending |
+| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Pending |
+| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Pending |
+| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Pending |
+| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Pending |
+| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Pending |
+| `world_salvage_destruction_test.tscn` | 12 | Pending |
+| `destruction_cargo_recovery_test.tscn` | 12 | Pending |
+| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Pending |
+| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Pending |
+| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Pending |
+| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Pending |
+| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Pending |
+| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Pending |
+| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Pending |
+| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Pending |
+| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Pending |
+| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Pending |
+| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Pending |
+| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Pending |
+| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Pending |
+| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Pending |
+| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Pending |
+| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Pending |
+| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Pending |
+| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Pending |
+| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Pending |
+| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 | Pending |
+| `construction_power_coverage_e3d5c3a_test.tscn` | 16 | Pending |
+| `completed_power_structures_e3d5c3b1_test.tscn` | 16 | Pending |
+| `finite_construction_power_e3d5c3b2_test.tscn` | 18 | Pending |
+| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 | Pending |
+| `drone_cargo_worker_reuse_e3d5c5x7b_test.tscn` | 16 | Pending |
+| `drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn` | 12 | Pending |
+| `drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` | 13 | Pending |
+| **Total (47 suites)** | **682** | Pending |
 
 ## Completed compatibility gate — x7c2
 
@@ -467,7 +518,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; x7c2 fully accepted 682/682; x7c3 lost original-site recovery staged (14 isolated checks and compatibility pending), then x8.
+4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; x7c2 fully accepted 682/682; x7c3 lost original-site recovery isolated accepted 14/14 (47 compatibility suites / 682 checks pending), then x8 in a fresh development chat.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
