@@ -3748,3 +3748,8 @@ Default-off x7c2 opt-in latched only at successful full physical unload with car
 ### 2026-11-18 — E3d5c5x7c2 Isolated Acceptance (13/13); Compatibility Gate Pending
 
 Developer explicitly reported all 13 isolated Godot checks passed; no screenshot supplied for this checkpoint, no independent execution. Implementation and scene c53519e, documentation checkpoint 282deea. Fixture verifies post-unload terminal cancellation, empty metered return, original staging and escrow preservation, blocked refund and rearm denial, finite recharge and exact-once reuse, fresh authorized build and conservation of 15 ingots. Rerun x7c1 45 compatibility suites (657) plus x7c1 pre-pickup cancellation (12; source count/scene verified), 46 suites / 669 checks pending, 682/682 overall if passed. Exact checklist in HANDOFF. No gameplay code changes. Proceed to x7c3 only after compatibility, then x8 after separate acceptance; conservative full-charge, whole-scope cleanup, original receiver lock and default-off boundaries retained.
+
+
+### 2026-11-18 — E3d5c5x7c2 Full Targeted Acceptance (682/682)
+
+Developer explicitly confirmed all 46 compatibility suites / 669 checks passed locally in Godot plus 13 isolated checks. Implementation c53519e, gate documentation d70818a. Exact suite results in HANDOFF. No independent execution or full-project regression. Proceed to x7c3 nonterminal original-site loss; preserve actual cargo, locked staging and escrow, metered flight and full-charge cleanup gates. Automatic dispatch remains separate.
