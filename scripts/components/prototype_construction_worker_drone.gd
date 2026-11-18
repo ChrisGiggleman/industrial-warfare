@@ -64,6 +64,11 @@ var _pre_pickup_supplier: WeakRef
 @export var enable_isolated_post_delivery_rearm: bool = false
 var _post_delivery_rearm_latched: bool = false
 var _post_delivery_cancelled: bool = false
+# x7c3: lifetime provenance, latched when the actual pickup flight begins.
+@export var enable_isolated_lost_site_rearm: bool = false
+var _lost_site_rearm_latched: bool = false
+var _lost_pre_pickup: bool = false
+var _lost_post_delivery: bool = false
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -262,13 +267,16 @@ func advance_flight(delta: float) -> bool:
 		var next_return: Vector3 = global_position.move_toward(_home, distance_allowed)
 		var return_distance: float = global_position.distance_to(next_return)
 		if return_distance <= 0.0:
+			if _lost_site_rearm_latched and global_position.distance_to(_home) <= 0.00001:
+				_state = FlightState.DOCKED
+				return true
 			return false
 		if _battery_configured:
 			_battery_units = maxf(
 				0.0, _battery_units - return_distance * _energy_per_meter
 			)
 		global_position = next_return
-		if global_position.distance_to(_home) <= (0.00001 if (_pre_pickup_cancelled or _post_delivery_cancelled) else ARRIVAL_EPSILON):
+		if global_position.distance_to(_home) <= (0.00001 if (_pre_pickup_cancelled or _post_delivery_cancelled or _lost_site_rearm_latched) else ARRIVAL_EPSILON):
 			global_position = _home
 			_state = FlightState.DOCKED
 		return true
@@ -417,6 +425,10 @@ func grants_worker_readiness() -> bool:
 
 func _on_site_ended() -> void:
 	_site_ended = true
+	# Revoke stale readiness of an admitted cargo worker when its site ends,
+	# without manufacturing a cancellation or altering the escrow ledger.
+	if _lost_site_rearm_latched and _delivered_worker_latched and _assignment_job != null and _assignment_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED]:
+		_assignment_job.set_availability(false, false, false)
 	if _state in [FlightState.OUTBOUND, FlightState.AT_SITE]:
 		_state = FlightState.RETURNING
 
@@ -475,6 +487,7 @@ func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity:
 	_pickup_dock = weakref(dock)
 	_pickup_capacity = capacity
 	_pre_pickup_rearm_latched = enable_isolated_pre_pickup_rearm and enable_isolated_cargo_reuse
+	_lost_site_rearm_latched = enable_isolated_lost_site_rearm and enable_isolated_cargo_reuse
 	_speed = speed
 	_state = FlightState.PICKUP_OUTBOUND
 	return true
@@ -522,7 +535,7 @@ func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory:
 	return true
 
 
-func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservations = null, original_site: WeakRef = null, original_job: ConstructionJob = null) -> void:
+func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservations = null, original_site: WeakRef = null, original_job: ConstructionJob = null, original_site_exiting: bool = false) -> void:
 	if token == null or _pickup_token != token:
 		return
 	# Only the exact active claim release can establish terminal provenance.
@@ -534,10 +547,16 @@ func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservati
 		_pre_pickup_cancelled = true
 		_pre_pickup_supplier = weakref(supplier)
 	_pre_pickup_rearm_latched = false
+	elif _lost_site_rearm_latched and original_site_exiting and _cargo_amount == 0 and _cargo_item == null and _cargo_job == null and original_site != null and original_job != null and original_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED] and _delivery_live(supplier) and supplier.get_parent() == get_parent():
+		_cargo_site = original_site
+		_cargo_job = original_job
+		_lost_pre_pickup = true
+		_pre_pickup_supplier = weakref(supplier)
+		_pre_pickup_rearm_latched = false
 	_pickup_token = null
 	_pickup_dock = null
 	_pickup_capacity = 0
-	if _pre_pickup_cancelled:
+	if _pre_pickup_cancelled or _lost_pre_pickup:
 		_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
 	else:
 		_state = FlightState.DOCKED if global_position.is_equal_approx(_home) else FlightState.RETURNING
@@ -720,6 +739,10 @@ func _recovery_cargo_valid() -> bool:
 	if _state not in [FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY]:
 		return false
 	var site := _delivery_site()
+	if _lost_site_rearm_latched and _cargo_job.state != ConstructionJob.State.CANCELLED:
+		# A temporary disconnect, reparent, or replaced job on a live object
+		# is NOT proof that the original nonterminal job is gone.
+		return _original_site_freed() and _cargo_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED]
 	return _cargo_job.state == ConstructionJob.State.CANCELLED or not _delivery_live(site) or site.get_parent() != get_parent() or site.job != _cargo_job or site.target_definition != _cargo_definition
 
 
@@ -876,7 +899,10 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	var old_site := _delivery_site()
 	if is_instance_valid(old_site) and scheduler.is_tracking_site(old_site):
 		return false
-	if _delivered_worker_latched:
+	if _lost_site_rearm_latched and _original_site_freed() and _cargo_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED, ConstructionJob.State.CANCELLED]:
+		if not enable_isolated_lost_site_rearm or not _lost_assignment_cleanup_valid(supplier, coordinator, escrow, scheduler):
+			return false
+	elif _delivered_worker_latched:
 		if not _site_ended or _assignment_job != _cargo_job or _cargo_job.state not in [ConstructionJob.State.COMPLETE, ConstructionJob.State.CANCELLED]:
 			return false
 		if _delivery_escrow == null or _delivery_escrow.get_ref() != escrow or _delivered_scheduler == null or _delivered_scheduler.get_ref() != scheduler:
@@ -922,6 +948,9 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	_pre_pickup_rearm_latched = false
 	_post_delivery_rearm_latched = false
 	_post_delivery_cancelled = false
+	_lost_site_rearm_latched = false
+	_lost_pre_pickup = false
+	_lost_post_delivery = false
 	_cargo_reuse_latched = true
 	_state = FlightState.IDLE
 	_reuse_count += 1
@@ -951,3 +980,49 @@ func begin_cancelled_delivery_return() -> bool:
 	_post_delivery_rearm_latched = false
 	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
 	return true
+
+
+# x7c3: WeakRef null means the original Node object has actually been
+# freed, not merely detached, queued for deletion, moved or replaced.
+func _original_site_freed() -> bool:
+	return _cargo_site != null and _cargo_site.get_ref() == null
+
+
+# An empty, fully unloaded drone may take the existing metered return
+# route when its original nonterminal site is irreversibly gone.
+func begin_lost_delivery_return() -> bool:
+	if not _lost_site_rearm_latched or _lost_post_delivery or _state != FlightState.DELIVERED or not _delivery_live(self) or not _battery_configured:
+		return false
+	if not _original_site_freed() or _cargo_job == null or _cargo_job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED]:
+		return false
+	if _cargo_amount != 0 or _cargo_item != null or _delivered_worker_latched or _site_ref != null or _assignment_job != null or _pickup_token != null or _return_token != null:
+		return false
+	if _delivery_registry == null or _delivery_escrow == null or _delivery_buffer == null:
+		return false
+	if not global_position.is_finite() or not _home.is_finite() or not is_finite(_battery_units) or not is_finite(_speed) or _speed <= 0.0:
+		return false
+	_lost_post_delivery = true
+	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
+	return true
+
+
+# Called only from the existing full-charge, whole-scope rearm gate.
+# Never change stock, receiver locks, escrow or other worker records.
+func _lost_assignment_cleanup_valid(supplier: PrototypeDroneSupplierReservations, coordinator: BlueprintConstructionReadinessCoordinator, escrow: BlueprintConstructionMaterialEscrow, scheduler: BlueprintConstructionSlotScheduler) -> bool:
+	if _lost_pre_pickup:
+		return _pre_pickup_supplier != null and _pre_pickup_supplier.get_ref() == supplier and not _cargo_recovered and not _delivered_worker_latched and _assignment_job == null and _site_ref == null
+	if _delivered_worker_latched:
+		if not _site_ended or _assignment_job != _cargo_job or _delivered_scheduler == null or _delivered_scheduler.get_ref() != scheduler:
+			return false
+		if _cargo_job.state == ConstructionJob.State.CONSTRUCTING:
+			return false # Stale worker readiness must have been revoked.
+	elif not (_lost_post_delivery or _cargo_recovered) or _assignment_job != null or _site_ref != null:
+		return false
+	if _delivery_registry == null:
+		# Actual loaded cargo recovered before any delivery was begun.
+		return _cargo_recovered and not _lost_post_delivery and not _delivered_worker_latched
+	if _delivery_escrow == null or _delivery_escrow.get_ref() != escrow or _delivery_buffer == null:
+		return false
+	var original_registry := _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry
+	var original_buffer := _delivery_buffer.get_ref() as InventoryComponent
+	return _delivery_live(original_registry) and original_registry.get_parent() == get_parent() and _delivery_live(original_buffer) and coordinator.matches_owned_registry(original_registry) and original_registry.has_locked_delivery_inventory(_cargo_site, original_buffer)
