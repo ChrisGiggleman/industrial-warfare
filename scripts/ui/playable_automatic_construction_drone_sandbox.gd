@@ -1,8 +1,10 @@
 extends Node
 ## Stage A: explicit scene-only composition of the accepted x8 authorities.
-## No site enrollment, automatic authorization, legacy fleet or charge driver.
+## Stage B separately opts in to real player-authorized Storage sites.
 
 const SANDBOX_PATH = "res://scenes/core/playable_automatic_construction_drone_sandbox.tscn"
+const STAGE_B_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_b.tscn"
+const SITE_POWER_DEMAND: int = 7
 const HUB_SCENE = preload("res://scenes/buildings/prototype_main_hub.tscn")
 const STORAGE = preload("res://data/buildings/test_storage.tres")
 const INGOT = preload("res://data/items/test_ingot.tres")
@@ -12,7 +14,38 @@ const STARTER_STOCK: int = 15
 const BATTERY: float = 40.0
 const MAX_FRAME_STEP: float = 0.1
 
+@export var enable_player_site_enrollment: bool = false
 @export var enable_automatic_sandbox: bool = false
+
+# Delivery observation only; accepted x8 checks physical arrival and custody.
+class DroneOnlyPort:
+	extends BlueprintConstructionStagingInputPort
+	var original_site: WeakRef
+	var original_job: ConstructionJob
+	var original_definition: BuildingDefinition
+
+	func can_accept_item(item: ItemDefinition, amount: int = 1) -> bool:
+		var site := original_site.get_ref() as ConstructionSite if original_site != null else null
+		if not is_instance_valid(site) or site.is_queued_for_deletion() or not site.is_inside_tree():
+			return false
+		if site.job == null or site.job != original_job or site.target_definition != original_definition or site.job.state != ConstructionJob.State.QUEUED:
+			return false
+		if not is_instance_valid(get_parent()) or site.get_parent() != get_parent().get_parent() or connected_conveyor != null:
+			return false
+		if not global_position.is_equal_approx(site.global_position + Vector3.UP * 2.0):
+			return false
+		return super.can_accept_item(item, amount)
+
+	func can_accept_belt_item(_belt: ConveyorSegment, _item: ItemDefinition, _amount: int = 1) -> bool:
+		return false
+
+# Refuse the older isolated source-to-buffer shortcut.
+class DroneOnlyStaging:
+	extends BlueprintConstructionMaterialStaging
+
+	func receive_item(_item: ItemDefinition, _count: int) -> int:
+		return 0
+
 var world: Node
 var gate: SandboxConstructionDroneLifecycleGate
 var queue: BlueprintConstructionPriorityQueue
@@ -34,6 +67,7 @@ var stock: InventoryComponent
 var dock: PrototypeDroneStorageDock
 var last_tick: Dictionary = {}
 var tick_count: int = 0
+var _site_entries: Array[Dictionary] = []
 var _attempted: bool = false
 var _started: bool = false
 var _scope: Node3D
@@ -48,6 +82,10 @@ func _ready() -> void:
 func _start_from_scene() -> void:
 	if not _attempted and enable_automatic_sandbox and not start():
 		push_error("Automatic construction sandbox Stage A startup refused")
+
+
+func _is_sandbox_path(path: String) -> bool:
+	return path == SANDBOX_PATH or path == STAGE_B_PATH
 
 
 func _live(node: Variant) -> bool:
@@ -101,7 +139,7 @@ func start() -> bool:
 	if not enable_automatic_sandbox or _attempted or not is_inside_tree():
 		return false
 	var scope := get_parent() as Node3D
-	if not _live(scope) or scope.scene_file_path != SANDBOX_PATH:
+	if not _live(scope) or not _is_sandbox_path(scope.scene_file_path):
 		return false
 	_attempted = true
 	_scope = scope
@@ -202,9 +240,13 @@ func start() -> bool:
 		return false
 	_tag(hub, "CONSTRUCTION HUB", 1.4)
 	_tag(storage, "STARTER STORAGE / 15 INGOTS", 1.5)
-	_tag(drone, "AUTOMATIC DRONE / STAGE A", 0.65)
+	if _scope.scene_file_path == STAGE_B_PATH and enable_player_site_enrollment:
+		if world.connect(&"blueprint_site_authorized", _on_player_authorized) != OK:
+			_started = false
+			return false
+	_tag(drone, "AUTOMATIC CONSTRUCTION DRONE", 0.65)
 	set_process(true)
-	print("Automatic construction sandbox Stage A ready; site enrollment pending Stage B")
+	print("Automatic construction sandbox ready; player enrollment: ", _scope.scene_file_path == STAGE_B_PATH and enable_player_site_enrollment)
 	return true
 
 
@@ -219,7 +261,7 @@ func _tag(parent: Node3D, message: String, height: float) -> void:
 
 
 func has_verified_services() -> bool:
-	if not _started or not enable_automatic_sandbox or not _live(self) or not _live(_scope) or get_parent() != _scope or _scope.scene_file_path != SANDBOX_PATH:
+	if not _started or not enable_automatic_sandbox or not _live(self) or not _live(_scope) or get_parent() != _scope or not _is_sandbox_path(_scope.scene_file_path):
 		return false
 	if not _live(world) or world.get_parent() != _scope or world.get("_construction_priority_queue") != queue or bool(world.get("blueprint_sandbox_debug_requirements")) or not _legacy_bridge_off():
 		return false
@@ -240,3 +282,71 @@ func _process(delta: float) -> void:
 		return
 	last_tick = dispatch.tick(minf(delta, MAX_FRAME_STEP))
 	tick_count += 1
+	# Presentation only: never invoke ConstructionSite._process().
+	for entry: Dictionary in _site_entries:
+		var site := (entry["site"] as WeakRef).get_ref() as ConstructionSite
+		if _live(site) and site.get_parent() == _scope and site.job == entry["job"]:
+			site.call("_refresh_progress_label")
+
+
+# Synchronous genuine player authorization, after the original queue entry.
+# Only one enrollment attempt per original site; claimed failures quarantine.
+func _on_player_authorized(site: ConstructionSite) -> void:
+	if not has_verified_services() or not enable_player_site_enrollment or _scope.scene_file_path != STAGE_B_PATH:
+		return
+	if not _live(site) or site.get_parent() != _scope or not world.call("_is_managed_blueprint", site):
+		return
+	if site.target_definition != STORAGE or site.job == null or site.job.state != ConstructionJob.State.QUEUED or not queue.get_waiting_sites().has(site):
+		return
+	for entry: Dictionary in _site_entries:
+		if (entry["site"] as WeakRef).get_ref() == site:
+			return
+	var missing: Array[StringName] = site.job.get_wait_reasons()
+	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	if not missing.has(&"power") or not missing.has(&"materials") or not missing.has(&"workers"):
+		return
+	if bill.size() != 1 or int(bill.get(INGOT, 0)) != 3 or not _live(stock) or stock.get_parent() != storage:
+		return
+	var entry: Dictionary = {"site": weakref(site), "job": site.job, "enrolled": false}
+	_site_entries.append(entry)
+	var staging := DroneOnlyStaging.new()
+	staging.name = "DroneSiteStaging"
+	staging.enable_isolated_staging = true
+	_scope.add_child(staging)
+	if not staging.configure(stock, STORAGE, 3):
+		staging.free()
+		return
+	# Independent hover receiver, not a planned belt endpoint or building.
+	var receiver := Node3D.new()
+	receiver.name = "DroneOnlyReceiver"
+	_scope.add_child(receiver)
+	var port := DroneOnlyPort.new()
+	port.show_port_label = false
+	port.enable_isolated_input = true
+	port.original_site = weakref(site)
+	port.original_job = site.job
+	port.original_definition = site.target_definition
+	receiver.add_child(port)
+	port.global_position = site.global_position + Vector3.UP * 2.0
+	if not port.bind_staging(staging) or not registry.claim_site(site, staging, port):
+		receiver.free()
+		staging.free()
+		return
+	entry["staging"] = weakref(staging)
+	entry["port"] = weakref(port)
+	if not coordinator.track_site(site, SITE_POWER_DEMAND):
+		# Preserve the claimed empty pair; no registry release API.
+		port.enable_isolated_input = false
+		return
+	# Only eligible, successfully tracked sites transfer timer ownership.
+	site.set_process(false)
+	entry["enrolled"] = true
+
+
+func is_enrolled_site(site: ConstructionSite) -> bool:
+	if not _live(site):
+		return false
+	for entry: Dictionary in _site_entries:
+		if (entry["site"] as WeakRef).get_ref() == site and entry["job"] == site.job:
+			return bool(entry["enrolled"])
+	return false
