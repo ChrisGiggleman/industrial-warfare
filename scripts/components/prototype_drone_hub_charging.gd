@@ -1,0 +1,105 @@
+extends Node
+class_name PrototypeDroneHubCharging
+
+# E3d5c5x7a: isolated shared surplus nameplate rate * explicit simulation
+# delta, at one real completed Hub. One service per scope, FIFO enrollment.
+# Construction gets precedence. No charging from a caller-provided bool.
+# Not actual fuel/electricity metering, no _process or Main activation.
+@export var enable_isolated_charging: bool = false
+const SCOPE_KEY: StringName = &"isolated_drone_hub_charging_owner"
+const HUB_PATH: String = "res://scenes/buildings/prototype_main_hub.tscn"
+var _hub: WeakRef
+var _allocator: WeakRef
+var _power_node: WeakRef
+var _entries: Array[Dictionary] = []
+
+
+func _live(node: Variant) -> bool:
+	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
+
+
+func configure(hub: PrototypePowerStructure, allocator: PrototypeConstructionPowerAllocator) -> bool:
+	if not enable_isolated_charging or _hub != null or not _live(self) or not _live(hub) or not _live(allocator) or not get_parent() is Node3D:
+		return false
+	if hub.get_parent() != get_parent() or allocator.get_parent() != get_parent() or hub.scene_file_path != HUB_PATH:
+		return false
+	var node := hub.get_power_node()
+	if not _live(node):
+		return false
+	var scope: Node = get_parent()
+	if scope.has_meta(SCOPE_KEY):
+		var old: WeakRef = scope.get_meta(SCOPE_KEY)
+		if old.get_ref() != null:
+			return false
+	scope.set_meta(SCOPE_KEY, weakref(self))
+	_hub = weakref(hub)
+	_allocator = weakref(allocator)
+	_power_node = weakref(node)
+	return true
+
+
+func _live_hub() -> PrototypePowerStructure:
+	if not enable_isolated_charging or not _live(self) or _hub == null or _allocator == null or _power_node == null:
+		return null
+	var hub := _hub.get_ref() as PrototypePowerStructure
+	var allocator := _allocator.get_ref() as PrototypeConstructionPowerAllocator
+	var node := _power_node.get_ref() as ConstructionPowerNetworkNode
+	if not _live(hub) or not _live(allocator) or not _live(node):
+		return null
+	var scope: Node = get_parent()
+	if hub.get_parent() != scope or allocator.get_parent() != scope or hub.get_power_node() != node:
+		return null
+	if not scope.has_meta(SCOPE_KEY) or (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() != self:
+		return null
+	var count: int = 0
+	for child: Node in scope.get_children():
+		if child is PrototypeConstructionPowerAllocator and _live(child):
+			count += 1
+	if count != 1 or not _live(hub.get_health()) or not hub.get_health().is_intact() or not hub.service_enabled or not node.operational:
+		return null
+	return hub
+
+
+func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
+	var hub := _live_hub()
+	if hub == null or not _live(drone) or drone.get_parent() != get_parent():
+		return false
+	for entry: Dictionary in _entries:
+		if (entry["drone"] as WeakRef).get_ref() == drone:
+			return false
+	var token := RefCounted.new()
+	if not drone._bind_finite_charging(self, token, hub.global_position + Vector3.UP * 2.0):
+		return false
+	_entries.append({"drone": weakref(drone), "token": token})
+	return true
+
+
+# One explicit simulation tick for the entire registered fleet. Total
+# accepted energy cannot exceed spare generation times this tick duration.
+# Fixed enrollment order is deliberate for the isolated gate, not fairness.
+func advance_charging(delta: float) -> float:
+	if not is_finite(delta) or delta <= 0.0:
+		return 0.0
+	var hub := _live_hub()
+	if hub == null:
+		return 0.0
+	var allocator := _allocator.get_ref() as PrototypeConstructionPowerAllocator
+	var budget: float = float(allocator.spare_generation_for(hub.get_power_node())) * delta
+	if not is_finite(budget) or budget <= 0.0:
+		return 0.0
+	var total: float = 0.0
+	var dock: Vector3 = hub.global_position + Vector3.UP * 2.0
+	for entry: Dictionary in _entries:
+		var drone := (entry["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
+		if not _live(drone) or drone.get_parent() != get_parent():
+			continue
+		var accepted: float = drone._accept_finite_charge(self, entry["token"], dock, delta, maxf(0.0, budget - total))
+		total += accepted
+	return total
+
+
+func _exit_tree() -> void:
+	var scope: Node = get_parent()
+	if is_instance_valid(scope) and scope.has_meta(SCOPE_KEY) and (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() == self:
+		scope.remove_meta(SCOPE_KEY)
+	# Drones stay latched; loss of service cannot restore legacy charging.
