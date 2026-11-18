@@ -19,21 +19,32 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x7c1 pre-pickup cancellation isolated accepted (12/12)**, developer-confirmed local Godot; **Fully accepted 669/669 (12 isolated + 657 across 45 compatibility suites)**.
 - **E3d5c5x7c2 post-delivery cancellation isolated accepted (13/13)**, developer-confirmed local Godot; **Fully accepted 682/682 (13 isolated + 669 across 46 compatibility suites)**.
 - **E3d5c5x7c3 lost original-site recovery isolated accepted (14/14)**, developer-confirmed local Godot; **Fully accepted 696/696 (14 isolated + 682 across 47 compatibility suites)**.
+- **E3d5c5x8 automatic priority dispatch and lifecycle fully accepted: 725/725 (15 isolated + 710 across 49 compatibility suites).** Developer confirmed all results on 2026-11-18; all names/counts match the pending gate.
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
-## Current next action — E3d5c5x8c targeted compatibility gate
+## Next milestone — E3d5c5x8 playable automatic construction drone sandbox (separate gate)
 
-**E3d5c5x8b isolated accepted (15/15).** Developer explicitly confirmed all 15/15 E3d5c5x8b isolated automatic lifecycle checks passed in local Godot on 2026-11-18. Tested implementation eadaf27, test b651f48, scene 477b3fb, verified staging HEAD 7ae57ef. Six assignments, two completed builds, six rearms, all 15 ingots accounted for (3 source, 6 locked staging, 6 committed). No independent assistant runtime execution. x8c targeted compatibility pending: rerun the 47 previously accepted x7c3 compatibility suites (682 checks), x7c3 isolated (14), and x8a isolated (14) for 49 suites / 710 checks; 725 overall including 15 accepted x8b checks. The two added scenes and counts were verified against their scripts. Prior acceptance is historical, not post-x8b regression evidence. No gameplay code changes. After explicit developer confirmation of compatibility, record full acceptance and proceed to separately gated playable automatic drone sandbox; keep Main and ordinary scenes opt-out. Preserve single-drone, whole-scope cleanup and full-charge guards, E/Ctrl+E and priority ordering, conveyor and combat systems. Lifecycle implementation [eadaf27](https://github.com/ChrisGiggleman/industrial-warfare/commit/eadaf279282853f3f8034da7efe5f07bc31fd502); test b651f48, scene 477b3fb. Separately default-off `enable_isolated_lifecycle` configured only from clean, fully charged registered home with exact charging authority. Explicit tick only; no _process or scene activation. One bounded action per tick (no leftover delta replay): x8a launch, exact claim pickup flight/collect, pinned receiver delivery/physical unload, coordinator escrow/admission, existing scheduler slot and power reconciliation, single explicit job time advance only for non-processing sites, cancellation/lost-site physical recovery, metered return, finite registered charging, guarded rearm and later new dispatch. Weak original site and retained exact job/definition/buffer/claim identity; no adoption of manual assignment. Reject external automatic site timers before launch and do not advance their job time. Existing conservative whole-scope gates remain; unresolved escrow, failed source or uncertain custody can quarantine rather than fabricate recovery. No automatic authorization, preemption, multi-drone, multi-trip, persistence, normal-scene wiring or combat changes.
+**Ready for development; not implemented or accepted.** Start a fresh development chat titled "21 -- Playable Automatic Construction Drones". Inspect current main HEAD, the actual existing playable construction controllers/bridges and scenes, and the accepted dispatcher and lifecycle source before choosing interfaces. Prefer a separately named, explicit opt-in playable sandbox scene/adapter over modifying Main or existing accepted ordinary scenes.
 
-F6: `res://tests/drone_automatic_lifecycle_e3d5c5x8b_test.tscn`. Expected 15/15 A–O: separate opt-in/charging identity/delta; High FIFO and external timer exclusion; metered pickup; physical collection/delivery; escrow/admission without power bypass and exact construction time; pause/resume; completion/return; finite charge/rearm; second build; pre-pickup cancellation; temporary detachment then freed loaded-site recovery; post-delivery cancellation; working-job cancellation/refund; 15 ingots conserved (3 source, 6 locked staging, 6 committed across two builds), six rearms, no unauthorized work; normal-scene opt-out. Final line `ALL 15 E3D5C5X8B AUTOMATIC LIFECYCLE TESTS PASSED`. Developer confirmed all 15 checks passed in local Godot; no independent assistant execution. After acceptance rerun x8a plus x7c3 and its 47 compatibility suites: 49 suites / 710 checks expected, plus x8b 15 isolated = 725 overall before separately gated x8c playable demo. Historical counts are not post-x8b evidence.
+Proposed sequencing (subject to actual source inspection):
+- Stage A: establish one authoritative same-scope Hub, one finite-charged drone, real completed Storage supplier/dock, discovery and exact supplier/return ledgers, staging registry, escrow, power, queue, scheduler and coordinator. Pin exact service identity; verify startup and default-off/ordinary-scene opt-out. No duplicate legacy drone controller, construction driver or charging loop.
+- Stage B: connect existing player blueprint placement, Q+drag selection, High/Normal/Low priority and E/Ctrl+E authorization to the real tracked sites and owned staging. Do not silently authorize or fabricate stock/power/worker readiness. Use the accepted single-item whole-load bill initially (Storage is a suitable fixture if source confirms). Explicitly transfer timer ownership only for eligible experimental sites; preserve existing timer behavior for every other site. One lifecycle tick driver; no double step or leftover delta replay.
+- Stage C: automated integration F6 fixture plus manually playable demonstration: multiple planned blueprints, visible drone pickup/delivery and return, High/FIFO order, no preemption, power pause/resume, finite charging/reuse, exact stock conservation, cancellation before pickup/with cargo/after delivery/during work and lost-site protection where supported. Show observable blocked/working/recharging status using existing UI where feasible. Preserve conveyor logistics, placement/snapping, combat and normal scene opt-out. Record actual developer results before compatibility acceptance; rerun the 725-check baseline plus new affected checks as appropriate.
+- Keep one drone/one outstanding assignment, full finite charge and whole-scope cleanup gates. Unresolved escrow, unsafe receiver or source failures can quarantine; no silent rescue, unlock, teleport or inventory creation. Multi-drone/multi-trip, general gameplay activation, destruction/persistence and specialized Ammo Silos remain separate future milestones. No code changes during this documentation handoff.
+
+## Accepted isolated lifecycle prerequisite — x8b
+
+**E3d5c5x8b isolated accepted (15/15).** Developer explicitly confirmed all 49/49 compatibility suites and 710/710 checks passed in local Godot on 2026-11-18. Every reported suite name and count was compared against the pending checklist and matches exactly. Combined with x8b isolated 15/15, E3d5c5x8 targeted automatic dispatch/lifecycle acceptance is 725/725 (50 suites including isolated). Tested lifecycle implementation eadaf27, test b651f48, scene 477b3fb; compatibility gate documentation 3f2e5aa. No independent assistant runtime execution; targeted acceptance, not a full-project regression or playable integration. Ordinary scenes remain opt-out. Lifecycle implementation [eadaf27](https://github.com/ChrisGiggleman/industrial-warfare/commit/eadaf279282853f3f8034da7efe5f07bc31fd502); test b651f48, scene 477b3fb. Separately default-off `enable_isolated_lifecycle` configured only from clean, fully charged registered home with exact charging authority. Explicit tick only; no _process or scene activation. One bounded action per tick (no leftover delta replay): x8a launch, exact claim pickup flight/collect, pinned receiver delivery/physical unload, coordinator escrow/admission, existing scheduler slot and power reconciliation, single explicit job time advance only for non-processing sites, cancellation/lost-site physical recovery, metered return, finite registered charging, guarded rearm and later new dispatch. Weak original site and retained exact job/definition/buffer/claim identity; no adoption of manual assignment. Reject external automatic site timers before launch and do not advance their job time. Existing conservative whole-scope gates remain; unresolved escrow, failed source or uncertain custody can quarantine rather than fabricate recovery. No automatic authorization, preemption, multi-drone, multi-trip, persistence, normal-scene wiring or combat changes.
+
+F6: `res://tests/drone_automatic_lifecycle_e3d5c5x8b_test.tscn`. Expected 15/15 A–O: separate opt-in/charging identity/delta; High FIFO and external timer exclusion; metered pickup; physical collection/delivery; escrow/admission without power bypass and exact construction time; pause/resume; completion/return; finite charge/rearm; second build; pre-pickup cancellation; temporary detachment then freed loaded-site recovery; post-delivery cancellation; working-job cancellation/refund; 15 ingots conserved (3 source, 6 locked staging, 6 committed across two builds), six rearms, no unauthorized work; normal-scene opt-out. Final line `ALL 15 E3D5C5X8B AUTOMATIC LIFECYCLE TESTS PASSED`. Developer confirmed all 15 checks passed in local Godot; no independent assistant execution. All 49 compatibility suites / 710 checks subsequently accepted; see completed x8c gate below. Playable demo remains separate.
 
 ### Accepted x8a prerequisite
 
-**E3d5c5x8a isolated accepted (14/14).** Developer explicitly confirmed 14/14 x8a isolated checks passed in local Godot on 2026-11-18 after indentation correction b1bba4a. No independent execution; compatibility deferred to x8c per plan. Prior 696/696 historical, not post-x8 regression. Implementation commits 03f475d (read-only coordinator eligibility), 31a8f99 (dispatcher), 1cc112f (pre-launch revalidation); test script eb2963f, scene b9f0178, test refinement 0ebdc85. New `PrototypeDroneAutomaticDispatch` is default-off, explicit inspect/dispatch only, with no _process or ordinary scene wiring. It reads the existing authorized queue (High/Normal/Low, FIFO), checks the exact tracked and pinned owned receiver, supports a whole outstanding single-item deficit only, and uses existing discovery, exact supplier reserve/observe/begin_pickup. No material, power or worker availability is fabricated; missing construction power/escrow before pickup is expected, not a worker-admission bypass. Source or route/energy, receiver availability/capacity, unsupported bill and tracking failures skip candidates with observable reasons. Conservative one-drone/one-slot scope, full finite registered home charge, all recovery/reuse flags, no active workers or outstanding source/return/escrow claims; no automatic cleanup or preemption. Revalidate exact live services, job, definition, buffer, item, amount and supplier claim before launch; release only the newly acquired claim on failure, no second attempt in that call. No flight advancement, material movement, auto-authorization, charging, rearm or construction progression. x8b lifecycle driver and x8c compatibility/playable sandbox remain separate.
+**E3d5c5x8a isolated accepted (14/14).** Developer explicitly confirmed 14/14 x8a isolated checks passed in local Godot on 2026-11-18 after indentation correction b1bba4a. No independent execution; compatibility subsequently accepted at x8c. Prior 696/696 historical, not post-x8 regression. Implementation commits 03f475d (read-only coordinator eligibility), 31a8f99 (dispatcher), 1cc112f (pre-launch revalidation); test script eb2963f, scene b9f0178, test refinement 0ebdc85. New `PrototypeDroneAutomaticDispatch` is default-off, explicit inspect/dispatch only, with no _process or ordinary scene wiring. It reads the existing authorized queue (High/Normal/Low, FIFO), checks the exact tracked and pinned owned receiver, supports a whole outstanding single-item deficit only, and uses existing discovery, exact supplier reserve/observe/begin_pickup. No material, power or worker availability is fabricated; missing construction power/escrow before pickup is expected, not a worker-admission bypass. Source or route/energy, receiver availability/capacity, unsupported bill and tracking failures skip candidates with observable reasons. Conservative one-drone/one-slot scope, full finite registered home charge, all recovery/reuse flags, no active workers or outstanding source/return/escrow claims; no automatic cleanup or preemption. Revalidate exact live services, job, definition, buffer, item, amount and supplier claim before launch; release only the newly acquired claim on failure, no second attempt in that call. No flight advancement, material movement, auto-authorization, charging, rearm or construction progression. x8b lifecycle driver and x8c compatibility/playable sandbox remain separate.
 
-F6 scene: `res://tests/drone_automatic_dispatch_e3d5c5x8a_test.tscn`. Expected A–N (14/14): default-off and invalid/foreign/duplicate configure; planned High not authorized; Normal beats Low; unreachable/full/untracked High skipped with ordered reasons; High/FIFO and reprioritization; unavailable dock/retained stock; duplicate dispatcher/multiple drones; existing claim protected; current feature/service denial; receiver invalidation and refused launch roll back; exact claim and guarded launch without movement or source debit; non-preemption and no readiness/timer bypass; cancellation release without auto-rearm; ordinary scene opt-out. Expected final line: `ALL 14 E3D5C5X8A AUTOMATIC DISPATCH TESTS PASSED`. Developer confirmed all 14 checks passed after b1bba4a; no independent runtime execution. Previous 696/696 remains historical. Proceed to x8b separate implementation; retain x7c3 and earlier targeted compatibility baseline for x8c (48 prior suites / 696 groups including x7c3 isolated, plus new x8 suites as applicable).
+F6 scene: `res://tests/drone_automatic_dispatch_e3d5c5x8a_test.tscn`. Expected A–N (14/14): default-off and invalid/foreign/duplicate configure; planned High not authorized; Normal beats Low; unreachable/full/untracked High skipped with ordered reasons; High/FIFO and reprioritization; unavailable dock/retained stock; duplicate dispatcher/multiple drones; existing claim protected; current feature/service denial; receiver invalidation and refused launch roll back; exact claim and guarded launch without movement or source debit; non-preemption and no readiness/timer bypass; cancellation release without auto-rearm; ordinary scene opt-out. Expected final line: `ALL 14 E3D5C5X8A AUTOMATIC DISPATCH TESTS PASSED`. Developer confirmed all 14 checks passed after b1bba4a; no independent runtime execution. Previous 696/696 remains historical. x8b and x8c targeted compatibility subsequently accepted; preserve as historical baseline.
 
-### x8 stages (x8a and x8b isolated accepted; x8c compatibility pending)
+### x8 stages (isolated and targeted compatibility accepted; playable demonstration pending)
 
 - x8a: isolated deterministic selection and guarded claim/launch for one drone / one outstanding assignment. Use existing authoritative player-authorized queue and stable High/Normal/Low order, FIFO within equal priority. Select only eligible candidates; skip with observable reasons when stock, route/energy, receiver/capacity, or applicable readiness prerequisites fail. Do not conflate pre-pickup eligibility with worker admission requiring delivered materials. No automatic authorization, no hidden resource transfers, no preemption of an active job. Revalidate before reservation and launch; failed launch must release only its own claim.
 - x8b: isolated explicit dispatcher tick integrating existing pickup, delivery, admission, construction, physical recovery, return, finite charging and guarded rearm. Preserve cancellation/lost-site handling, escrow and ownership. Verify sequential jobs and deterministic ordering; no direct calls that manufacture readiness or advance construction time twice. Keep full-charge, single-Hub and whole-scope cleanup constraints.
@@ -41,62 +52,62 @@ F6 scene: `res://tests/drone_automatic_dispatch_e3d5c5x8a_test.tscn`. Expected A
 
 Use defaults-off flags, exact live service/claim/job identity and existing conservation gates. Stage new Godot F6 tests and report actual developer-confirmed isolated results before compatibility. Rerun relevant acceptance baseline (including x7c3), plus any new affected suites, with exact counts documented; do not claim independent runtime execution. Preserve player E/Ctrl+E authorization, blueprint priority UI, conveyor placement/production and timers. Multi-trip/multi-item scheduling, recovery of locked canceled staging, researchable docks, silos/depots, real destruction/salvage integration, persistence and live gameplay activation remain distinct future gates. No gameplay edits made in this handoff.
 
-## Pending compatibility gate — x8c
+## Completed compatibility gate — x8c
 
-Developer explicitly confirmed all 15/15 E3d5c5x8b isolated automatic lifecycle checks passed in local Godot on 2026-11-18. Tested implementation eadaf27, test b651f48, scene 477b3fb, verified staging HEAD 7ae57ef. Six assignments, two completed builds, six rearms, all 15 ingots accounted for (3 source, 6 locked staging, 6 committed). No independent assistant runtime execution. x8c targeted compatibility pending: rerun the 47 previously accepted x7c3 compatibility suites (682 checks), x7c3 isolated (14), and x8a isolated (14) for 49 suites / 710 checks; 725 overall including 15 accepted x8b checks. The two added scenes and counts were verified against their scripts. Prior acceptance is historical, not post-x8b regression evidence. No gameplay code changes. After explicit developer confirmation of compatibility, record full acceptance and proceed to separately gated playable automatic drone sandbox; keep Main and ordinary scenes opt-out. Preserve single-drone, whole-scope cleanup and full-charge guards, E/Ctrl+E and priority ordering, conveyor and combat systems.
+Developer explicitly confirmed all 49/49 compatibility suites and 710/710 checks passed in local Godot on 2026-11-18. Every reported suite name and count was compared against the pending checklist and matches exactly. Combined with x8b isolated 15/15, E3d5c5x8 targeted automatic dispatch/lifecycle acceptance is 725/725 (50 suites including isolated). Tested lifecycle implementation eadaf27, test b651f48, scene 477b3fb; compatibility gate documentation 3f2e5aa. No independent assistant runtime execution; targeted acceptance, not a full-project regression or playable integration. Ordinary scenes remain opt-out.
 
 | Scene under res://tests/ | Expected check groups | Result |
 |---|---:|---|
-| `inventory_trasnfer_test.tscn` | 4 | Pending |
-| `item_port_transfer_test.tscn` | 7 | Pending |
-| `manufacturing_transaction_test.tscn` | 9 | Pending |
-| `recipe_output_capacity_test.tscn` | 11 | Pending |
-| `conveyor_automatic_loading_test.tscn` | 10 | Pending |
-| `conveyor_automatic_unloading_test.tscn` | 9 | Pending |
-| `conveyor_connected_transport_test.tscn` | 7 | Pending |
-| `conveyor_splitter_test.tscn` | 10 | Pending |
-| `conveyor_merger_test.tscn` | 10 | Pending |
-| `conveyor_physical_only_conservation_test.tscn` | 9 | Pending |
-| `timed_storage_conveyor_delivery_test.tscn` | 6 | Pending |
-| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Pending |
-| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Pending |
-| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Pending |
-| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Pending |
-| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Pending |
-| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Pending |
-| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Pending |
-| `world_salvage_destruction_test.tscn` | 12 | Pending |
-| `destruction_cargo_recovery_test.tscn` | 12 | Pending |
-| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Pending |
-| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Pending |
-| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Pending |
-| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Pending |
-| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Pending |
-| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Pending |
-| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Pending |
-| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Pending |
-| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Pending |
-| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Pending |
-| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Pending |
-| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Pending |
-| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Pending |
-| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Pending |
-| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Pending |
-| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Pending |
-| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Pending |
-| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Pending |
-| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Pending |
-| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 | Pending |
-| `construction_power_coverage_e3d5c3a_test.tscn` | 16 | Pending |
-| `completed_power_structures_e3d5c3b1_test.tscn` | 16 | Pending |
-| `finite_construction_power_e3d5c3b2_test.tscn` | 18 | Pending |
-| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 | Pending |
-| `drone_cargo_worker_reuse_e3d5c5x7b_test.tscn` | 16 | Pending |
-| `drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn` | 12 | Pending |
-| `drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` | 13 | Pending |
-| `drone_lost_site_recovery_e3d5c5x7c3_test.tscn` | 14 | Pending |
-| `drone_automatic_dispatch_e3d5c5x8a_test.tscn` | 14 | Pending |
-| **Total (49 suites)** | **710** | Pending |
+| `inventory_trasnfer_test.tscn` | 4 | Passed |
+| `item_port_transfer_test.tscn` | 7 | Passed |
+| `manufacturing_transaction_test.tscn` | 9 | Passed |
+| `recipe_output_capacity_test.tscn` | 11 | Passed |
+| `conveyor_automatic_loading_test.tscn` | 10 | Passed |
+| `conveyor_automatic_unloading_test.tscn` | 9 | Passed |
+| `conveyor_connected_transport_test.tscn` | 7 | Passed |
+| `conveyor_splitter_test.tscn` | 10 | Passed |
+| `conveyor_merger_test.tscn` | 10 | Passed |
+| `conveyor_physical_only_conservation_test.tscn` | 9 | Passed |
+| `timed_storage_conveyor_delivery_test.tscn` | 6 | Passed |
+| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Passed |
+| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Passed |
+| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Passed |
+| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Passed |
+| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Passed |
+| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Passed |
+| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Passed |
+| `world_salvage_destruction_test.tscn` | 12 | Passed |
+| `destruction_cargo_recovery_test.tscn` | 12 | Passed |
+| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Passed |
+| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Passed |
+| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Passed |
+| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Passed |
+| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Passed |
+| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Passed |
+| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Passed |
+| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Passed |
+| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Passed |
+| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Passed |
+| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Passed |
+| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Passed |
+| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Passed |
+| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Passed |
+| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Passed |
+| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Passed |
+| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Passed |
+| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Passed |
+| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Passed |
+| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 | Passed |
+| `construction_power_coverage_e3d5c3a_test.tscn` | 16 | Passed |
+| `completed_power_structures_e3d5c3b1_test.tscn` | 16 | Passed |
+| `finite_construction_power_e3d5c3b2_test.tscn` | 18 | Passed |
+| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 | Passed |
+| `drone_cargo_worker_reuse_e3d5c5x7b_test.tscn` | 16 | Passed |
+| `drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn` | 12 | Passed |
+| `drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` | 13 | Passed |
+| `drone_lost_site_recovery_e3d5c5x7c3_test.tscn` | 14 | Passed |
+| `drone_automatic_dispatch_e3d5c5x8a_test.tscn` | 14 | Passed |
+| **Total (49 suites)** | **710** | Passed |
 
 ## Future combat logistics — specialized Ammo Silos (agreed 2026-11-18)
 
