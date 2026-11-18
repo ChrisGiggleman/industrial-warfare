@@ -13,11 +13,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5a isolated physical pickup accepted (12/12)**, developer confirmed in Godot 2026-11-17. Tested code [6ed2e2b](https://github.com/ChrisGiggleman/industrial-warfare/commit/6ed2e2bdffa40ea8bcb301bada6a7a8e96190501). Full acceptance 409/409 (12 isolated + 397 across 28 compatibility suites), developer-confirmed.
 - **E3d5c5x5b isolated physical delivery accepted (13/13)**, developer confirmed all checks in Godot 2026-11-17. Implementation [5e2fbbc](https://github.com/ChrisGiggleman/industrial-warfare/commit/5e2fbbc122f2f72329d7f811504cecf0698b7616). Full targeted acceptance 516/516 (13 isolated + 503 across 35 compatibility suites), developer-confirmed.
 - **E3d5c5x5c isolated accepted (16/16)**, developer screenshot 2026-11-17, implementation [6652bd0](https://github.com/ChrisGiggleman/industrial-warfare/commit/6652bd0db58594a8efd0c7d862c533abdbe782fb). **Fully accepted 565/565 (16 isolated + 549 across 38 compatibility suites)**, developer-confirmed 2026-11-17.
-- No independent runtime execution by assistant; evidence is developer's local Godot report. No production code changes in this handoff update.
+- E3d5c5x6 isolated canceled cargo recovery staged (13 pending); see current next action.
+- No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
 ## Current next action — E3d5c5x6 automatic canceled-job cargo recovery
 
-Inspect existing cargo custody and return capacity APIs; implement default-off cancellation recovery in isolated stages. Preserve existing physical delivery and worker handoff, no automatic next-job reuse until x7. No x6 runtime acceptance yet.
+**Staged; 13 isolated checks pending.** Implementation and test scene at [6675009](https://github.com/ChrisGiggleman/industrial-warfare/commit/6675009fe9862d8830b2eedc3e3c33427cfb4dc1). Default-off flags on drone and existing return-reservation service; explicit isolated `advance_cancelled_recovery(drone, delta)` tick derives whole-load claim from actual held cargo after original job cancellation or original-site identity loss, never from forecast-only claims. Existing discovery chooses nearest eligible whole-load Storage with battery-to-home margin; exact claim protects ordinary intake. Each tick revalidates original cargo, scope, destination, capacity and route, meters physical flight, refuses stale arrival, atomically consumes exact incoming claim into physical stock once, clears cargo and flies empty to home. Stale claims release without discarding cargo; no receiver enters protected RECOVERY_WAIT and retries on later ticks. No loaded home fallback or automatic reassignment, no normal scene wiring, no charging changes, no destruction/persistence integration.
+
+Run `res://tests/drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` with F6. Expected: `ALL 13 E3D5C5X6 CANCELED CARGO RECOVERY TESTS PASSED`. Checks A–M cover default-off/active-job refusal, nearest actual reservation, ordinary intake protection, metered movement, moved dock, exact deposit, empty home return, invalid/full destination, flag loss and reroute, capacity shrink and deleted dock, unreachable route, conservation, empty drone and normal scene opt-out. Developer runtime pending; no independent Godot parse or execution. After isolated pass rerun compatibility including x5c isolated and affected prior reservation/inventory/delivery suites before x7. Pull with clean working tree.
 
 ## Completed compatibility gate — x5c
 
@@ -191,7 +194,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
-3. E3d5c5x6 canceled-job cargo recovery, safe retention/rerouting and return unloading.
+3. E3d5c5x6 canceled-job cargo recovery staged; 13 isolated checks pending, then compatibility before x7.
 4. E3d5c5x7 charging and repeated assignments.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
