@@ -183,6 +183,9 @@ func _checks() -> void:
 	charging.enable_isolated_charging = true
 	drone.global_position.x = 0.25
 	assert(not drone.release_docked_cargo_assignment(claims, returns, coordinator, escrow, scheduler))
+	hub.global_position.x = 0.25
+	assert(not drone.release_docked_cargo_assignment(claims, returns, coordinator, escrow, scheduler))
+	hub.global_position.x = 0.0
 	drone.global_position.x = 0.0
 	print("PASS F: Exact live services and physical Hub registration required")
 	var second := _site(Vector3(7, 0, 0))
