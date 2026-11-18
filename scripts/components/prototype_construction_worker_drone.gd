@@ -50,6 +50,11 @@ var _return_dock: WeakRef
 @export var enable_isolated_finite_charging: bool = false
 var _charging_owner: WeakRef
 var _charging_token: RefCounted
+# x7b: explicit cargo rearm, independent of legacy build-only reuse.
+@export var enable_isolated_cargo_reuse: bool = false
+var _cargo_reuse_latched: bool = false
+var _cargo_recovered: bool = false
+var _delivered_scheduler: WeakRef
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -196,6 +201,7 @@ func assign_to_site(
 ) -> bool:
 	if (
 		not enable_isolated_drone or not is_inside_tree()
+		or enable_isolated_cargo_reuse or _cargo_reuse_latched
 		or _site_ref != null or _state != FlightState.IDLE
 		or not _valid_queued_site(site)
 		or not home_position.is_finite()
@@ -448,6 +454,8 @@ func cargo_item() -> ItemDefinition:
 func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity: int, speed: float) -> bool:
 	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not is_inside_tree() or is_queued_for_deletion():
 		return false
+	if _cargo_reuse_latched and (not enable_isolated_cargo_reuse or not _finite_cargo_rearm_ready()):
+		return false
 	if _state != FlightState.IDLE or _site_ref != null or _pickup_token != null or _cargo_amount != 0 or not global_position.is_equal_approx(_home):
 		return false
 	if token == null or not is_instance_valid(dock) or not dock.is_inside_tree() or dock.is_queued_for_deletion() or not dock.global_position.is_finite():
@@ -641,7 +649,7 @@ func _delivered_worker_valid(site: ConstructionSite) -> bool:
 	return escrow.matches_site_source_bill(site, buffer)
 
 
-func _promote_delivered_worker(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+func _promote_delivered_worker(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow, scheduler: BlueprintConstructionSlotScheduler) -> bool:
 	if _state != FlightState.DELIVERED or _delivered_worker_latched or _site_ref != null or _assignment_job != null:
 		return false
 	if not _delivered_worker_valid(site) or site.job.state != ConstructionJob.State.QUEUED or not site.job.get_wait_reasons().has(&"workers"):
@@ -654,6 +662,7 @@ func _promote_delivered_worker(site: ConstructionSite, registry: BlueprintConstr
 	_assignment_job = site.job
 	_hover_height = 2.0
 	_delivered_worker_latched = true
+	_delivered_scheduler = weakref(scheduler)
 	_state = FlightState.AT_SITE
 	site.job.job_cancelled.connect(_on_site_ended)
 	site.tree_exiting.connect(_on_site_ended)
@@ -671,6 +680,7 @@ func _rollback_delivered_worker(site: ConstructionSite) -> void:
 	_site_ref = null
 	_assignment_job = null
 	_delivered_worker_latched = false
+	_delivered_scheduler = null
 	_state = FlightState.DELIVERED
 
 
@@ -743,6 +753,7 @@ func _deposit_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, i
 	_cargo_item = null
 	_return_token = null
 	_return_dock = null
+	_cargo_recovered = true
 	_state = FlightState.RECOVERY_HOME
 	return true
 
@@ -792,3 +803,81 @@ func _accept_finite_charge(owner: Node, token: RefCounted, at: Vector3, delta: f
 	var accepted: float = minf(budget, minf(_charge_units_per_second * delta, maxf(0.0, _battery_capacity - _battery_units)))
 	_battery_units += accepted
 	return accepted
+
+
+# x7b: live x7a authority and exact registered dock, not a caller's bool.
+func _finite_cargo_rearm_ready() -> bool:
+	if not enable_isolated_finite_charging or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+		return false
+	if _charging_owner == null or _charging_token == null or _battery_units + 0.00001 < _battery_capacity:
+		return false
+	var owner := _charging_owner.get_ref() as PrototypeDroneHubCharging
+	return _delivery_live(owner) and owner.matches_docked_registration(self, _charging_token)
+
+
+# Whole-scope quiescence is deliberately conservative for this single-drone
+# gate. This method releases no stock, escrow, receiver or worker claim.
+# Existing services must have resolved those records before rearming.
+func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservations, returns: PrototypeDroneReturnReservations, coordinator: BlueprintConstructionReadinessCoordinator, escrow: BlueprintConstructionMaterialEscrow, scheduler: BlueprintConstructionSlotScheduler) -> bool:
+	if not enable_isolated_cargo_reuse or not enable_isolated_cargo_pickup or not _finite_cargo_rearm_ready() or _state != FlightState.DOCKED:
+		return false
+	if _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _pickup_dock != null or _pickup_capacity != 0 or _return_token != null or _return_dock != null or _cargo_job == null or _cargo_site == null:
+		return false
+	for service: Node in [supplier, returns, coordinator, escrow, scheduler]:
+		if not _delivery_live(service) or service.get_parent() != get_parent():
+			return false
+	# Enforce exact live authoritative service identities; no replacement empty ledger.
+	if supplier._service() == null or returns._service() == null or supplier._service() != returns._service():
+		return false
+	if not coordinator.matches_tick_services(scheduler, escrow):
+		return false
+	var coordinator_count: int = 0
+	var escrow_count: int = 0
+	var scheduler_count: int = 0
+	for child: Node in get_parent().get_children():
+		if not _delivery_live(child):
+			continue
+		if child is BlueprintConstructionReadinessCoordinator:
+			coordinator_count += 1
+		if child is BlueprintConstructionMaterialEscrow:
+			escrow_count += 1
+		if child is BlueprintConstructionSlotScheduler:
+			scheduler_count += 1
+	if coordinator_count != 1 or escrow_count != 1 or scheduler_count != 1:
+		return false
+	if supplier.reservation_count() != 0 or returns.reservation_count() != 0 or escrow.held_count() != 0 or scheduler.get_active_count() != 0 or scheduler.has_drone_binding(self):
+		return false
+	var old_site := _delivery_site()
+	if is_instance_valid(old_site) and scheduler.is_tracking_site(old_site):
+		return false
+	if _delivered_worker_latched:
+		if not _site_ended or _assignment_job != _cargo_job or _cargo_job.state not in [ConstructionJob.State.COMPLETE, ConstructionJob.State.CANCELLED]:
+			return false
+		if _delivery_escrow == null or _delivery_escrow.get_ref() != escrow or _delivered_scheduler == null or _delivered_scheduler.get_ref() != scheduler:
+			return false
+	elif not _cargo_recovered or _cargo_job.state != ConstructionJob.State.CANCELLED or _assignment_job != null or _site_ref != null:
+		return false
+	if _delivery_escrow != null and _delivery_escrow.get_ref() != escrow:
+		return false
+	# Disconnect from the exact old job even if its site has been freed.
+	if _cargo_job.job_cancelled.is_connected(_on_site_ended):
+		_cargo_job.job_cancelled.disconnect(_on_site_ended)
+	var old_bound := _bound_site()
+	if is_instance_valid(old_bound) and old_bound.tree_exiting.is_connected(_on_site_ended):
+		old_bound.tree_exiting.disconnect(_on_site_ended)
+	_site_ref = null
+	_assignment_job = null
+	_site_ended = false
+	_cargo_site = null
+	_cargo_job = null
+	_cargo_definition = null
+	_delivery_registry = null
+	_delivery_escrow = null
+	_delivery_buffer = null
+	_delivered_scheduler = null
+	_delivered_worker_latched = false
+	_cargo_recovered = false
+	_cargo_reuse_latched = true
+	_state = FlightState.IDLE
+	_reuse_count += 1
+	return true
