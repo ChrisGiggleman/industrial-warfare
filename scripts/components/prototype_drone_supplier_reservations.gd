@@ -66,23 +66,26 @@ func reserve(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, it
 	}
 	# Unpicked stock stays at source; cancellation releases only the claim.
 	site.job.job_cancelled.connect(_on_ended.bind(id))
-	for node: Node in [site, drone, inventory, dock, candidate["storage"]]:
+	site.tree_exiting.connect(_on_ended.bind(id, true))
+	for node: Node in [drone, inventory, dock, candidate["storage"]]:
 		node.tree_exiting.connect(_on_ended.bind(id))
 	return id
 
 
-func _on_ended(id: int) -> void:
-	_release(id)
+func _on_ended(id: int, original_site_exiting: bool = false) -> void:
+	_release(id, original_site_exiting)
 
 
-func _release(id: int) -> bool:
+func _release(id: int, original_site_exiting: bool = false) -> bool:
 	if not _claims.has(id):
 		return false
 	var claim: Dictionary = _claims[id]
 	_claims.erase(id)
 	var drone := (claim["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
 	if is_instance_valid(drone):
-		drone._cancel_pickup(claim["token"], self, claim["site"], claim["job"])
+		var site := (claim["site"] as WeakRef).get_ref() as ConstructionSite
+		var site_lost: bool = original_site_exiting or not is_instance_valid(site) or site.is_queued_for_deletion()
+		drone._cancel_pickup(claim["token"], self, claim["site"], claim["job"], site_lost)
 	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
 	if is_instance_valid(inventory):
 		inventory.release_drone_stock(claim["token"])
@@ -90,7 +93,11 @@ func _release(id: int) -> bool:
 	var callback: Callable = _on_ended.bind(id)
 	if job.job_cancelled.is_connected(callback):
 		job.job_cancelled.disconnect(callback)
-	for key: String in ["site", "drone", "inventory", "dock", "storage"]:
+	var original := (claim["site"] as WeakRef).get_ref() as ConstructionSite
+	var site_callback: Callable = _on_ended.bind(id, true)
+	if is_instance_valid(original) and original.tree_exiting.is_connected(site_callback):
+		original.tree_exiting.disconnect(site_callback)
+	for key: String in ["drone", "inventory", "dock", "storage"]:
 		var node: Node = (claim[key] as WeakRef).get_ref()
 		if is_instance_valid(node) and node.tree_exiting.is_connected(callback):
 			node.tree_exiting.disconnect(callback)
