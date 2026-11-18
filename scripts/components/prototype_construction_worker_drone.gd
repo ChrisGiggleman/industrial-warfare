@@ -12,7 +12,7 @@ class_name PrototypeConstructionWorkerDrone
 # No _process / physics step: F6 fixture explicitly calls advance_flight().
 # Not installed in Main or Factory Testing Sandbox.
 
-enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED }
+enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED, RECOVERY_WAIT, RECOVERY_OUTBOUND, AT_RECOVERY, RECOVERY_HOME }
 
 const ARRIVAL_EPSILON: float = 0.05
 const MAX_SPEED: float = 50.0
@@ -42,6 +42,10 @@ var _delivery_buffer: WeakRef
 # x5c: explicit handoff into the existing physical worker gate.
 @export var enable_isolated_delivered_worker: bool = false
 var _delivered_worker_latched: bool = false
+# x6: default-off return of actual canceled-job cargo.
+@export var enable_isolated_cargo_recovery: bool = false
+var _return_token: RefCounted
+var _return_dock: WeakRef
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -218,7 +222,7 @@ func assign_to_site(
 # Manual movement only. Returning the drone HOME never unlocks any
 # construction resource or claim.
 func advance_flight(delta: float) -> bool:
-	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED]:
+	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY, FlightState.RECOVERY_HOME]:
 		return false # Cargo legs are distinct from legacy worker flight.
 	if (
 		not is_finite(delta) or delta <= 0.0
@@ -662,3 +666,90 @@ func _rollback_delivered_worker(site: ConstructionSite) -> void:
 	_assignment_job = null
 	_delivered_worker_latched = false
 	_state = FlightState.DELIVERED
+
+
+# x6: recovery can only adopt an actual load from a canceled or lost
+# original assignment, never a healthy queued delivery or an empty drone.
+func _recovery_enabled() -> bool:
+	return enable_isolated_cargo_recovery and enable_isolated_cargo_pickup and enable_isolated_drone and enable_isolated_battery and _battery_configured and _delivery_live(self)
+
+
+func _recovery_cargo_valid() -> bool:
+	if not _recovery_enabled() or _cargo_amount <= 0 or not is_instance_valid(_cargo_item) or _cargo_job == null or _cargo_site == null:
+		return false
+	if _state not in [FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY]:
+		return false
+	var site := _delivery_site()
+	return _cargo_job.state == ConstructionJob.State.CANCELLED or not _delivery_live(site) or site.get_parent() != get_parent() or site.job != _cargo_job or site.target_definition != _cargo_definition
+
+
+func _wait_for_recovery() -> bool:
+	if not _recovery_cargo_valid() or _return_token != null:
+		return false
+	_state = FlightState.RECOVERY_WAIT
+	return true
+
+
+func _begin_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock) -> bool:
+	if not _recovery_cargo_valid() or _state != FlightState.RECOVERY_WAIT or _return_token != null or token == null or not _delivery_live(dock):
+		return false
+	_return_token = token
+	_return_dock = weakref(dock)
+	_state = FlightState.RECOVERY_OUTBOUND
+	return true
+
+
+func _owns_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, item: ItemDefinition, amount: int) -> bool:
+	return _recovery_cargo_valid() and token != null and _return_token == token and _return_dock != null and _delivery_live(dock) and _return_dock.get_ref() == dock and _cargo_item == item and _cargo_amount == amount and _state in [FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY]
+
+
+func _cancel_cargo_return(token: RefCounted) -> void:
+	if token == null or _return_token != token:
+		return
+	_return_token = null
+	_return_dock = null
+	_state = FlightState.RECOVERY_WAIT
+
+
+func _advance_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, delta: float) -> bool:
+	if not _owns_cargo_return(token, dock, _cargo_item, _cargo_amount) or not is_finite(delta) or delta <= 0.0:
+		return false
+	var target: Vector3 = dock.global_position
+	var points: Array[Vector3] = [target]
+	var needed: float = estimate_route_energy(points)
+	if needed < 0.0 or needed > _battery_units + 0.00001:
+		return false
+	var step: float = minf(global_position.distance_to(target), _speed * delta)
+	global_position = global_position.move_toward(target, step)
+	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	_state = FlightState.AT_RECOVERY if global_position.distance_to(target) <= 0.00001 else FlightState.RECOVERY_OUTBOUND
+	return true
+
+
+func _deposit_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, inventory: InventoryComponent) -> bool:
+	if not _owns_cargo_return(token, dock, _cargo_item, _cargo_amount) or _state != FlightState.AT_RECOVERY or not _delivery_live(inventory):
+		return false
+	if global_position.distance_to(dock.global_position) > 0.00001:
+		return false
+	if not inventory.consume_drone_return_claim(token, _cargo_item, _cargo_amount):
+		return false
+	_cargo_amount = 0
+	_cargo_item = null
+	_return_token = null
+	_return_dock = null
+	_state = FlightState.RECOVERY_HOME
+	return true
+
+
+# Empty return only. Never rearm the canceled cargo assignment in x6.
+func _advance_recovery_home(delta: float) -> bool:
+	if not _recovery_enabled() or _state != FlightState.RECOVERY_HOME or _cargo_amount != 0 or _return_token != null or not is_finite(delta) or delta <= 0.0:
+		return false
+	var distance: float = global_position.distance_to(_home)
+	var step: float = minf(distance, minf(_speed * delta, _battery_units / _energy_per_meter))
+	global_position = global_position.move_toward(_home, step)
+	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if global_position.distance_to(_home) <= 0.00001:
+		_state = FlightState.DOCKED
+		return true
+	return step > 0.0
