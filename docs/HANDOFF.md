@@ -16,11 +16,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x6 isolated canceled cargo recovery accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 578/578 (13 isolated + 565 across 39 compatibility suites)**.
 - **E3d5c5x7a finite Hub charging isolated accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 641/641 (13 isolated + 628 across 43 compatibility suites)**.
 - **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; **Fully accepted 657/657 (16 isolated + 641 across 44 compatibility suites)**.
+- E3d5c5x7c1 pre-pickup cancellation staged (12 isolated checks pending).
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
 ## Current next action — E3d5c5x7c1 pre-pickup cancellation
 
-Implement isolated cancellation before physical cargo pickup, preserve claim release and metered return; require exact terminal provenance and existing rearm safeguards. Later x7c2 cancellation after unloading before worker admission, x7c3 nonterminal original-site loss, then x8 automatic dispatch. No x7c1 acceptance yet.
+**Staged; 12 isolated checks pending.** Implementation and scene [e19cd8a](https://github.com/ChrisGiggleman/industrial-warfare/commit/e19cd8ae4850918d9d289d780611bc848b4e3c36). Default-off x7c1 pre-pickup rearm opt-in latched at active pickup launch, requires cargo-reuse opt-in. Forecast-only reservation cancellation releases stock and leaves drone idle without rearm. Exact active pickup token release with original canceled job, original site weak reference and authoritative same-scope supplier identity records empty terminal provenance; token and dock claim cleared by existing release, no source debit or cargo creation. Already-launched empty drone returns with metered flight and exact home threshold; immediate at-home cancellation docks without travel. Existing x7b explicit rearm still requires full finite charge, exact original home, same live supplier and return ledgers, matched coordinator/escrow/scheduler, no outstanding claims or active/old worker binding, and current opt-in. Disabling opt-in after launch preserves terminal provenance but blocks release until restored. Nonterminal source/claim failure or site loss does not establish rearm provenance; enabling after cancellation cannot fabricate it. No receiver ownership mutation, automatic dispatch, live scene wiring, multi-drone scheduling, or persistence/destruction changes.
+
+Run `res://tests/drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn` with F6. Expected `ALL 12 E3D5C5X7C1 PRE-PICKUP CANCELLATION TESTS PASSED`. Checks A–L: forecast-only canceled reservation, launched at home, midflight canceled claim, exact metered return and depleted/airborne denial, outage/full recharge and flag gate, cancellation on arrival before debit, outstanding return claim and exact-once rearm, late opt-in refusal, nonterminal release refusal, fresh authorized build after three canceled flights, conservation of fifteen original ingots, normal scene opt-out. No independent Godot compilation/runtime execution. After isolated and targeted compatibility acceptance proceed to x7c2 cancellation after unloading before worker admission, x7c3 nonterminal original-site loss, then x8 automatic dispatch. Pull with clean tracked working tree.
 
 ## Completed compatibility gate — x7b
 
@@ -351,7 +354,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; proceed to x7c1 pre-pickup cancellation.
+4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 pre-pickup cancellation staged, 12 isolated checks and compatibility pending. Then x7c2, x7c3, x8.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
