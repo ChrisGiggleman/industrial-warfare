@@ -13,14 +13,57 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5a isolated physical pickup accepted (12/12)**, developer confirmed in Godot 2026-11-17. Tested code [6ed2e2b](https://github.com/ChrisGiggleman/industrial-warfare/commit/6ed2e2bdffa40ea8bcb301bada6a7a8e96190501). Full acceptance 409/409 (12 isolated + 397 across 28 compatibility suites), developer-confirmed.
 - **E3d5c5x5b isolated physical delivery accepted (13/13)**, developer confirmed all checks in Godot 2026-11-17. Implementation [5e2fbbc](https://github.com/ChrisGiggleman/industrial-warfare/commit/5e2fbbc122f2f72329d7f811504cecf0698b7616). Full targeted acceptance 516/516 (13 isolated + 503 across 35 compatibility suites), developer-confirmed.
 - **E3d5c5x5c isolated accepted (16/16)**, developer screenshot 2026-11-17, implementation [6652bd0](https://github.com/ChrisGiggleman/industrial-warfare/commit/6652bd0db58594a8efd0c7d862c533abdbe782fb). **Fully accepted 565/565 (16 isolated + 549 across 38 compatibility suites)**, developer-confirmed 2026-11-17.
-- E3d5c5x6 isolated canceled cargo recovery staged (13 pending); see current next action.
+- **E3d5c5x6 isolated canceled cargo recovery accepted (13/13)**, developer Godot Output screenshot; 39 compatibility suites / 565 checks pending.
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
-## Current next action — E3d5c5x6 automatic canceled-job cargo recovery
+## Current next action — E3d5c5x6 targeted compatibility
 
-**Staged; 13 isolated checks pending.** Implementation and test scene at [6675009](https://github.com/ChrisGiggleman/industrial-warfare/commit/6675009fe9862d8830b2eedc3e3c33427cfb4dc1). Default-off flags on drone and existing return-reservation service; explicit isolated `advance_cancelled_recovery(drone, delta)` tick derives whole-load claim from actual held cargo after original job cancellation or original-site identity loss, never from forecast-only claims. Existing discovery chooses nearest eligible whole-load Storage with battery-to-home margin; exact claim protects ordinary intake. Each tick revalidates original cargo, scope, destination, capacity and route, meters physical flight, refuses stale arrival, atomically consumes exact incoming claim into physical stock once, clears cargo and flies empty to home. Stale claims release without discarding cargo; no receiver enters protected RECOVERY_WAIT and retries on later ticks. No loaded home fallback or automatic reassignment, no normal scene wiring, no charging changes, no destruction/persistence integration.
+**Isolated accepted: 13/13 A–M**, developer's Godot 4.6.2 Output screenshot, 2026-11-17 local date, implementation and test scene [6675009](https://github.com/ChrisGiggleman/industrial-warfare/commit/6675009fe9862d8830b2eedc3e3c33427cfb4dc1), documentation checkpoint 20cabd2. All PASS A–M and final ALL 13 E3D5C5X6 CANCELED CARGO RECOVERY TESTS PASSED visible. Default-off/active-job refusal, actual nearest reservation, ordinary intake protection, physical metered flight, moved dock, exact deposit, empty home return, invalid/full destination, flag loss/reroute, capacity shrink/deleted dock, unreachable route, conservation and normal scene opt-out passed. No independent execution.
 
-Run `res://tests/drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` with F6. Expected: `ALL 13 E3D5C5X6 CANCELED CARGO RECOVERY TESTS PASSED`. Checks A–M cover default-off/active-job refusal, nearest actual reservation, ordinary intake protection, metered movement, moved dock, exact deposit, empty home return, invalid/full destination, flag loss and reroute, capacity shrink and deleted dock, unreachable route, conservation, empty drone and normal scene opt-out. Developer runtime pending; no independent Godot parse or execution. After isolated pass rerun compatibility including x5c isolated and affected prior reservation/inventory/delivery suites before x7. Pull with clean working tree.
+**Pending: 39 compatibility suites / 565 checks.** Rerun x5c's 38 compatibility suites (549) plus x5c isolated delivered-worker integration (16) because x6 changes shared inventory, return claims and drone lifecycle. Previous results do not count as x6 regression. Run each scene with F6, report failures or full successful results. If all pass, x6 targeted acceptance is 578/578 (13 isolated + 565 compatibility); not full-project regression. Then proceed to x7 charging and repeated assignment. No gameplay code changes in this checkpoint. Normal scenes remain opt-out; explicit isolated recovery tick only, protected wait/retry when no eligible receiver, no loaded home fallback, no automatic reuse, persistence or loaded-drone destruction recovery.
+
+| Scene under res://tests/ | Expected check groups | Result |
+|---|---:|---|
+| `inventory_trasnfer_test.tscn` | 4 | Pending |
+| `item_port_transfer_test.tscn` | 7 | Pending |
+| `manufacturing_transaction_test.tscn` | 9 | Pending |
+| `recipe_output_capacity_test.tscn` | 11 | Pending |
+| `conveyor_automatic_loading_test.tscn` | 10 | Pending |
+| `conveyor_automatic_unloading_test.tscn` | 9 | Pending |
+| `conveyor_connected_transport_test.tscn` | 7 | Pending |
+| `conveyor_splitter_test.tscn` | 10 | Pending |
+| `conveyor_merger_test.tscn` | 10 | Pending |
+| `conveyor_physical_only_conservation_test.tscn` | 9 | Pending |
+| `timed_storage_conveyor_delivery_test.tscn` | 6 | Pending |
+| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Pending |
+| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Pending |
+| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Pending |
+| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Pending |
+| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Pending |
+| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Pending |
+| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Pending |
+| `world_salvage_destruction_test.tscn` | 12 | Pending |
+| `destruction_cargo_recovery_test.tscn` | 12 | Pending |
+| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Pending |
+| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Pending |
+| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Pending |
+| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Pending |
+| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Pending |
+| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Pending |
+| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Pending |
+| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Pending |
+| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Pending |
+| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Pending |
+| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Pending |
+| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Pending |
+| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Pending |
+| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Pending |
+| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Pending |
+| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Pending |
+| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Pending |
+| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Pending |
+| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Pending |
+| **Total (39 suites)** | **565** | Pending |
 
 ## Completed compatibility gate — x5c
 
@@ -194,7 +237,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
-3. E3d5c5x6 canceled-job cargo recovery staged; 13 isolated checks pending, then compatibility before x7.
+3. E3d5c5x6 isolated accepted 13/13; 39 compatibility suites / 565 checks pending before x7.
 4. E3d5c5x7 charging and repeated assignments.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
