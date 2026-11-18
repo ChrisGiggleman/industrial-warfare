@@ -3698,3 +3698,8 @@ Default-off exclusive same-scope Hub charging service, pinned completed prototyp
 ### 2026-11-17 — E3d5c5x7a Isolated Acceptance (13/13); Compatibility Gate Pending
 
 Developer supplied Godot Output screenshot showing PASS A–M and ALL 13 E3D5C5X7A FINITE HUB CHARGING TESTS PASSED. Implementation and scene 61c3d7e, documentation checkpoint a97db8f. Shared surplus generation with construction precedence, exclusive physical home charging, rate/capacity, outage, feature loss, duplicate allocator and service removal safeguards accepted in isolated fixture. No independent execution. Rerun x6 39 compatibility suites (565), plus x6 isolated recovery (13), power coverage (16), completed power structures (16), finite construction power (18); 43 suites / 628 groups pending; 641/641 overall if passed. Source counts verified. Exact checklist in HANDOFF. No gameplay code changes. x7b blocked until compatibility accepted; simulated nameplate-to-battery budget, fixed order and single Hub remain isolated limitations.
+
+
+### 2026-11-17 — E3d5c5x7a Full Targeted Acceptance (641/641)
+
+Developer explicitly confirmed all 43 compatibility suites / 628 checks passed in local Godot, plus 13 isolated charging checks. Implementation and scene 61c3d7e, gate record f62e8de. Exact suite results in HANDOFF. No independent execution or full-project regression. Proceed to x7b guarded cargo-worker rearm and repeated assignments; preserve existing charging, escrow, custody, authorization and worker gates. No normal scene activation.
