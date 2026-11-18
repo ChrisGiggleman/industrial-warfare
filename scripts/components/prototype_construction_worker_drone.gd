@@ -60,6 +60,10 @@ var _delivered_scheduler: WeakRef
 var _pre_pickup_rearm_latched: bool = false
 var _pre_pickup_cancelled: bool = false
 var _pre_pickup_supplier: WeakRef
+# x7c2: latch only a genuinely unloaded cargo assignment.
+@export var enable_isolated_post_delivery_rearm: bool = false
+var _post_delivery_rearm_latched: bool = false
+var _post_delivery_cancelled: bool = false
 
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
@@ -264,7 +268,7 @@ func advance_flight(delta: float) -> bool:
 				0.0, _battery_units - return_distance * _energy_per_meter
 			)
 		global_position = next_return
-		if global_position.distance_to(_home) <= (0.00001 if _pre_pickup_cancelled else ARRIVAL_EPSILON):
+		if global_position.distance_to(_home) <= (0.00001 if (_pre_pickup_cancelled or _post_delivery_cancelled) else ARRIVAL_EPSILON):
 			global_position = _home
 			_state = FlightState.DOCKED
 		return true
@@ -643,6 +647,7 @@ func unload_delivery() -> bool:
 		_state = FlightState.CARGO_HELD
 		return false
 	_cargo_item = null
+	_post_delivery_rearm_latched = enable_isolated_post_delivery_rearm and enable_isolated_cargo_reuse
 	_state = FlightState.DELIVERED
 	return true
 
@@ -876,6 +881,17 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 			return false
 		if _delivery_escrow == null or _delivery_escrow.get_ref() != escrow or _delivered_scheduler == null or _delivered_scheduler.get_ref() != scheduler:
 			return false
+	elif _post_delivery_cancelled:
+		if not enable_isolated_post_delivery_rearm or _cargo_job.state != ConstructionJob.State.CANCELLED or _assignment_job != null or _site_ref != null or _cargo_recovered:
+			return false
+		if _delivery_registry == null or _delivery_buffer == null or _delivery_escrow == null or _delivery_escrow.get_ref() != escrow:
+			return false
+		var original_registry := _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry
+		var original_buffer := _delivery_buffer.get_ref() as InventoryComponent
+		if not _delivery_live(original_registry) or original_registry.get_parent() != get_parent() or not _delivery_live(original_buffer):
+			return false
+		if not coordinator.matches_owned_registry(original_registry) or not original_registry.has_locked_delivery_inventory(_cargo_site, original_buffer):
+			return false
 	elif _pre_pickup_cancelled:
 		if not enable_isolated_pre_pickup_rearm or _pre_pickup_supplier == null or _pre_pickup_supplier.get_ref() != supplier or _cargo_job.state != ConstructionJob.State.CANCELLED or _assignment_job != null or _site_ref != null or _cargo_recovered:
 			return false
@@ -904,7 +920,34 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	_pre_pickup_cancelled = false
 	_pre_pickup_supplier = null
 	_pre_pickup_rearm_latched = false
+	_post_delivery_rearm_latched = false
+	_post_delivery_cancelled = false
 	_cargo_reuse_latched = true
 	_state = FlightState.IDLE
 	_reuse_count += 1
+	return true
+
+
+# x7c2: the exact terminal job and a successful unload are the proof.
+# No material or claim mutation here. The original registry retains its
+# receiver lock, and any escrow refund/recovery is the ledger's concern.
+# A terminal cancellation permits a safe empty return even if the opt-in
+# has since been disabled; current opt-in still gates rearm at home.
+func begin_cancelled_delivery_return() -> bool:
+	if not _post_delivery_rearm_latched or _post_delivery_cancelled or _state != FlightState.DELIVERED or not _delivery_live(self) or not _battery_configured:
+		return false
+	if _cargo_amount != 0 or _cargo_item != null or _cargo_job == null or _cargo_job.state != ConstructionJob.State.CANCELLED or _cargo_site == null:
+		return false
+	if _delivered_worker_latched or _site_ref != null or _assignment_job != null or _pickup_token != null or _return_token != null:
+		return false
+	if _delivery_registry == null or _delivery_escrow == null or _delivery_buffer == null:
+		return false
+	var original_site := _delivery_site()
+	if is_instance_valid(original_site) and (original_site.job != _cargo_job or original_site.target_definition != _cargo_definition or original_site.get_parent() != get_parent()):
+		return false
+	if not global_position.is_finite() or not _home.is_finite() or not is_finite(_battery_units) or not is_finite(_speed) or _speed <= 0.0:
+		return false
+	_post_delivery_cancelled = true
+	_post_delivery_rearm_latched = false
+	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
 	return true
