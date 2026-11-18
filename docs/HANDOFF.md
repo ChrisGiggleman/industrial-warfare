@@ -1,6 +1,6 @@
 # Industrial Warfare — Current Development Handoff
 
-Updated 2026-11-17. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
+Updated 2026-11-18. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
 ## Current checkpoint
@@ -15,62 +15,66 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5c isolated accepted (16/16)**, developer screenshot 2026-11-17, implementation [6652bd0](https://github.com/ChrisGiggleman/industrial-warfare/commit/6652bd0db58594a8efd0c7d862c533abdbe782fb). **Fully accepted 565/565 (16 isolated + 549 across 38 compatibility suites)**, developer-confirmed 2026-11-17.
 - **E3d5c5x6 isolated canceled cargo recovery accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 578/578 (13 isolated + 565 across 39 compatibility suites)**.
 - **E3d5c5x7a finite Hub charging isolated accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 641/641 (13 isolated + 628 across 43 compatibility suites)**.
-- **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; 44 compatibility suites / 641 checks pending.
+- **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; **Fully accepted 657/657 (16 isolated + 641 across 44 compatibility suites)**.
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
-## Current next action — E3d5c5x7b targeted compatibility
+## Current next action — E3d5c5x7c1 pre-pickup cancellation
+
+Implement isolated cancellation before physical cargo pickup, preserve claim release and metered return; require exact terminal provenance and existing rearm safeguards. Later x7c2 cancellation after unloading before worker admission, x7c3 nonterminal original-site loss, then x8 automatic dispatch. No x7c1 acceptance yet.
+
+## Completed compatibility gate — x7b
 
 **Isolated accepted: 16/16 A–P**, developer explicitly reported all 16 tests passed in local Godot; no screenshot supplied for this checkpoint and no independent execution. Latest staged implementation/test refinement [acdcdf7](https://github.com/ChrisGiggleman/industrial-warfare/commit/acdcdf76861f012ed2231dd8760e23d02f928d6b), documentation checkpoint 779fd41. Same drone completes two authorized builds, recovers a canceled loaded assignment, and refunds a fourth assignment canceled during work; four successful rearms and all 15 original ingots accounted for in the fixture. Checks include terminal job, full finite charge, exact original home (including combined relocation refusal), authoritative ledgers and scheduler, unresolved claim/escrow denial, callback cleanup, fresh authorization and pickup, conservation, feature-loss interlock and normal scene opt-out.
 
-**Pending: 44 compatibility suites / 641 checks.** Rerun all x7a 43 compatibility suites (628), plus x7a isolated finite Hub charging (13, source PASS count and scene verified). Existing baseline includes scheduler/readiness, escrow, inventory, power and drone lifecycle integration. Previous results are historical, not x7b regression results. If all pass, x7b targeted acceptance is 657/657 (16 isolated + 641 compatibility); not full-project regression. Run each scene with F6 and report successful results or failures. No gameplay code changes in this checkpoint. After acceptance, address remaining cancellation lifecycle paths before automatic dispatch. Whole-scope quiescence, full battery, fixed Hub and explicit rearm remain conservative isolated restrictions; pre-pickup cancellation, cancellation after delivery before worker admission, nonterminal lost-site rearm, fleet scheduling, multi-trip, persistence/destruction and normal scene activation remain separate gates.
+**Accepted: all 44 compatibility suites / 641 checks**, explicitly developer-confirmed in local Godot on 2026-11-18; 657/657 including 16 isolated checks. Implementation refinement acdcdf7, gate documentation ca5dd3f. Targeted, not full-project regression; no independent execution. Next x7c1 pre-pickup cancellation.
 
 | Scene under res://tests/ | Expected check groups | Result |
 |---|---:|---|
-| `inventory_trasnfer_test.tscn` | 4 | Pending |
-| `item_port_transfer_test.tscn` | 7 | Pending |
-| `manufacturing_transaction_test.tscn` | 9 | Pending |
-| `recipe_output_capacity_test.tscn` | 11 | Pending |
-| `conveyor_automatic_loading_test.tscn` | 10 | Pending |
-| `conveyor_automatic_unloading_test.tscn` | 9 | Pending |
-| `conveyor_connected_transport_test.tscn` | 7 | Pending |
-| `conveyor_splitter_test.tscn` | 10 | Pending |
-| `conveyor_merger_test.tscn` | 10 | Pending |
-| `conveyor_physical_only_conservation_test.tscn` | 9 | Pending |
-| `timed_storage_conveyor_delivery_test.tscn` | 6 | Pending |
-| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Pending |
-| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Pending |
-| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Pending |
-| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Pending |
-| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Pending |
-| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Pending |
-| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Pending |
-| `world_salvage_destruction_test.tscn` | 12 | Pending |
-| `destruction_cargo_recovery_test.tscn` | 12 | Pending |
-| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Pending |
-| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Pending |
-| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Pending |
-| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Pending |
-| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Pending |
-| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Pending |
-| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Pending |
-| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Pending |
-| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Pending |
-| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Pending |
-| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Pending |
-| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Pending |
-| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Pending |
-| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Pending |
-| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Pending |
-| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Pending |
-| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Pending |
-| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Pending |
-| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Pending |
-| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 | Pending |
-| `construction_power_coverage_e3d5c3a_test.tscn` | 16 | Pending |
-| `completed_power_structures_e3d5c3b1_test.tscn` | 16 | Pending |
-| `finite_construction_power_e3d5c3b2_test.tscn` | 18 | Pending |
-| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 | Pending |
-| **Total (44 suites)** | **641** | Pending |
+| `inventory_trasnfer_test.tscn` | 4 | Passed |
+| `item_port_transfer_test.tscn` | 7 | Passed |
+| `manufacturing_transaction_test.tscn` | 9 | Passed |
+| `recipe_output_capacity_test.tscn` | 11 | Passed |
+| `conveyor_automatic_loading_test.tscn` | 10 | Passed |
+| `conveyor_automatic_unloading_test.tscn` | 9 | Passed |
+| `conveyor_connected_transport_test.tscn` | 7 | Passed |
+| `conveyor_splitter_test.tscn` | 10 | Passed |
+| `conveyor_merger_test.tscn` | 10 | Passed |
+| `conveyor_physical_only_conservation_test.tscn` | 9 | Passed |
+| `timed_storage_conveyor_delivery_test.tscn` | 6 | Passed |
+| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 | Passed |
+| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 | Passed |
+| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 | Passed |
+| `playable_construction_power_e3d5c5x1_test.tscn` | 9 | Passed |
+| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 | Passed |
+| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 | Passed |
+| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 | Passed |
+| `world_salvage_destruction_test.tscn` | 12 | Passed |
+| `destruction_cargo_recovery_test.tscn` | 12 | Passed |
+| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 | Passed |
+| `prototype_construction_worker_drone_e3d5c4u_test.tscn` | 16 | Passed |
+| `prototype_drone_worker_readiness_e3d5c4v_test.tscn` | 21 | Passed |
+| `prototype_construction_drone_fleet_e3d5c4w_test.tscn` | 21 | Passed |
+| `prototype_drone_battery_dock_e3d5c4x_test.tscn` | 20 | Passed |
+| `prototype_construction_drone_reuse_e3d5c4y_test.tscn` | 20 | Passed |
+| `prototype_construction_drone_tick_e3d5c4z_test.tscn` | 20 | Passed |
+| `sandbox_construction_drone_bridge_e3d5c5a_test.tscn` | 20 | Passed |
+| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 | Passed |
+| `blueprint_material_staging_e3d5c4c_test.tscn` | 16 | Passed |
+| `blueprint_physical_staging_e3d5c4d_test.tscn` | 16 | Passed |
+| `blueprint_site_staging_ownership_e3d5c4h_test.tscn` | 16 | Passed |
+| `blueprint_anchored_receiver_e3d5c4i_test.tscn` | 16 | Passed |
+| `blueprint_owned_readiness_e3d5c4r_test.tscn` | 18 | Passed |
+| `blueprint_receiver_recovery_audit_e3d5c4j_test.tscn` | 12 | Passed |
+| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 | Passed |
+| `construction_readiness_coordinator_e3d5c3c1_test.tscn` | 18 | Passed |
+| `blueprint_construction_readiness_e3d5c1_test.tscn` | 15 | Passed |
+| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 | Passed |
+| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 | Passed |
+| `construction_power_coverage_e3d5c3a_test.tscn` | 16 | Passed |
+| `completed_power_structures_e3d5c3b1_test.tscn` | 16 | Passed |
+| `finite_construction_power_e3d5c3b2_test.tscn` | 18 | Passed |
+| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 | Passed |
+| **Total (44 suites)** | **641** | Passed |
 
 ## Completed compatibility gate — x7a
 
@@ -347,7 +351,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; x7b guarded cargo-worker rearm/repeated assignments isolated accepted 16/16, 44 compatibility suites / 641 checks pending.
+4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; proceed to x7c1 pre-pickup cancellation.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
