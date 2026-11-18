@@ -15,11 +15,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5c isolated accepted (16/16)**, developer screenshot 2026-11-17, implementation [6652bd0](https://github.com/ChrisGiggleman/industrial-warfare/commit/6652bd0db58594a8efd0c7d862c533abdbe782fb). **Fully accepted 565/565 (16 isolated + 549 across 38 compatibility suites)**, developer-confirmed 2026-11-17.
 - **E3d5c5x6 isolated canceled cargo recovery accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 578/578 (13 isolated + 565 across 39 compatibility suites)**.
 - **E3d5c5x7a finite Hub charging isolated accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 641/641 (13 isolated + 628 across 43 compatibility suites)**.
+- E3d5c5x7b guarded cargo-worker rearm and repeated assignments staged (16 isolated tests pending).
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
 ## Current next action — E3d5c5x7b safe cargo-worker rearm
 
-Implement default-off explicit rearm after completed or recovered cargo assignment, full finite charge, proof of claim and scheduler cleanup; repeat physical pickup/delivery for a separately authorized job. No automatic dispatch. No x7b acceptance yet.
+**Staged; 16 isolated checks pending.** Implementation and test scene [d0fa281](https://github.com/ChrisGiggleman/industrial-warfare/commit/d0fa281f2d964243cf960334727c17ed5641d61e). Default-off explicit cargo-worker rearm separated from the legacy build-only method. Require terminal delivered assignment or successfully deposited canceled cargo, exact physical Hub registration and full battery under the still-live x7a charging authority, empty cargo and no pickup/return tokens, authoritative same-scope supplier/return ledgers, matching live owned-mode coordinator/escrow/scheduler, exact pinned delivered-worker scheduler and escrow where applicable, no reservation/escrow records or active worker slots, no old worker binding. Rearm disconnects old job/site callbacks and clears assignment provenance only, leaves receiver ownership/material quantities untouched; subsequent pickup uses new authorization/claim and live finite-charge gate. One drone runs complete, canceled in-flight recovery, complete, canceled during construction, with two committed bills and conserved remaining stock. Explicit calls only; an entire scope must be quiescent, full charge required, fixed Hub, no pre-pickup cancellation rearm, nonterminal lost-site recovery rearm, empty delivered-before-worker cancellation rearm, automatic dispatch, multi-trip, persistence/destruction integration or normal scene activation. Those are separate future gates. 
+
+Run `res://tests/drone_cargo_worker_reuse_e3d5c5x7b_test.tscn` with F6. Expected `ALL 16 E3D5C5X7B CARGO WORKER REUSE TESTS PASSED`. Checks A–P: default-off, loaded/no premature rearm, first completion/home return, battery and stale binding, legacy bypass denial, exact services/dock, outstanding source/return claims, escrow, callback cleanup, new authorization and fresh claim, canceled successor protected recovery, finite recharge and second rearm, later successful build, canceled working job and conservation, feature-loss interlock, normal-scene opt-out. No independent Godot parse/runtime execution. After isolated acceptance run targeted compatibility including x7a, prior lifecycle, scheduler and escrow suites. No normal scene activation. Pull with clean tracked working tree.
 
 ## Completed compatibility gate — x7a
 
@@ -296,7 +299,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; proceed to x7b guarded cargo-worker rearm/repeated assignments.
+4. E3d5c5x7a fully accepted 641/641; x7b guarded cargo-worker rearm/repeated assignments staged, 16 isolated checks and compatibility pending.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
