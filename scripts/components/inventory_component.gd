@@ -390,3 +390,18 @@ func transfer_to(
 
 	# Return the number of items actually moved.
 	return accepted_amount
+
+
+# x6: convert this exact incoming claim to physical stock, synchronously.
+# No signal/await; all other incoming and outgoing claims remain untouched.
+func consume_drone_return_claim(token: RefCounted, item: ItemDefinition, amount: int) -> bool:
+	if not enable_isolated_drone_return_claims or not is_inside_tree() or is_queued_for_deletion():
+		return false
+	if item == null or amount <= 0 or not has_drone_return_claim(token, item, amount):
+		return false
+	if max_capacity < 0 or (max_capacity > 0 and get_total_amount() + get_reserved_return_space() > max_capacity):
+		return false
+	_drone_return_claims.erase(token)
+	items[item] = get_amount(item) + amount
+	_mutation_revision += 1
+	return true
