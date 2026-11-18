@@ -326,3 +326,9 @@ func admit_delivered_worker(site: ConstructionSite, drone: PrototypeConstruction
 			return false
 		return _scheduler.bind_delivered_site_drone(site, drone, _site_registry, _escrow)
 	return false
+
+
+# x7c2: observation only. The original receiver registry must still be
+# this coordinator's authoritative owned staging service.
+func matches_owned_registry(registry: BlueprintConstructionSiteStagingRegistry) -> bool:
+	return _configured and _owned_registry_ready() and _site_registry == registry
