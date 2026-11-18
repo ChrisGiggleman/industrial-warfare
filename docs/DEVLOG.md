@@ -3683,3 +3683,8 @@ Default-off flags on drone and existing return-reservation service; explicit iso
 ### 2026-11-17 — E3d5c5x6 Isolated Acceptance (13/13); Compatibility Gate Pending
 
 Developer supplied Godot 4.6.2 Output screenshot showing all PASS A–M and ALL 13 E3D5C5X6 CANCELED CARGO RECOVERY TESTS PASSED. Tested implementation and scene 6675009, documentation checkpoint 20cabd2. Exact-once actual cargo deposit, physical metered recovery and empty home return, nearest eligible claim, capacity and route invalidation, conservation and default-off boundaries accepted in isolated fixture. No independent execution. Rerun x5c 38 compatibility suites (549) plus isolated delivered-worker integration x5c (16; source PASS count verified), 39 suites / 565 groups pending; 578/578 overall if passed. Exact checklist in HANDOFF. No gameplay code changes; do not proceed to x7 until compatibility accepted. Recovery remains explicit tick and default-off; loaded fallback, normal scene scheduling, persistence and destruction integration not accepted.
+
+
+### 2026-11-17 — E3d5c5x6 Full Targeted Acceptance (578/578)
+
+Developer explicitly confirmed all 39 compatibility suites / 565 check groups passed locally in Godot in addition to 13 isolated recovery checks. Implementation and scene 6675009, gate documentation f1215dc. Enumerated results in HANDOFF; no independent execution or full-project regression. Proceed to x7 charging and repeated assignments through isolated gates, preserving all prior behavior. No production activation or persistence/destruction integration.
