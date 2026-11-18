@@ -114,7 +114,7 @@ func matches_docked_registration(drone: PrototypeConstructionWorkerDrone, token:
 		return false
 	if drone.get_flight_state() not in [PrototypeConstructionWorkerDrone.FlightState.IDLE, PrototypeConstructionWorkerDrone.FlightState.DOCKED]:
 		return false
-	if drone.global_position.distance_to(hub.global_position + Vector3.UP * 2.0) > 0.00001:
+	if not drone.global_position.is_finite() or not hub.global_position.is_finite() or drone.global_position.distance_to(hub.global_position + Vector3.UP * 2.0) > 0.00001:
 		return false
 	for entry: Dictionary in _entries:
 		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token:
