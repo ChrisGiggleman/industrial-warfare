@@ -3713,3 +3713,8 @@ Default-off explicit cargo-worker rearm separated from the legacy build-only met
 ### 2026-11-17 — E3d5c5x7b Pre-Test Original Home Guard Refinement
 
 Latest implementation/test refinement acdcdf7. Enforce finite exact original battery home as well as live current Hub registration on rearm and subsequent pickup; simultaneous relocation of Hub and drone cannot bypass the original-home requirement. Test F now checks combined relocation. All 16 isolated checks still pending local Godot; no independent execution.
+
+
+### 2026-11-17 — E3d5c5x7b Isolated Acceptance (16/16); Compatibility Gate Pending
+
+Developer explicitly reported all 16 isolated Godot checks passed (no screenshot supplied for this checkpoint; no independent execution). Latest staged implementation/test refinement acdcdf7, documentation checkpoint 779fd41. Fixture demonstrates same drone through two completed builds, one canceled loaded recovery and one cancellation during construction; four rearms and 15/15 original ingots accounted for. Exact original home and finite charge, terminal job, authoritative ledger/scheduler and escrow cleanup, old callbacks, fresh claim/authorization, feature loss and default-off safeguards accepted in fixture. Rerun x7a 43 compatibility suites (628) plus x7a finite Hub charging (13; source count/scene verified): 44 suites / 641 checks pending, 657/657 total if passed. Exact list in HANDOFF. No gameplay code changes. Whole-scope quiescence/full charge/explicit calls remain restrictions; remaining cancellation lifecycle cases before automatic dispatch, multi-trip or fleet scheduling; no normal scene activation, persistence/destruction integration.
