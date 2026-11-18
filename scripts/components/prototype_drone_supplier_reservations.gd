@@ -82,7 +82,7 @@ func _release(id: int) -> bool:
 	_claims.erase(id)
 	var drone := (claim["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
 	if is_instance_valid(drone):
-		drone._cancel_pickup(claim["token"])
+		drone._cancel_pickup(claim["token"], self, claim["site"], claim["job"])
 	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
 	if is_instance_valid(inventory):
 		inventory.release_drone_stock(claim["token"])
