@@ -393,7 +393,7 @@ func bind_delivered_site_drone(site: ConstructionSite, drone: PrototypeConstruct
 	var index: int = _find_entry_index(site)
 	if index < 0 or _tracked[index].get("worker_drone") != null or has_drone_binding(drone):
 		return false
-	if not drone._promote_delivered_worker(site, registry, escrow):
+	if not drone._promote_delivered_worker(site, registry, escrow, self):
 		return false
 	if not bind_site_drone(site, drone):
 		drone._rollback_delivered_worker(site)
