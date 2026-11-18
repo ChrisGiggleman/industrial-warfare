@@ -57,13 +57,13 @@ func configure(drone: PrototypeConstructionWorkerDrone, queue: BlueprintConstruc
 
 # Whole-scope serialization deliberately matches the conservative x7 reuse
 # gate. Never reconcile/release someone else's claim as a side effect.
-func _idle_reason() -> StringName:
+func _idle_reason(own_reservation: bool = false) -> StringName:
 	if not enable_isolated_dispatch or not _configured or not _live(self):
 		return &"disabled_or_unconfigured"
 	var scope: Node = get_parent()
 	if not scope.has_meta(SCOPE_KEY) or (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() != self:
 		return &"service_identity"
-	for service: Node in [_drone, _queue, _scheduler, _coordinator, _registry, _escrow, _discovery, _supplier, _returns]:
+	for service: Variant in [_drone, _queue, _scheduler, _coordinator, _registry, _escrow, _discovery, _supplier, _returns]:
 		if not _live(service) or service.get_parent() != scope:
 			return &"service_identity"
 	if not _coordinator.matches_tick_services(_scheduler, _escrow) or not _coordinator.matches_owned_registry(_registry) or not _scheduler.uses_priority_queue(_queue) or not _scheduler.enable_isolated_drone_presence:
@@ -73,6 +73,8 @@ func _idle_reason() -> StringName:
 	var drones: int = 0
 	var registries: int = 0
 	var escrows: int = 0
+	var coordinators: int = 0
+	var schedulers: int = 0
 	for child: Node in scope.get_children():
 		if not _live(child):
 			continue
@@ -82,11 +84,15 @@ func _idle_reason() -> StringName:
 			registries += 1
 		if child is BlueprintConstructionMaterialEscrow:
 			escrows += 1
-	if drones != 1 or registries != 1 or escrows != 1 or _scheduler.capacity != 1:
+	if child is BlueprintConstructionReadinessCoordinator:
+			coordinators += 1
+		if child is BlueprintConstructionSlotScheduler:
+			schedulers += 1
+	if drones != 1 or registries != 1 or escrows != 1 or coordinators != 1 or schedulers != 1 or _scheduler.capacity != 1:
 		return &"scope_not_serial"
 	if _drone.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE or _drone.cargo_amount() != 0:
 		return &"drone_busy"
-	if _supplier.reservation_count() != 0 or _returns.reservation_count() != 0 or _escrow.held_count() != 0 or _scheduler.get_active_count() != 0 or _scheduler.has_drone_binding(_drone):
+	if _supplier.reservation_count() != (1 if own_reservation else 0) or _returns.reservation_count() != 0 or _escrow.held_count() != 0 or _scheduler.get_active_count() != 0 or _scheduler.has_drone_binding(_drone):
 		return &"unresolved_assignment"
 	if not _drone.enable_isolated_cargo_pickup or not _drone.enable_isolated_cargo_delivery or not _drone.enable_isolated_delivered_worker or not _drone.enable_isolated_cargo_reuse or not _drone.enable_isolated_cargo_recovery or not _returns.enable_isolated_cargo_recovery:
 		return &"cargo_features_disabled"
@@ -100,11 +106,11 @@ func _idle_reason() -> StringName:
 func _candidate(site: ConstructionSite, forecast_supplier: bool) -> Dictionary:
 	if not _live(site) or site.get_parent() != get_parent() or site.job == null or site.job.state != ConstructionJob.State.QUEUED:
 		return {"reason": &"not_authorized_or_live"}
-	if not _coordinator.permits_pickup_forecast(site, _queue, _scheduler, _registry, _escrow):
-		return {"reason": &"untracked_or_readiness"}
 	var buffer := _registry.inventory_for_site(site)
 	if not _live(buffer):
 		return {"reason": &"receiver_unavailable"}
+	if not _coordinator.permits_pickup_forecast(site, _queue, _scheduler, _registry, _escrow):
+		return {"reason": &"untracked_or_readiness"}
 	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
 	if bill.size() != 1:
 		return {"reason": &"unsupported_bill"}
@@ -156,7 +162,7 @@ func dispatch_next() -> Dictionary:
 		return selected
 	var fresh := _candidate(site, false)
 	var claim := _supplier.observe(id)
-	var same: bool = fresh["reason"] == &"" and _queue.get_waiting_sites().has(site)
+	var same: bool = _idle_reason(true) == &"" and fresh["reason"] == &"" and _queue.get_waiting_sites().has(site) and _supplier._owned_valid(id, _drone)
 	if same:
 		for key: String in ["job", "definition", "buffer", "item", "amount"]:
 			if fresh[key] != selected[key]:
