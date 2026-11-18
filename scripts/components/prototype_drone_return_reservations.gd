@@ -5,6 +5,7 @@ class_name PrototypeDroneReturnReservations
 # arrival, unloading, movement, worker readiness or production activation.
 # A caller-supplied load is not proof of cargo. Explicit reconcile.
 @export var enable_isolated_reservations: bool = false
+@export var enable_isolated_cargo_recovery: bool = false
 const SCOPE_KEY: StringName = &"isolated_drone_return_reservation_owner"
 var _discovery: WeakRef
 var _claims: Dictionary = {}
@@ -79,6 +80,10 @@ func _release(id: int) -> bool:
 		return false
 	var claim: Dictionary = _claims[id]
 	_claims.erase(id)
+	if claim.get("recovery", false):
+		var drone := (claim["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
+		if is_instance_valid(drone):
+			drone._cancel_cargo_return(claim["token"])
 	var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
 	if is_instance_valid(inventory):
 		inventory.release_drone_return_space(claim["token"])
@@ -113,6 +118,8 @@ func _valid(claim: Dictionary, discovery: PrototypeDroneStorageDiscovery) -> boo
 		return false
 	var item: ItemDefinition = claim["item"]
 	var amount: int = claim["amount"]
+	if claim.get("recovery", false) and (not enable_isolated_cargo_recovery or not drone._owns_cargo_return(claim["token"], dock, item, amount)):
+		return false
 	if not inventory.enable_isolated_drone_return_claims or not inventory.has_drone_return_claim(claim["token"], item, amount):
 		return false
 	# If capacity shrinks, fail closed until explicit reconciliation.
@@ -157,3 +164,51 @@ func _exit_tree() -> void:
 	var scope: Node = get_parent()
 	if is_instance_valid(scope) and scope.has_meta(SCOPE_KEY) and (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() == self:
 		scope.remove_meta(SCOPE_KEY)
+
+
+# x6: explicit isolated tick, not a normal scene dispatcher. A live recovery
+# claim is created from actual drone cargo, not from a caller-supplied load.
+# Every tick revalidates the route and claim; canceled cargo stays protected
+# if no eligible destination exists. At most one transition/leg per tick.
+func advance_cancelled_recovery(drone: PrototypeConstructionWorkerDrone, delta: float) -> bool:
+	if not is_finite(delta) or delta <= 0.0 or not _live(drone) or drone.get_parent() != get_parent():
+		return false
+	reconcile()
+	if not enable_isolated_cargo_recovery or _service() == null or not drone._recovery_enabled():
+		return false
+	if drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RECOVERY_HOME:
+		return drone._advance_recovery_home(delta)
+	if not drone._recovery_cargo_valid():
+		return false
+	for id: int in _claims.keys():
+		var claim: Dictionary = _claims[id]
+		if (claim["drone"] as WeakRef).get_ref() != drone:
+			continue
+		# Never steal or convert a pre-existing forecast-only reservation.
+		if not claim.get("recovery", false):
+			return false
+		var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
+		var inventory := (claim["inventory"] as WeakRef).get_ref() as InventoryComponent
+		if not _valid(claim, _service()):
+			_release(id)
+			return false
+		if drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.AT_RECOVERY and drone.global_position.distance_to(dock.global_position) <= 0.00001:
+			if not drone._deposit_cargo_return(claim["token"], dock, inventory):
+				_release(id)
+				return false
+			_release(id)
+			return true
+		return drone._advance_cargo_return(claim["token"], dock, delta)
+	if not drone._wait_for_recovery():
+		return false
+	var id: int = reserve(drone, drone.cargo_item(), drone.cargo_amount())
+	if id <= 0:
+		return false
+	var claim: Dictionary = _claims[id]
+	var dock := (claim["dock"] as WeakRef).get_ref() as PrototypeDroneStorageDock
+	if not drone._begin_cargo_return(claim["token"], dock):
+		_release(id)
+		return false
+	claim["recovery"] = true
+	_claims[id] = claim
+	return true
