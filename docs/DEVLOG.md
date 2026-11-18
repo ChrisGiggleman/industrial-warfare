@@ -3733,3 +3733,8 @@ Default-off x7c1 pre-pickup rearm opt-in latched at active pickup launch, requir
 ### 2026-11-18 — E3d5c5x7c1 Isolated Acceptance (12/12); Compatibility Gate Pending
 
 Developer explicitly reported all 12 isolated Godot checks passed; no screenshot supplied for this checkpoint, no independent execution. Implementation and scene e19cd8a, documentation checkpoint fd3a7f8. Fixture verifies reservation-only cancellation, canceled launches and physical return before debit, finite recharge and exact-once reuse, late opt-in/nonterminal release denial, new authorized build and conservation of 15 ingots. Rerun x7b 44 compatibility suites (641) plus x7b cargo-worker reuse (16; source count/scene verified), 45 suites / 657 checks pending, 669/669 overall if passed. Exact checklist in HANDOFF. No gameplay code changes. Proceed to x7c2 only after compatibility, then x7c3 and x8; conservative full-charge, whole-scope cleanup and default-off boundaries retained.
+
+
+### 2026-11-18 — E3d5c5x7c1 Full Targeted Acceptance (669/669)
+
+Developer explicitly confirmed all 45 compatibility suites / 657 checks passed locally in Godot plus 12 isolated checks. Implementation e19cd8a, gate documentation 9c6248b. Exact suite results in HANDOFF. No independent execution or full-project regression. Proceed to x7c2 terminal post-unload cancellation before worker admission; preserve staging custody, escrow, metered flight and existing rearm gates. Nonterminal site loss and automatic dispatch remain separate gates.
