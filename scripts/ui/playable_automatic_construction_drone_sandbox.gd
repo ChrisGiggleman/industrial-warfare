@@ -4,7 +4,10 @@ extends Node
 
 const SANDBOX_PATH = "res://scenes/core/playable_automatic_construction_drone_sandbox.tscn"
 const STAGE_B_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_b.tscn"
+const STAGE_C_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_c.tscn"
 const SITE_POWER_DEMAND: int = 7
+const GUIDE_A := Vector3(4, 0, -3)
+const GUIDE_B := Vector3(0, 0, -3)
 const HUB_SCENE = preload("res://scenes/buildings/prototype_main_hub.tscn")
 const STORAGE = preload("res://data/buildings/test_storage.tres")
 const INGOT = preload("res://data/items/test_ingot.tres")
@@ -14,6 +17,7 @@ const STARTER_STOCK: int = 15
 const BATTERY: float = 40.0
 const MAX_FRAME_STEP: float = 0.1
 
+@export var enable_playable_feedback: bool = false
 @export var enable_player_site_enrollment: bool = false
 @export var enable_automatic_sandbox: bool = false
 
@@ -71,6 +75,10 @@ var _site_entries: Array[Dictionary] = []
 var _attempted: bool = false
 var _started: bool = false
 var _scope: Node3D
+var _status_label: Label
+var _generator_button: Button
+var _storage_tag: Label3D
+var _drone_tag: Label3D
 
 
 func _ready() -> void:
@@ -85,7 +93,15 @@ func _start_from_scene() -> void:
 
 
 func _is_sandbox_path(path: String) -> bool:
-	return path == SANDBOX_PATH or path == STAGE_B_PATH
+	return path == SANDBOX_PATH or path == STAGE_B_PATH or path == STAGE_C_PATH
+
+
+func _player_scene() -> bool:
+	return _scope.scene_file_path == STAGE_B_PATH or _scope.scene_file_path == STAGE_C_PATH
+
+
+func _feedback_enabled() -> bool:
+	return enable_playable_feedback and _live(_scope) and _scope.scene_file_path == STAGE_C_PATH
 
 
 func _live(node: Variant) -> bool:
@@ -239,18 +255,21 @@ func start() -> bool:
 		_started = false
 		return false
 	_tag(hub, "CONSTRUCTION HUB", 1.4)
-	_tag(storage, "STARTER STORAGE / 15 INGOTS", 1.5)
-	if _scope.scene_file_path == STAGE_B_PATH and enable_player_site_enrollment:
+	_storage_tag = _tag(storage, "STARTER STORAGE / 15 INGOTS", 1.5)
+	if _player_scene() and enable_player_site_enrollment:
 		if world.connect(&"blueprint_site_authorized", _on_player_authorized) != OK:
 			_started = false
 			return false
-	_tag(drone, "AUTOMATIC CONSTRUCTION DRONE", 0.65)
+	_drone_tag = _tag(drone, "AUTOMATIC CONSTRUCTION DRONE", 0.65)
+	if _feedback_enabled():
+		_build_feedback()
+		_refresh_feedback()
 	set_process(true)
-	print("Automatic construction sandbox ready; player enrollment: ", _scope.scene_file_path == STAGE_B_PATH and enable_player_site_enrollment)
+	print("Automatic construction sandbox ready; player enrollment: ", _player_scene() and enable_player_site_enrollment)
 	return true
 
 
-func _tag(parent: Node3D, message: String, height: float) -> void:
+func _tag(parent: Node3D, message: String, height: float) -> Label3D:
 	var tag := Label3D.new()
 	tag.text = message
 	tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -258,6 +277,7 @@ func _tag(parent: Node3D, message: String, height: float) -> void:
 	tag.pixel_size = 0.008
 	parent.add_child(tag)
 	tag.position = Vector3.UP * height
+	return tag
 
 
 func has_verified_services() -> bool:
@@ -279,6 +299,7 @@ func has_verified_services() -> bool:
 func _process(delta: float) -> void:
 	if not is_finite(delta) or delta <= 0.0 or not has_verified_services():
 		last_tick = {"action": &"blocked"}
+		_refresh_feedback()
 		return
 	last_tick = dispatch.tick(minf(delta, MAX_FRAME_STEP))
 	tick_count += 1
@@ -287,12 +308,13 @@ func _process(delta: float) -> void:
 		var site := (entry["site"] as WeakRef).get_ref() as ConstructionSite
 		if _live(site) and site.get_parent() == _scope and site.job == entry["job"]:
 			site.call("_refresh_progress_label")
+	_refresh_feedback()
 
 
 # Synchronous genuine player authorization, after the original queue entry.
 # Only one enrollment attempt per original site; claimed failures quarantine.
 func _on_player_authorized(site: ConstructionSite) -> void:
-	if not has_verified_services() or not enable_player_site_enrollment or _scope.scene_file_path != STAGE_B_PATH:
+	if not has_verified_services() or not enable_player_site_enrollment or not _player_scene():
 		return
 	if not _live(site) or site.get_parent() != _scope or not world.call("_is_managed_blueprint", site):
 		return
@@ -350,3 +372,87 @@ func is_enrolled_site(site: ConstructionSite) -> bool:
 		if (entry["site"] as WeakRef).get_ref() == site and entry["job"] == site.job:
 			return bool(entry["enrolled"])
 	return false
+
+
+# Stage C presentation only. No process callback of its own, no second
+# simulation driver, no source seeding or readiness edits from the HUD.
+func _build_feedback() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 12
+	add_child(layer)
+	var panel := PanelContainer.new()
+	panel.position = Vector2(16, 230)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(panel)
+	var rows := VBoxContainer.new()
+	rows.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(rows)
+	_status_label = Label.new()
+	_status_label.custom_minimum_size = Vector2(425, 170)
+	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rows.add_child(_status_label)
+	_generator_button = Button.new()
+	_generator_button.pressed.connect(_toggle_stage_c_generator)
+	rows.add_child(_generator_button)
+	var hint := Label.new()
+	hint.custom_minimum_size = Vector2(425, 0)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hint.text = "Test Storage only. Plan at A/B with default rotation. Q + drag, L/N/H, E or Ctrl+E. X cancels. Hub coverage must include the full footprint."
+	rows.add_child(hint)
+	_guide_site(GUIDE_A, "STORAGE SITE A")
+	_guide_site(GUIDE_B, "STORAGE SITE B")
+
+
+func _guide_site(at: Vector3, message: String) -> void:
+	var marker := Node3D.new()
+	marker.name = "OptionalStorageGuide"
+	_scope.add_child(marker)
+	marker.global_position = at
+	_tag(marker, message, 0.2)
+
+
+func _toggle_stage_c_generator() -> void:
+	# The real completed Hub owns generator state and the finite allocator
+	# determines coverage/headroom. Never set ConstructionJob availability.
+	if _feedback_enabled() and has_verified_services() and _live(hub):
+		hub.set_generator_enabled(not hub.generator_enabled)
+		_refresh_feedback()
+
+
+func _refresh_feedback() -> void:
+	if not is_instance_valid(_status_label):
+		return
+	if not _feedback_enabled() or not has_verified_services() or not _live(stock) or not _live(hub) or not _live(drone):
+		_status_label.text = "AUTOMATIC CONSTRUCTION — BLOCKED / service unavailable"
+		_generator_button.disabled = true
+		return
+	_generator_button.disabled = false
+	_generator_button.text = "Turn generator OFF (test)" if hub.generator_enabled else "Turn generator ON (test)"
+	var action: String = str(last_tick.get("action", "waiting")).replace("_", " ").to_upper()
+	var phase: String = str(PrototypeConstructionWorkerDrone.FlightState.keys()[drone.get_flight_state()]).replace("_", " ")
+	var counts := queue.get_waiting_counts_by_priority()
+	var detail: String = ""
+	var selected: Dictionary = last_tick.get("selection", {})
+	if last_tick.get("action") == &"waiting":
+		detail = str(selected.get("reason", "")).replace("_", " ")
+		var skipped: Array = selected.get("skipped", [])
+		if not skipped.is_empty():
+			detail += " / " + str(skipped[0].get("reason", "")).replace("_", " ")
+	var job: ConstructionJob = dispatch._assigned_job
+	if job != null:
+		detail = "Job progress: %d%%" % int(round(job.get_progress() * 100.0))
+		var missing := job.get_wait_reasons()
+		if not missing.is_empty():
+			detail += " | Waiting: " + ", ".join(PackedStringArray(missing))
+	_status_label.text = "AUTOMATIC CONSTRUCTION — %s\n%s | %s\nBattery %.1f / %.1f | Cargo %d / 5\nStorage: %d ingots (%d reserved) | Returns: %d\nHub output %d | Spare %d | Worker slots %d/1\nQueue H/N/L: %d / %d / %d | Rearms: %d" % [
+		action, phase, detail, drone.battery_units(), drone.battery_capacity(), drone.cargo_amount(),
+		stock.get_amount(INGOT), stock.get_reserved_amount(INGOT), returns.reservation_count(),
+		hub.available_nameplate_generation(), power.spare_generation_for(hub.get_power_node()), scheduler.get_active_count(),
+		counts["high"], counts["normal"], counts["low"], drone.completed_rearms()
+	]
+	if is_instance_valid(_storage_tag):
+		_storage_tag.text = "STARTER STORAGE / %d INGOTS" % stock.get_amount(INGOT)
+	if is_instance_valid(_drone_tag):
+		_drone_tag.text = "%s / CARGO %d" % [phase, drone.cargo_amount()]
