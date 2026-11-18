@@ -17,11 +17,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x7a finite Hub charging isolated accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 641/641 (13 isolated + 628 across 43 compatibility suites)**.
 - **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; **Fully accepted 657/657 (16 isolated + 641 across 44 compatibility suites)**.
 - **E3d5c5x7c1 pre-pickup cancellation isolated accepted (12/12)**, developer-confirmed local Godot; **Fully accepted 669/669 (12 isolated + 657 across 45 compatibility suites)**.
+- E3d5c5x7c2 post-delivery cancellation staged (13 isolated checks pending).
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
 ## Current next action — E3d5c5x7c2 post-delivery cancellation
 
-Implement isolated terminal cancellation after physical unloading but before worker admission. Preserve owned staging and escrow, metered empty return and guarded rearm. No x7c2 acceptance yet.
+**Staged; 13 isolated checks pending.** Implementation and scene [c53519e](https://github.com/ChrisGiggleman/industrial-warfare/commit/c53519eb92dfae1493ca23f7b5993f590e51e32f). Default-off x7c2 opt-in latched only at successful full physical unload with cargo reuse enabled. Explicit begin_cancelled_delivery_return() accepts only empty DELIVERED drone with exact original CANCELLED job and pinned delivery registry/escrow/buffer; rejects active, loaded, admitted worker, nonterminal site loss, late opt-in and repeated transition. No material, reservation, worker or staging ownership mutation; existing escrow cancellation signal refunds its own source or retains unresolved bill for explicit recovery. Empty return uses existing battery-metered flight with exact home threshold, even after opt-in loss; rearm still requires current opt-in, full finite charge, exact original home, authoritative same-scope ledgers, cleared escrow and worker bindings plus original live registry/buffer lock and matching owned-mode coordinator. Terminal/stale lock observation is read-only, including a freed terminal site if the original buffer remains live and locked; no claim deletion or retarget. A blocked refund does not prevent empty flight but prevents reuse. Fixture exercises three supported canceled deliveries and one successful build on same opted-in drone plus a separate default-off canceled delivery, accounts for 15 original ingots (12 in four owned canceled buffers, 3 committed). Explicit ticks/rearm only. No automatic recovery of material from staging, nonterminal site loss, automatic dispatch, multi-drone scheduling, persistence/destruction integration or normal-scene activation.
+
+Run `res://tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` with F6. Expected `ALL 13 E3D5C5X7C2 POST-DELIVERY CANCELLATION TESTS PASSED`. Checks A–M: default-off/late opt-in, healthy and loaded refusal, terminal no-escrow preserved stock, metered empty return, full charge/ownership/feature gate, escrow alone not worker permission, automatic exact refund, blocked refund retained and reuse denied, explicit recovery and ownership lock, fresh authorized build after three canceled deliveries, conservation of 15 ingots, replay denial, normal-scene opt-out. No independent Godot compilation/runtime execution. After isolated and targeted compatibility acceptance proceed to x7c3 nonterminal original-site loss, then x8 automatic priority-based dispatch. Pull with clean tracked working tree.
 
 ## Completed compatibility gate — x7c1
 
@@ -407,7 +410,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; proceed to x7c2. Then x7c2, x7c3, x8.
+4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; x7c2 post-delivery cancellation staged (13 isolated checks and compatibility pending), then x7c3 and x8.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
