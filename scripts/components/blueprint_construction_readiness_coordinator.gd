@@ -332,3 +332,24 @@ func admit_delivered_worker(site: ConstructionSite, drone: PrototypeConstruction
 # this coordinator's authoritative owned staging service.
 func matches_owned_registry(registry: BlueprintConstructionSiteStagingRegistry) -> bool:
 	return _configured and _owned_registry_ready() and _site_registry == registry
+
+
+# x8a: transport admission is NOT delivered-worker admission. Validate the
+# configured queue and pinned receiver without reserving escrow or granting
+# availability. Missing materials and power are normal before pickup.
+func permits_pickup_forecast(site: ConstructionSite, queue: BlueprintConstructionPriorityQueue, scheduler: BlueprintConstructionSlotScheduler, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if not matches_tick_services(scheduler, escrow) or not matches_owned_registry(registry):
+		return false
+	if not _live(_queue) or _queue != queue or not _live(_power) or not _live(_source):
+		return false
+	if not scheduler.enable_isolated_drone_presence or not scheduler.uses_priority_queue(queue) or not scheduler.is_tracking_site(site):
+		return false
+	if not _valid_site(site) or site.job.state != ConstructionJob.State.QUEUED:
+		return false
+	var missing: Array[StringName] = site.job.get_wait_reasons()
+	if not missing.has(&"materials") or not missing.has(&"workers") or escrow.reservation_for(site) != 0:
+		return false
+	for entry: Dictionary in _entries:
+		if (entry["ref"] as WeakRef).get_ref() == site:
+			return _owned_claim_valid(site, entry)
+	return false
