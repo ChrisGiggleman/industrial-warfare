@@ -84,7 +84,7 @@ func _idle_reason(own_reservation: bool = false) -> StringName:
 			registries += 1
 		if child is BlueprintConstructionMaterialEscrow:
 			escrows += 1
-	if child is BlueprintConstructionReadinessCoordinator:
+		if child is BlueprintConstructionReadinessCoordinator:
 			coordinators += 1
 		if child is BlueprintConstructionSlotScheduler:
 			schedulers += 1
