@@ -17,7 +17,8 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x5c targeted compatibility: 38 suites / 549 groups passed (565/565 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x6 isolated canceled cargo recovery accepted (13/13 A–M, developer Godot screenshot, 6675009): nearest eligible Storage, protected actual-cargo reservation, metered return flight, exact-once unload, safe waiting/rerouting and empty Hub return. No automatic next-job selection until x7; no normal scene wiring.
 - [x] E3d5c5x6 compatibility: 39 suites / 565 checks passed (578/578 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
-- [ ] Verified finite charging, repeated assignments, multi-trip and fleet scheduling.
+- [ ] E3d5c5x7a finite Hub charging staged (13 isolated Godot checks pending, 61c3d7e): shared spare nameplate budget, construction precedence, token-bound physical home charging, rate/headroom, no boolean bypass; see [HANDOFF](HANDOFF.md).
+- [ ] E3d5c5x7b cargo-worker rearm and repeated assignments after finite charging acceptance; multi-trip and fleet scheduling later.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
 
 Detailed acceptance boundaries and proposed sequencing are in the linked design. No production implementation implied.
