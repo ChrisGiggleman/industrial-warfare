@@ -20,8 +20,10 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x7a finite Hub charging isolated accepted (13/13, developer Godot Output screenshot, 61c3d7e): shared spare nameplate budget, construction precedence, token-bound physical home charging, rate/headroom, no boolean bypass; see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x7a compatibility: 43 suites / 628 checks passed (641/641 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x7b guarded cargo-worker rearm and repeated assignments isolated accepted (16/16 developer-confirmed Godot checks, acdcdf7): explicit terminal cleanup, full finite charge, no unresolved claims, fresh authorized pickup and repeated successful/canceled jobs; see [HANDOFF](HANDOFF.md). Remaining cancellation paths, automatic dispatch, multi-trip and fleet scheduling later.
-- [ ] E3d5c5x7b compatibility: 44 suites / 641 checks pending (657 overall if passed); see [HANDOFF](HANDOFF.md).
-- [ ] Remaining cancellation lifecycle handling before automatic dispatch and fleet scheduling.
+- [x] E3d5c5x7b compatibility: 44 suites / 641 checks passed (657/657 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
+- [ ] x7c1 pre-pickup cancellation and guarded empty return/rearm.
+- [ ] x7c2 cancellation after delivery before worker admission.
+- [ ] x7c3 nonterminal original-site loss; then x8 automatic dispatch and later fleet scheduling.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
 
 Detailed acceptance boundaries and proposed sequencing are in the linked design. No production implementation implied.
