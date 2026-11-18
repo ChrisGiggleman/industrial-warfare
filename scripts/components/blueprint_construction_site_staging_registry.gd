@@ -231,3 +231,15 @@ func can_receive_drone_delivery(site: ConstructionSite, expected: InventoryCompo
 			var port := _claimed_ref(entry, "port") as BlueprintConstructionStagingInputPort
 			return _live(port) and port.can_accept_item(item, amount)
 	return false
+
+
+# x7c2: terminal/stale receiver lock observation, not permission to use
+# or release the buffer. Exact buffer identity is unique in this registry.
+# The weak site reference can be empty after a terminal site was freed.
+func has_locked_delivery_inventory(original_site: WeakRef, expected: InventoryComponent) -> bool:
+	if not enable_isolated_site_registry or original_site == null or not _live(expected):
+		return false
+	for entry: Dictionary in _claims:
+		if _claimed_ref(entry, "inventory") == expected and _claimed_ref(entry, "site") == original_site.get_ref():
+			return true
+	return false
