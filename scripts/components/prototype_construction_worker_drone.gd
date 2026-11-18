@@ -811,6 +811,8 @@ func _finite_cargo_rearm_ready() -> bool:
 		return false
 	if _charging_owner == null or _charging_token == null or _battery_units + 0.00001 < _battery_capacity:
 		return false
+	if not global_position.is_finite() or not _home.is_finite() or global_position.distance_to(_home) > 0.00001:
+		return false
 	var owner := _charging_owner.get_ref() as PrototypeDroneHubCharging
 	return _delivery_live(owner) and owner.matches_docked_registration(self, _charging_token)
 
