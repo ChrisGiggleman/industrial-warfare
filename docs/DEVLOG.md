@@ -3668,3 +3668,8 @@ Default-off explicit coordinator handoff from DELIVERED to existing AT_SITE work
 ### 2026-11-17 — E3d5c5x5c Isolated Acceptance (16/16); Compatibility Gate Pending
 
 Developer's Godot 4.6.2 Output screenshot confirms PASS A–P and ALL 16 E3D5C5X5C DELIVERED DRONE WORKER INTEGRATION TESTS PASSED on staged implementation 6652bd0. Isolated acceptance includes no loaded/remote bypass, original site and complete held escrow, explicit scheduler binding, physical arrival, finite worker/power, feature and ownership loss, progress preservation, exact-once completion, battery-metered return, cancellation refund and conservation, reuse quarantine and normal-scene opt-out. No independent Godot execution. Rerun all 35 x5b compatibility suites (503 groups), plus physical delivery x5b (13), direct construction readiness coordinator E3d5c3c1 (18), and construction readiness probe E3d5c1 (15); 38 suites / 549 groups pending, 565 total targeted groups if accepted. Exact list and pending status in [HANDOFF](HANDOFF.md). No gameplay code changed. Do not implement x6 until compatibility completes; loaded cancellation return, persistence, destruction, reuse and normal scene activation remain separate gates.
+
+
+### 2026-11-17 — E3d5c5x5c Full Targeted Acceptance (565/565)
+
+Developer explicitly confirmed all 38 compatibility suites and 549 check groups passed locally in Godot, in addition to the 16 isolated checks; tested implementation 6652bd0, documentation checkpoint 955eab6. Exact enumerated results in HANDOFF. Not independently executed or a full-project regression. Proceed to E3d5c5x6 automatic loaded canceled-job recovery, retaining all prior safeguards; no normal scene activation, persistence or automatic next-job reuse.
