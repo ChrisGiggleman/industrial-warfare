@@ -27,7 +27,9 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x7c2 compatibility: 46 suites / 669 checks passed (682/682 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x7c3 nonterminal original-site loss isolated accepted (14/14 developer-confirmed Godot checks, 31e2e7c): exact freed original site, pre-pickup/loaded/unloaded/admitted recovery, preserved escrow and staging locks, stale readiness revocation, finite-charge cleanup rearm; see [HANDOFF](HANDOFF.md). Temporary detachment is not reuse authority.
 - [x] E3d5c5x7c3 compatibility: 47 suites / 682 checks passed (696/696 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
-- [ ] E3d5c5x8 automatic priority-based dispatch ready for development in fresh chat; see [HANDOFF](HANDOFF.md). Proposed x8a isolated single-drone deterministic selection, exact reservation/launch; x8b explicit lifecycle ticking, recovery/charge/rearm and repeated selection; x8c compatibility and separately gated playable sandbox demo. Preserve authorization, no active preemption, all existing safeguards, default-off. Later multi-drone concurrency and multi-trip logistics.
+- [ ] E3d5c5x8a automatic priority dispatch staged (14 isolated checks pending developer Godot F6; see [HANDOFF](HANDOFF.md)). Single-drone authorized priority/FIFO selection, exact receiver and route/stock gates, guarded reserve/launch with exact rollback, full finite home charge, no active preemption or availability mutation; ordinary scenes unchanged.
+- [ ] E3d5c5x8b explicit lifecycle tick through existing pickup, delivery, worker, cancellation/recovery, finite charging and rearm; sequential jobs. Begin after x8a isolated acceptance.
+- [ ] E3d5c5x8c targeted compatibility and separately gated playable sandbox demonstration. Multi-drone concurrency and multi-trip later.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
 
 Detailed acceptance boundaries and proposed sequencing are in the linked design. No production implementation implied.
