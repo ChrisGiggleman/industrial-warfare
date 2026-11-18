@@ -546,7 +546,7 @@ func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservati
 		_cargo_job = original_job
 		_pre_pickup_cancelled = true
 		_pre_pickup_supplier = weakref(supplier)
-	_pre_pickup_rearm_latched = false
+		_pre_pickup_rearm_latched = false
 	elif _lost_site_rearm_latched and original_site_exiting and _cargo_amount == 0 and _cargo_item == null and _cargo_job == null and original_site != null and original_job != null and original_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED] and _delivery_live(supplier) and supplier.get_parent() == get_parent():
 		_cargo_site = original_site
 		_cargo_job = original_job
@@ -899,7 +899,7 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	var old_site := _delivery_site()
 	if is_instance_valid(old_site) and scheduler.is_tracking_site(old_site):
 		return false
-	if _lost_site_rearm_latched and _original_site_freed() and _cargo_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED, ConstructionJob.State.CANCELLED]:
+	if _lost_site_rearm_latched and _original_site_freed() and (_cargo_job.state in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED] or ((_lost_pre_pickup or _lost_post_delivery) and _cargo_job.state == ConstructionJob.State.CANCELLED)):
 		if not enable_isolated_lost_site_rearm or not _lost_assignment_cleanup_valid(supplier, coordinator, escrow, scheduler):
 			return false
 	elif _delivered_worker_latched:
