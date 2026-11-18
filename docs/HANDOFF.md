@@ -14,11 +14,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x5b isolated physical delivery accepted (13/13)**, developer confirmed all checks in Godot 2026-11-17. Implementation [5e2fbbc](https://github.com/ChrisGiggleman/industrial-warfare/commit/5e2fbbc122f2f72329d7f811504cecf0698b7616). Full targeted acceptance 516/516 (13 isolated + 503 across 35 compatibility suites), developer-confirmed.
 - **E3d5c5x5c isolated accepted (16/16)**, developer screenshot 2026-11-17, implementation [6652bd0](https://github.com/ChrisGiggleman/industrial-warfare/commit/6652bd0db58594a8efd0c7d862c533abdbe782fb). **Fully accepted 565/565 (16 isolated + 549 across 38 compatibility suites)**, developer-confirmed 2026-11-17.
 - **E3d5c5x6 isolated canceled cargo recovery accepted (13/13)**, developer Godot Output screenshot; **Fully accepted 578/578 (13 isolated + 565 across 39 compatibility suites)**.
+- E3d5c5x7a finite Hub charging staged (13 isolated tests pending); x7b cargo-worker rearm follows acceptance.
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
-## Current next action — E3d5c5x7 charging and repeated assignments
+## Current next action — E3d5c5x7a finite Hub charging
 
-Implement isolated finite charging and safe cargo-worker rearm in stages. Existing authorization, cargo custody, escrow and power gates remain authoritative. No x7 acceptance yet.
+**Staged; 13 isolated checks pending.** Implementation and scene [61c3d7e](https://github.com/ChrisGiggleman/industrial-warfare/commit/61c3d7e454e51cceb8c85edec44d1172c9ace665). Default-off exclusive same-scope Hub charging service, pinned completed prototype Hub and power node, exactly one live allocator, exact physical registered home (Hub + 2m), per-worker private token and latched legacy boolean-charge denial. Read-only spare nameplate rate in the Hub's existing operational component deducts existing construction allocations using the allocator's exact covering-node selection; one explicit fleet tick spends at most spare rate times delta in fixed enrollment order, bounded by each drone's charge rate and remaining battery capacity. No cargo/claim mutations, no charging airborne or away from exact home, no power allocation changes, no automatic rearm, no live scene wiring. This is provisional nameplate-to-battery simulation, not actual fuel/electrical energy metering. Fixed enrollment order and single Hub scope deliberate for isolated gate; authority loss remains fail-closed.
+
+Run `res://tests/drone_finite_hub_charging_e3d5c5x7a_test.tscn` with F6. Expect `ALL 13 E3D5C5X7A FINITE HUB CHARGING TESTS PASSED`. Checks A–M: default-off, exclusive authority, exact home and no boolean bypass, invalid delta, construction precedence and shared budget, rate/headroom, outage, released allocation, moved Hub/home, feature loss, duplicate allocator/full battery, airborne refusal and metered docking, service loss and normal scene opt-out. No independent Godot parse/runtime execution. After isolated acceptance rerun targeted compatibility including power, worker/battery/reuse, x5c and x6; then x7b guarded cargo-worker rearm and repeat assignments. Do not enable automatic dispatch, Main, persistence or destruction recovery. Pull with clean working tree.
 
 ## Completed compatibility gate — x6
 
@@ -242,7 +245,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7 charging and repeated assignments.
+4. E3d5c5x7a finite Hub charging staged; 13 isolated checks and compatibility pending. Then x7b guarded cargo-worker rearm/repeated assignments.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
