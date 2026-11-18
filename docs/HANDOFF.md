@@ -5,6 +5,8 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6a Stage A staged; F6 pending.** See [BUILDING_CONSTRUCTION_EXPANSION.md](BUILDING_CONSTRUCTION_EXPANSION.md) for current implementation, isolated eight-group test, and the separate Direct Build Authorization design. Historical 754-check and 9 manual acceptance remains the last verified baseline; no new tests accepted. Build mode remains legacy in this gate; use Blueprint mode. Main/ordinary scenes remain unchanged.
+
 **Latest authoritative closeout — 2026-11-18:**
 
 ### 2026-11-18 — Playable automatic construction drone sandbox FULLY ACCEPTED

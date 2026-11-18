@@ -5,11 +5,14 @@ extends Node
 const SANDBOX_PATH = "res://scenes/core/playable_automatic_construction_drone_sandbox.tscn"
 const STAGE_B_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_b.tscn"
 const STAGE_C_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_c.tscn"
+const EXPANSION_PATH = "res://scenes/core/playable_construction_building_expansion_e3d5c6a.tscn"
 const SITE_POWER_DEMAND: int = 7
 const GUIDE_A := Vector3(4, 0, -3)
 const GUIDE_B := Vector3(0, 0, -3)
 const HUB_SCENE = preload("res://scenes/buildings/prototype_main_hub.tscn")
 const STORAGE = preload("res://data/buildings/test_storage.tres")
+const AMMO_PRESS = preload("res://data/buildings/prototype_ammunition_press.tres")
+const CARGO_CAPACITY: int = 5
 const INGOT = preload("res://data/items/test_ingot.tres")
 const HUB_POSITION := Vector3(2, 0, -3)
 const SOURCE_POSITION := Vector3(-2, 0, -3)
@@ -20,6 +23,7 @@ const MAX_FRAME_STEP: float = 0.1
 @export var enable_playable_feedback: bool = false
 @export var enable_player_site_enrollment: bool = false
 @export var enable_automatic_sandbox: bool = false
+@export var enable_building_expansion: bool = false
 
 # Delivery observation only; accepted x8 checks physical arrival and custody.
 class DroneOnlyPort:
@@ -93,15 +97,19 @@ func _start_from_scene() -> void:
 
 
 func _is_sandbox_path(path: String) -> bool:
-	return path == SANDBOX_PATH or path == STAGE_B_PATH or path == STAGE_C_PATH
+	return path == SANDBOX_PATH or path == STAGE_B_PATH or path == STAGE_C_PATH or path == EXPANSION_PATH
 
 
 func _player_scene() -> bool:
-	return _scope.scene_file_path == STAGE_B_PATH or _scope.scene_file_path == STAGE_C_PATH
+	return _scope.scene_file_path == STAGE_B_PATH or _scope.scene_file_path == STAGE_C_PATH or _scope.scene_file_path == EXPANSION_PATH
 
 
 func _feedback_enabled() -> bool:
-	return enable_playable_feedback and _live(_scope) and _scope.scene_file_path == STAGE_C_PATH
+	return enable_playable_feedback and _live(_scope) and (_scope.scene_file_path == STAGE_C_PATH or _expansion_enabled())
+
+
+func _expansion_enabled() -> bool:
+	return enable_building_expansion and _live(_scope) and _scope.scene_file_path == EXPANSION_PATH
 
 
 func _live(node: Variant) -> bool:
@@ -245,7 +253,7 @@ func start() -> bool:
 	if not drone.configure_battery(BATTERY, BATTERY, 1.0, 4.0) or not charging.register_drone(drone):
 		return false
 	dispatch.enable_isolated_dispatch = true
-	if not dispatch.configure(drone, queue, scheduler, coordinator, registry, escrow, discovery, supplier, returns, 5, 2.0):
+	if not dispatch.configure(drone, queue, scheduler, coordinator, registry, escrow, discovery, supplier, returns, CARGO_CAPACITY, 2.0):
 		return false
 	dispatch.enable_isolated_lifecycle = true
 	if not dispatch.configure_lifecycle(charging):
@@ -311,6 +319,23 @@ func _process(delta: float) -> void:
 	_refresh_feedback()
 
 
+## E3d5c6a: canonical-definition allowlist; no material bill mutation or
+## generic admission based on a building ID or cargo size alone. Stage B/C
+## remain Storage-only even if the new exported switch is accidentally set.
+func _eligible_material_amount(definition: BuildingDefinition) -> int:
+	var expected: int = 0
+	if definition == STORAGE:
+		expected = 3
+	elif _expansion_enabled() and definition == AMMO_PRESS:
+		expected = 5
+	else:
+		return 0
+	var bill: Dictionary = ConstructionMaterialBill.get_costs(definition)
+	if bill.size() != 1 or int(bill.get(INGOT, 0)) != expected or expected > CARGO_CAPACITY:
+		return 0
+	return expected
+
+
 # Synchronous genuine player authorization, after the original queue entry.
 # Only one enrollment attempt per original site; claimed failures quarantine.
 func _on_player_authorized(site: ConstructionSite) -> void:
@@ -318,16 +343,16 @@ func _on_player_authorized(site: ConstructionSite) -> void:
 		return
 	if not _live(site) or site.get_parent() != _scope or not world.call("_is_managed_blueprint", site):
 		return
-	if site.target_definition != STORAGE or site.job == null or site.job.state != ConstructionJob.State.QUEUED or not queue.get_waiting_sites().has(site):
+	if site.job == null or site.job.state != ConstructionJob.State.QUEUED or not queue.get_waiting_sites().has(site):
 		return
 	for entry: Dictionary in _site_entries:
 		if (entry["site"] as WeakRef).get_ref() == site:
 			return
 	var missing: Array[StringName] = site.job.get_wait_reasons()
-	var bill: Dictionary = ConstructionMaterialBill.get_costs(site.target_definition)
+	var amount: int = _eligible_material_amount(site.target_definition)
 	if not missing.has(&"power") or not missing.has(&"materials") or not missing.has(&"workers"):
 		return
-	if bill.size() != 1 or int(bill.get(INGOT, 0)) != 3 or not _live(stock) or stock.get_parent() != storage:
+	if amount <= 0 or not _live(stock) or stock.get_parent() != storage:
 		return
 	var entry: Dictionary = {"site": weakref(site), "job": site.job, "enrolled": false}
 	_site_entries.append(entry)
@@ -335,7 +360,7 @@ func _on_player_authorized(site: ConstructionSite) -> void:
 	staging.name = "DroneSiteStaging"
 	staging.enable_isolated_staging = true
 	_scope.add_child(staging)
-	if not staging.configure(stock, STORAGE, 3):
+	if not staging.configure(stock, site.target_definition, amount):
 		staging.free()
 		return
 	# Independent hover receiver, not a planned belt endpoint or building.
@@ -399,10 +424,15 @@ func _build_feedback() -> void:
 	hint.custom_minimum_size = Vector2(425, 0)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint.text = "Test Storage only. Plan at A/B with default rotation. Q + drag, L/N/H, E or Ctrl+E. X cancels. Hub coverage must include the full footprint."
+	if _expansion_enabled():
+		hint.text = "Blueprint test only: Storage (3) or Ammunition Press (5). Q + drag, L/N/H, E or Ctrl+E; X cancels. Build mode remains legacy. Full footprint must be covered."
+		_guide_site(Vector3(4.5, 0, -3.5), "AMMO PRESS SITE")
+		_guide_site(GUIDE_B, "STORAGE SITE")
+	else:
+		hint.text = "Test Storage only. Plan at A/B with default rotation. Q + drag, L/N/H, E or Ctrl+E. X cancels. Hub coverage must include the full footprint."
+		_guide_site(GUIDE_A, "STORAGE SITE A")
+		_guide_site(GUIDE_B, "STORAGE SITE B")
 	rows.add_child(hint)
-	_guide_site(GUIDE_A, "STORAGE SITE A")
-	_guide_site(GUIDE_B, "STORAGE SITE B")
 
 
 func _guide_site(at: Vector3, message: String) -> void:
