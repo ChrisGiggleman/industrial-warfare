@@ -75,6 +75,13 @@ func _structure(path: String, at: Vector3) -> PrototypePowerStructure:
 # Controlled fault injection: normal exact reservation, refused launch.
 class RejectingSupplier extends PrototypeDroneSupplierReservations:
 	var refuse_launch: bool = false
+	var block_after_reserve: InventoryComponent
+
+	func reserve(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, item: ItemDefinition, amount: int, cargo_capacity: int) -> int:
+		var id: int = super.reserve(drone, site, item, amount, cargo_capacity)
+		if id > 0 and is_instance_valid(block_after_reserve):
+			block_after_reserve.max_capacity = 2
+		return id
 
 	func begin_pickup(id: int, drone: PrototypeConstructionWorkerDrone, speed: float) -> bool:
 		if refuse_launch:
@@ -131,6 +138,10 @@ func _checks() -> void:
 	assert(dispatch.dispatch_next()["reason"] == &"disabled_or_unconfigured")
 	dispatch.enable_isolated_dispatch = true
 	assert(not dispatch.configure(drone, queue, scheduler, coordinator, registry, escrow, discovery, claims, returns, 5, 0.0))
+	var wrong_queue := BlueprintConstructionPriorityQueue.new()
+	add_child(wrong_queue)
+	assert(not dispatch.configure(drone, wrong_queue, scheduler, coordinator, registry, escrow, discovery, claims, returns, 5, 2.0))
+	wrong_queue.free()
 	assert(dispatch.configure(drone, queue, scheduler, coordinator, registry, escrow, discovery, claims, returns, 5, 2.0))
 	assert(not dispatch.configure(drone, queue, scheduler, coordinator, registry, escrow, discovery, claims, returns, 5, 2.0))
 	print("PASS A: Default-off, invalid configuration and duplicate configure rejected")
@@ -225,6 +236,13 @@ func _checks() -> void:
 	assert(dispatch.dispatch_next()["reason"] == &"disabled_or_unconfigured")
 	dispatch.enable_isolated_dispatch = true
 	print("PASS I: Current feature flags and original service authority rechecked")
+	claims.block_after_reserve = first_buffer
+	var stale := dispatch.dispatch_next()
+	assert(stale["reason"] == &"claim_revalidation_failed" and stale["site"] == first)
+	assert(claims.reservation_count() == 0 and stock.get_reserved_amount(INGOT) == 0)
+	assert(drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.IDLE)
+	claims.block_after_reserve = null
+	first_buffer.max_capacity = 6
 	claims.refuse_launch = true
 	var failed := dispatch.dispatch_next()
 	assert(failed["reason"] == &"launch_failed" and failed["site"] == first)
@@ -232,7 +250,7 @@ func _checks() -> void:
 	assert(drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.IDLE and stock.get_amount(INGOT) == 15 and stock.get_mutation_revision() == revision)
 	assert(first.job.state == ConstructionJob.State.QUEUED and first.job.get_progress() == 0.0)
 	claims.refuse_launch = false
-	print("PASS J: Exact failed launch rolled back without debit or trying a second job")
+	print("PASS J: Changed receiver and refused launch roll back exact claim without debit or second job")
 	var launched := dispatch.dispatch_next()
 	assert(launched["reason"] == &"" and launched["site"] == first and launched["job"] == first.job)
 	var id: int = launched["claim_id"]
