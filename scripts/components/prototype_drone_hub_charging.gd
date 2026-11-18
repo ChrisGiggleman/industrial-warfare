@@ -103,3 +103,20 @@ func _exit_tree() -> void:
 	if is_instance_valid(scope) and scope.has_meta(SCOPE_KEY) and (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() == self:
 		scope.remove_meta(SCOPE_KEY)
 	# Drones stay latched; loss of service cannot restore legacy charging.
+
+
+# x7b: observation only, verifies original enrollment and actual home.
+# This is not a new power grant; previously stored energy remains usable
+# during generator outage if the Hub/service itself is still intact.
+func matches_docked_registration(drone: PrototypeConstructionWorkerDrone, token: RefCounted) -> bool:
+	var hub := _live_hub()
+	if hub == null or not _live(drone) or drone.get_parent() != get_parent() or token == null:
+		return false
+	if drone.get_flight_state() not in [PrototypeConstructionWorkerDrone.FlightState.IDLE, PrototypeConstructionWorkerDrone.FlightState.DOCKED]:
+		return false
+	if drone.global_position.distance_to(hub.global_position + Vector3.UP * 2.0) > 0.00001:
+		return false
+	for entry: Dictionary in _entries:
+		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token:
+			return true
+	return false
