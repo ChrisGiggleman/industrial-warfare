@@ -24,7 +24,7 @@ The agreed [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md) desig
 - [x] E3d5c5x7c1 pre-pickup cancellation and guarded empty return/rearm isolated accepted (12/12 developer-confirmed Godot checks, e19cd8a): exact canceled active claim, no physical debit, metered empty return, existing full charge/cleanup gate. Forecast-only cancellation leaves drone idle; see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x7c1 compatibility: 45 suites / 657 checks passed (669/669 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
 - [x] E3d5c5x7c2 cancellation after delivery before worker admission isolated accepted (13/13 developer-confirmed Godot checks, c53519e): terminal exact successful unload proof, preserved owned buffer/escrow, metered empty return, unresolved refund denies rearm, original registry lock and full finite-charge cleanup gate; see [HANDOFF](HANDOFF.md).
-- [ ] E3d5c5x7c2 compatibility: 46 suites / 669 checks pending (682 overall if passed); see [HANDOFF](HANDOFF.md).
+- [x] E3d5c5x7c2 compatibility: 46 suites / 669 checks passed (682/682 overall, developer-confirmed); see [HANDOFF](HANDOFF.md).
 - [ ] x7c3 nonterminal original-site loss; then x8 automatic dispatch and later fleet scheduling.
 - [ ] Researchable Storage docking retrofits, silos, construction depots and remote charging; normal factory belts stay dedicated to production.
 
