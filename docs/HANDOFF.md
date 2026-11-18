@@ -18,11 +18,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 - **E3d5c5x7b guarded cargo-worker rearm isolated accepted (16/16)**, developer explicitly confirmed in local Godot; **Fully accepted 657/657 (16 isolated + 641 across 44 compatibility suites)**.
 - **E3d5c5x7c1 pre-pickup cancellation isolated accepted (12/12)**, developer-confirmed local Godot; **Fully accepted 669/669 (12 isolated + 657 across 45 compatibility suites)**.
 - **E3d5c5x7c2 post-delivery cancellation isolated accepted (13/13)**, developer-confirmed local Godot; **Fully accepted 682/682 (13 isolated + 669 across 46 compatibility suites)**.
+- E3d5c5x7c3 lost original-site recovery staged (14 isolated checks pending).
 - No independent runtime execution by assistant; accepted evidence is developer's local Godot report. Normal gameplay remains unchanged.
 
 ## Current next action — E3d5c5x7c3 nonterminal original-site loss
 
-Implement isolated missing-original-site recovery and guarded rearm, preserving original ownership and actual cargo custody. Require irreversible original site loss for reuse, not temporary service failure. No x7c3 acceptance yet.
+**Staged; 14 isolated checks pending.** Implementation and scene [31e2e7c](https://github.com/ChrisGiggleman/industrial-warfare/commit/31e2e7cf7234e3e5a21519f71b2d54d7c5cd7ec7); code refinement 89696e1. Default-off x7c3 opt-in latched at actual pickup launch with cargo reuse enabled. Nonterminal reuse requires exact original site WeakRef to resolve null (object freed), never merely detached, queued for deletion, reparented, moved, changed job identity or temporary service failure. Exact supplier site-exit callback distinguishes lost pre-pickup claim from source failure; reservation-only loss stays idle, launched empty return is metered, no source debit. Opted-in loaded drone may use existing x6 reserved physical recovery only after original nonterminal site is freed (terminal cancellations retain existing path); no eligible Storage means protected wait. Unloaded and unadmitted drone uses explicit begin_lost_delivery_return only after actual loss; original staging lock/refund preserved. Admitted worker revokes old job readiness on site end, returns empty, and must clear scheduler binding; orphan job is paused rather than falsely marked terminal. Existing full finite charge, exact home, authoritative ledger/coordinator/scheduler, unresolved escrow/slot/claim and current opt-in checks remain. Pinned delivery registry, buffer lock and escrow identity required where a delivery was started; prior to delivery only exact source-release or actual returned cargo provenance qualifies. No receiver unlock/retarget, automatic recovery of staged materials, automatic dispatch, fleet scheduling, live scene wiring, persistence or full destruction integration. Fixture exercises five lost assignments on one drone and a fresh successful build, six rearms, all 15 original ingots accounted for (3 stock, 9 locked staging, 3 committed).
+
+Run `res://tests/drone_lost_site_recovery_e3d5c5x7c3_test.tscn` with F6. Expected `ALL 14 E3D5C5X7C3 LOST SITE RECOVERY TESTS PASSED`. Checks A–N: default-off/late opt-in, forecast-only loss, detached original no reuse, freed pre-pickup site no debit, healthy/detached loaded refusal, protected loaded recovery and return, finite charge/original ownership gate, unloaded site loss, blocked refund, explicit exact refund and rearm, lost admitted worker readiness/cleanup, fresh authorized build, conservation/replay, normal-scene opt-out. No independent Godot compilation/runtime execution. After isolated and targeted compatibility acceptance proceed to x8 automatic priority-based assignment selection, preserving conservative scheduling boundaries. Pull with clean tracked working tree.
 
 ## Completed compatibility gate — x7c2
 
@@ -464,7 +467,7 @@ Inventory scene's historical filename typo is intentional; inventory's four grou
 1. x4b compatibility acceptance — complete.
 2. E3d5c5x5a fully accepted; x5b fully accepted. x5c fully accepted 565/565; proceed to x6.
 3. E3d5c5x6 fully accepted 578/578; proceed to x7.
-4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; x7c2 fully accepted 682/682; proceed to x7c3, then x8.
+4. E3d5c5x7a fully accepted 641/641; x7b fully accepted 657/657; x7c1 fully accepted 669/669; x7c2 fully accepted 682/682; x7c3 lost original-site recovery staged (14 isolated checks and compatibility pending), then x8.
 5. Multiple drones/sites, researchable Storage docking attachments, bulk silos, construction depots, persistence/destruction integration and playable Main activation through separate gates.
 
 Read [DEVLOG](DEVLOG.md), [ROADMAP](ROADMAP.md), [Drone Construction Logistics](DRONE_CONSTRUCTION_LOGISTICS.md), [Architecture](ARCHITECTURE.md), [Construction and Power](CONSTRUCTION_AND_POWER_ARCHITECTURE.md), and [Future Features](FUTURE_FEATURES.md) for detail.
