@@ -2480,6 +2480,14 @@ func _update_placement_preview() -> void:
 		_clear_gap_connector_preview()
 		placement_is_valid = false
 
+	# In the new scope a green ghost must not advertise an unsupported
+	# or unavailable construction path. All original scenes are unchanged.
+	if _direct_build_scope() and (
+		not _direct_build_admits(_get_selected_building_definition())
+		or is_instance_valid(building_placement_snap_belt)
+	):
+		placement_is_valid = false
+
 	if ghost_material != null:
 		if placement_is_valid:
 				ghost_material.albedo_color = Color(
