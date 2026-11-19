@@ -1,6 +1,6 @@
 # E3d5c6a final building expansion regression
 
-**Pending 2026-11-18.** Stage A 8/8 + 29/29 targeted compatibility, Stage B 12/12 + 198/198 targeted compatibility, Stage C isolated 11/11 (developer reported pass against [d604d37](https://github.com/ChrisGiggleman/industrial-warfare/commit/d604d3710bb20572425aa65ab22a0174f7bb0d70)). Cumulative unique 56 suites / 785 checks. Historical 9/9 manual is not this expansion's manual acceptance. No independent assistant runtime execution. Run fresh combined automated and manual gate before Direct Build Authorization. Main/ordinary scenes unchanged.
+**Manual 9/9 accepted 2026-11-18; final combined automated rerun pending.** Stage A 8/8 + 29/29 targeted compatibility, Stage B 12/12 + 198/198 targeted compatibility, Stage C isolated 11/11 (developer reported pass against [d604d37](https://github.com/ChrisGiggleman/industrial-warfare/commit/d604d3710bb20572425aa65ab22a0174f7bb0d70)). Cumulative unique 56 suites / 785 checks. New manual expansion 9/9 developer-confirmed; historical Storage manual 9/9 remains separate. No independent assistant runtime execution. Run fresh combined automated gate before Direct Build Authorization. Main/ordinary scenes unchanged.
 
 ## Combined targeted regression (not whole-project)
 
@@ -72,7 +72,7 @@ Optional new local batch runner, from repo root with imported Godot project:
 ```
 Use actual console executable. This preserves original runner and manifest unchanged; new runner is a copy with different manifest and expected counts. No assistant execution. Per-scene output and results.csv in temp folder; CANDIDATE is not accepted; verify logs/check groups, F6 all REVIEW or errors. Report exact suites/counts. No added logs to git.
 
-## Manual playable expansion — 9 checks, pending
+## Manual playable expansion — 9/9 accepted (developer-confirmed)
 
 Use F6 on `res://scenes/core/playable_construction_building_expansion_e3d5c6a.tscn` (not an automated test). Fresh scene 15 ingots, battery 40, one drone, one worker slot, 12-unit generator. Use Blueprint mode (P while placement mode is active), NOT regular Build mode; legacy direct placement is intentionally unchanged and would bypass the experimental test. Default building rotation. The Stage C F6 test proved these non-overlapping covered fixture positions: Press (4.5,0,-3.5) labeled AMMO PRESS SITE; High Storage (0,0,-3) labeled STORAGE SITE; Low Storage (4,0,-1), near Press toward central reference cube along +Z. Second waiting Press (2.5,0,-0.5). Only the first two are marked with existing guides. Do not add guide geometry or game code. If exact third/second Press positioning is unclear, inspect cursor/ghost footprint and power coverage, capture screenshots for review; avoid overlaps or changing settings to force acceptance.
 
@@ -89,6 +89,11 @@ Fresh second run (stop/restart F6 resets fixture to 15); first guide Press only:
 8. Authorize Press and cancel using X while drone carries 5 (stock 10, cargo 5). Observe physical return/deposit to starter Storage, then Hub and finite recharge: 15 stock, 0 cargo/claims/active worker, 1 rearm; no completed Press. If missed window restart.
 9. Replan Press after first cancellation and recharge, authorize and let it begin work. Cancel with X during actual progress. Verify ghost removed, no completed building, original five delivered ingots remain protected in staging (not remotely deposited back), stock 10, cargo 0, no reservation/active worker, 2 rearms. HUD does not directly enumerate protected buffer; manual observation is no stock refund or duplication, exact buffer contents already covered by Stage B automated check L. Do not unlock staged stock or use legacy Build.
 
-Report all 9 manual statuses explicitly, including any observed issues or skipped checks, separately from 785 automated checks. No claim of manual acceptance until developer confirmation.
+Developer confirmed all nine checks passed, with no failures or skips reported. Retain checklist for future reruns; manual checks remain separate from automated totals.
 
 After both gates pass: record closeout, recommend separate Direct Build Authorization Stage A with explicit new scene/feature gates, direct placement Normal queue authorization, no fallback instant builds for unsupported definitions, no changes to existing playable scenes. Preserve explicit blueprint authorization, one lifecycle driver, physical custody and no Main activation.
+
+
+### 2026-11-18 — E3d5c6a final manual playable expansion accepted (9/9); final combined regression pending
+
+Developer explicitly confirmed all nine manual playable expansion checks passed locally in Godot against the expansion sandbox and checklist checkpoint [e2da66b](https://github.com/ChrisGiggleman/industrial-warfare/commit/e2da66b4378ac371eccb55721083b9391599c904): initial HUD, unauthorized mixed plans, batch authorization and physical Press dispatch, generator pause/resume, actual Press completion and recharge, High/Low Storage completion and four remaining ingots, unaffordable Press waiting, loaded cancellation physical return, and during-work cancellation with protected staged materials. Aggregate developer confirmation, no independent assistant runtime/manual execution or screenshot review. Exact retained staging contents were verified by earlier accepted automated Stage B, not directly enumerated by HUD. New manual 9/9 is separate from historic Storage manual 9/9 and automated counts. Cumulative accepted 56 suites / 785 unique checks; fresh final combined 56/785 rerun is still pending. Use [BUILDING_EXPANSION_FINAL_REGRESSION.md](BUILDING_EXPANSION_FINAL_REGRESSION.md) and `tools/building_expansion_final_regression.csv`. Do not claim full expansion closeout or begin Direct Build Authorization until developer confirms final automated results. No gameplay/test/runner changes; Main and ordinary scenes remain untouched. Build mode remains legacy.
