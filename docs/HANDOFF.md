@@ -5,9 +5,20 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
-**E3d5c6a Stage A fully accepted (37/37); Stage B fully accepted (210/210); Stage C isolated accepted (11/11).** Developer-confirmed against d604d37. Cumulative unique 56 suites / 785 checks; new manual playable expansion accepted 9/9 by developer against e2da66b; final combined 56/785 rerun pending. See [BUILDING_EXPANSION_FINAL_REGRESSION.md](BUILDING_EXPANSION_FINAL_REGRESSION.md). No gameplay/test code changes. Next after final automated acceptance: Direct Build Authorization. Build mode remains legacy; use Blueprint mode. Main/ordinary scenes unchanged.
+**E3d5c6a automatic construction building expansion FULLY ACCEPTED.** Developer reported fresh final 56/56 automated suites and 785/785 checks, manual expansion 9/9 previously accepted at fdb059b. See [BUILDING_EXPANSION_FINAL_REGRESSION.md](BUILDING_EXPANSION_FINAL_REGRESSION.md). Next proposed milestone: E3d5c6b Direct Build Authorization; read [DIRECT_BUILD_AUTHORIZATION.md](DIRECT_BUILD_AUTHORIZATION.md). No gameplay code changes since accepted expansion implementation. Build mode remains legacy; no Main/ordinary activation.
 
 **Latest authoritative closeout — 2026-11-18:**
+
+### 2026-11-18 — E3d5c6a automatic construction building expansion FULLY ACCEPTED
+
+Developer explicitly confirmed the final combined local Godot regression: **56/56 suites, 785/785 checks passed**, after manual expansion 9/9 previously accepted at [fdb059b](https://github.com/ChrisGiggleman/industrial-warfare/commit/fdb059b83cf0bced24b02cc86541813425eb2040). The committed `tools/building_expansion_final_regression.csv` was independently checked for 56 unique entries totaling 785; developer supplied aggregate pass confirmation, not individual output logs in this turn. No independent assistant runtime execution or runner-use claim. The fresh accepted targeted combined regression supersedes the prior cumulative-only baseline. Historical 53 suites/754 checks plus expansion A/B/C 8/12/11 = 56/785; do not add targeted reruns or manual checks to automated totals. Manual expansion 9/9 and original Storage manual 9/9 are separately accepted. Not a full-project regression.
+
+Accepted experimental capability: canonical Test Storage (3 ingots / 10 seconds) and Prototype Ammunition Press (5 ingots / 18 seconds), exact per-site staging, one shared priority/FIFO queue, explicit E/Ctrl+E authorization, physical pickup/delivery and exact escrow, exclusive worker, finite power/energy/recharge, actual completed building and operational manufacturing, mixed queues, nonpreemption, insufficient-stock skip, physical loaded cancellation recovery and locked staged/escrow refunds. One separately counted conveyor-fed production ingredient yielded four ammunition; no claim of full upstream route. Main and ordinary scenes unchanged; existing Build mode still legacy. No gameplay, test or runner code changes in closeout. Keep manifest as accepted baseline.
+
+Next proposed milestone **E3d5c6b — Direct Build Authorization**, staged separately; no implementation yet. Read [DIRECT_BUILD_AUTHORIZATION.md](DIRECT_BUILD_AUTHORIZATION.md) before modifying code. New chat should verify main HEAD and actual source before deciding implementation. Direct click authorizes Normal-priority construction through existing lifecycle; Blueprint mode retains E/Ctrl+E. No silent legacy fallback for unsupported definitions in new opt-in scope. Automatic belts/corners, splitter/merger, pole, multi-item/trip, fleet, persistence, destruction expansion, specialized Ammo Silos and staged-material unlocking remain separately gated.
+
+
+## Historical closeouts
 
 ### 2026-11-18 — Playable automatic construction drone sandbox FULLY ACCEPTED
 
