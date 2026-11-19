@@ -26,6 +26,16 @@ func _sites(scope: Node3D) -> Array[ConstructionSite]:
 	return sites
 
 
+# Legacy placement may parent buildings at current_scene instead of the
+# sandbox child. Count both through the test root, excluding visual ghosts.
+func _completed_count(definition: BuildingDefinition) -> int:
+	var count: int = 0
+	for node: Node in find_children("*", "Node3D", true, false):
+		if node.scene_file_path == definition.building_scene.resource_path and not node.is_in_group("construction_preview") and not node.is_queued_for_deletion():
+			count += 1
+	return count
+
+
 func _at(scope: Node3D, at: Vector3) -> ConstructionSite:
 	for site: ConstructionSite in _sites(scope):
 		if Vector2(site.global_position.x, site.global_position.z).is_equal_approx(Vector2(at.x, at.z)):
@@ -87,13 +97,14 @@ func _checks() -> void:
 	off_world.set_process(false)
 	assert(off_world.call("_direct_build_scope"))
 	assert(not bool(off_world.get("blueprint_sandbox_debug_requirements")))
+	var off_count: int = _completed_count(STORAGE)
 	_select(off_world, STORAGE)
 	await get_tree().physics_frame
 	await get_tree().process_frame
 	_point_at(off_world, STORAGE_POS)
 	off_world.set("placement_is_valid", true)
 	off_world.call("_try_place_object")
-	assert(_sites(off).is_empty())
+	assert(_sites(off).is_empty() and _completed_count(STORAGE) == off_count)
 	assert(not off_demo.has_verified_services())
 	off_world.call("_destroy_placement_ghost")
 	off.free()
@@ -120,9 +131,13 @@ func _checks() -> void:
 	assert(not demo.can_authorize_direct_definition(STORAGE, self))
 	print("PASS C: Exact scope, original queue, canonical definitions and verified authority")
 
+	var storage_count: int = _completed_count(STORAGE)
+	var press_count: int = _completed_count(PRESS)
+	var splitter_count: int = _completed_count(SPLITTER)
 	_select(world, SPLITTER)
 	_click(world, LOW_POS)
 	assert(_sites(sandbox).is_empty() and demo.queue.get_waiting_count() == 0)
+	assert(_completed_count(SPLITTER) == splitter_count)
 	world.set("blueprint_mode_active", true)
 	_click(world, LOW_POS)
 	assert(_sites(sandbox).is_empty())
@@ -170,6 +185,7 @@ func _checks() -> void:
 	assert(a.get_total_amount() == 0 and b.get_total_amount() == 0)
 	assert(demo.stock.get_amount(INGOT) == 15 and demo.escrow.held_count() == 0)
 	assert(demo.drone.cargo_amount() == 0 and demo.scheduler.get_active_count() == 0)
+	assert(_completed_count(STORAGE) == storage_count and _completed_count(PRESS) == press_count)
 	print("PASS F: Direct Press shares Normal FIFO, original bill/duration and empty owned staging")
 
 	world.set("blueprint_mode_active", true)
@@ -235,6 +251,7 @@ func _checks() -> void:
 	assert(demo.supplier.reservation_count() == 1 and demo.stock.get_reserved_amount(INGOT) == 3)
 	assert(demo.stock.get_amount(INGOT) == 15 and demo.drone.cargo_amount() == 0)
 	assert(demo.escrow.held_count() == 0 and demo.scheduler.get_active_count() == 0)
+	assert(_completed_count(STORAGE) == storage_count and _completed_count(PRESS) == press_count)
 	for site: ConstructionSite in [first, second, high, low]:
 		assert(site.job.get_progress() == 0.0)
 		assert(demo.registry.inventory_for_site(site).get_total_amount() == 0)
