@@ -6,6 +6,7 @@ const SANDBOX_PATH = "res://scenes/core/playable_automatic_construction_drone_sa
 const STAGE_B_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_b.tscn"
 const STAGE_C_PATH = "res://scenes/core/playable_automatic_construction_drone_stage_c.tscn"
 const EXPANSION_PATH = "res://scenes/core/playable_construction_building_expansion_e3d5c6a.tscn"
+const DIRECT_BUILD_PATH = "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const SITE_POWER_DEMAND: int = 7
 const GUIDE_A := Vector3(4, 0, -3)
 const GUIDE_B := Vector3(0, 0, -3)
@@ -24,6 +25,7 @@ const MAX_FRAME_STEP: float = 0.1
 @export var enable_player_site_enrollment: bool = false
 @export var enable_automatic_sandbox: bool = false
 @export var enable_building_expansion: bool = false
+@export var enable_direct_build_authorization: bool = false
 
 # Delivery observation only; accepted x8 checks physical arrival and custody.
 class DroneOnlyPort:
@@ -97,11 +99,11 @@ func _start_from_scene() -> void:
 
 
 func _is_sandbox_path(path: String) -> bool:
-	return path == SANDBOX_PATH or path == STAGE_B_PATH or path == STAGE_C_PATH or path == EXPANSION_PATH
+	return path == SANDBOX_PATH or path == STAGE_B_PATH or path == STAGE_C_PATH or path == EXPANSION_PATH or (path == DIRECT_BUILD_PATH and enable_direct_build_authorization)
 
 
 func _player_scene() -> bool:
-	return _scope.scene_file_path == STAGE_B_PATH or _scope.scene_file_path == STAGE_C_PATH or _scope.scene_file_path == EXPANSION_PATH
+	return _scope.scene_file_path == STAGE_B_PATH or _scope.scene_file_path == STAGE_C_PATH or _scope.scene_file_path == EXPANSION_PATH or _direct_build_enabled()
 
 
 func _feedback_enabled() -> bool:
@@ -109,7 +111,19 @@ func _feedback_enabled() -> bool:
 
 
 func _expansion_enabled() -> bool:
-	return enable_building_expansion and _live(_scope) and _scope.scene_file_path == EXPANSION_PATH
+	return enable_building_expansion and _live(_scope) and (_scope.scene_file_path == EXPANSION_PATH or _direct_build_enabled())
+
+
+func _direct_build_enabled() -> bool:
+	return enable_direct_build_authorization and _live(_scope) and _scope.scene_file_path == DIRECT_BUILD_PATH
+
+
+func can_authorize_direct_definition(definition: BuildingDefinition, player_world: Node) -> bool:
+	return (
+		_direct_build_enabled() and enable_building_expansion and enable_player_site_enrollment
+		and world == player_world and has_verified_services()
+		and _eligible_material_amount(definition) > 0
+	)
 
 
 func _live(node: Variant) -> bool:
@@ -425,7 +439,10 @@ func _build_feedback() -> void:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if _expansion_enabled():
-		hint.text = "Blueprint test only: Storage (3) or Ammunition Press (5). Q + drag, L/N/H, E or Ctrl+E; X cancels. Build mode remains legacy. Full footprint must be covered."
+		if _direct_build_enabled():
+			hint.text = "Direct Build: click Storage (3) or Ammunition Press (5) to authorize Normal. P switches to Blueprint: Q + drag, L/N/H, E or Ctrl+E. X cancels. Other buildings blocked; full footprint must be covered."
+		else:
+			hint.text = "Blueprint test only: Storage (3) or Ammunition Press (5). Q + drag, L/N/H, E or Ctrl+E; X cancels. Build mode remains legacy. Full footprint must be covered."
 		_guide_site(Vector3(4.5, 0, -3.5), "AMMO PRESS SITE")
 		_guide_site(GUIDE_B, "STORAGE SITE")
 	else:
