@@ -5,7 +5,7 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
-**E3d5c6a Stage A fully accepted (37/37); Stage B isolated accepted (12/12); compatibility pending.** Developer-confirmed Stage B against 1f94c50; cumulative 55 suites / 774 unique checks, historical 9 manual separate. Next targeted F6 gate 16 suites / 198 checks listed in [BUILDING_CONSTRUCTION_EXPANSION.md](BUILDING_CONSTRUCTION_EXPANSION.md). No gameplay code changes. Build mode remains legacy; use Blueprint mode. Main/ordinary scenes unchanged.
+**E3d5c6a Stage A fully accepted (37/37); Stage B fully accepted (210/210); Stage C isolated F6 pending.** Developer-confirmed Stage B 12 isolated + 198 compatibility; cumulative 55 suites / 774 unique checks, historical 9 manual separate. Next F6 `res://tests/playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn` (11 groups expected). See [BUILDING_CONSTRUCTION_EXPANSION.md](BUILDING_CONSTRUCTION_EXPANSION.md). Stage C test only, no runtime code changes. Build mode remains legacy; use Blueprint mode. Main/ordinary scenes unchanged.
 
 **Latest authoritative closeout — 2026-11-18:**
 
