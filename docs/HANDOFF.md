@@ -5,7 +5,7 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
-**E3d5c6a Stage A isolated accepted (8/8); compatibility pending.** Developer-confirmed in Godot against db08153; cumulative 54 suites / 762 checks, historical 9 manual checks separate. Next F6 reruns: previous playable automatic drone Stage A 8, Stage B 8, Stage C 13 (3 suites / 29 checks, no double-count). See [BUILDING_CONSTRUCTION_EXPANSION.md](BUILDING_CONSTRUCTION_EXPANSION.md). No independent assistant execution. Build mode remains legacy; use Blueprint mode. Main/ordinary scenes unchanged.
+**E3d5c6a Stage A fully accepted (37/37); Stage B isolated F6 pending.** Developer-confirmed 8 isolated + 29 compatibility checks; cumulative 54 suites / 762 unique checks, historical 9 manual separate. Next F6 `res://tests/playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn` (12 expected groups). See [BUILDING_CONSTRUCTION_EXPANSION.md](BUILDING_CONSTRUCTION_EXPANSION.md). No runtime changes in Stage B test commit. Build mode remains legacy; use Blueprint mode. Main/ordinary scenes unchanged.
 
 **Latest authoritative closeout — 2026-11-18:**
 

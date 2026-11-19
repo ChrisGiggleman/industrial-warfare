@@ -1,6 +1,6 @@
 # E3d5c6 — Automatic construction building expansion
 
-2026-11-18. Stage A isolated accepted (8/8); targeted compatibility pending. Historical 53 suites / 754 checks and 9/9 manual checks at 560789595cf1c7711121be7ae0e8d3dfb1ff78f2; cumulative 54 suites / 762 checks, not a fresh combined regression.
+2026-11-18. Stage A fully accepted (8/8 isolated + 29/29 compatibility); Stage B isolated test staged. Historical 53 suites / 754 checks and 9/9 manual checks at 560789595cf1c7711121be7ae0e8d3dfb1ff78f2; cumulative 54 suites / 762 checks, not a fresh combined regression.
 
 ## E3d5c6a Stage A
 Explicit new scene `res://scenes/core/playable_construction_building_expansion_e3d5c6a.tscn` plus default-off expansion switch. Canonical Test Storage (3 ingots) and Prototype Ammunition Press (5 ingots) only. Exact validated bill, per-site empty staging capacity, original job/definition/receiver ownership; existing coordinator and site timer handoff. Existing Stage A/B/C remain unchanged in behavior, including Storage-only eligibility even if the new switch is set in them. Seven construction power units are an isolated fixture choice, not a production balance change. No resource bills, Main, ordinary scenes, dispatcher, worker, power, conveyor, escrow or recovery code modified.
@@ -22,3 +22,10 @@ Next targeted compatibility gate: run each scene separately with F6:
 - `res://tests/playable_automatic_construction_drone_stage_c_test.tscn` — 13 checks.
 
 Expected 3 suites / 29 checks, reruns only (do not double-count). After developer confirmation, proceed to E3d5c6a Stage B: real five-ingot Press delivery, exact escrow, finite coverage/power and battery, 18-second construction, actual completed scene/runtime and empty production inventories, return/recharge, cancellation/recovery. Mixed queues and manual playable gate remain later. Direct Build Authorization remains separately gated: placement click authorizes a Normal-priority job, Blueprint mode still requires E/Ctrl+E, same lifecycle, no free build. Build mode remains legacy in this commit; Main and ordinary scenes unchanged. Documentation only.
+
+
+### 2026-11-18 — E3d5c6a Stage A fully accepted (37/37); Stage B test staged
+
+Developer explicitly confirmed all 3/3 targeted Stage A/B/C compatibility suites and 29/29 checks passed in local Godot, in addition to 8/8 isolated expansion. Stage A gate 4 suites/37 checks. Cumulative unique 54 suites/762 checks; reruns not double-counted. Historical manual 9/9 remains separate.
+
+Stage B adds only an isolated end-to-end test, reusing existing expansion scene and all production/runtime code unchanged. F6 `res://tests/playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn`, expected 12 groups A–L. Five-ingot reservation, physical pickup/delivery, exact escrow, finite power, capped 18-second job and actual Press activation, empty production inventories, separate counted one-ingot fixture loaded onto a real connected conveyor (not a full upstream source route), timed 1-to-4 ammunition production, finite recharge and four cancellation phases. Final 15 construction ingots accounted for: 5 consumed by completed Press, 5 locked in delivered-cancelled buffer, 5 refunded to working-cancelled buffer, zero stock/cargo. Separate one-ingot production fixture accounted independently. No new local execution or acceptance yet. Expected banner `ALL 12 PLAYABLE CONSTRUCTION BUILDING EXPANSION E3D5C6A STAGE B TESTS PASSED`. If passed, record then proceed to targeted compatibility and Stage C mixed queue. No Main/ordinary activation, direct Build authorization still separately planned; no automatic conveyor construction or staged-cargo unlocking.
