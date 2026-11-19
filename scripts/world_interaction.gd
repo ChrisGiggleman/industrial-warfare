@@ -18,6 +18,9 @@ signal blueprint_site_authorized(site: ConstructionSite)
 # Layer 1 = Ground / placement surfaces
 # Layer 3 = Placement blockers
 
+# Exact scene boundary; even failed/disabled startup must not fall through.
+const DIRECT_BUILD_SCENE_PATH = "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
+
 const GROUND_COLLISION_MASK: int = 1
 const RESOURCE_NODE_COLLISION_MASK: int = 2
 const PLACEMENT_BLOCKER_COLLISION_MASK: int = 4
@@ -281,6 +284,13 @@ var demolition_hover_target: Node = null
 # Build Mode begins disabled, so the Build HUD starts hidden.
 
 func _ready() -> void:
+	# New experiment only. Disable legacy debug readiness before deferred
+	# adapter startup, and keep automatic belt routing separately gated.
+	if _direct_build_scope():
+		blueprint_sandbox_debug_requirements = false
+		enable_blueprint_route_tool = false
+		enable_connected_conveyor_blueprints = false
+		enable_connected_storage_blueprints = false
 	build_hotbar = BuildHotbarConfiguration.new()
 	build_hotbar.configure(buildable_definitions)
 	build_hotbar.reset_to_default()
@@ -3714,6 +3724,11 @@ func _is_managed_blueprint(site: ConstructionSite) -> bool:
 func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 	if not _is_managed_blueprint(site):
 		return false
+	# Both entry points use the same original job. Outside the new scope,
+	# preserve the accepted authorization behavior exactly.
+	var direct_scope: bool = _direct_build_scope()
+	if direct_scope and not _direct_build_admits(site.target_definition):
+		return false
 	if not site.job.authorize():
 		return false
 	# Record only actually waiting jobs. Sandbox debug availability can
@@ -3728,6 +3743,20 @@ func _authorize_blueprint_site(site: ConstructionSite) -> bool:
 		print("BLUEPRINT DEBUG: Requirements bypassed in testing sandbox")
 	print("BLUEPRINT AUTHORIZED: ", site.target_definition.display_name)
 	blueprint_site_authorized.emit(site)
+	if direct_scope:
+		var adapter := _direct_build_adapter()
+		if (
+			not is_instance_valid(adapter)
+			or not bool(adapter.call("is_enrolled_site", site))
+			or not is_instance_valid(_construction_priority_queue)
+			or not _construction_priority_queue.get_waiting_sites().has(site)
+			or site.is_processing()
+		):
+			# Synchronous enrollment failed. Cancel the original, never
+			# recreate it or release a partially claimed staging pair.
+			_cancel_blueprint_site(site)
+			print("DIRECT CONSTRUCTION: Enrollment failed; original job cancelled.")
+			return false
 	return true
 
 
@@ -4056,6 +4085,8 @@ func _create_blueprint_site(
 	definition: BuildingDefinition, placement: Transform3D
 ) -> ConstructionSite:
 	if not enable_blueprint_planning:
+		return null
+	if _direct_build_scope() and not _direct_build_admits(definition):
 		return null
 	if not buildable_definitions.has(definition):
 		return null
@@ -4733,6 +4764,9 @@ func _create_straight_conveyor_blueprint(
 
 
 func _commit_blueprint_from_preview() -> void:
+	if _direct_build_scope() and not _direct_build_admits(_get_selected_building_definition()):
+		print("DIRECT CONSTRUCTION: Unsupported blueprint or services unavailable.")
+		return
 	if not is_instance_valid(placement_ghost):
 		return
 	var definition := _get_selected_building_definition()
@@ -4826,12 +4860,83 @@ func _commit_planned_storage_belt(
 	return belt
 
 
+# E3d5c6b Stage A — exact-scope placement policy. No separate queue,
+# job, resource transfer or timer. Disabled/missing adapter fails closed.
+func _direct_build_scope() -> bool:
+	var root := get_parent()
+	return is_instance_valid(root) and root.scene_file_path == DIRECT_BUILD_SCENE_PATH
+
+
+func _direct_build_adapter() -> Node:
+	if not _direct_build_scope():
+		return null
+	var adapter := get_parent().get_node_or_null("AutomaticConstructionSandbox")
+	if not is_instance_valid(adapter) or adapter.is_queued_for_deletion():
+		return null
+	if not adapter.has_method("can_authorize_direct_definition") or not adapter.has_method("is_enrolled_site"):
+		return null
+	return adapter
+
+
+func _direct_build_admits(definition: BuildingDefinition) -> bool:
+	var adapter := _direct_build_adapter()
+	return (
+		is_instance_valid(adapter)
+		and not blueprint_sandbox_debug_requirements
+		and bool(adapter.call("can_authorize_direct_definition", definition, self))
+	)
+
+
+# Shared by the refreshed click and isolated fixture. Site creation
+# independently revalidates and reserves the footprint.
+func _direct_build_site_at(definition: BuildingDefinition, placement: Transform3D) -> ConstructionSite:
+	if not placement_mode_active or blueprint_mode_active or demolition_mode_active or _blueprint_area_selection_mode:
+		return null
+	if not _direct_build_admits(definition) or not placement.is_finite():
+		return null
+	var site := _create_blueprint_site(definition, placement)
+	if not is_instance_valid(site):
+		return null
+	if site.job.priority != ConstructionJob.Priority.NORMAL or not _authorize_blueprint_site(site):
+		if not site.is_queued_for_deletion():
+			_cancel_blueprint_site(site)
+		return null
+	return site
+
+
+func _commit_direct_build_from_preview() -> ConstructionSite:
+	var definition := _get_selected_building_definition()
+	if not _direct_build_admits(definition):
+		print("DIRECT BUILD: Unsupported building or services unavailable.")
+		return null
+	if not is_instance_valid(placement_ghost) or placement_ghost.is_queued_for_deletion() or not is_instance_valid(camera) or not camera.is_inside_tree():
+		return null
+	if placement_ghost.scene_file_path != definition.building_scene.resource_path:
+		return null
+	# Never commit last frame's valid flag/transform. Refresh from the
+	# current cursor and reject unsupported live-port snap connections.
+	placement_is_valid = false
+	_update_placement_preview()
+	if not placement_is_valid or not is_instance_valid(placement_ghost) or is_instance_valid(building_placement_snap_belt) or not _is_placement_clear():
+		print("DIRECT BUILD: Footprint blocked, invalid preview or port-linked placement.")
+		return null
+	var site := _direct_build_site_at(definition, placement_ghost.global_transform)
+	if is_instance_valid(site):
+		print("DIRECT BUILD AUTHORIZED: ", definition.display_name, " | Normal priority")
+	return site
+
+
 func _try_place_object() -> void:
 	# Blueprint clicks never enter legacy conveyor/building placement paths.
 	# E1 adds independent straight belts only. Physical belt graph links,
 	# bridge previews, and 90-degree corner conversions remain a later gate.
 	if enable_blueprint_planning and blueprint_mode_active:
 		_commit_blueprint_from_preview()
+		return
+	# Intercept this exact scene even when services failed to start.
+	# No legacy instant/timed/conveyor placement fallback.
+	if _direct_build_scope():
+		_commit_direct_build_from_preview()
 		return
 
 	# =============================================================================
