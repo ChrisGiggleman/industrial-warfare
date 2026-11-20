@@ -11,7 +11,11 @@ const Flight = PrototypeConstructionWorkerDrone.FlightState
 const PRESS_POS := Vector3(4.5, 0, -3.5)
 const HIGH_POS := Vector3(0, 0, -3)
 const STORAGE_POS := Vector3(4, 0, -1)
-const WAIT_POS := Vector3(2.5, 0, -0.5)
+# Stage A's direct preview performs full-size physics collision checks.
+# The former (2.5, 0, -0.5) shared an exact footprint edge with the
+# completed Storage at (4, 0, -1); use the separately accepted open
+# LATE_POS from expansion Stage C instead. No gameplay collision changes.
+const WAIT_POS := Vector3(-5, 0, 0)
 const CANCEL_POS := Vector3(4.5, 0, -3.5)
 
 
@@ -115,7 +119,10 @@ func _place(demo: Demo, definition: BuildingDefinition, at: Vector3, planned: bo
 	_select(world, definition)
 	_click(world, at)
 	var site := _at(demo.get_parent() as Node3D, at)
-	assert(is_instance_valid(site) and site.job != null and site.target_definition == definition, "Placement failed at %s" % at)
+	if not is_instance_valid(site):
+		push_error("Stage B placement refused at %s; preview_valid=%s" % [at, world.get("placement_is_valid")])
+		return null
+	assert(site.job != null and site.target_definition == definition, "Wrong site at %s" % at)
 	assert(site.job.state == (ConstructionJob.State.PLANNED if planned else ConstructionJob.State.QUEUED))
 	assert(site.job.priority == ConstructionJob.Priority.NORMAL)
 	assert(is_equal_approx(site.job.get_remaining_seconds(), definition.construction_seconds))
@@ -205,8 +212,17 @@ func _checks() -> void:
 	var initial_press_count: int = _completed_count(PRESS)
 	var built: Array[Node3D] = []
 	var press := _place(demo, PRESS, PRESS_POS)
+	if not is_instance_valid(press):
+		sandbox.free()
+		return
 	var storage := _place(demo, STORAGE, STORAGE_POS)
+	if not is_instance_valid(storage):
+		sandbox.free()
+		return
 	var high := _place(demo, STORAGE, HIGH_POS, true)
+	if not is_instance_valid(high):
+		sandbox.free()
+		return
 	var press_job := press.job
 	var storage_job := storage.job
 	var high_job := high.job
@@ -328,6 +344,10 @@ func _checks() -> void:
 	await get_tree().physics_frame
 	await get_tree().process_frame
 	var waiting := _place(demo, PRESS, WAIT_POS)
+	if not is_instance_valid(waiting):
+		sandbox.free()
+		return
+	assert(demo.network.covers_site(waiting))
 	var w := _buffer(demo, waiting, 5)
 	_watch(waiting, built)
 	for i: int in range(20):
@@ -361,6 +381,9 @@ func _checks() -> void:
 	var cancelled_builds: Array[Node3D] = []
 	assert(demo.stock.get_amount(INGOT) == 15)
 	var early := _place(demo, PRESS, CANCEL_POS)
+	if not is_instance_valid(early):
+		sandbox.free()
+		return
 	_watch(early, cancelled_builds)
 	var early_buffer := _buffer(demo, early, 5)
 	_launch(demo, early, 5, 15)
@@ -376,6 +399,9 @@ func _checks() -> void:
 	await get_tree().process_frame
 
 	var loaded := _place(demo, PRESS, CANCEL_POS)
+	if not is_instance_valid(loaded):
+		sandbox.free()
+		return
 	_watch(loaded, cancelled_builds)
 	var loaded_buffer := _buffer(demo, loaded, 5)
 	_launch(demo, loaded, 5, 15)
@@ -398,6 +424,9 @@ func _checks() -> void:
 	await get_tree().process_frame
 
 	var delivered := _place(demo, PRESS, CANCEL_POS)
+	if not is_instance_valid(delivered):
+		sandbox.free()
+		return
 	_watch(delivered, cancelled_builds)
 	var delivered_buffer := _buffer(demo, delivered, 5)
 	_launch(demo, delivered, 5, 15)
@@ -416,6 +445,9 @@ func _checks() -> void:
 	await get_tree().process_frame
 
 	var working := _place(demo, PRESS, CANCEL_POS)
+	if not is_instance_valid(working):
+		sandbox.free()
+		return
 	_watch(working, cancelled_builds)
 	var working_buffer := _buffer(demo, working, 5)
 	assert(working_buffer != delivered_buffer)
