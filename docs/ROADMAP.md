@@ -1,6 +1,13 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-18
+## Current milestone — 2026-11-20
+
+- [x] E3d5c6b Direct Build Stage A **fully accepted** (isolated 11/11, compatibility 28 suites/374 checks).
+- [x] E3d5c6b Direct Build Stage B **fully accepted** (isolated 14/14, compatibility 29 suites/395 checks).
+- [ ] E3d5c6b Stage C playable manual: **10 checks pending**, see [DIRECT_BUILD_STAGE_C_MANUAL.md](DIRECT_BUILD_STAGE_C_MANUAL.md).
+- [ ] Final fresh combined Direct Build automated regression: **58 suites / 810 unique checks**, pending Stage C manual acceptance.
+
+## Prior milestone — 2026-11-18
 
 - [x] E3d5c6a automatic construction building expansion fully accepted: 56 suites / 785 checks, manual expansion 9/9.
 - [ ] E3d5c6b [Direct Build Authorization](DIRECT_BUILD_AUTHORIZATION.md) — proposed next isolated milestone. No implementation yet.
@@ -1697,3 +1704,11 @@ Developer explicitly reports **14/14 Stage B isolated checks A–N passed in loc
 **Accepted unique automated baseline now 58 suites / 810 checks**: E3d5c6a accepted 56/785 + Direct Build Stage A isolated 11 + Stage B isolated 14. Stage A compatibility 28/374 remains separately accepted (reruns, 125 historical supplemental checks outside the 56-suite baseline). Prior manual expansion 9/9 accepted separately. No fresh combined 58-suite regression claimed. Stage B is **isolated accepted**, not fully closed.
 
 **Next Stage B targeted compatibility gate: 29/29 suites, 395/395 checks pending local F6**, selected exclusively from the accepted 56-suite expansion manifest; see [DIRECT_BUILD_AUTHORIZATION.md](DIRECT_BUILD_AUTHORIZATION.md), section “Stage B targeted compatibility gate”. Covers material flow, production, owned staging/escrow, dispatch, charging, cancellation, worker/finite power and prior playable scenes. Reruns **do not add** to 810 cumulative unique checks. Do not claim 395 passed until developer reports. After confirmation, record full Stage B acceptance, then stage Stage C real physical mouse/keyboard manual verification and final targeted combined regression. No gameplay, ordinary/Main scenes, other tests, existing regression runner or manifest changed in this documentation-only acceptance commit. Automatic conveyor, splitter/merger, new pole construction, multi-item/trip, multi-drone, persistence, destruction expansion and locked-staging unlock remain separately gated.
+
+
+### 2026-11-20 — E3d5c6b Stage B FULLY ACCEPTED; Stage C manual verification staged (10 pending)
+
+Developer explicitly confirmed **29/29 targeted Stage B compatibility suites and 395/395 checks passed in local Godot** and provided per-suite counts, each matching `tools/building_expansion_final_regression.csv` and the committed Stage B gate (29 unique names, 395 total). These are reruns of accepted expansion suites, not additive. Combined with developer-confirmed **14/14 isolated Stage B physical Direct Build checks**, full Stage B acceptance gate evidence is **30 suite executions / 409 checks** (14 isolated new + 395 overlap reruns), without inventing a fresh full combined regression. Stage A previously fully accepted (11/11 isolated + 28/28, 374/374 compatibility reruns). **Unique milestone baseline remains 58 suites / 810 checks**: 56/785 original expansion, 11 new Stage A, 14 new Stage B. Prior manual expansion 9/9 remains separately accepted. All confirmations are developer-reported local Godot results, not assistant runtime executions.
+
+**Stage C next — manual playable verification:** see [DIRECT_BUILD_STAGE_C_MANUAL.md](DIRECT_BUILD_STAGE_C_MANUAL.md). Run only `res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn` with **F6**, three independent fresh-play sessions, **10 proposed manual checks A1–A6, B1–B3, C1**. Session A covers Direct Build mode click auto-N Storage/Press, unsupported/duplicate refusal, physical drone transport, generator power pause/resume, actual operational buildings, 15→7 material conservation and recharge. Session B covers Blueprint P planning, Q+drag H priority with no auto-authorization, E selected/single and Ctrl+E batch, mixed priority shared queue, physical completion and 15→4 conservation. Session C verifies a physical loaded cancellation by hovering site and pressing X after collecting five ingots, return storage restores 15 and no Press activates. Manual checks **not run or accepted yet**; no automatic/manual counts added. These sessions use the existing opt-in scene without changing gameplay scripts or prior scenes. **After developer-confirmed Stage C 10/10**, stage fresh final combined regression **58 unique suites / 810 checks** with actual F6 evidence; not yet run. Keep separately gated features untouched: automatic conveyor routing/builds, splitter/merger, poles, multi-trip/fleet, persistence and destruction expansion. No milestone closeout yet.
+
