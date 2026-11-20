@@ -1,4 +1,4 @@
-# E3d5c6b — Direct Build Authorization (Stage A fully accepted; Stage B F6 pending)
+# E3d5c6b — Direct Build Authorization (Stage A fully accepted; Stage B isolated accepted, compatibility pending)
 
 2026-11-18. Prerequisite E3d5c6a fully accepted: 56/56 targeted automated suites, 785/785 checks, expansion manual 9/9; historical Storage manual 9/9 separate. Developer reported local Godot results. See BUILDING_EXPANSION_FINAL_REGRESSION.md and HANDOFF.md. The original proposed sequence is retained below. Stage A is fully accepted by developer local Godot verification; Stage B is staged.
 
@@ -103,3 +103,52 @@ Developer supplied a Godot 4.6.2 screenshot from F6 `res://tests/playable_direct
 **Narrow test-only fix:** Move `WAIT_POS` to `(-5, 0, 0)`, an open position previously used for Storage by accepted expansion Stage C; it is away from the three completed buildings. Assert actual Hub coverage to keep insufficient materials as the relevant wait condition. Make `_place` report a clear error and return null if no site was created, and safely stop the fixture at the eight call sites rather than cascading through null references. The test still invokes `WorldInteraction._try_place_object` with a fresh camera ray, uses canonical bills, exact queue/services, no inventory injection, no material bypass, original finite power/worker, same scene and lifecycle. No gameplay, other tests, scene, manifest or accepted code changes. Correction commit [ce429537](https://github.com/ChrisGiggleman/industrial-warfare/commit/ce429537992a2ae5064d5ae94ef4c25b7dfe918b).
 
 **Local rerun pending:** Pull updated main and F6 the same Stage B test scene, expected 14 groups A–N and `ALL 14 PLAYABLE DIRECT BUILD AUTHORIZATION E3D5C6B STAGE B TESTS PASSED`. No Godot runtime/parse execution by assistant; if failures recur capture first actual error and Output PASS lines, stop and fix before compatibility. Stage A remains fully accepted (11 isolated + 374 targeted compatibility reruns, 29 suites/385 gate evidence); unique milestone baseline remains 57 suites/796 checks. Stage B adds no accepted checks yet. No Stage B compatibility/manual/final regression claims.
+
+
+### 2026-11-20 — E3d5c6b Stage B isolated physical lifecycle ACCEPTED (14/14); targeted compatibility pending
+
+Developer explicitly reports **14/14 Stage B isolated checks A–N passed in local Godot 4.6.2**, after the test-only fourth-Press position correction at [11f2595](https://github.com/ChrisGiggleman/industrial-warfare/commit/11f2595c5be139faedc6208ddb443e359843bd40). The prior screenshot established a placement assertion at former WAIT_POS, not a gameplay failure; the new successful F6 result supersedes that pending state. The test uses the real Direct placement click handler and accepted lifecycle services: Direct Press and Storage Normal FIFO; High explicitly authorized Blueprint inserted without preemption; physical five-/three-ingot pickup/delivery, exact per-site custody/escrow, finite power and battery, one worker/one authoritative clock, real 18-second Press and 10-second Storage completions and operational building activation; same drone return/recharge; 15 -> 4 ingot conservation and unaffordable waiting Press. Fresh separate fixture checks cancellation before pickup, loaded with temporarily unavailable return dock, after delivery, and during work: exact reservation release, physical return, protected original staging, escrow refund and four rearms; zero canceled completed buildings and no fabricated stock. This is developer aggregate confirmation, **not assistant-executed Godot testing**, and no new screenshot/output logs were provided for this successful run.
+
+**Accepted unique automated baseline now 58 suites / 810 checks**: E3d5c6a accepted 56/785 + Direct Build Stage A isolated 11 + Stage B isolated 14. Stage A compatibility 28/374 remains separately accepted (reruns, 125 historical supplemental checks outside the 56-suite baseline). Prior manual expansion 9/9 accepted separately. No fresh combined 58-suite regression claimed. Stage B is **isolated accepted**, not fully closed.
+
+**Next Stage B targeted compatibility gate: 29/29 suites, 395/395 checks pending local F6**, selected exclusively from the accepted 56-suite expansion manifest; see [DIRECT_BUILD_AUTHORIZATION.md](DIRECT_BUILD_AUTHORIZATION.md), section “Stage B targeted compatibility gate”. Covers material flow, production, owned staging/escrow, dispatch, charging, cancellation, worker/finite power and prior playable scenes. Reruns **do not add** to 810 cumulative unique checks. Do not claim 395 passed until developer reports. After confirmation, record full Stage B acceptance, then stage Stage C real physical mouse/keyboard manual verification and final targeted combined regression. No gameplay, ordinary/Main scenes, other tests, existing regression runner or manifest changed in this documentation-only acceptance commit. Automatic conveyor, splitter/merger, new pole construction, multi-item/trip, multi-drone, persistence, destruction expansion and locked-staging unlock remain separately gated.
+
+
+## Stage B targeted compatibility gate — PENDING LOCAL F6
+
+These 29 existing test scenes total **395 checks**, as matched against `tools/building_expansion_final_regression.csv` at 11f2595c. Each belongs to the previously accepted E3d5c6a 56-suite baseline. Open `res://tests/<scene>`, press F6 for each and check every PASS group/banner (the inventory-transfer fixture prints four PASS groups). Preserve exact spelling of `inventory_trasnfer_test.tscn`. This is a focused rerun, not a new unique-check contribution.
+
+| Existing test scene | Expected checks |
+|---|---:|
+| `inventory_trasnfer_test.tscn` | 4 |
+| `item_port_transfer_test.tscn` | 7 |
+| `manufacturing_transaction_test.tscn` | 9 |
+| `recipe_output_capacity_test.tscn` | 11 |
+| `blueprint_construction_material_escrow_e3d5c2a_test.tscn` | 16 |
+| `unified_receiver_consolidation_e3d5c5v_test.tscn` | 56 |
+| `playable_construction_logistics_e3d5c5w_test.tscn` | 13 |
+| `playable_construction_power_e3d5c5x1_test.tscn` | 9 |
+| `playable_construction_drone_e3d5c5x2_test.tscn` | 11 |
+| `drone_storage_discovery_e3d5c5x3_test.tscn` | 12 |
+| `drone_supplier_reservations_e3d5c5x4a_test.tscn` | 12 |
+| `drone_return_reservations_e3d5c5x4b_test.tscn` | 14 |
+| `drone_physical_pickup_e3d5c5x5a_test.tscn` | 12 |
+| `drone_physical_delivery_e3d5c5x5b_test.tscn` | 13 |
+| `drone_delivered_worker_e3d5c5x5c_test.tscn` | 16 |
+| `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn` | 13 |
+| `finite_construction_power_e3d5c3b2_test.tscn` | 18 |
+| `drone_finite_hub_charging_e3d5c5x7a_test.tscn` | 13 |
+| `drone_cargo_worker_reuse_e3d5c5x7b_test.tscn` | 16 |
+| `drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn` | 12 |
+| `drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` | 13 |
+| `drone_lost_site_recovery_e3d5c5x7c3_test.tscn` | 14 |
+| `drone_automatic_dispatch_e3d5c5x8a_test.tscn` | 14 |
+| `drone_automatic_lifecycle_e3d5c5x8b_test.tscn` | 15 |
+| `playable_automatic_construction_drone_stage_b_test.tscn` | 8 |
+| `playable_automatic_construction_drone_stage_c_test.tscn` | 13 |
+| `playable_construction_building_expansion_e3d5c6a_test.tscn` | 8 |
+| `playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn` | 12 |
+| `playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn` | 11 |
+| **Total (29 suites)** | **395** |
+
+Report 29/29 and 395/395 only if all actually pass locally; for any error stop and share the first failure and preceding PASS groups. The Stage A compatibility 28/374 evidence remains accepted and is not double-counted. Stage B isolated 14/14 is accepted. Stage C manual and final combined 58/810 automated gate are not yet performed.
