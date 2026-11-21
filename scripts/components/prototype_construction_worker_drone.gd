@@ -12,7 +12,7 @@ class_name PrototypeConstructionWorkerDrone
 # No _process / physics step: F6 fixture explicitly calls advance_flight().
 # Not installed in Main or Factory Testing Sandbox.
 
-enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED, RECOVERY_WAIT, RECOVERY_OUTBOUND, AT_RECOVERY, RECOVERY_HOME }
+enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED, RECOVERY_WAIT, RECOVERY_OUTBOUND, AT_RECOVERY, RECOVERY_HOME, STAGED_TO_SITE, STAGED_AT_SITE, STAGED_LOADED, STAGED_TO_STORAGE, STAGED_AT_STORAGE, STAGED_HOME }
 
 const ARRIVAL_EPSILON: float = 0.05
 const MAX_SPEED: float = 50.0
@@ -85,6 +85,154 @@ var _home: Vector3 = Vector3.ZERO
 var _speed: float = 0.0
 var _hover_height: float = 0.0
 var _site_ended: bool = false
+
+# E3d5c6c B: separately opted-in terminal staging recovery. Existing
+# construction delivery states and rearm checks remain unchanged when OFF.
+@export var enable_isolated_cancelled_staging_flight: bool = false
+var _staged_owner: WeakRef
+var _staged_token: RefCounted
+var _staged_hover: Vector3 = Vector3.ZERO
+var _staged_dock: WeakRef
+
+
+# Stage B companion is a manually ticked authority, never Main or the
+# automatic construction dispatcher. Its token is checked on every step.
+func _staged_authority(owner: Node, token: RefCounted) -> bool:
+	return (
+		enable_isolated_cancelled_staging_flight
+		and enable_isolated_drone and enable_isolated_battery and _battery_configured
+		and _delivery_live(self) and _delivery_live(owner)
+		and owner.get_parent() == get_parent()
+		and owner.get_script() != null
+		and owner.get_script().resource_path == "res://scripts/components/prototype_cancelled_site_recovery_transport.gd"
+		and owner.has_method("_owns_staged_mission")
+		and bool(owner.call("_owns_staged_mission", self, token))
+		and _staged_owner != null and _staged_owner.get_ref() == owner
+		and token != null and _staged_token == token
+	)
+
+
+func _staged_begin(owner: Node, token: RefCounted, hover: Vector3, dock: PrototypeDroneStorageDock, speed: float) -> bool:
+	if not enable_isolated_cancelled_staging_flight or not _delivery_live(owner) or owner.get_parent() != get_parent():
+		return false
+	if owner.get_script() == null or owner.get_script().resource_path != "res://scripts/components/prototype_cancelled_site_recovery_transport.gd" or not owner.has_method("_owns_staged_mission") or not bool(owner.call("_owns_staged_mission", self, token)):
+		return false
+	if _staged_owner != null or _staged_token != null or _state != FlightState.IDLE or not _finite_cargo_rearm_ready():
+		return false
+	if _site_ref != null or _assignment_job != null or _cargo_job != null or _cargo_site != null or _pickup_token != null or _return_token != null or _cargo_amount != 0 or _cargo_item != null:
+		return false
+	if not _delivery_live(dock) or dock.get_parent().get_parent() != get_parent() or not hover.is_finite() or not dock.global_position.is_finite():
+		return false
+	if not is_finite(speed) or speed <= 0.0 or speed > MAX_SPEED or global_position.distance_to(_home) > 0.00001:
+		return false
+	var route: Array[Vector3] = [hover, dock.global_position]
+	if estimate_route_energy(route) < 0.0 or estimate_route_energy(route) > _battery_units + 0.00001:
+		return false
+	_staged_owner = weakref(owner)
+	_staged_token = token
+	_staged_hover = hover
+	_staged_dock = weakref(dock)
+	_speed = speed
+	_state = FlightState.STAGED_TO_SITE
+	return true
+
+
+# Physically metered leg. Every segment retains the energy needed to finish
+# the planned route and reach the registered home with the safety margin.
+func _staged_step(owner: Node, token: RefCounted, delta: float) -> bool:
+	if not _staged_authority(owner, token) or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
+		return false
+	var dock := _staged_dock.get_ref() as PrototypeDroneStorageDock
+	if not _delivery_live(dock) or not dock.global_position.is_finite() or not _staged_hover.is_finite():
+		return false
+	var target: Vector3
+	var reserve: float
+	var next_state: FlightState
+	match _state:
+		FlightState.STAGED_TO_SITE:
+			target = _staged_hover
+			reserve = _staged_hover.distance_to(dock.global_position) + dock.global_position.distance_to(_home)
+			next_state = FlightState.STAGED_AT_SITE
+		FlightState.STAGED_TO_STORAGE:
+			target = dock.global_position
+			reserve = dock.global_position.distance_to(_home)
+			next_state = FlightState.STAGED_AT_STORAGE
+		FlightState.STAGED_HOME:
+			target = _home
+			reserve = 0.0
+			next_state = FlightState.DOCKED
+		_:
+			return false
+	var step: float = minf(global_position.distance_to(target), _speed * delta)
+	var next: Vector3 = global_position.move_toward(target, step)
+	var remaining: float = next.distance_to(target) + reserve
+	if _battery_units + 0.00001 < (step + remaining) * _energy_per_meter + RETURN_MARGIN_UNITS:
+		return false
+	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	global_position = next
+	if global_position.distance_to(target) <= 0.00001:
+		global_position = target
+		_state = next_state
+	return true
+
+
+# Only the exact terminal controller can convert material present at the
+# original anchored receiver into real drone cargo. No remote pickup.
+func _staged_collect(owner: Node, token: RefCounted, original: InventoryComponent, item: ItemDefinition, amount: int) -> bool:
+	if not _staged_authority(owner, token) or _state != FlightState.STAGED_AT_SITE:
+		return false
+	if global_position.distance_to(_staged_hover) > 0.00001 or not _delivery_live(original) or not is_instance_valid(item):
+		return false
+	if amount <= 0 or amount > 5 or original.get_total_amount() != amount or original.get_amount(item) != amount:
+		return false
+	if not original.remove_item(item, amount):
+		return false
+	_cargo_item = item
+	_cargo_amount = amount
+	_state = FlightState.STAGED_LOADED
+	return true
+
+
+func _staged_begin_return(owner: Node, token: RefCounted, dock: PrototypeDroneStorageDock, item: ItemDefinition, amount: int) -> bool:
+	if not _staged_authority(owner, token) or _state != FlightState.STAGED_LOADED:
+		return false
+	if _staged_dock.get_ref() != dock or _cargo_item != item or _cargo_amount != amount:
+		return false
+	if not _delivery_live(dock) or not dock.available or not dock.allow_returns:
+		return false
+	_state = FlightState.STAGED_TO_STORAGE
+	return true
+
+
+# Consumes the exact previously reserved destination claim only AFTER
+# metered arrival at the real dock. Staging lock is never released.
+func _staged_unload(owner: Node, token: RefCounted, dock: PrototypeDroneStorageDock, dest: InventoryComponent, item: ItemDefinition, amount: int) -> bool:
+	if not _staged_authority(owner, token) or _state != FlightState.STAGED_AT_STORAGE:
+		return false
+	if not _delivery_live(dock) or not dock.available or not dock.allow_returns or _staged_dock.get_ref() != dock or not _delivery_live(dest):
+		return false
+	if global_position.distance_to(dock.global_position) > 0.00001 or _cargo_item != item or _cargo_amount != amount:
+		return false
+	if not dest.consume_drone_return_claim(token, item, amount):
+		return false
+	_cargo_item = null
+	_cargo_amount = 0
+	_state = FlightState.STAGED_HOME
+	return true
+
+
+func _staged_rearm(owner: Node, token: RefCounted) -> bool:
+	if not _staged_authority(owner, token) or _state != FlightState.DOCKED or not _finite_cargo_rearm_ready():
+		return false
+	if _cargo_amount != 0 or _cargo_item != null or global_position.distance_to(_home) > 0.00001:
+		return false
+	_staged_owner = null
+	_staged_token = null
+	_staged_dock = null
+	_staged_hover = Vector3.ZERO
+	_state = FlightState.IDLE
+	_reuse_count += 1
+	return true
 
 
 func _ready() -> void:
