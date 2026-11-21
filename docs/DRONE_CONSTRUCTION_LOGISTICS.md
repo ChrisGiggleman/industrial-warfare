@@ -1,6 +1,15 @@
 # Industrial Warfare — Drone Construction Logistics
 
-### 2026-11-21 — E3d5c6c Stage C opt-in playable automatic recovery STAGED (14 NEW checks pending F6)
+### 2026-11-21 — E3d5c6c Stage C isolated playable recovery ACCEPTED: local 14/14; compatibility pending 27/381
+
+Developer reports **ALL 14/14 new Stage C playable integration F6 checks A–N passed locally in Godot 4.6.2** for `res://tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`. This is developer-reported local execution, **not assistant-executed**. Covers exact opt-in playable Direct Build path, original Storage/Press custody capture on authorization, cancellation with 3/5 protected ingots, old construction mission rearm, same drone automatic original-hover pickup, physical return with capacity reservation, blocked dock/full Storage waits, 12+3/10+5 stock conservation, finite battery charging/generator-OFF wait and one-time recovery. The new Stage C automated suite is **isolated ACCEPTED, not yet fully regression- or manually accepted**.
+
+**Unique accepted automated baseline is now 61 suites / 850 checks**, from prior 60/836 + one new 14-check Stage C suite. This is a cumulative *unique accepted suite milestone count*, **not a fresh full 61-suite combined test execution**. No user-confirmed Stage C gameplay manual test exists yet. The original E3d5c6b 10-check manual gate is separately pending.
+
+**NEXT: E3d5c6c Stage C compatibility PENDING — 27 existing suites / 381 rerun checks.** Exact verified list: [Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md), `tools/cancelled_site_recovery_stage_c_compatibility.csv`. This is 26 accepted Stage B compatibility suites / 368 checks plus the existing isolated Stage B physical recovery suite / 13 checks; all checks overlap existing unique 61/850. Run each existing scene with F6 in Godot, record full banners, and only then accept 27/381. After compatibility, manually run `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn` for actual player controls and visible physical returns. Preserve single-drone sole process ownership, original scene/Main isolation, immutable custody and finite charging. No gameplay or test scripts changed in this documentation checkpoint.
+
+
+### 2026-11-21 — E3d5c6c Stage C opt-in playable automatic recovery STAGED (historical; superseded by later 14/14 acceptance)
 
 After developer-confirmed Stage B acceptance (isolated 13/13 + targeted 26/26 suites / 368/368 existing checks), committed a **separate new experimental playable scene** `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn` and a new `PlayableCancelledSiteRecoveryE3d5c6cStageC` adapter subclass. The original Direct Build playable scene, Main and accepted base adapter remain unchanged. The subclass captures each originally authorized real Storage/Press site's locked custody before X cancellation, waits until the original normal construction lifecycle has released/rearmed the one drone, then calls the accepted Stage B physical recovery mission through its **sole adapter process driver**. It does NOT tick original dispatch concurrently, unlock staging, or instant-refund cargo. Capacity/dock/energy refusal leaves materials in original custody and retries; return and finite Hub charging are physical.
 
