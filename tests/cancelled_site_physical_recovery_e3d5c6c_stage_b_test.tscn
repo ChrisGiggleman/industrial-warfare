@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/cancelled_site_physical_recovery_e3d5c6c_stage_b_test.gd" id="1_test"]
+
+[node name="CancelledSitePhysicalRecoveryE3d5c6cStageBTest" type="Node3D"]
+script = ExtResource("1_test")
