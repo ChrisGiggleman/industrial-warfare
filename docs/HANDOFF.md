@@ -5,6 +5,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**New Stage C partial manual evidence: covered Storage completed (15→12 ingots, drone rearmed once). Press + power pause/resume + remaining Stage C checks pending; no 10/10 acceptance.**
+
+### 2026-11-20 — E3d5c6b Stage C manual: powered-site Test Storage completed (partial gate evidence)
+
+Developer supplied a live Godot screenshot and explicitly said “it built the storage” after repositioning the direct Storage placement near the labeled `STORAGE SITE` within the completed Hub's full-footprint 4.5-unit power coverage. Screenshot shows a new Storage mesh/port next to Starter Storage and Hub, Starter Storage **12 ingots** (from 15; canonical Storage bill 3), drone **IDLE** with **cargo 0/5**, **battery 40/40**, **Rearms 1**, zero planned/queued/active jobs, and generator output/spare **12**. This supports manual Storage direct-placement/completion and same-drone return/recharge at an appropriately powered location, and explains why no 3-ingot return occurs for successful building completion. It does **not** independently verify progress pausing with generator OFF, Press build, or the complete Stage C A1–A6 set; do not claim 10/10 manual acceptance. The earlier cancelled-after-delivery staging case remains separate and physical staged-item recovery remains a future gated feature.
+
+Next manual action **in the same live fresh session**: use Ammunition Press hotbar (check actual assignment via M if needed), click marked `AMMO PRESS SITE`, observe real five-ingot pickup and delivery, wait for actual `CONSTRUCTION` with worker 1/1, turn generator OFF to verify pause and ON to verify resume, then complete Press with starter stock expected **7** (15−3−5). Do not turn power OFF before worker admission. If the Press is blocked or a diagnostic error occurs, capture the live HUD and first Output/Debugger error rather than altering rules. Stage B fully accepted; unique automated baseline **58/810** unchanged; Stage C manual gate pending.
+
 **Stage C: developer confirmed original Storage job was cancelled without completion. Source stock stayed 12/15 and drone returned empty, consistent with protected delivered staging; physical post-delivery staged recovery is NOT implemented and requires a separately gated milestone. Manual 10/10 remains pending.**
 
 ### 2026-11-20 — Stage C user confirms incomplete/cancelled site, stock remains 12/15; post-delivery recovery not yet implemented
