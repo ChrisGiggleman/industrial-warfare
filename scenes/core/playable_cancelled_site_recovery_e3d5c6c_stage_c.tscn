@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/core/factory_testing_sandbox.tscn" id="1_sandbox"]
+[ext_resource type="Script" path="res://scripts/ui/playable_cancelled_site_recovery_e3d5c6c_stage_c.gd" id="2_recovery"]
+
+[node name="PlayableCancelledSiteRecoveryE3d5c6cStageC" instance=ExtResource("1_sandbox")]
+
+[node name="AutomaticConstructionSandbox" type="Node" parent="."]
+script = ExtResource("2_recovery")
+enable_automatic_sandbox = true
+enable_player_site_enrollment = true
+enable_building_expansion = true
+enable_playable_feedback = true
+enable_direct_build_authorization = true
