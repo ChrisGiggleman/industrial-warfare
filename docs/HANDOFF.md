@@ -1,9 +1,19 @@
 # Industrial Warfare — Current Development Handoff
 
-Updated 2026-11-20. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
+Updated 2026-11-21. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
 ## Current checkpoint
+
+**E3d5c6c Stage B isolated physical recovery ACCEPTED (13/13 local Godot). Stage A FULLY ACCEPTED (13 isolated + 15 suites/218 checks compatible). Stage B targeted compatibility 26 suites / 368 checks PENDING. Cumulative unique accepted 60 suites/836 checks. Playable auto-recovery still NOT wired; E3d5c6b manual Stage C remains open.** [Exact F6 list](CANCELLED_SITE_RECOVERY_STAGE_B_COMPATIBILITY.md)
+
+### 2026-11-21 — E3d5c6c Stage B isolated 13/13 ACCEPTED; targeted compatibility 26/368 PENDING
+
+Developer explicitly confirmed **all 13/13** `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn` checks A–M passed locally in Godot. This verifies the **isolated, default-off** physical recovery implementation: a real cancelled-site custody ticket, actual 3/5-ingot original locked staging debit only when the drone reaches the original hover, one real charged drone, exact reserved return capacity at registered Storage, finite flights and battery, safe wait on unavailable dock, actual unloading at dock, return/recharge/rearm and no duplicate material or mission. These are **developer-reported local Godot results, not assistant-executed tests**. E3d5c6c Stage A was already fully accepted (13 isolated + 15/218 compatibility reruns).
+
+Unique automated baseline advances from **59/823** to **60 suites / 836 checks** (+ one new 13-check Stage B suite); no full fresh combined 60/836 regression has been executed. New Stage B compatibility guide: [CANCELLED_SITE_RECOVERY_STAGE_B_COMPATIBILITY.md](CANCELLED_SITE_RECOVERY_STAGE_B_COMPATIBILITY.md), manifest `tools/cancelled_site_physical_recovery_stage_b_compatibility.csv`: **26 existing suites / 368 existing checks**, all scene paths verified on main. Covers original drone flight/battery, staging/port provenance, escrow, registered Storage capacity, supplier and return claims, physical pickup/delivery, finite charging and worker reuse, all cancellation phases, automatic dispatch/lifecycle, Direct Build isolated A/B and Stage A custody audit. These checks **have not been rerun for Stage B**, so Stage B is **isolated accepted but compatibility PENDING**. Their 368 checks overlap accepted suites; do NOT add to unique 836.
+
+No gameplay source changes in this acceptance-documentation gate. Main and old Direct Build playable scene do NOT yet auto-dispatch a staged-material recovery flight. After explicit 26/368 developer acceptance, progress to **E3d5c6c Stage C** in a separate opt-in playable recovery scene, reusing original single-drone dispatch ownership without a parallel driver. E3d5c6b Stage C manual gate 10/10 remains independently pending. Keep research silo/docking expansion, auto conveyor/merger, multi-item/trip/fleet, persistence and destruction separately gated.
 
 **E3d5c6c Stage A FULLY ACCEPTED (13 isolated plus 15/218 compatibility reruns). Stage B isolated physical cancelled-site recovery STAGED, F6 13/13 pending. Unique accepted baseline 59/823. Original playable scene has NO new automatic recovery yet.**
 
