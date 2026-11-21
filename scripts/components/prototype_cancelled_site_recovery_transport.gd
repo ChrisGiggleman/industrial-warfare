@@ -7,7 +7,7 @@ class_name PrototypeCancelledSiteRecoveryTransport
 ## Only the original one-drone Direct Build scene can opt in.
 const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const INGOT = preload("res://data/items/test_ingot.tres")
-const Drone = PrototypeConstructionWorkerDrone
+const Flight = PrototypeConstructionWorkerDrone.FlightState
 const SPEED: float = 10.0
 
 @export var enable_isolated_physical_recovery: bool = false
@@ -132,7 +132,7 @@ func _claimed_destination() -> bool:
 func begin(ticket: int) -> bool:
 	if not _enabled() or _ticket != 0 or ticket <= 0 or _completed.has(ticket):
 		return false
-	if _dispatch.has_lifecycle_assignment() or _drone.get_flight_state() != Drone.FlightState.IDLE:
+	if _dispatch.has_lifecycle_assignment() or _drone.get_flight_state() != Flight.IDLE:
 		return false
 	if _drone.cargo_amount() != 0 or _drone.cargo_item() != null:
 		return false
@@ -212,14 +212,14 @@ func tick(delta: float) -> Dictionary:
 	if _dispatch.has_lifecycle_assignment():
 		return {"action": &"foreign_assignment"}
 	var state: int = _drone.get_flight_state()
-	if state == Drone.FlightState.STAGED_TO_SITE:
+	if state == Flight.STAGED_TO_SITE:
 		var original: Dictionary = _audit._recovery_source_for(_ticket, self)
 		if original.is_empty() or original["buffer"] != _source.get_ref() or original["hover"] != _hover:
 			return {"action": &"source_quarantined"}
 		if not _claimed_destination():
 			return {"action": &"destination_wait"}
 		return {"action": &"site_flight" if _drone._staged_step(self, _token, delta) else &"energy_wait"}
-	if state == Drone.FlightState.STAGED_AT_SITE:
+	if state == Flight.STAGED_AT_SITE:
 		var original: Dictionary = _audit._recovery_source_for(_ticket, self)
 		if original.is_empty() or original["buffer"] != _source.get_ref() or original["hover"] != _hover:
 			return {"action": &"source_quarantined"}
@@ -229,16 +229,16 @@ func tick(delta: float) -> Dictionary:
 		if not _drone._staged_collect(self, _token, source, INGOT, _amount):
 			return {"action": &"pickup_wait"}
 		return {"action": &"collected"}
-	if state == Drone.FlightState.STAGED_LOADED:
+	if state == Flight.STAGED_LOADED:
 		if not _claimed_destination():
 			return {"action": &"destination_wait"}
 		var dock := _dock.get_ref() as PrototypeDroneStorageDock
 		return {"action": &"return_started" if _drone._staged_begin_return(self, _token, dock, INGOT, _amount) else &"destination_wait"}
-	if state == Drone.FlightState.STAGED_TO_STORAGE:
+	if state == Flight.STAGED_TO_STORAGE:
 		if not _claimed_destination():
 			return {"action": &"destination_wait"}
 		return {"action": &"storage_flight" if _drone._staged_step(self, _token, delta) else &"energy_wait"}
-	if state == Drone.FlightState.STAGED_AT_STORAGE:
+	if state == Flight.STAGED_AT_STORAGE:
 		if not _claimed_destination():
 			return {"action": &"destination_wait"}
 		var dock := _dock.get_ref() as PrototypeDroneStorageDock
@@ -246,9 +246,9 @@ func tick(delta: float) -> Dictionary:
 		if not _drone._staged_unload(self, _token, dock, dest, INGOT, _amount):
 			return {"action": &"destination_wait"}
 		return {"action": &"unloaded"}
-	if state == Drone.FlightState.STAGED_HOME:
+	if state == Flight.STAGED_HOME:
 		return {"action": &"home_flight" if _drone._staged_step(self, _token, delta) else &"energy_wait"}
-	if state == Drone.FlightState.DOCKED:
+	if state == Flight.DOCKED:
 		if _drone._staged_rearm(self, _token):
 			_completed[_ticket] = _amount
 			_clear()
