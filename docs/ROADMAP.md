@@ -5,7 +5,7 @@
 - [x] Stage A immutable cancelled-site custody: isolated 13/13 plus targeted compatibility 15 suites / 218 checks, developer-confirmed locally.
 - [x] Stage B physical cancelled-site recovery: isolated 13/13 plus **targeted compatibility 26 suites / 368 checks**, developer-confirmed locally (this checkpoint).
 - [x] Unique accepted automated milestone baseline **60 suites / 836 checks**. Compatibility reruns are overlapping, not additive; no fresh combined full 60/836 execution is claimed.
-- [ ] Stage C **new opt-in playable automatic cancelled-site material recovery scene**: not yet implemented or locally validated; retain original Direct Build scene and Main unchanged.
+- [ ] Stage C **new opt-in playable automatic cancelled-site recovery scene STAGED**; new 14-check F6 scene and manual player acceptance **not yet run**. See [Stage C guide](CANCELLED_SITE_RECOVERY_STAGE_C_PLAYABLE.md). Original Direct Build scene and Main unchanged.
 - [ ] Original E3d5c6b Stage C manual 10-check acceptance remains separate/pending.
 
 ## Current milestone — 2026-11-20
