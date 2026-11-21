@@ -10,9 +10,11 @@ The accepted isolated tests A–M cover canonical original 3-ingot Storage and 5
 
 Prior Stage A custody 13/13 isolated plus **15/15 previously accepted compatibility suites / 218/218 checks** were fully accepted. Stage B's 13 new checks are unique: cumulative accepted milestone baseline = **60 unique suites / 836 checks** (earlier 58/810 + Stage A 13 + Stage B 13). No final fresh combined 60/836 run has been performed or reported. All compatibility reruns overlap accepted tests and cannot be added to unique totals.
 
-## Stage B targeted compatibility — NOT YET RUN / NOT ACCEPTED
+## Stage B targeted compatibility — ACCEPTED: 26/26 suites, 368/368 checks
 
-Because Stage B adds default-OFF flight states and an opt-in custody source accessor, rerun **26 prior accepted suites / 368 existing checks** covering drone motion, battery, inventory staging and escrow, original site/receiver claims, supplier/return reservations, cargo recovery, charging/reuse, cancellation, dispatch, and the Direct Build paths. Every listed scene was verified present on GitHub; counts were checked against the accepted 56-suite manifest or earlier Stage A/B/C isolated acceptance records.
+**Acceptance evidence:** developer-reported local Godot 4.6.2 results on 2026-11-21; not assistant-executed. No fresh full 60/836 run. The 368 targeted checks are existing reruns, not new unique checks.
+
+Developer confirmed the complete targeted compatibility gate **26/26 suites and 368/368 existing checks passed locally on 2026-11-21**. Because Stage B adds default-OFF flight states and an opt-in custody source accessor, the successful rerun covered **26 prior accepted suites / 368 existing checks** covering drone motion, battery, inventory staging and escrow, original site/receiver claims, supplier/return reservations, cargo recovery, charging/reuse, cancellation, dispatch, and the Direct Build paths. Every listed scene was verified present on GitHub; counts were checked against the accepted 56-suite manifest or earlier Stage A/B/C isolated acceptance records.
 
 Manifest source of truth: `tools/cancelled_site_physical_recovery_stage_b_compatibility.csv`.
 
@@ -48,9 +50,9 @@ Manifest source of truth: `tools/cancelled_site_physical_recovery_stage_b_compat
 
 **How to run:** pull `main` using `git pull --ff-only origin main`; open each scene under `res://tests/` in Godot; press **F6**, inspect Output and Debugger for all PASS lines and successful final banner; repeat for each. **Do not** run the new Stage B isolated suite as part of these 26 compatibility reruns; Stage B's new 13 checks have already been locally accepted.
 
-**If any suite stops or fails:** record the *first* Debugger assertion/parse error and preceding Output PASS lines. Never claim all 26 passing from partial output. Stop and fix narrowly before resuming. Only record **26/26 suites, 368/368 checks** when the developer confirms actual local results.
+**If any suite stops or fails:** record the *first* Debugger assertion/parse error and preceding Output PASS lines. Never claim all 26 passing from partial output. Stop and fix narrowly before resuming. The developer has confirmed **26/26 suites, 368/368 checks**; this acceptance applies to the local verification reported on 2026-11-21.
 
-**After full compatibility:** record full Stage B acceptance, maintain **60/836** unique accepted baseline (no double count), and start **E3d5c6c Stage C — opt-in playable automatic cancelled-site recovery**, in a **new separate scene**, without changing Main, existing Direct Build scene or ordinary scenes.
+**With full compatibility accepted:** maintain **60/836** unique accepted baseline (no double count), and start **E3d5c6c Stage C — opt-in playable automatic cancelled-site recovery**, in a **new separate scene**, without changing Main, existing Direct Build scene or ordinary scenes.
 
 ## Future Stage C gameplay and separate gates
 
