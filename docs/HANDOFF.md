@@ -5,6 +5,18 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6c Stage A isolated 13/13 ACCEPTED; targeted compatibility final suite reported failing at completed-building position/parent compound assertion. Test-only strict original-site-transform correction staged; rerun last existing Stage B F6 suite. Full compatibility 15/218 NOT accepted yet.**
+
+### 2026-11-20 — E3d5c6c Stage A compatibility suite 15 halted; Stage B fixture transform correction pending F6
+
+Developer reported reaching the final suite of the **15-suite / 218-check Stage A targeted compatibility gate** and supplied a Godot 4.6.2 debugger screenshot showing `res://tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.gd:182` asserting `building.get_parent() == sandbox and building.global_position.is_equal_approx(at)`. This is in `_check_built` after `_finish` has already observed a completed job and emitted one building. The compound assertion does **not** isolate which clause failed. The first 14 compatibility scenes were marked complete in the user's test tracker, but no complete Output log was supplied; therefore the **full compatibility gate remains pending**, not 15/15 accepted.
+
+Source inspection: `ConstructionSite._finish_construction` parents the actual building to `get_parent()` and copies the original `global_transform`; `WorldInteraction._update_placement_preview` uses physics ray elevation for the construction site, not guaranteed world Y=0. **Likely test-only hardcoded Y mismatch**, not verified material loss or gameplay regression. Prior Stage A custody fixture similarly needed to compare against actual site hover position.
+
+**Narrow test-only correction:** snapshot each actual site's full `global_transform` (Press, High Blueprint Storage, Normal Direct Storage) immediately after real placement; at completion, separately assert (1) original actual site X/Z matches expected plot, (2) completed building's parent is sandbox, (3) completed building's **full world transform** equals the original captured site transform, and (4) scene definition/runtime binding are unchanged. The assertions now include expected and actual transforms/parent in error messages, to distinguish a true ownership/placement regression if it persists. No gameplay scripts, scene, prior custody audit, material transport, escrow, power, worker, or ownership behavior changed. No compatibility result claimed from the correction.
+
+**Local next step:** Pull current main and rerun **only** `res://tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn` with F6 (existing 14/14 isolated suite). If it passes, report successful final suite plus previously completed 14 to record 15/15, 218/218 compatibility gate; do not double-count it in unique accepted **59-suite / 823-check baseline**. If it fails, capture first Debugger error and preceding PASS lines; corrected assertions should reveal whether parent or actual transform differs. E3d5c6c Stage A isolated **13/13 accepted**, full Stage A pending compatibility. No physical post-delivery return code yet; E3d5c6b manual Stage C remains pending.
+
 **E3d5c6c Stage A isolated ACCEPTED (13/13 locally confirmed); targeted compatibility gate PENDING 15 suites / 218 rerun checks. Unique automated milestone baseline now 59 suites / 823 checks (prior 58/810 preserved). No physical staged recovery code.**
 
 ### 2026-11-20 — E3d5c6c Stage A isolated custody audit ACCEPTED 13/13; compatibility 15/218 pending
