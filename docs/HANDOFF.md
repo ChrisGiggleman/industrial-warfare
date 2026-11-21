@@ -5,6 +5,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6c Stage A FULLY ACCEPTED: isolated 13/13 + targeted compatibility 15/15 suites, 218/218 checks. Stage B default-off physical recovery is the next milestone. Unique accepted baseline 59/823 unchanged.**
+
+### 2026-11-20 — E3d5c6c Stage A FULLY ACCEPTED; Stage B isolated physical recovery starts
+
+Developer confirmed the corrected final `playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn` **all 14/14 A–N passed locally in Godot**, resolving the half-grid WAIT_POS silent exit. The other 14 suites in the sequential E3d5c6c Stage A compatibility gate had been completed previously; together **15/15 compatibility suites / 218/218 checks are accepted** with manifest `tools/cancelled_site_custody_stage_a_compatibility.csv`. The **13/13 isolated cancelled-site custody audit checks** were already locally accepted. Full Stage A gate: 16 suite runs / **231/231** checks; the 218 reruns overlap previously accepted suites and must **not** inflate the unique baseline. Current cumulative unique automated milestone baseline: **59 suites / 823 checks** (E3d5c6a 56/785; E3d5c6b 11+14; E3d5c6c Stage A 13). No new fresh full 59/823 combined run claimed. E3d5c6b Stage C 10 manual checks remain pending.
+
+**Stage B goal:** default-OFF, exact-scoped terminal-site physical recovery using the original ONE charged drone after previous assignment rearms. Source is the Stage A immutable cancelled-site ticket, original staging/port and actual inventory after escrow refund. Reserve exact destination storage capacity before any source debit. A guarded drone flight must first reach the original site hover before removing 3 or 5 actual ingots, then visibly carry them to a real registered Storage dock and unload with the reserved capacity token, respecting battery/finite recharge and never touching complete-building bills. Preserve original staging locks. No asynchronous separate process/worker/timer, no power/free inventory, no silent fallback or automatic installation in Main/accepted scenes. Stage B implementation and tests require isolated F6 and compatibility gates; **no new acceptance claimed** by this Stage A documentation checkpoint.
+
 **E3d5c6c Stage A isolated 13/13 ACCEPTED; compatibility final suite was silently ending after PASS I because 2×2 Press WAIT_POS used integer Storage grid and unpowered plot. Corrected half-grid powered WAIT_POS and diagnostic assert; final F6 rerun pending. 15/218 NOT yet accepted; unique baseline 59/823.**
 
 ### 2026-11-20 — E3d5c6c Stage A compatibility last suite silently exits after PASS I; exact fixture problem corrected, rerun pending
