@@ -6,6 +6,8 @@ class_name PrototypeCancelledSiteRecoveryTransport
 ## tick(); Stage C will decide future playable integration separately.
 ## Only the original one-drone Direct Build scene can opt in.
 const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
+const STAGE_C_SCENE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
+const STAGE_C_ADAPTER := "res://scripts/ui/playable_cancelled_site_recovery_e3d5c6c_stage_c.gd"
 const INGOT = preload("res://data/items/test_ingot.tres")
 const Flight = PrototypeConstructionWorkerDrone.FlightState
 const SPEED: float = 10.0
@@ -39,14 +41,16 @@ func _live(node: Variant) -> bool:
 
 func _scope() -> Node3D:
 	var root := get_parent() as Node3D
-	return root if _live(root) and root.scene_file_path == EXACT_SCENE else null
+	return root if _live(root) and root.scene_file_path in [EXACT_SCENE, STAGE_C_SCENE] else null
 
 
 func _enabled() -> bool:
 	var root := _scope()
 	return (
 		enable_isolated_physical_recovery and _configured and root != null and _live(self)
-		and _live(_adapter) and _adapter.get_parent() == root and not _adapter.is_processing()
+		and _live(_adapter) and _adapter.get_parent() == root
+		and (not _adapter.is_processing() or (root.scene_file_path == STAGE_C_SCENE
+			and _adapter.get_script() != null and _adapter.get_script().resource_path == STAGE_C_ADAPTER))
 		and _live(_audit) and _audit.get_parent() == root and _audit._enabled()
 		and _audit.enable_isolated_stage_b_source_access
 		and _live(_drone) and _drone.get_parent() == root and _drone.enable_isolated_cancelled_staging_flight
