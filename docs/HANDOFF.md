@@ -5,6 +5,16 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6c Stage A F6 first run halted in Check E at hardcoded hover Y position assertion; narrow fixture correction committed and 13-check rerun pending. No custody audit or gameplay change.**
+
+### 2026-11-20 — E3d5c6c Stage A local F6 halted at Check E hover-position assertion (test-only correction staged)
+
+Developer screenshot of `res://tests/cancelled_site_custody_e3d5c6c_stage_a_test.tscn` shows **assertion failed at test line 281**: `obs["hover_position"].is_equal_approx(STORAGE_POS + Vector3.UP * 2.0)`. The test has already entered Check E after the physical Storage pickup/delivery steps, and the earlier E assertions on `ready_read_only`, amount 3, original instance ID, canonical bill and definition ran without stopping. The visible image does not include numerical values for the recorded hover; likely culprit is the test's **hardcoded zero Y** for an actual Godot ray-placed site, not a verified custody loss. No 13/13 acceptance; any later checks F–M were not verified by this run.
+
+**Narrow test-only correction:** Before cancelling the original site, store `actual_hover = storage.global_position + Vector3.UP * 2.0`, assert actual site **X/Z match the intended STORAGE_POS plot**, and assert the original registered physical receiver is at that hover. After cancellation, compare the audit's immutable `obs["hover_position"]` to that captured original hover. Include both vectors in the failure message. This tests original-site provenance and immutable receiver geometry without assuming world Y=0, modifying the audit/registry, unlocking staged stock, or changing gameplay collision/placement logic. No `_process` or material movement added. The original 58/810 baseline remains accepted; no compatibility or new tests claimed.
+
+**Rerun after pulling current main:** F6 same `cancelled_site_custody_e3d5c6c_stage_a_test.tscn`, expected 13/13 A–M; final banner `ALL 13 CANCELLED SITE CUSTODY E3D5C6C STAGE A TESTS PASSED`. If another assertion fails, developer should provide first Debugger error and Output PASS lines; do not count Stage A as accepted until 13/13. Stage B physical recovered-material pickup/return still unimplemented. E3d5c6b manual Stage C remains open.
+
 **E3d5c6c Stage A read-only cancelled-site custody audit STAGED; local F6 13/13 pending. Recovery flights NOT implemented. Original 58/810 accepted baseline intact, E3d5c6b Stage C manual still pending.**
 
 ### 2026-11-20 — E3d5c6c Stage A READ-ONLY CANCELLED CUSTODY AUDIT STAGED (13 isolated checks pending)
