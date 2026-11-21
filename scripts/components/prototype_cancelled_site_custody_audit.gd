@@ -189,3 +189,30 @@ func observe(id: int) -> Dictionary:
 	result["definition_id"] = (record["original_definition"] as BuildingDefinition).building_id
 	result["status"] = &"empty_no_pickup" if amount == 0 else (&"ready_read_only" if amount == int(record["expected"]) else &"quarantined")
 	return result
+
+
+# E3d5c6c Stage B1: read-only exact provenance verification for a separate,
+# opt-in capacity reservation authority. It cannot debit the source buffer,
+# authorize drone movement, or release a registry claim.
+func matches_original_terminal_source(
+	id: int,
+	staging: BlueprintConstructionMaterialStaging,
+	port: BlueprintConstructionStagingInputPort,
+	buffer: InventoryComponent,
+	job: ConstructionJob
+) -> bool:
+	if not _enabled() or not _records.has(id):
+		return false
+	var snapshot: Dictionary = observe(id)
+	if snapshot.get("status") != &"ready_read_only":
+		return false
+	var record: Dictionary = _records[id]
+	return (
+		record["original_job"] == job
+		and job != null and job.state == ConstructionJob.State.CANCELLED
+		and (record["staging"] as WeakRef).get_ref() == staging
+		and (record["port"] as WeakRef).get_ref() == port
+		and (record["buffer"] as WeakRef).get_ref() == buffer
+		and int(snapshot.get("amount", 0)) == int(record["expected"])
+		and int(snapshot.get("original_site_id", 0)) == int(record["original_site_id"])
+	)
