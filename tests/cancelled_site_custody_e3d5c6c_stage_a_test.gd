@@ -271,14 +271,27 @@ func _checks() -> void:
 	print("PASS D: Real Storage pickup/unload; ledger read-only until terminal cancellation")
 
 	# E — cancel after delivery; original staging, no inventory teleport.
+	# The placement ray can set ground-contact Y independently of the
+	# requested grid X/Z. Record the exact approved original site and
+	# original receiver hover BEFORE queue_free, not a hardcoded Y=0.
 	var original_site_id: int = storage.get_instance_id()
+	var actual_hover: Vector3 = storage.global_position + Vector3.UP * 2.0
+	assert(
+		Vector2(storage.global_position.x, storage.global_position.z).is_equal_approx(
+			Vector2(STORAGE_POS.x, STORAGE_POS.z)
+		)
+	)
+	assert((storage_pair["port"] as BlueprintConstructionStagingInputPort).global_position.is_equal_approx(actual_hover))
 	assert(demo.world.call("_cancel_blueprint_site", storage))
 	assert(storage.job.state == ConstructionJob.State.CANCELLED)
 	var obs: Dictionary = audit.observe(sid)
 	assert(obs["status"] == &"ready_read_only" and obs["amount"] == 3)
 	assert(obs["expected"] == 3 and obs["original_site_id"] == original_site_id)
 	assert(obs["definition_id"] == STORAGE.building_id)
-	assert(obs["hover_position"].is_equal_approx(STORAGE_POS + Vector3.UP * 2.0))
+	assert(
+		(obs["hover_position"] as Vector3).is_equal_approx(actual_hover),
+		"Custody hover mismatch: recorded=%s actual site hover=%s" % [obs["hover_position"], actual_hover]
+	)
 	assert(demo.stock.get_amount(INGOT) == 12 and storage_buffer.get_amount(INGOT) == 3)
 	assert(demo.registry.has_locked_pair(storage_pair["staging"], storage_pair["port"]))
 	assert(demo.escrow.held_count() == 0 and demo.drone.cargo_amount() == 0)
