@@ -5,6 +5,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**Stage C partial evidence: two actual building completions (Storage + Press), 15→7 ingots, 2 drone rearms. Power pause/resume, unsupported/duplicate rejection, Blueprint authorization and loaded cancel remain unverified; 10/10 is NOT accepted.**
+
+### 2026-11-20 — E3d5c6b Stage C: Test Storage and Ammunition Press visibly complete, exact 15→7 material accounting
+
+Developer supplied a new playable Godot screenshot of `res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn`: visible completed Test Storage adjacent to Starter Storage and a dark operational-looking Ammunition Press structure to the right of the Hub. Left live automatic construction HUD: Starter Storage **7 ingots (0 reserved)**, drone **IDLE / Cargo 0/5**, **battery 40/40**, **Rearms 2**, **Queue H/N/L 0/0/0**, generator output/spare **12**, worker slots **0/1**. These match the expected two separate successful physical construction cycles and original bills: starting 15 − Storage 3 − Press 5 = **7 ingots**. The user provided screenshot rather than a separate narrated checklist; screenshot supports visual completion/material accounting and return/recharge, but does not independently demonstrate generator OFF pause and ON resume during active work, unsupported building rejection, same-footprint duplicate click rejection, three planned-only blueprint placements, explicit selection/batch authorization, or loaded Press cancellation. Therefore do **not** record full Stage C 10/10 acceptance or final combined 58/810 rerun. Stage A and Stage B remain fully accepted, unique automated baseline **58 suites / 810 checks**.
+
+Next user manual gates: **Fresh F6** for generator OFF/ON *while* Storage or Press is constructing (verify worker 1/1, progress stops then resumes); confirm unsupported/duplicate click rejection. After that, **fresh F6** Session B blueprint planning with P/Q/H/E/Ctrl+E and exact 15→4 conservation, followed by **fresh F6** Session C cancelled *loaded cargo* (Press Cargo 5/5, X before unloading; physical return restores Starter Storage to 15). Distinguish this from already-confirmed cancelled-after-delivery protected staged materials (not automatically recovered yet; separately gated feature). No gameplay or test modifications in this documentation checkpoint.
+
 **New Stage C partial manual evidence: covered Storage completed (15→12 ingots, drone rearmed once). Press + power pause/resume + remaining Stage C checks pending; no 10/10 acceptance.**
 
 ### 2026-11-20 — E3d5c6b Stage C manual: powered-site Test Storage completed (partial gate evidence)
