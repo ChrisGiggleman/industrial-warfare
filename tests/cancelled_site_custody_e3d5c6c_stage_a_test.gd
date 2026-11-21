@@ -289,7 +289,7 @@ func _checks() -> void:
 	assert(obs["expected"] == 3 and obs["original_site_id"] == original_site_id)
 	assert(obs["definition_id"] == STORAGE.building_id)
 	assert(
-		(obs["hover_position"] as Vector3).is_equal_approx(actual_hover),
+		obs["hover_position"].is_equal_approx(actual_hover),
 		"Custody hover mismatch: recorded=%s actual site hover=%s" % [obs["hover_position"], actual_hover]
 	)
 	assert(demo.stock.get_amount(INGOT) == 12 and storage_buffer.get_amount(INGOT) == 3)
