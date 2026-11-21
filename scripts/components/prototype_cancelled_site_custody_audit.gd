@@ -4,7 +4,7 @@ class_name PrototypeCancelledSiteCustodyAudit
 ## E3d5c6c Stage A — read-only cancelled construction custody provenance.
 ## This never moves cargo, refunds inventory, unlocks a staging claim, starts
 ## a drone, authorizes a building, or advances a construction job.
-## Instantiated only by the isolated F6 fixture; feature is default OFF.
+## Explicitly instantiated by isolated F6 or Stage C opt-in; default OFF.
 
 const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const STAGE_C_SCENE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
