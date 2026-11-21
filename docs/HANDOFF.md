@@ -5,6 +5,18 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6c Stage A isolated 13/13 ACCEPTED; compatibility final suite was silently ending after PASS I because 2×2 Press WAIT_POS used integer Storage grid and unpowered plot. Corrected half-grid powered WAIT_POS and diagnostic assert; final F6 rerun pending. 15/218 NOT yet accepted; unique baseline 59/823.**
+
+### 2026-11-20 — E3d5c6c Stage A compatibility last suite silently exits after PASS I; exact fixture problem corrected, rerun pending
+
+Developer posted Output of `res://tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn`: **PASS A through PASS I** now print, including all three strict completed-building original site transform checks after the previous fix. The last Output line is `DIRECT BUILD AUTHORIZED: Prototype Ammunition Press | Normal priority`, immediately followed by `--- Debugging process stopped ---`, with **no PASS J** or visible assertion. They clarified this is repeatable, not a manual stop.
+
+Confirmed test control-flow cause: in `_checks` after PASS I, `var waiting := _place(demo, PRESS, WAIT_POS)` and an `if not is_instance_valid(waiting): sandbox.free(); return` branch **silently ends** the whole isolated test. The prior `WAIT_POS=Vector3(-5,0,0)` was copied from an expansion fixture's **Storage** LATE_POS; that building has odd footprint (1×3), but the newly placed **Press** has even 2×2 footprint and must center on **half-integer X/Z**. Godot's real Direct placement can succeed after grid snapping even though the test helper `_at()` looks for the exact requested integer X/Z, causing a null lookup and early return. Moreover the previous plot is far outside the Hub's finite power radius (4.5), so it would fail the following coverage assertion. This is a test-fixture issue, not a confirmed gameplay/drone bug.
+
+**Narrow test-only correction:** The fourth Press now requests `WAIT_POS=Vector3(1.5,0,-5.5)`, exact half-grid coordinates. Its footprint stays inside the existing Hub at `(2,0,-3)` 4.5-unit corner coverage; the open plot north of the Hub is away from the three completed building interiors and ReferenceCube. Do not modify real placement, building footprints, power coverage, physical drone movement, escrow or ownership. `_place` now prints the requested/observed actual sites and raises an explicit debugger assertion on any future null lookup, instead of returning silently. Check J now prints a start marker, and the waiting site/coverage guards fail visibly if the plot is blocked or coverage invalid. The original 14 checks A–N and expectations (including 15→4 and unaffordable fourth Press) are unchanged.
+
+**Local follow-up:** Pull main and F6 **only** `res://tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn`. Expected PASS J, then K–N, then `ALL 14 PLAYABLE DIRECT BUILD AUTHORIZATION E3D5C6B STAGE B TESTS PASSED`. No Godot execution by assistant. Previous 14 compatibility suites are developer-reported as passed; full **E3d5c6c Stage A 15 suites / 218 checks** is **not yet accepted** until this final rerun passes. Unique accepted baseline remains **59 suites / 823 checks**, and E3d5c6b Stage C manual is still pending. Recovery flight implementation Stage B has not begun.
+
 **E3d5c6c Stage A isolated 13/13 ACCEPTED; targeted compatibility final suite reported failing at completed-building position/parent compound assertion. Test-only strict original-site-transform correction staged; rerun last existing Stage B F6 suite. Full compatibility 15/218 NOT accepted yet.**
 
 ### 2026-11-20 — E3d5c6c Stage A compatibility suite 15 halted; Stage B fixture transform correction pending F6
