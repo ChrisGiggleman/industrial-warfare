@@ -1,5 +1,13 @@
 # Industrial Warfare — Development Roadmap
 
+## Current milestone — 2026-11-21: E3d5c6c
+
+- [x] Stage A immutable cancelled-site custody: isolated 13/13 plus targeted compatibility 15 suites / 218 checks, developer-confirmed locally.
+- [x] Stage B physical cancelled-site recovery: isolated 13/13 plus **targeted compatibility 26 suites / 368 checks**, developer-confirmed locally (this checkpoint).
+- [x] Unique accepted automated milestone baseline **60 suites / 836 checks**. Compatibility reruns are overlapping, not additive; no fresh combined full 60/836 execution is claimed.
+- [ ] Stage C **new opt-in playable automatic cancelled-site material recovery scene**: not yet implemented or locally validated; retain original Direct Build scene and Main unchanged.
+- [ ] Original E3d5c6b Stage C manual 10-check acceptance remains separate/pending.
+
 ## Current milestone — 2026-11-20
 
 - [x] E3d5c6b Direct Build Stage A **fully accepted** (isolated 11/11, compatibility 28 suites/374 checks).
