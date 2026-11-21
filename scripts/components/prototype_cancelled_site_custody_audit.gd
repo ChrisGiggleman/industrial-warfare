@@ -145,6 +145,41 @@ func ticket_count() -> int:
 	return _records.size()
 
 
+# E3d5c6c Stage B — opt-in companion-only source resolution. The accepted
+# Stage A audit stays read-only for all other callers. A real locked original
+# receiver and terminal escrow settlement are reverified every time.
+@export var enable_isolated_stage_b_source_access: bool = false
+
+
+func _recovery_source_for(id: int, controller: Node) -> Dictionary:
+	if not enable_isolated_stage_b_source_access or not _enabled() or not _records.has(id):
+		return {}
+	if not _live(controller) or controller.get_parent() != _scope():
+		return {}
+	if controller.get_script() == null or controller.get_script().resource_path != "res://scripts/components/prototype_cancelled_site_recovery_transport.gd":
+		return {}
+	if not controller.has_method("_audit_owned") or not bool(controller.call("_audit_owned", self)):
+		return {}
+	var snapshot: Dictionary = observe(id)
+	if snapshot.get("status") != &"ready_read_only":
+		return {}
+	var record: Dictionary = _records[id]
+	var buffer := (record["buffer"] as WeakRef).get_ref() as InventoryComponent
+	var staging := (record["staging"] as WeakRef).get_ref() as BlueprintConstructionMaterialStaging
+	var port := (record["port"] as WeakRef).get_ref() as BlueprintConstructionStagingInputPort
+	if not _live(buffer) or not _live(staging) or not _live(port):
+		return {}
+	if staging.get_staged_inventory() != buffer or port.get_bound_staging() != staging or port.inventory != buffer:
+		return {}
+	if not _registry.has_locked_pair(staging, port) or not port.global_position.is_equal_approx(record["hover"]):
+		return {}
+	return {
+		"buffer": buffer, "port": port, "staging": staging,
+		"amount": int(snapshot["amount"]), "hover": snapshot["hover_position"],
+		"original_site_id": int(snapshot["original_site_id"])
+	}
+
+
 # Diagnostic only: NEVER expose the original inventory or port as a mutable
 # return object, and never interpret reservation counts as physical material.
 # A terminal site may have been freed; unique staging+port+buffer identity is
