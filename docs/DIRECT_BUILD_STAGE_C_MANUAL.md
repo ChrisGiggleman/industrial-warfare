@@ -6,6 +6,17 @@ Godot **4.6.2 Stable**, GDScript, Forward+. Run only the isolated opt-in playabl
 
 Choose the scene in FileSystem and **F6** (Run Current Scene), **not** the new automated Stage B test and not Main. Use genuine mouse placement and keyboard inputs; do not simulate placements through test scripts or Inspector calls. **Restart F6 before each session** to restore the initial 15 ingots and one idle drone. Record 10 **manual observations** A1–A6, B1–B3, C1. This gate is independent of all automated suites; no software or runner changes are required.
 
+## Stage C live observation / troubleshooting — 2026-11-20
+
+### 2026-11-20 — E3d5c6b Stage C manual placement blocker (power coverage, not accepted)
+
+Developer screenshot from live `res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn` shows two Normal queued sites, drone **AT SITE / CARGO 0**, assigned job 0% **Waiting: power, workers**, Starter Storage **12** (down three from 15), generator ON **Hub output 12 / Spare 12**, worker 0/1, battery 28.4/40. This shows physical delivery happened but the worker was not admitted. The right-hand **CONSTRUCTION REQUIREMENTS** read-only panel says stock/power/worker **UNKNOWN (service not connected)** by design; do not interpret that detached panel as an authoritative service error. Screenshot does not establish exact site world coordinates, so do **not** claim a confirmed root cause.
+
+Source inspection: the completed Hub is at **(2,0,-3)** with a **4.5 world-unit coverage radius** (`prototype_main_hub.tscn`); `ConstructionPowerCoverageNetwork.covers_site` and `PrototypeConstructionPowerAllocator._find_covering_node` require **all rotated footprint corners** to be covered, not just a powered generator or site center. The screenshot's drone is visibly at a far-left site instead of either labeled near-Hub plot; **most likely a valid Direct placement was authorized outside full coverage**. Delivery is currently allowed to such queued sites, but power allocation remains zero and the drone may wait there; **do not** loosen the gate, mint resources, or bypass power to make the manual check pass. The approved near-Hub test positions are Test Storage at **(0,0,-3)** and Prototype Ammunition Press at **(4.5,0,-3.5)**, each full footprint within 4.5 of the Hub (with unrotated orientation). The generator ON button reads **Turn generator OFF (test)**.
+
+**Next diagnostic/retest:** Stop F6; restart a fresh scene (15 ingots). Press B then 3, click precisely on the labeled **STORAGE SITE** marker near Hub; 8 and labeled **AMMO PRESS SITE** for second placement. Allow physical delivery and actual escrow admission; confirm `CONSTRUCTION` action, allocated worker 1/1 and nonzero progress before testing generator toggle. Do not count Stage C A5/A6 or 10/10 yet. If waiting persists even at the labeled plot, capture both the scene and Godot Output/Debugger (including the site's exact coordinates/selection) to distinguish coverage from coordinator/admission failure. Record this as evidence, not acceptance. Unique automated baseline remains **58/810**, Stage B fully accepted, Stage C manual pending.
+
+
 ## Grounded controls / visual cues
 
 - **B** enables Build mode; **right-click** exits it. **3** selects canonical Test Storage; **8** selects Prototype Ammunition Press with the default 1–9 quickbar. If assignments differ, **M** opens Building Catalog; choose the desired hotbar assignments or Restore Defaults. Press **R** for 90° rotation; use the default unrotated orientation for the named placements.
