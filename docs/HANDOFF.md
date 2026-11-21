@@ -5,6 +5,16 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**Stage C inventory interpretation pending: 12 ingots and idle/rearmed drone can indicate a completed 3-ingot Storage cost OR cancelled delivered materials retained in protected staging. No material-loss conclusion or manual acceptance yet.**
+
+### 2026-11-20 — Stage C screenshot: 12 ingots, drone idle/rearmed, no cargo; distinguish spend from retained staging
+
+Developer reports "drone did not bring back the 3 ingots" after a new live F6 screenshot. Observable left HUD: **Storage 12 ingots (0 reserved); drone IDLE; Battery 40/40; Cargo 0/5; Rearms 1; H/N/L queue 0/0/0; worker 0/1; no eligible site; generator ON, output/spare 12**. This proves the drone ended its assignment and empty inventory was not replenished, **not by itself whether the site completed or was cancelled** (no construction-site state or action history shown; right panel has no selection).
+
+Expected conservation is state-dependent: (1) **Successful canonical Test Storage completion consumes 3 ingots**, leaving starter stock 12 from 15, with completed Storage replacing the site and drone returning empty, fully charged. **No return is expected** after completed construction. (2) **Cancellation while cargo is aboard the drone before unloading** must invoke physically metered return to starter inventory; after return/recharge the 3 ingots should be restored to 15, provided the dock can accept them. (3) **Cancellation after delivery / during construction** occurs with cargo already zero; the already-delivered 3 ingots are protected by the original staging receiver/escrow recovery, not automatically transported back to Starter Storage. Thus 12 starter ingots can be expected even without a completed building, with 3 remaining in locked staging; no automatic staging pickup/unlock exists in this gate. Repository: `BlueprintConstructionMaterialEscrow.commit_built` consumes bill only after `ConstructionJob.State.COMPLETE` and actual building activation; `recover_to` refunds an interrupted escrow to its pinned staging source; accepted Stage B cancellation checks preserve original locked buffers. UI currently does not make retained staging contents or actual "completed vs cancelled" history obvious.
+
+**Next user verification:** Ask whether they pressed X after drone unloading or saw the new Storage become fully operational; inspect the actual built site or any first Output errors before accepting Stage C checks. Do **not** treat screenshot alone as a loss or completed pass. Use separate fresh F6 sessions: complete a single covered Storage (15→12 expected); separately cancel a Press **while Cargo 5/5** (15 restored after physical return). Stage C **10/10 still pending**, unique automated **58/810 remains accepted**, Stage B remains fully accepted. Do not change gameplay or release protected staging for this observation.
+
 **Stage C manual blocker observed: delivered drone waiting for power/worker at apparently distant site; verify full-footprint Hub coverage using the labeled plots before accepting further checks. No gameplay changes.**
 
 ### 2026-11-20 — E3d5c6b Stage C manual placement blocker (power coverage, not accepted)
