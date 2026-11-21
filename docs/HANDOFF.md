@@ -5,6 +5,16 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+**E3d5c6c Stage A isolated ACCEPTED (13/13 locally confirmed); targeted compatibility gate PENDING 15 suites / 218 rerun checks. Unique automated milestone baseline now 59 suites / 823 checks (prior 58/810 preserved). No physical staged recovery code.**
+
+### 2026-11-20 — E3d5c6c Stage A isolated custody audit ACCEPTED 13/13; compatibility 15/218 pending
+
+Developer explicitly confirmed **all 13/13 isolated Stage A custody test checks passed locally in Godot** after the isolated hover-Y assertion correction at commit [0ef6947d](https://github.com/ChrisGiggleman/industrial-warfare/commit/0ef6947d1b215da05a606b78ae2725d8f089c03f). This is user-reported local Godot execution, not assistant execution. Checks cover original site+job+receiver identity; canonical 3/5 bill; duplicate and foreign-ownership refusal; physical delivery; protected storage after post-delivery cancellation; survival after site free; moved receiver quarantine; during-work escrow refund into original locked Press staging; exact **7 source + 3 Storage staging + 5 Press staging = 15** conservation; zero-stock cancelled sites; strict default-off and terminal completed buildings never recoverable. The first pre-fix Check E assertion was test-only; successful rerun supersedes it.
+
+**Unique accepted automated milestone baseline: 59 suites / 823 checks** = previously accepted E3d5c6a + E3d5c6b **58/810** plus this isolated 1/13. No fresh full 59/823 combined run claimed. E3d5c6b Stage C manual 10 checks still pending and physical post-delivery recovery **NOT implemented**.
+
+Next acceptance gate is **15 existing suites / 218 rerun checks** with named exact F6 scenes and counts in [CANCELLED_SITE_PHYSICAL_RECOVERY.md](CANCELLED_SITE_PHYSICAL_RECOVERY.md) and new `tools/cancelled_site_custody_stage_a_compatibility.csv`. 13 are in original 56-suite manifest (193 checks); 2 Direct Build suites account for 25; **all overlap previously accepted checks**. Compatibility is **not yet executed**. No gameplay or existing accepted scenes/tests/manifests changed by this acceptance bookkeeping.
+
 **E3d5c6c Stage A F6 first run halted in Check E at hardcoded hover Y position assertion; narrow fixture correction committed and 13-check rerun pending. No custody audit or gameplay change.**
 
 ### 2026-11-20 — E3d5c6c Stage A local F6 halted at Check E hover-position assertion (test-only correction staged)
