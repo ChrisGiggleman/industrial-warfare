@@ -11,11 +11,13 @@ const Flight = PrototypeConstructionWorkerDrone.FlightState
 const PRESS_POS := Vector3(4.5, 0, -3.5)
 const HIGH_POS := Vector3(0, 0, -3)
 const STORAGE_POS := Vector3(4, 0, -1)
-# Stage A's direct preview performs full-size physics collision checks.
-# The former (2.5, 0, -0.5) shared an exact footprint edge with the
-# completed Storage at (4, 0, -1); use the separately accepted open
-# LATE_POS from expansion Stage C instead. No gameplay collision changes.
-const WAIT_POS := Vector3(-5, 0, 0)
+# The fourth building is a 2x2 Press: its cursor MUST use half-grid
+# X/Z, or _at() cannot find the valid snapped site. (-5,0,0) silently
+# exited the fixture after a real "DIRECT BUILD AUTHORIZED" print.
+# Choose a powered 2x2 open plot north of the Hub at (2,0,-3),
+# separated from existing buildings by the standard footprint edges.
+# Full-corner coverage <= 4.5 and no gameplay/physics gate is bypassed.
+const WAIT_POS := Vector3(1.5, 0, -5.5)
 const CANCEL_POS := Vector3(4.5, 0, -3.5)
 
 
@@ -120,7 +122,16 @@ func _place(demo: Demo, definition: BuildingDefinition, at: Vector3, planned: bo
 	_click(world, at)
 	var site := _at(demo.get_parent() as Node3D, at)
 	if not is_instance_valid(site):
-		push_error("Stage B placement refused at %s; preview_valid=%s" % [at, world.get("placement_is_valid")])
+		# A live Direct Build may authorize a snapped site even when this
+		# fixture's cursor request was off parity. Refuse silent null
+		# exits: show actual sites and fail visibly instead.
+		var observed: Array[String] = []
+		for candidate: ConstructionSite in _sites(demo.get_parent() as Node3D):
+			observed.append("%s @ %s" % [candidate.target_definition.building_id, candidate.global_position])
+		var diagnostic: String = "Stage B placement lookup failed: definition=%s cursor=%s preview_valid=%s actual_sites=%s" % [definition.building_id, at, world.get("placement_is_valid"), observed]
+		print("STAGE B PLACEMENT ERROR: ", diagnostic)
+		push_error(diagnostic)
+		assert(false, diagnostic)
 		return null
 	assert(site.job != null and site.target_definition == definition, "Wrong site at %s" % at)
 	assert(site.job.state == (ConstructionJob.State.PLANNED if planned else ConstructionJob.State.QUEUED))
@@ -367,11 +378,13 @@ func _checks() -> void:
 	await get_tree().process_frame
 	await get_tree().physics_frame
 	await get_tree().process_frame
+	print("CHECK J: fourth Press at powered half-grid ", WAIT_POS, "; four ingots available, five required.")
 	var waiting := _place(demo, PRESS, WAIT_POS)
 	if not is_instance_valid(waiting):
+		assert(false, "CHECK J: Direct Build placement refused or lookup mismatch; see STAGE B PLACEMENT ERROR.")
 		sandbox.free()
 		return
-	assert(demo.network.covers_site(waiting))
+	assert(demo.network.covers_site(waiting), "CHECK J: Waiting Press footprint is outside powered Hub coverage.")
 	var w := _buffer(demo, waiting, 5)
 	_watch(waiting, built)
 	for i: int in range(20):
