@@ -1,12 +1,12 @@
 # E3d5c6c — Stage C playable automatic cancelled-site physical recovery
 
-Updated **2026-11-21**. **STAGED / NOT YET RUN IN GODOT.** This gate is separate from fully accepted Stage B.
+Updated **2026-11-21**. **ISOLATED 14/14 ACCEPTED locally; targeted compatibility 27/381 and manual playable verification PENDING.** This gate is separate from fully accepted Stage B.
 
 ## Accepted prerequisites
 
 - Stage A cancelled-site immutable custody: local isolated 13/13 + targeted compatibility 15 suites/218 checks accepted.
 - Stage B physical 3/5-ingot drone transport: local isolated 13/13 + targeted compatibility **26/26 suites, 368/368 checks accepted**.
-- Cumulative **unique accepted automated baseline: 60 suites / 836 checks**. The 368 targeted checks are existing reruns and must not be added again.
+- Cumulative **unique accepted automated baseline: 61 suites / 850 checks** (Stage C adds one new 14-check suite). The 368 Stage B targeted checks are existing reruns and must not be added again.
 - Original E3d5c6b Stage C manual 10-check verification is still independently pending.
 
 ## What Stage C adds (experimental opt-in only)
@@ -25,9 +25,9 @@ Stage B's original source/claim and finite-battery tests remain authoritative fo
 
 No researched drone Storage docking station, silo, multi-item, multi-trip, concurrent fleet, conveyor return, instant refund, persistence or destruction expansion is added here.
 
-## First F6 acceptance gate — 14 NEW isolated checks (A–N)
+## First F6 acceptance gate — ACCEPTED: 14/14 NEW checks (A–N)
 
-**Not executed or accepted yet.** Open:
+**Developer reported 14/14 checks passed locally on 2026-11-21; not assistant-executed.** For future reruns open:
 `res://tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`
 and press **F6** in Godot 4.6.2. Inspect Output + Debugger for full success.
 
@@ -58,11 +58,11 @@ The F6 harness invokes the **actual playable adapter** deterministic `_process(0
 
 If a test stops or fails, send the **first Debugger error and preceding PASS lines**. Fix narrowly and rerun that scene. Do not mark Stage C accepted from partial output or a successful GitHub commit.
 
-**Only after 14/14 locally pass**, count Stage C's one new suite/14 checks as unique: provisional baseline would be **61 unique suites / 850 checks**; do not promote before developer confirmation.
+**Now accepted:** Stage C's one new 14-check suite advances the cumulative unique baseline to **61 suites / 850 checks**. No fresh full 61/850 combined regression has been confirmed.
 
 ## Subsequent gates (NOT YET PERFORMED)
 
-**Targeted compatibility:** At minimum rerun the full Stage B manifest `tools/cancelled_site_physical_recovery_stage_b_compatibility.csv` (26 prior suites, 368 rerun checks), and Stage B isolated `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn` (13 existing checks) to verify the new allowlist and adapter scope cannot regress the accepted original. These are **27 existing suites / 381 overlapping checks**; never add to unique baseline. Broader combined regression remains separately pending.
+**Targeted compatibility PENDING:** Run the [complete Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md) and `tools/cancelled_site_recovery_stage_c_compatibility.csv`: full Stage B manifest (26 prior suites, 368 rerun checks) plus Stage B isolated `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn` (13 existing checks). These are **27 existing suites / 381 overlapping checks**, not additional unique checks. Broader combined regression remains separately pending.
 
 **Manual playable verification:** Open the new Stage C playable scene with F6, not the F6 test fixture. Test direct Storage (3) and Press (5) separately: click to authorize within Hub power coverage, watch original physical material delivery, cancel with X after delivery, observe same drone's real original-hover pickup, real Storage unload and stock restoration, Hub return and finite charging. Confirm new builds are not authorized automatically, generator OFF pauses real charging, cancellation before delivery cannot fabricate stock, no double drone/duplicate recovery, old original Direct Build and Main remain untouched. Check UI's recovery status text and any blocked-capacity wait explanation. **Manual acceptance is independent of the 14 scripted checks.**
 
