@@ -4,7 +4,7 @@ class_name PrototypeCancelledSiteRecoveryTransport
 ## E3d5c6c Stage B — ISOLATED physical cancelled-site material recovery.
 ## No _process or parallel construction driver. A test explicitly calls
 ## tick(); Stage C will decide future playable integration separately.
-## Only the original one-drone Direct Build scene can opt in.
+## Only exact-scoped original Direct Build isolated tests or Stage C scene opt in.
 const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const STAGE_C_SCENE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
 const STAGE_C_ADAPTER := "res://scripts/ui/playable_cancelled_site_recovery_e3d5c6c_stage_c.gd"
