@@ -2,11 +2,13 @@
 
 ## Current milestone — 2026-11-21: E3d5c6c
 
-- [x] Stage A immutable cancelled-site custody: isolated 13/13 plus targeted compatibility 15 suites / 218 checks, developer-confirmed locally.
-- [x] Stage B physical cancelled-site recovery: isolated 13/13 plus **targeted compatibility 26 suites / 368 checks**, developer-confirmed locally (this checkpoint).
-- [x] Unique accepted automated milestone baseline **60 suites / 836 checks**. Compatibility reruns are overlapping, not additive; no fresh combined full 60/836 execution is claimed.
-- [ ] Stage C **new opt-in playable automatic cancelled-site recovery scene STAGED**; new 14-check F6 scene and manual player acceptance **not yet run**. See [Stage C guide](CANCELLED_SITE_RECOVERY_STAGE_C_PLAYABLE.md). Original Direct Build scene and Main unchanged.
-- [ ] Original E3d5c6b Stage C manual 10-check acceptance remains separate/pending.
+- [x] Stage A immutable cancelled-site custody: isolated 13/13 and targeted compatibility 15/15 suites, 218/218 existing checks, developer-confirmed.
+- [x] Stage B physical cancelled-site recovery: isolated 13/13 and targeted compatibility 26/26 suites, 368/368 existing checks, developer-confirmed.
+- [x] **Stage C isolated playable automatic recovery: 14/14 NEW automated checks accepted locally**, developer-confirmed; separate opt-in scene only.
+- [x] Unique accepted automated baseline **61 suites / 850 checks** (prior 60/836 + Stage C new 14); no fresh full combined 61/850 regression claimed.
+- [ ] Stage C **targeted compatibility: 27 previously accepted suites / 381 rerun checks**, pending: [F6 checklist](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md).
+- [ ] Stage C **manual player-controlled playable verification**, pending: [playable guide](CANCELLED_SITE_RECOVERY_STAGE_C_PLAYABLE.md). Original Direct Build and Main must remain unaffected.
+- [ ] Original E3d5c6b Stage C manual 10 checks remain independently pending.
 
 ## Current milestone — 2026-11-20
 
