@@ -1,5 +1,12 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-21 — E3d5c6c Stage B FULLY ACCEPTED (26/26 targeted compatibility; 368/368 rerun checks)
+
+Developer confirmed **all 26/26 targeted Stage B compatibility suites and 368/368 existing checks passed locally in Godot 4.6.2** using `tools/cancelled_site_physical_recovery_stage_b_compatibility.csv`. This is **developer-reported local execution, not an assistant-run test**. Previously accepted Stage B isolated physical recovery **13/13** and Stage A isolated custody **13/13** plus its 15/218 targeted compatibility are preserved. Stage B is now **fully accepted**, isolated plus targeted compatibility. The 368 rerun checks overlap previously counted accepted suites; **unique accepted automated milestone baseline remains 60 suites / 836 checks**, not 1,204 checks. No claim of a fresh combined full 60/836 regression.
+
+**NEXT — E3d5c6c Stage C: opt-in playable automatic cancelled-site recovery**, separate experimental scene. Same single original drone, original immutable Stage A ticket, original hover pickup of 3 Storage / 5 Press ingots, exact Storage space claim, real transport + finite recharge, safe waits and no duplicate drivers. Do **not** assert playable Stage C works until separately implemented and Godot-tested. Existing playable Direct Build scene and Main remain unchanged. E3d5c6b separate manual Stage C 10/10 gate is still pending.
+
+
 ---
 
 ## 2026-11-09 — E3c2a Sandbox Storage Connections Passed (16/16); E3c2b Snap Preview Staged
