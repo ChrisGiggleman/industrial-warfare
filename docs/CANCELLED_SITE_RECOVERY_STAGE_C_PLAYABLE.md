@@ -1,6 +1,6 @@
 # E3d5c6c — Stage C playable automatic cancelled-site physical recovery
 
-Updated **2026-11-21**. **ISOLATED 14/14 ACCEPTED locally; targeted compatibility 27/381 and manual playable verification PENDING.** This gate is separate from fully accepted Stage B.
+Updated **2026-11-21**. **ISOLATED 14/14 ACCEPTED locally; targeted compatibility 27/27 suites / 381/381 existing checks ACCEPTED; manual playable verification 10 checks PENDING.** This gate is separate from fully accepted Stage B.
 
 ## Accepted prerequisites
 
@@ -60,11 +60,11 @@ If a test stops or fails, send the **first Debugger error and preceding PASS lin
 
 **Now accepted:** Stage C's one new 14-check suite advances the cumulative unique baseline to **61 suites / 850 checks**. No fresh full 61/850 combined regression has been confirmed.
 
-## Subsequent gates (NOT YET PERFORMED)
+## Subsequent gates — targeted compatibility accepted; manual gameplay pending
 
-**Targeted compatibility PENDING:** Run the [complete Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md) and `tools/cancelled_site_recovery_stage_c_compatibility.csv`: full Stage B manifest (26 prior suites, 368 rerun checks) plus Stage B isolated `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn` (13 existing checks). These are **27 existing suites / 381 overlapping checks**, not additional unique checks. Broader combined regression remains separately pending.
+**Targeted compatibility ACCEPTED locally on 2026-11-21:** Developer confirmed all 27/27 suites and 381/381 regression checks passed. The accepted checklist is in the [complete Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md) and `tools/cancelled_site_recovery_stage_c_compatibility.csv`: full Stage B manifest (26 prior suites, 368 rerun checks) plus Stage B isolated `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn` (13 existing checks). These are **27 existing suites / 381 overlapping checks**, not additional unique checks. Broader combined regression remains separately pending.
 
-**Manual playable verification:** Open the new Stage C playable scene with F6, not the F6 test fixture. Test direct Storage (3) and Press (5) separately: click to authorize within Hub power coverage, watch original physical material delivery, cancel with X after delivery, observe same drone's real original-hover pickup, real Storage unload and stock restoration, Hub return and finite charging. Confirm new builds are not authorized automatically, generator OFF pauses real charging, cancellation before delivery cannot fabricate stock, no double drone/duplicate recovery, old original Direct Build and Main remain untouched. Check UI's recovery status text and any blocked-capacity wait explanation. **Manual acceptance is independent of the 14 scripted checks.**
+**Manual playable verification PENDING (10 checks):** Use [the exact Stage C manual checklist](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Open the new Stage C playable scene with F6, not the F6 test fixture. Test direct Storage (3) and Press (5) separately: click to authorize within Hub power coverage, watch original physical material delivery, cancel with X after delivery, observe same drone's real original-hover pickup, real Storage unload and stock restoration, Hub return and finite charging. Confirm new builds are not authorized automatically, generator OFF pauses real charging, cancellation before delivery cannot fabricate stock, no double drone/duplicate recovery, old original Direct Build and Main remain untouched. Check UI's recovery status text and any blocked-capacity wait explanation. **Manual acceptance is independent of the 14 scripted checks.**
 
 ## Pull current source
 
