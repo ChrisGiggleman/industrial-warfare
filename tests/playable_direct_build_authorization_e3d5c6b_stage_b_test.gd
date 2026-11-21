@@ -178,8 +178,27 @@ func _watch(site: ConstructionSite, built: Array[Node3D]) -> void:
 	site.building_completed.connect(func(building: Node3D) -> void: built.append(building))
 
 
-func _check_built(building: Node3D, sandbox: Node3D, definition: BuildingDefinition, at: Vector3) -> void:
-	assert(building.get_parent() == sandbox and building.global_position.is_equal_approx(at))
+func _check_built(
+	building: Node3D, sandbox: Node3D, definition: BuildingDefinition,
+	at: Vector3, original_site_transform: Transform3D
+) -> void:
+	# The placement grid fixes X/Z while the ground ray may provide a
+	# nonzero Y. The completed building must preserve the ORIGINAL site's
+	# full world transform, not the artificial zero-height test cursor.
+	assert(
+		Vector2(original_site_transform.origin.x, original_site_transform.origin.z).is_equal_approx(
+			Vector2(at.x, at.z)
+		),
+		"Original site moved off grid: expected plot=%s actual=%s" % [at, original_site_transform.origin]
+	)
+	assert(
+		building.get_parent() == sandbox,
+		"Completed building has unexpected owner: expected=%s actual=%s" % [sandbox, building.get_parent()]
+	)
+	assert(
+		building.global_transform.is_equal_approx(original_site_transform),
+		"Completed building differs from original site: actual=%s original=%s" % [building.global_transform, original_site_transform]
+	)
 	assert(building.scene_file_path == definition.building_scene.resource_path)
 	assert(building.get_node("BuildingRuntime").building_definition == definition)
 
@@ -226,6 +245,11 @@ func _checks() -> void:
 	var press_job := press.job
 	var storage_job := storage.job
 	var high_job := high.job
+	# Capture actual approved site world transforms before any of the
+	# jobs complete and free their original ConstructionSite nodes.
+	var original_press_transform: Transform3D = press.global_transform
+	var original_storage_transform: Transform3D = storage.global_transform
+	var original_high_transform: Transform3D = high.global_transform
 	_watch(press, built)
 	_watch(storage, built)
 	_watch(high, built)
@@ -278,7 +302,7 @@ func _checks() -> void:
 	print("PASS E: Explicit High Blueprint joins shared queue without preempting paused Direct Press")
 
 	_finish(demo, press_job, built, 0)
-	_check_built(built[0], sandbox, PRESS, PRESS_POS)
+	_check_built(built[0], sandbox, PRESS, PRESS_POS, original_press_transform)
 	var press_building := built[0]
 	var input := press_building.get_node("InputInventory") as InventoryComponent
 	var output := press_building.get_node("OutputInventory") as InventoryComponent
@@ -318,7 +342,7 @@ func _checks() -> void:
 	_begin_work(demo, high, h)
 	assert(storage_job.get_progress() == 0.0 and b.get_total_amount() == 0)
 	_finish(demo, high_job, built, 1)
-	_check_built(built[1], sandbox, STORAGE, HIGH_POS)
+	_check_built(built[1], sandbox, STORAGE, HIGH_POS, original_high_transform)
 	assert((built[1].get_node("InventoryComponent") as InventoryComponent).get_total_amount() == 0)
 	_rearm(demo, 2)
 	assert(demo.drone == original_drone and demo.stock.get_amount(INGOT) == 7)
@@ -332,7 +356,7 @@ func _checks() -> void:
 	demo._process(10.0)
 	assert(is_equal_approx(storage_job.get_progress() - before, 0.1 / 10.0))
 	_finish(demo, storage_job, built, 2)
-	_check_built(built[2], sandbox, STORAGE, STORAGE_POS)
+	_check_built(built[2], sandbox, STORAGE, STORAGE_POS, original_storage_transform)
 	assert((built[2].get_node("InventoryComponent") as InventoryComponent).get_total_amount() == 0)
 	_rearm(demo, 3)
 	assert(demo.drone == original_drone and demo.stock.get_amount(INGOT) == 4)
