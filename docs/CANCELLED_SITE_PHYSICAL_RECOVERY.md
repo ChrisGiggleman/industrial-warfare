@@ -1,4 +1,13 @@
-# E3d5c6c — Cancelled-site staged-material physical recovery (Stage A fully accepted; Stage B isolated accepted, compatibility pending)
+# E3d5c6c — Cancelled-site staged-material physical recovery (Stage A/B fully accepted; Stage C isolated 14/14 accepted, compatibility/manual pending)
+
+### 2026-11-21 — E3d5c6c Stage C isolated playable recovery ACCEPTED: local 14/14; compatibility pending 27/381
+
+Developer reports **ALL 14/14 new Stage C playable integration F6 checks A–N passed locally in Godot 4.6.2** for `res://tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`. This is developer-reported local execution, **not assistant-executed**. Covers exact opt-in playable Direct Build path, original Storage/Press custody capture on authorization, cancellation with 3/5 protected ingots, old construction mission rearm, same drone automatic original-hover pickup, physical return with capacity reservation, blocked dock/full Storage waits, 12+3/10+5 stock conservation, finite battery charging/generator-OFF wait and one-time recovery. The new Stage C automated suite is **isolated ACCEPTED, not yet fully regression- or manually accepted**.
+
+**Unique accepted automated baseline is now 61 suites / 850 checks**, from prior 60/836 + one new 14-check Stage C suite. This is a cumulative *unique accepted suite milestone count*, **not a fresh full 61-suite combined test execution**. No user-confirmed Stage C gameplay manual test exists yet. The original E3d5c6b 10-check manual gate is separately pending.
+
+**NEXT: E3d5c6c Stage C compatibility PENDING — 27 existing suites / 381 rerun checks.** Exact verified list: [Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md), `tools/cancelled_site_recovery_stage_c_compatibility.csv`. This is 26 accepted Stage B compatibility suites / 368 checks plus the existing isolated Stage B physical recovery suite / 13 checks; all checks overlap existing unique 61/850. Run each existing scene with F6 in Godot, record full banners, and only then accept 27/381. After compatibility, manually run `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn` for actual player controls and visible physical returns. Preserve single-drone sole process ownership, original scene/Main isolation, immutable custody and finite charging. No gameplay or test scripts changed in this documentation checkpoint.
+
 
 ### 2026-11-21 — E3d5c6c Stage B FULLY ACCEPTED (26/26 targeted compatibility; 368/368 rerun checks)
 
