@@ -5,7 +5,15 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
-### 2026-11-21 — E3d5c6c Stage C opt-in playable automatic recovery STAGED (14 NEW checks pending F6)
+### 2026-11-21 — E3d5c6c Stage C isolated playable recovery ACCEPTED: local 14/14; compatibility pending 27/381
+
+Developer reports **ALL 14/14 new Stage C playable integration F6 checks A–N passed locally in Godot 4.6.2** for `res://tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`. This is developer-reported local execution, **not assistant-executed**. Covers exact opt-in playable Direct Build path, original Storage/Press custody capture on authorization, cancellation with 3/5 protected ingots, old construction mission rearm, same drone automatic original-hover pickup, physical return with capacity reservation, blocked dock/full Storage waits, 12+3/10+5 stock conservation, finite battery charging/generator-OFF wait and one-time recovery. The new Stage C automated suite is **isolated ACCEPTED, not yet fully regression- or manually accepted**.
+
+**Unique accepted automated baseline is now 61 suites / 850 checks**, from prior 60/836 + one new 14-check Stage C suite. This is a cumulative *unique accepted suite milestone count*, **not a fresh full 61-suite combined test execution**. No user-confirmed Stage C gameplay manual test exists yet. The original E3d5c6b 10-check manual gate is separately pending.
+
+**NEXT: E3d5c6c Stage C compatibility PENDING — 27 existing suites / 381 rerun checks.** Exact verified list: [Stage C compatibility guide](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md), `tools/cancelled_site_recovery_stage_c_compatibility.csv`. This is 26 accepted Stage B compatibility suites / 368 checks plus the existing isolated Stage B physical recovery suite / 13 checks; all checks overlap existing unique 61/850. Run each existing scene with F6 in Godot, record full banners, and only then accept 27/381. After compatibility, manually run `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn` for actual player controls and visible physical returns. Preserve single-drone sole process ownership, original scene/Main isolation, immutable custody and finite charging. No gameplay or test scripts changed in this documentation checkpoint.
+
+### 2026-11-21 — E3d5c6c Stage C opt-in playable automatic recovery STAGED (historical; superseded by 14/14 acceptance above)
 
 After developer-confirmed Stage B acceptance (isolated 13/13 + targeted 26/26 suites / 368/368 existing checks), committed a **separate new experimental playable scene** `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn` and a new `PlayableCancelledSiteRecoveryE3d5c6cStageC` adapter subclass. The original Direct Build playable scene, Main and accepted base adapter remain unchanged. The subclass captures each originally authorized real Storage/Press site's locked custody before X cancellation, waits until the original normal construction lifecycle has released/rearmed the one drone, then calls the accepted Stage B physical recovery mission through its **sole adapter process driver**. It does NOT tick original dispatch concurrently, unlock staging, or instant-refund cargo. Capacity/dock/energy refusal leaves materials in original custody and retries; return and finite Hub charging are physical.
 
@@ -19,7 +27,7 @@ Developer confirmed **all 26/26 targeted Stage B compatibility suites and 368/36
 
 **NEXT — E3d5c6c Stage C: opt-in playable automatic cancelled-site recovery**, separate experimental scene. Same single original drone, original immutable Stage A ticket, original hover pickup of 3 Storage / 5 Press ingots, exact Storage space claim, real transport + finite recharge, safe waits and no duplicate drivers. Do **not** assert playable Stage C works until separately implemented and Godot-tested. Existing playable Direct Build scene and Main remain unchanged. E3d5c6b separate manual Stage C 10/10 gate is still pending.
 
-**E3d5c6c Stage B FULLY ACCEPTED (13/13 isolated plus 26 suites / 368 targeted compatibility checks passed locally). Stage A FULLY ACCEPTED (13 isolated + 15 suites/218 compatible). Unique accepted 60 suites/836 checks. Next: E3d5c6c Stage C isolated opt-in playable integration; not yet built or verified. E3d5c6b manual Stage C remains pending.** [Exact F6 list](CANCELLED_SITE_RECOVERY_STAGE_B_COMPATIBILITY.md)
+**E3d5c6c Stage C isolated ACCEPTED 14/14 locally; Stage C compatibility 27 suites/381 existing checks PENDING and manual gameplay PENDING. Stage B FULLY ACCEPTED (13/13 + 26/368), Stage A FULLY ACCEPTED (13/13 + 15/218). Unique automated accepted baseline 61 suites/850 checks; no fresh full combined regression. E3d5c6b manual Stage C separately open.** [Exact F6 list](CANCELLED_SITE_RECOVERY_STAGE_B_COMPATIBILITY.md)
 
 ### 2026-11-21 — E3d5c6c Stage B isolated 13/13 ACCEPTED; targeted compatibility 26/368 PENDING
 
