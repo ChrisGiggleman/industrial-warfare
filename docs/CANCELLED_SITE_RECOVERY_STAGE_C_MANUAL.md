@@ -2,6 +2,17 @@
 
 Status **PENDING 0/10 manual checks**. Updated **2026-11-21**. Godot 4.6.2 Stable.
 
+## Live observation — Blueprint cancellation recovery (partial manual evidence)
+
+**2026-11-21 — E3d5c6c Stage C live Blueprint cancellation: successful settled recovery state (partial manual evidence)**
+
+Developer supplied **two live playable-scene screenshots** immediately after cancelling a construction site during building. Godot Output shows `BLUEPRINT MODE: PLAN`, `BLUEPRINT PLANNED: Test Storage`, `BLUEPRINT AUTHORIZED: Test Storage`, `BLUEPRINT CANCELLED`, and `Blueprint mode disabled`. Thus this observed path was **Blueprint placement + explicit authorization + cancellation**, **not Direct Build**. The opt-in Stage C adapter printed `E3d5c6c Stage C opt-in playable recovery enabled (single adapter tick)`.
+
+Final in-game HUD confirms **Starter Storage: 15 ingots / 0 reserved; drone IDLE, cargo 0/5, battery 40.0/40.0; Rearms: 2; Recovery: WAITING / IDLE, tickets 1, recovered 1; queued/building/planned 0; Worker slots 0/1; generator ON.** This is consistent with **one fully settled material-recovery mission** and restored initial inventory after an interrupted authorized Storage construction. `recovered 1` denotes one recovery **mission**, not 1 ingot. No visible Debugger error was supplied. The screenshots do not independently show the drone's transit/pickup or mid-flight inventory totals; those are covered by previous local automated acceptance and still require separate full manual observations.
+
+**Manual status: supplemental Blueprint-mode recovery outcome OBSERVED; the formal Stage C manual 10-check gate A1–A5/B1–B3/C1–C2 remains PENDING**, because those checks require separately documented Direct Build click, physical flight observations, Press, complete-building behavior and generator-off validation. No new code change or automated test rerun is required by this screenshot evidence. Next: fresh F6 of `res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn`, ensure `P` is OFF for Direct Build; click Storage hotbar 3 without pressing E, observe original 15→12 delivery, X cancel after delivery, recovery 12→15 only at real Storage dock, finite Hub rearm; then Press hotbar 8 in another fresh session. Unique accepted automated baseline **61 suites / 850 checks**, Stage C targeted compatibility 27/381 accepted.
+
+
 ## Prerequisites — already accepted
 
 - Stage C integration F6 **14/14 new checks**, developer-confirmed locally.
