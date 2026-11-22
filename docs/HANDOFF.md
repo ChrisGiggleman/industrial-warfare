@@ -1,9 +1,15 @@
 # Industrial Warfare — Current Development Handoff
 
-Updated 2026-11-21. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
+Updated 2026-11-22. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
 ## Current checkpoint
+
+### 2026-11-22 — E3d5c6b original Direct Build Stage C manual 10/10 ACCEPTED; fresh combined 61/850 next
+
+Developer explicitly confirmed **all ten original E3d5c6b Stage C manual tests passed locally in Godot 4.6.2** after running the old dedicated `res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn` verification guide. Acceptance covers **A1–A6** (powered Direct Storage/Press placement, invalid/overlap rejection, generator-OFF construction pause and ON resume, actual finished structures and 15→7 inventory), **B1–B3** (unapproved Blueprint plans, Q selection H priority not authorizing, E/Ctrl+E permissions, one worker/shared queue and 15→4 after three planned jobs), and **C1** (cancel Press **while the drone still carries five ingots before site unloading**, physical return 15/15 and rearm). This is **developer-reported manual execution**, not an assistant-run test or a separately supplied screenshot set. Do not confuse old E3d5c6b **loaded-cargo** cancellation with later E3d5c6c **post-delivery staged-material** recovery; both isolated milestones are now manually accepted. Previously accepted E3d5c6c recovery manual 10/10 remains unchanged.
+
+**NEXT — fresh combined regression 61 suites / 850 checks PENDING** on current `main`, documented in [combined F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md) and `tools/industrial_warfare_combined_61_suite_regression.csv`. Constructed from the verified original 56 suites /785 checks plus five distinct later isolated suites (Direct Build 11 + 14 and Cancelled-Site 13 + 13 + 14 = 65); all 61 scene paths exist and are distinct. **Unique accepted milestone baseline is already 61/850**, but there is no confirmation of a new complete 61-suite pass after the latest code. Historical targeted compatibility reruns are overlapping and not additive; manual tests are separate. Do NOT mark fresh combined regression passed until user specifically reports 61/61 and 850/850 local outcomes. After that, plan a new opt-in construction integration milestone, preserving single-drone real flights, power/escrow/custody, and original scenes/Main untouched.
 
 ### 2026-11-21 — E3d5c6c Stage C B3 ACCEPTED — FULL MILESTONE CLOSEOUT (14/14 isolated, 27/381 compatibility, 10/10 manual)
 
