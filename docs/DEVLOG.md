@@ -1,5 +1,15 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-21 — E3d5c6c Stage C live power-off and 3-ingot return in flight (partial manual evidence)
+
+Developer supplied two additional real playable-scene screenshots, showing **distinct mid-cycle states**:
+
+- **Power-off dock state:** `AUTOMATIC CONSTRUCTION — DOCK WAIT`, drone `DOCKED`, **battery 33.6/40.0**, cargo **0/5**, `Hub output 0 | Spare 0`, generator button `Turn generator ON (test)`, Starter Storage **12 ingots**, `Job progress: 32%`, `Recovery: WAITING / IDLE | tickets 1 | recovered 0`, Rearms 0. This visually confirms generator OFF means zero Hub output, with a partially charged drone docked; a single frame **does not prove battery stayed fixed over time** or confirm construction progress did not advance over an interval.
+- **Active original-site physical recovery:** `AUTOMATIC CONSTRUCTION — STORAGE FLIGHT`, drone `STAGED TO STORAGE`, **cargo 3/5**, battery **36.1/40.0**, Starter Storage still **12 ingots**, `Recovery: ACTIVE | tickets 1 | recovered 0 | staged 3`, Rearms 1, Hub output 12. This directly shows a three-ingot cargo trip before Storage unload—**not** the five-ingot Press test—and no instant Storage credit in that captured frame.
+
+These screenshots strengthen earlier Direct Storage/Blueprint Storage observations by showing **in-flight cargo and finite battery** rather than only a settled end HUD. They do **not** show recovered 1 / idle / restored 15 for this particular displayed 3-ingot flight, nor two elapsed generator-off observations, and cannot alone complete the formal manual A1–A5/B1–B3/C1–C2 gate. Keep those missing observations open. The previously shown Press 5-ingot unload at Storage 15 but `Recovery ACTIVE` also still awaits final IDLE/recovered 1 evidence. All 14/14 new automated checks and Stage C 27/381 targeted compatibility remain accepted; cumulative unique **61 suites / 850 checks** unchanged. No gameplay scripts changed as part of this documentation update.
+
+
 ### 2026-11-21 — E3d5c6c Stage C live Direct Build Ammunition Press (5 ingots): dock unload confirmed; final rearm still in progress
 
 Developer supplied two Godot 4.6.2 live playable screenshots and reports the Press cancellation completed successfully. Godot Output shows `Selected building: Prototype Ammunition Press`, `BLUEPRINT AUTHORIZED: Prototype Ammunition Press`, `DIRECT BUILD AUTHORIZED: Prototype Ammunition Press | Normal priority`, `BLUEPRINT CANCELLED`. **Direct Build**, not merely Blueprint mode, is confirmed.
