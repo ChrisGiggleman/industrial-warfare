@@ -1,5 +1,14 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-21 — E3d5c6c Stage C manual: Storage recovery and generator-OFF hold explicitly confirmed by developer
+
+Developer's follow-up, **"this is confirmed working,"** confirms the immediately requested checks: the observed **three-ingot physical return** completes after the STAGED TO STORAGE flight, restoring Starter Storage from **12 → 15 ingots** with the recovery mission settled (**recovered 1**, drone returned **IDLE**, battery **40/40**), and a partly charged drone's battery does **not** increase while the generator remains OFF over the observed interval. Earlier live screenshots showed the in-flight **cargo 3/5** (Storage still 12), Hub **output 0** with generator OFF and a partially charged docked drone, and completed Direct Storage/Blueprint Storage recovery end states. This explicit developer report supplies the final outcomes that the prior screenshots alone did not show. It is **developer-reported local manual verification, not an assistant-executed test or new screenshot of the final moment**.
+
+**Manual checkpoint:** Stage C Session A (A1–A5) is accepted from cumulative live evidence and the developer's confirmation. The earlier developer-confirmed five-ingot Direct Ammunition Press cancellation with actual returned Starter Storage stock **15** supports Session B B1/B2; B3's Press-specific complete recharge/rearm and no-duplicate observation remains pending (last Press screenshot was `DOCKED`, battery **39.3/40**, `Recovery ACTIVE`, `recovered 0`). **Seven of ten manual checks are now recorded accepted (A1–A5, B1–B2); B3, C1, C2 remain open.** The generator-OFF battery-hold behavior is independently confirmed, but does not by itself complete the separate Press B3 rearm requirement. Do not claim full 10/10 manual milestone acceptance yet.
+
+**NEXT:** (1) Confirm Press's terminal `Recovery WAITING / IDLE | recovered 1` with battery 40/40 and original stock 15 (B3); (2) fresh F6, allow a Direct Storage building to actually complete, verify it spends three ingots (15→12) and **does not recover** committed building materials (C1); (3) fresh F6, place an unapproved Blueprint Storage and prove no pickup until E authorizes it (C2). No gameplay source changed. Existing automated Stage C 14/14 + compatibility 27 suites/381 rerun checks remain accepted; unique suite baseline **61/850** unchanged.
+
+
 ### 2026-11-21 — E3d5c6c Stage C live power-off and 3-ingot return in flight (partial manual evidence)
 
 Developer supplied two additional real playable-scene screenshots, showing **distinct mid-cycle states**:
