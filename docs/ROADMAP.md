@@ -7,7 +7,7 @@
 - [x] **Stage C isolated playable automatic recovery: 14/14 NEW automated checks accepted locally**, developer-confirmed; separate opt-in scene only.
 - [x] Unique accepted automated baseline **61 suites / 850 checks** (prior 60/836 + Stage C new 14); no fresh full combined 61/850 regression claimed.
 - [x] Stage C **targeted compatibility fully accepted: 27/27 previously accepted suites / 381/381 rerun checks**, user-confirmed locally: [F6 checklist](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md).
-- [ ] Stage C **manual player-controlled verification: 8/10 accepted locally (A1–A5, B1–B2, C1); B3 and C2 pending**: [manual guide](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Original Direct Build and Main must remain unaffected.
+- [ ] Stage C **manual player-controlled verification: 9/10 accepted locally (A1–A5, B1–B2, C1, C2); only B3 Press terminal rearm remains pending**: [manual guide](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Original Direct Build and Main must remain unaffected.
 - [ ] Original E3d5c6b Stage C manual 10 checks remain independently pending.
 
 ## Current milestone — 2026-11-20
