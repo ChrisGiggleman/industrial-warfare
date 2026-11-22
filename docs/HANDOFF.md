@@ -5,6 +5,14 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+### 2026-11-21 — E3d5c6c Stage C live Direct Build cancellation: recovery end state confirmed (partial manual evidence)
+
+Developer supplied a **second pair of screenshots from the real Stage C playable scene**, reporting the same successful outcome after a **Direct Build** Storage cancellation. Godot Output explicitly includes `DIRECT BUILD AUTHORIZED: Test Storage | Normal priority`, in addition to the shared `BLUEPRINT AUTHORIZED: Test Storage` and `BLUEPRINT CANCELLED` messages. The `BLUEPRINT AUTHORIZED` line here is part of the Direct Build authorization path; the explicit `DIRECT BUILD AUTHORIZED` message distinguishes this run from the earlier Blueprint-mode recovery observation. The scene reports the E3d5c6c opt-in single-adapter tick.
+
+Final HUD shows **Storage 15 ingots, 0 reserved; drone IDLE / cargo 0/5 / battery 40.0/40.0; Rearms 2; Recovery WAITING / IDLE, tickets 1, recovered 1; planned/queued/building 0; generator ON**. This provides manual evidence of Direct Build authorization followed by cancellation and **one settled recovery with original stock restored**. The screenshots do not show the intermediate **15→12** supplier debit, exact original-site pickup flight, Storage dock unload moment, or generator-OFF recharge test. Preserve those as **unverified manual observations**, not a claim of full A1–A5 or 10/10 acceptance. No gameplay regression or debugger error is shown.
+
+**NEXT**: fresh playable F6 for **Ammunition Press direct-build (5 Test Ingots)**. Place at powered Press marker using its hotbar selection (previous guide: slot **8**), cancel after physical delivery and before 18-second job completion; check 15→10 source debit, later physical original staging return **10→15**, same drone rearm. Separately inspect completion/no-refund, generator-off, and Blueprint authorization permissions before final manual 10/10. Stage C automated 14/14 and compatibility 27/381 remain accepted; unique baseline **61/850** unchanged.
+
 ### 2026-11-21 — E3d5c6c Stage C live Blueprint cancellation: successful settled recovery state (partial manual evidence)
 
 Developer supplied **two live playable-scene screenshots** immediately after cancelling a construction site during building. Godot Output shows `BLUEPRINT MODE: PLAN`, `BLUEPRINT PLANNED: Test Storage`, `BLUEPRINT AUTHORIZED: Test Storage`, `BLUEPRINT CANCELLED`, and `Blueprint mode disabled`. Thus this observed path was **Blueprint placement + explicit authorization + cancellation**, **not Direct Build**. The opt-in Stage C adapter printed `E3d5c6c Stage C opt-in playable recovery enabled (single adapter tick)`.
