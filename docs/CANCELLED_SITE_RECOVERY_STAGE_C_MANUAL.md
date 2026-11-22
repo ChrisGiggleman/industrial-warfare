@@ -1,8 +1,17 @@
 # E3d5c6c — Stage C manual playable automatic cancelled-site recovery
 
-Status **PARTIAL ACCEPTANCE: 8/10 manual checks accepted (A1–A5, B1–B2, C1); B3 and C2 pending**. Updated **2026-11-21**. Godot 4.6.2 Stable.
+Status **PARTIAL ACCEPTANCE: 9/10 manual checks accepted (A1–A5, B1–B2, C1, C2); only B3 pending**. Updated **2026-11-21**. Godot 4.6.2 Stable.
 
-## Manual observation — C2 authorization after E confirmed; pre-E still pending
+## C2 accepted — pre-E PLANNED/no debit and post-E construction
+
+### 2026-11-21 — E3d5c6c Stage C manual C2 FULLY ACCEPTED; manual total 9/10
+
+Developer explicitly **confirmed** that *before pressing E* the newly placed Storage blueprint remained **PLANNED**, Starter Storage stayed at **15 Test Ingots**, and the drone remained **IDLE** without dispatch/material debit. The later developer-provided playable screenshot after explicit E showed **one Storage BUILDING/CONSTRUCTION job at 9%**, the drone **AT SITE**, worker slots **1/1**, and Starter Storage **12 ingots** after the authorized three-ingot delivery. Both halves of manual **C2 passed**: no auto-authorization of a planned blueprint, and player E triggers the existing physical construction workflow. This is a developer-reported local manual pre-E observation plus post-E screenshot evidence; not an assistant-run test.
+
+**Stage C manual acceptance advances to 9/10**: A1–A5 (Storage physical recovery/settlement), B1–B2 (Press five-ingot return), C1 (completed Storage spends 3, no return), C2 (Blueprint requires E). **Only B3 remains pending**: in a fresh Press cancellation recovery, demonstrate generator-OFF halts charging while the drone is partly discharged at the Hub, then ON resumes finite charging, reaching **40/40**, **IDLE**, `Rearms 2`, `Recovery WAITING / IDLE | tickets 1 | recovered 1`, Storage 15, cargo 0 and no duplicate recovery. Prior Press screenshot at 39.3/40 showed Storage already 15 but `Recovery ACTIVE`; do not count B3 until the terminal state is confirmed. Stage C isolated tests **14/14** and targeted compatibility **27/27 suites, 381/381 rerun checks** accepted. Unique cumulative automated baseline remains **61 suites / 850 checks**; manual checks are separate and the fresh full 61/850 combined run has not been claimed.
+
+
+## Manual observation — C2 authorization after E confirmed; pre-E still pending (historical screenshot-only state)
 
 ### 2026-11-21 — E3d5c6c Stage C manual C2: post-authorization Blueprint construction observed; pre-E gate still unconfirmed
 
