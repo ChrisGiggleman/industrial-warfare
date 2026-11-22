@@ -1,6 +1,15 @@
 # E3d5c6c — Stage C manual playable automatic cancelled-site recovery
 
-Status **PARTIAL ACCEPTANCE: 7/10 manual checks confirmed by developer (A1–A5, B1–B2); B3, C1, C2 pending**. Updated **2026-11-21**. Godot 4.6.2 Stable.
+Status **PARTIAL ACCEPTANCE: 8/10 manual checks accepted (A1–A5, B1–B2, C1); B3 and C2 pending**. Updated **2026-11-21**. Godot 4.6.2 Stable.
+
+## Manual acceptance update — completed Storage C1 accepted
+
+### 2026-11-21 — E3d5c6c Stage C manual C1 ACCEPTED: completed Storage consumes 3 ingots, no recovery
+
+Developer supplied live playable-scene screenshot of a **finished additional Storage building** (circled), alongside the original Starter Storage and one idle construction drone. HUD shows **Starter Storage 12 ingots / 0 reserved**, `IDLE`, battery **40/40**, cargo **0/5**, `Rearms: 1`, planned/queued/building/paused all zero, and `Recovery: WAITING / IDLE | tickets 1 | recovered 0`. This matches the intended **15−3=12 ingot** committed build cost and confirms **no cancelled-site recovery was launched** for a completed site. A retained custody ticket count of 1 is not itself a recovery mission. Screenshot is developer-provided local manual evidence, not an assistant-run Godot test. **Manual C1 accepted.**
+
+**Stage C manual checkpoint advances from 7/10 to 8/10:** A1–A5, B1–B2 and C1 accepted. **B3 pending** (Press-specific return completes Hub recharge/rearm with recovered 1 and no duplicate); **C2 pending** (unapproved Blueprint does not dispatch/debit, explicit E authorization does). Other local automated acceptance remains 14/14 isolated plus 27/27 targeted compatibility (381/381 reruns), with **61 unique suites / 850 checks**. No new code or automated test change.
+
 
 ## Manual acceptance update — Storage recovery and battery hold confirmed
 
