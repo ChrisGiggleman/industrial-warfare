@@ -5,6 +5,12 @@ Read this first when resuming a new conversation. GitHub history and actual sour
 
 ## Current checkpoint
 
+### 2026-11-21 — E3d5c6c Stage C manual C1 ACCEPTED: completed Storage consumes 3 ingots, no recovery
+
+Developer supplied live playable-scene screenshot of a **finished additional Storage building** (circled), alongside the original Starter Storage and one idle construction drone. HUD shows **Starter Storage 12 ingots / 0 reserved**, `IDLE`, battery **40/40**, cargo **0/5**, `Rearms: 1`, planned/queued/building/paused all zero, and `Recovery: WAITING / IDLE | tickets 1 | recovered 0`. This matches the intended **15−3=12 ingot** committed build cost and confirms **no cancelled-site recovery was launched** for a completed site. A retained custody ticket count of 1 is not itself a recovery mission. Screenshot is developer-provided local manual evidence, not an assistant-run Godot test. **Manual C1 accepted.**
+
+**Stage C manual checkpoint advances from 7/10 to 8/10:** A1–A5, B1–B2 and C1 accepted. **B3 pending** (Press-specific return completes Hub recharge/rearm with recovered 1 and no duplicate); **C2 pending** (unapproved Blueprint does not dispatch/debit, explicit E authorization does). Other local automated acceptance remains 14/14 isolated plus 27/27 targeted compatibility (381/381 reruns), with **61 unique suites / 850 checks**. No new code or automated test change.
+
 ### 2026-11-21 — E3d5c6c Stage C manual: Storage recovery and generator-OFF hold explicitly confirmed by developer
 
 Developer's follow-up, **"this is confirmed working,"** confirms the immediately requested checks: the observed **three-ingot physical return** completes after the STAGED TO STORAGE flight, restoring Starter Storage from **12 → 15 ingots** with the recovery mission settled (**recovered 1**, drone returned **IDLE**, battery **40/40**), and a partly charged drone's battery does **not** increase while the generator remains OFF over the observed interval. Earlier live screenshots showed the in-flight **cargo 3/5** (Storage still 12), Hub **output 0** with generator OFF and a partially charged docked drone, and completed Direct Storage/Blueprint Storage recovery end states. This explicit developer report supplies the final outcomes that the prior screenshots alone did not show. It is **developer-reported local manual verification, not an assistant-executed test or new screenshot of the final moment**.
