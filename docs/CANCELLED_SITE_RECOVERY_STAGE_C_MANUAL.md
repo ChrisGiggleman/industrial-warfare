@@ -2,6 +2,17 @@
 
 Status **PENDING 0/10 manual checks**. Updated **2026-11-21**. Godot 4.6.2 Stable.
 
+## Live observation — Direct Build Ammunition Press five-ingot recovery (dock unload confirmed; final rearm pending)
+
+### 2026-11-21 — E3d5c6c Stage C live Direct Build Ammunition Press (5 ingots): dock unload confirmed; final rearm still in progress
+
+Developer supplied two Godot 4.6.2 live playable screenshots and reports the Press cancellation completed successfully. Godot Output shows `Selected building: Prototype Ammunition Press`, `BLUEPRINT AUTHORIZED: Prototype Ammunition Press`, `DIRECT BUILD AUTHORIZED: Prototype Ammunition Press | Normal priority`, `BLUEPRINT CANCELLED`. **Direct Build**, not merely Blueprint mode, is confirmed.
+
+At the exact captured moment the HUD shows `AUTOMATIC CONSTRUCTION — CHARGED`, drone **DOCKED**, battery **39.3/40.0**, cargo **0/5**, **Starter Storage 15 ingots / 0 reserved**, Returns 0, worker slots 0/1, queue 0, **Rearms 1**, `Recovery: ACTIVE | tickets 1 | recovered 0 | staged 5`. The original 15 ingots are restored and no cargo remains on the drone, consistent with a successful **five-ingot physical return/unload at Storage**. The mission has **not yet reached the final rearm/complete state** in this screenshot; `ACTIVE` / `recovered 0` are not equivalent to a failed recovery, because the drone is still recharging. The HUD's `staged 5` is the recovery ticket's expected amount, not proof five ingots remain stranded in site staging after unload. No Debugger error is visible in the supplied Output.
+
+**Exact next observation:** leave this same F6 session running with generator ON until battery **40.0/40.0**, drone **IDLE**, rearm count **2**, and `Recovery: WAITING / IDLE | tickets 1 | recovered 1`; verify Storage remains at 15 with cargo 0. Do not mark the entire B1–B3 or the total 10-check manual acceptance solely from this interim end-state screenshot: 15→10 original supplier debit, original hover pickup, and generator-off recharge test are not all independently pictured. Previous Direct Storage and Blueprint Storage final recovered 1 observations remain recorded. Stage C automation **14/14 accepted**, Stage C compatibility **27/381 accepted**, unique automated **61 suites / 850 checks** unchanged. No source/runner change required.
+
+
 ## Live observation — Direct Build cancellation recovery (partial manual evidence)
 
 ### 2026-11-21 — E3d5c6c Stage C live Direct Build cancellation: recovery end state confirmed (partial manual evidence)
