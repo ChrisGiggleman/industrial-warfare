@@ -1,5 +1,11 @@
 # Industrial Warfare — Development Roadmap
 
+## Current milestone — 2026-11-22: final manual verification and combined regression
+
+- [x] E3d5c6b original Direct Build Stage C **10/10 manual accepted locally**, alongside accepted E3d5c6c Stage C 10/10 manual.
+- [ ] **Fresh combined full 61/61 suites, 850/850 checks pending local run**; [F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md), [CSV manifest](../tools/industrial_warfare_combined_61_suite_regression.csv).
+- [ ] After combined regression, stage a *new exact-scope opt-in* construction integration in a separate scene; no changes to Main or accepted prototype scenes without their own gates.
+
 ## Current milestone — 2026-11-21: E3d5c6c
 
 - [x] **E3d5c6c Stage C FULL MILESTONE ACCEPTANCE** in separate opt-in playable scene: new F6 14/14, existing regression 27/27 suites 381/381 checks, manual 10/10. Cumulative unique 61/850; no fresh all-suites rerun.
@@ -9,14 +15,14 @@
 - [x] Unique accepted automated baseline **61 suites / 850 checks** (prior 60/836 + Stage C new 14); no fresh full combined 61/850 regression claimed.
 - [x] Stage C **targeted compatibility fully accepted: 27/27 previously accepted suites / 381/381 rerun checks**, user-confirmed locally: [F6 checklist](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md).
 - [x] Stage C **manual player-controlled verification 10/10 accepted locally (A1–A5, B1–B3, C1, C2); Stage C isolated, compatibility and manual fully accepted**: [manual guide](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Original Direct Build and Main must remain unaffected.
-- [ ] Original E3d5c6b Stage C manual 10 checks remain independently pending.
+- [x] Original E3d5c6b Stage C manual **10/10 passed locally** (2026-11-22), distinct from E3d5c6c recovery manual 10/10.
 
 ## Current milestone — 2026-11-20
 
 - [x] E3d5c6b Direct Build Stage A **fully accepted** (isolated 11/11, compatibility 28 suites/374 checks).
 - [x] E3d5c6b Direct Build Stage B **fully accepted** (isolated 14/14, compatibility 29 suites/395 checks).
-- [ ] E3d5c6b Stage C playable manual: **10 checks pending**, see [DIRECT_BUILD_STAGE_C_MANUAL.md](DIRECT_BUILD_STAGE_C_MANUAL.md).
-- [ ] Final fresh combined Direct Build automated regression: **58 suites / 810 unique checks**, pending Stage C manual acceptance.
+- [x] E3d5c6b Stage C playable manual: **10/10 accepted via developer local report**, see [DIRECT_BUILD_STAGE_C_MANUAL.md](DIRECT_BUILD_STAGE_C_MANUAL.md).
+- [ ] **Fresh comprehensive 61-suite / 850-check combined F6 regression pending** (supersedes old 58/810 Direct Build-only proposal): [full checklist](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md).
 
 ## Prior milestone — 2026-11-18
 
