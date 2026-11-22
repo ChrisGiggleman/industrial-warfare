@@ -2,12 +2,13 @@
 
 ## Current milestone — 2026-11-21: E3d5c6c
 
+- [x] **E3d5c6c Stage C FULL MILESTONE ACCEPTANCE** in separate opt-in playable scene: new F6 14/14, existing regression 27/27 suites 381/381 checks, manual 10/10. Cumulative unique 61/850; no fresh all-suites rerun.
 - [x] Stage A immutable cancelled-site custody: isolated 13/13 and targeted compatibility 15/15 suites, 218/218 existing checks, developer-confirmed.
 - [x] Stage B physical cancelled-site recovery: isolated 13/13 and targeted compatibility 26/26 suites, 368/368 existing checks, developer-confirmed.
 - [x] **Stage C isolated playable automatic recovery: 14/14 NEW automated checks accepted locally**, developer-confirmed; separate opt-in scene only.
 - [x] Unique accepted automated baseline **61 suites / 850 checks** (prior 60/836 + Stage C new 14); no fresh full combined 61/850 regression claimed.
 - [x] Stage C **targeted compatibility fully accepted: 27/27 previously accepted suites / 381/381 rerun checks**, user-confirmed locally: [F6 checklist](CANCELLED_SITE_RECOVERY_STAGE_C_COMPATIBILITY.md).
-- [ ] Stage C **manual player-controlled verification: 9/10 accepted locally (A1–A5, B1–B2, C1, C2); only B3 Press terminal rearm remains pending**: [manual guide](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Original Direct Build and Main must remain unaffected.
+- [x] Stage C **manual player-controlled verification 10/10 accepted locally (A1–A5, B1–B3, C1, C2); Stage C isolated, compatibility and manual fully accepted**: [manual guide](CANCELLED_SITE_RECOVERY_STAGE_C_MANUAL.md). Original Direct Build and Main must remain unaffected.
 - [ ] Original E3d5c6b Stage C manual 10 checks remain independently pending.
 
 ## Current milestone — 2026-11-20
