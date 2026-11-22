@@ -1,5 +1,12 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-21 — E3d5c6c Stage C manual C2: post-authorization Blueprint construction observed; pre-E gate still unconfirmed
+
+Developer supplied a live Stage C playable screenshot while testing **C2 (Blueprint permission)**. HUD shows **Factory Blueprints Building 1, Planned/Queued 0; Automatic Construction — CONSTRUCTION; drone AT SITE, Job progress 9%; Starter Storage 12 ingots / 0 reserved; Worker slots 1/1; drone battery 34.0/40.0, cargo 0/5; Recovery WAITING/IDLE, tickets 1, recovered 0**. The construction site and drone are visible at the Storage guide. This **confirms the authorized construction half** of C2: one Storage construction is active and three ingots have been physically debited from the initial 15 stock. The screenshot alone **does not show whether the site stayed merely PLANNED and stock 15/drone idle before pressing E**, so authorization gating is **not yet independently verified** from this image; do not mark full C2 accepted.
+
+**Manual gate remains 8/10 accepted** (A1–A5, B1–B2, C1). **C2 pre-authorization observation pending**, plus **B3 Press-specific terminal recharge/rearm**. Next ask only whether, before E, the blueprint remained PLANNED and Starter Storage stayed 15 with drone idle; if confirmed, mark C2 accepted and advance to 9/10. Automated baseline **61 suites/850 checks**, targeted compatibility **27/27 suites and 381/381 rerun checks**, unchanged. No gameplay code modified.
+
+
 ### 2026-11-21 — E3d5c6c Stage C manual C1 ACCEPTED: completed Storage consumes 3 ingots, no recovery
 
 Developer supplied live playable-scene screenshot of a **finished additional Storage building** (circled), alongside the original Starter Storage and one idle construction drone. HUD shows **Starter Storage 12 ingots / 0 reserved**, `IDLE`, battery **40/40**, cargo **0/5**, `Rearms: 1`, planned/queued/building/paused all zero, and `Recovery: WAITING / IDLE | tickets 1 | recovered 0`. This matches the intended **15−3=12 ingot** committed build cost and confirms **no cancelled-site recovery was launched** for a completed site. A retained custody ticket count of 1 is not itself a recovery mission. Screenshot is developer-provided local manual evidence, not an assistant-run Godot test. **Manual C1 accepted.**
