@@ -1,10 +1,10 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-22: E3d5c6d Stage A implementation staged; F6 pending
+## Current milestone — 2026-11-22: E3d5c6d Stage A 16/16 accepted locally; Stage B next
 
 - [x] Architecture and authoritative source audit complete. Approved reuse of accepted E3d5c6c Stage C adapter's sole update loop.
 - [x] Stage A new experimental opt-in playable scene and a 16-group isolated F6 test staged; preserve original Main, all accepted scenes and tests.
-- [ ] **Stage A automated F6 16/16 pending local Godot 4.6.2 confirmation**: [guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md); expected `ALL 16 E3D5C6D STAGE A UNIFIED CONSTRUCTION TESTS PASSED`.
+- [x] **Stage A automated F6 16/16 developer-reported locally passed** (checks A–P); [guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md). Unique accepted inventory 62 suites/866 expected checks; no fresh full combined rerun or assistant execution claimed.
 - [ ] Stage B targeted compatibility for relevant accepted construction, recovery, power and drone systems (no double-counting reruns).
 - [ ] Stage C playable mouse/keyboard checks for mixed Direct/Blueprint construction and cancelled-site physical recovery.
 - [ ] Final full 61-suite baseline rerun plus separately accepted E3d5c6d additions, documentation checkpoint and handoff. No Main promotion before milestone closeout.

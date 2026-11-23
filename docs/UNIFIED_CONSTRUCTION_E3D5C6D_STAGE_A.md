@@ -1,5 +1,7 @@
 # E3d5c6d — Stage A: Unified Construction Gameplay Integration
 
+**ACCEPTED on 2026-11-22: developer reports all 16 Stage A F6 tests passed locally in Godot.** The earlier pre-verification text below preserves the implementation/test plan's original pending status; it no longer describes the current acceptance result. Stage B compatibility and Stage C manual F6 have not yet been run. The 61-suite/850 expected-check legacy baseline plus one new 16-check suite gives **62 unique accepted suites / 866 manifest-expected checks**, but no fresh entire 62-suite run has been performed. This is user-reported local testing, not assistant execution.
+
 **2026-11-22 — CODE STAGED, LOCAL F6 NOT RUN.** Developer approved the source-audited architecture. This is a new, exact-scoped, separately gated playable integration. Previously accepted 61 suites/850 manifest-expected checks are historical, unaffected by this staging.
 
 ## Architecture and exact scope
