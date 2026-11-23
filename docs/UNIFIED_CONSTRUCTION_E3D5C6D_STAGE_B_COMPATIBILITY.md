@@ -1,5 +1,7 @@
 # E3d5c6d — Stage B targeted compatibility regression (39 suites / 536 checks)
 
+**2026-11-22 — Wave 1 ACCEPTED: developer reports all 12/12 tests passed locally, 155 manifest-expected checks. Wave 2 27/381 PENDING.** The original staged instructions below are retained as the initial planning state. No assistant execution or per-check transcript has been claimed. **Mandatory cross-chat test UI:** [Godot F6 Copy Navigator](GODOT_F6_COPY_NAVIGATOR.md) — one scene with functioning Copy, Previous and Next controls at a time.
+
 **2026-11-22 — STAGED FOR DEVELOPER-LOCAL F6; NO STAGE B SUITES CLAIMED RUN YET.** Engine Godot 4.6.2 Stable; repository `ChrisGiggleman/industrial-warfare`, branch `main`.
 
 ## Prerequisites
@@ -29,19 +31,19 @@ This gate contains:
 
 | # | Scene under `res://tests/` | Expected | Passed? |
 |---:|---|---:|:---:|
-| 01 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ☐ |
-| 02 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ☐ |
-| 03 | [`blueprint_sandbox_mode_test.tscn`](../tests/blueprint_sandbox_mode_test.tscn) | 12 | ☐ |
-| 04 | [`timed_storage_placement_test.tscn`](../tests/timed_storage_placement_test.tscn) | 4 | ☐ |
-| 05 | [`planned_storage_build_mode_test.tscn`](../tests/planned_storage_build_mode_test.tscn) | 6 | ☐ |
-| 06 | [`storage_blueprint_preview_snap_e3c2b_test.tscn`](../tests/storage_blueprint_preview_snap_e3c2b_test.tscn) | 15 | ☐ |
-| 07 | [`conveyor_building_placement_snap_test.tscn`](../tests/conveyor_building_placement_snap_test.tscn) | 8 | ☐ |
-| 08 | [`build_hotbar_keyboard_integration_test.tscn`](../tests/build_hotbar_keyboard_integration_test.tscn) | 12 | ☐ |
-| 09 | [`sandbox_blueprint_authorization_test.tscn`](../tests/sandbox_blueprint_authorization_test.tscn) | 18 | ☐ |
-| 10 | [`blueprint_construction_priority_e3d5a_test.tscn`](../tests/blueprint_construction_priority_e3d5a_test.tscn) | 15 | ☐ |
-| 11 | [`sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn`](../tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn) | 19 | ☐ |
-| 12 | [`blueprint_click_inspection_e3d5c3d2e_test.tscn`](../tests/blueprint_click_inspection_e3d5c3d2e_test.tscn) | 16 | ☐ |
-| | **Wave 1 total** | **155** | **PENDING** |
+| 01 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ✓ |
+| 02 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ✓ |
+| 03 | [`blueprint_sandbox_mode_test.tscn`](../tests/blueprint_sandbox_mode_test.tscn) | 12 | ✓ |
+| 04 | [`timed_storage_placement_test.tscn`](../tests/timed_storage_placement_test.tscn) | 4 | ✓ |
+| 05 | [`planned_storage_build_mode_test.tscn`](../tests/planned_storage_build_mode_test.tscn) | 6 | ✓ |
+| 06 | [`storage_blueprint_preview_snap_e3c2b_test.tscn`](../tests/storage_blueprint_preview_snap_e3c2b_test.tscn) | 15 | ✓ |
+| 07 | [`conveyor_building_placement_snap_test.tscn`](../tests/conveyor_building_placement_snap_test.tscn) | 8 | ✓ |
+| 08 | [`build_hotbar_keyboard_integration_test.tscn`](../tests/build_hotbar_keyboard_integration_test.tscn) | 12 | ✓ |
+| 09 | [`sandbox_blueprint_authorization_test.tscn`](../tests/sandbox_blueprint_authorization_test.tscn) | 18 | ✓ |
+| 10 | [`blueprint_construction_priority_e3d5a_test.tscn`](../tests/blueprint_construction_priority_e3d5a_test.tscn) | 15 | ✓ |
+| 11 | [`sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn`](../tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn) | 19 | ✓ |
+| 12 | [`blueprint_click_inspection_e3d5c3d2e_test.tscn`](../tests/blueprint_click_inspection_e3d5c3d2e_test.tscn) | 16 | ✓ |
+| | **Wave 1 total** | **155** | **ACCEPTED (developer-local)** |
 
 ## Wave 2 — drone logistics/power/custody compatibility (27 suites / 381 checks)
 
