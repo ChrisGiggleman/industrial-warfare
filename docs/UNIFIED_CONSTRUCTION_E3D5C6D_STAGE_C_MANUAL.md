@@ -1,5 +1,7 @@
 # E3d5c6d — Stage C Unified Construction Manual Playable Verification
 
+**2026-11-23 ACCEPTED — Developer reports ALL 10/10 manual checks (A1–A4, B1–B3, C1–C3) passed successfully in the unified F6 playable scene.** The earlier STAGED/PENDING sections below preserve the original plan as historical snapshots. No individual screenshots/logs provided this turn; this is **developer-reported local manual verification**, not assistant-run. Stage A 16/16 and Stage B 39/39 targeted compatibility previously accepted. Next required gate is **fresh combined 62-suite / 866-expected-check automated regression**, [guide](UNIFIED_CONSTRUCTION_E3D5C6D_FINAL_62_SUITE_REGRESSION.md); no Main promotion yet. Player's new drone-power design suggestion is **separate future proposal only**, [design](DRONE_POWER_INTERRUPTION_DESIGN.md).
+
 **2026-11-22 — STAGED, 0/10 manual gameplay checks reported so far.** E3d5c6d Stage A isolated **16/16** and Stage B targeted compatibility **39/39 scenes, 536 expected rerun checks** are developer-local accepted. Manual scene interaction is **not** verified by those automated checks. Run in Godot **4.6.2 Stable**, GDScript, repository `ChrisGiggleman/industrial-warfare` `main`.
 
 ## Use this exact NEW scene

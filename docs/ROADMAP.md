@@ -1,14 +1,15 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-22: E3d5c6d Stage B 39/39 accepted locally; Stage C manual next
+## Current milestone — 2026-11-23: E3d5c6d Stage C manual 10/10 accepted; final combined regression next
 
 - [x] Architecture and authoritative source audit complete. Approved reuse of accepted E3d5c6c Stage C adapter's sole update loop.
 - [x] Stage A new experimental opt-in playable scene and a 16-group isolated F6 test staged; preserve original Main, all accepted scenes and tests.
 - [x] **Stage A automated F6 16/16 developer-reported locally passed** (checks A–P); [guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md). Unique accepted inventory 62 suites/866 expected checks; no fresh full combined rerun or assistant execution claimed.
 - [x] **Stage B Wave 1 developer-local 12/12 suites ACCEPTED**, 155 manifest-expected checks (check-by-check Output not supplied). [Guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_B_COMPATIBILITY.md).
 - [x] **Stage B Wave 2 27/27 suites passed locally**, 381 manifest-expected checks. With Wave 1 12/155, **entire Stage B 39/39 suites / 536 expected rerun checks ACCEPTED**, developer-reported; no gameplay changes, no new unique checks. [Stage B guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_B_COMPATIBILITY.md).
-- [ ] **Stage C manual playable 10-check gate PENDING** on unified opt-in scene; [manual guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_C_MANUAL.md), [working one-at-a-time Copy navigator convention](GODOT_F6_COPY_NAVIGATOR.md).
-- [ ] Final full **62-suite / 866-expected-check** combined rerun after Stage C manual acceptance (the former 61-suite/850 expected baseline plus 16 accepted new Stage A checks); documentation checkpoint and handoff. No Main promotion before milestone closeout.
+- [x] **Stage C manual playable 10/10 ACCEPTED** (A1–A4, B1–B3, C1–C3) on unified opt-in scene from developer-local report; [manual guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_C_MANUAL.md). Developer-reported, not assistant-executed.
+- [ ] **NEXT Stage D: fresh complete 62-suite / 866-expected-check** combined F6 regression **pending** after Stage C 10/10 acceptance; [combined guide](UNIFIED_CONSTRUCTION_E3D5C6D_FINAL_62_SUITE_REGRESSION.md), [manifest](../tools/unified_construction_e3d5c6d_final_62_suite_regression.csv). No Main promotion before milestone closeout.
+- [ ] **FUTURE, design proposal only (not implementation approved):** construction-worker drone parks at Hub on sustained power interruption while original staged materials and paused job stay physically secured; safe finite-energy return and deterministic resume; [design](DRONE_POWER_INTERRUPTION_DESIGN.md). Later independent material-logistics vs construction-drone roles (no duplicate drivers or multi-drone work in E3d5c6d).
 
 ## Prior milestone — 2026-11-22: combined regression accepted; integration planning completed
 
