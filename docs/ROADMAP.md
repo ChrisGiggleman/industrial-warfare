@@ -1,10 +1,10 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-22: final manual verification and combined regression
+## Current milestone — 2026-11-22: combined regression accepted; integration planning next
 
 - [x] E3d5c6b original Direct Build Stage C **10/10 manual accepted locally**, alongside accepted E3d5c6c Stage C 10/10 manual.
-- [ ] **Fresh combined full 61/61 suites, 850/850 checks pending local run**; [F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md), [CSV manifest](../tools/industrial_warfare_combined_61_suite_regression.csv).
-- [ ] After combined regression, stage a *new exact-scope opt-in* construction integration in a separate scene; no changes to Main or accepted prototype scenes without their own gates.
+- [x] **Fresh combined 61/61 suites PASSED locally** (manifest comprises **850 expected checks**; individual check-by-check log not supplied); [F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md), [CSV manifest](../tools/industrial_warfare_combined_61_suite_regression.csv).
+- [ ] **Next: E3d5c6d unified construction gameplay integration**, new exact-scope opt-in scene. Not implemented or accepted yet; preserve Main and accepted E3d5c6b/E3d5c6c scenes and regression suites.
 
 ## Current milestone — 2026-11-21: E3d5c6c
 
