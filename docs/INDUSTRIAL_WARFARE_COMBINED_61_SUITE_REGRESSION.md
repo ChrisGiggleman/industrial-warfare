@@ -1,16 +1,25 @@
 # Industrial Warfare — Combined automated regression: 61 suites / 850 checks
 
-**Checkpoint: 2026-11-22 — STAGED, NOT YET RUN AS A FRESH COMBINED PASS.**
+**Checkpoint: 2026-11-22 — FRESH COMBINED 61/61 SUITES PASSED LOCALLY (850 EXPECTED CHECKS). ACCEPTED from developer report.**
 
 Godot **4.6.2 Stable**, GDScript, Forward+.
 Repository: `ChrisGiggleman/industrial-warfare`, branch `main`.
+
+## Fresh combined run acceptance — 2026-11-22
+
+### 2026-11-22 — FRESH COMBINED 61/61 automated regression ACCEPTED (850 expected checks; full baseline verified)
+
+Developer explicitly reported **"All 61 tests passed successfully"** after running the complete [combined F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md) in local Godot 4.6.2 Stable. All **61/61 suites passed locally** in a fresh combined sequence after E3d5c6b original manual 10/10 and E3d5c6c recovery manual 10/10. The manifest `tools/industrial_warfare_combined_61_suite_regression.csv` is independently verified to contain **61 distinct test scenes, 850 expected checks**, calculated from 56 prior suites /785 checks plus E3d5c6b 11+14 and E3d5c6c 13+13+14. The developer reported **suite-level success** rather than supplying each suite's Output log or separately restating 850/850; **850 is the expected total for the passed suite inventory**, not an independently reviewed check-by-check transcript. This is **developer-reported local execution, not assistant-run testing**. The accepted unique automated baseline remains **61 suites / 850 checks** (not additive to overlapping compatibility reruns). The *fresh combined regression gate is now accepted*, instead of merely a cumulative set of earlier individual acceptances.
+
+**NEXT — E3d5c6d candidate: opt-in unified construction gameplay integration, DESIGN/IMPLEMENTATION NOT YET STARTED.** Consolidate the accepted Direct Build Authorization and automatically cancelled-site physical recovery into a separate experimental playable scene before any Main gameplay promotion. Preserve existing Main, original E3d5c6b and E3d5c6c accepted scenes/tests and single original drone/sole tick owner, explicit Blueprint E/Ctrl+E authorization, Direct Build Normal authorization, material provenance/staging escrow, original protected cancellation ticket, Storage destination capacity reservations, finite drone movement/energy/docking and conservative waits. Gate design review, new isolated F6 checks, targeted old regression and actual manual playable tests separately. Do **not** assume research silos, multiple drones, storage docking stations, multi-trip loading, auto conveyor changes or new combat behaviors are already implemented. No gameplay source changed at this checkpoint.
+
 
 ## Accepted prerequisites (developer-reported local evidence)
 
 - E3d5c6a Building Expansion: 56 unique automated suites / 785 checks, manual 9/9 accepted.
 - E3d5c6b Direct Build Authorization: Stage A 11/11 new checks, Stage B 14/14 new checks, their prior targeted compatibility gates accepted, and **Stage C original playable manual 10/10 accepted locally on 2026-11-22**. This new confirmation covers A1–A6, B1–B3, C1 in `docs/DIRECT_BUILD_STAGE_C_MANUAL.md` and was **not assistant-executed**.
 - E3d5c6c Cancelled-Site Physical Recovery: Stage A 13/13, Stage B 13/13, Stage C 14/14 new isolated automated checks; Stage C targeted compatibility 27/27 suites / 381/381 overlapping existing checks; Stage C playable manual 10/10 accepted locally.
-- Cumulative accepted unique milestone baseline **61 suites / 850 checks**. The suites have been individually accepted in prior milestones, but a **fresh combined 61/850 run on the current main branch is not yet confirmed**.
+- Cumulative accepted unique milestone baseline **61 suites / 850 checks**. The suites have been individually accepted in prior milestones, and the developer **has now confirmed a fresh full 61-suite combined pass** (850 checks expected from the manifest, check-by-check transcript not supplied).
 
 ## Test-set derivation
 
@@ -94,10 +103,10 @@ Manifest (single source of truth): [`tools/industrial_warfare_combined_61_suite_
 | 59 | [`cancelled_site_custody_e3d5c6c_stage_a_test.tscn`](../tests/cancelled_site_custody_e3d5c6c_stage_a_test.tscn) | 13 | ☐ |
 | 60 | [`cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`](../tests/cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn) | 13 | ☐ |
 | 61 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ☐ |
-| | **61 distinct suites** | **850** | **PENDING** |
+| | **61 distinct suites** | **850** | **61/61 passed locally** |
 
 ## Exit / next milestone
 
 After the developer confirms **fresh combined 61/61 suites and 850/850 checks**, update the acceptance record, then stage the **next isolated opt-in construction integration** milestone. Existing Main, original Direct Build, and accepted Stage C recovery scene must remain unchanged until separately scoped gameplay integration and tests are accepted. Preserve immutable canceled-site staging provenance, no instant material refunds, real Storage destination capacity, finite physical drone flights/battery charging, player authorization boundaries, and single-drone process ownership.
 
-**Current checkpoint:** E3d5c6b manual 10/10 accepted; E3d5c6c manual 10/10 accepted; fresh combined 61/850 **PENDING**.
+**Current checkpoint:** E3d5c6b manual 10/10 accepted; E3d5c6c manual 10/10 accepted; fresh combined 61/61 suites **ACCEPTED** (850 checks expected from verified manifest). Next opt-in integration is not yet implemented.
