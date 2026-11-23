@@ -21,6 +21,8 @@ signal blueprint_site_authorized(site: ConstructionSite)
 # Exact scene boundary; even failed/disabled startup must not fall through.
 const DIRECT_BUILD_SCENE_PATH = "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const PLAYABLE_RECOVERY_STAGE_C_PATH = "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
+# E3d5c6d Stage A: new exact opt-in; not enabled in Main or old scenes.
+const UNIFIED_CONSTRUCTION_STAGE_A_PATH = "res://scenes/core/playable_unified_construction_e3d5c6d.tscn"
 
 const GROUND_COLLISION_MASK: int = 1
 const RESOURCE_NODE_COLLISION_MASK: int = 2
@@ -4873,7 +4875,7 @@ func _commit_planned_storage_belt(
 # job, resource transfer or timer. Disabled/missing adapter fails closed.
 func _direct_build_scope() -> bool:
 	var root := get_parent()
-	return is_instance_valid(root) and root.scene_file_path in [DIRECT_BUILD_SCENE_PATH, PLAYABLE_RECOVERY_STAGE_C_PATH]
+	return is_instance_valid(root) and root.scene_file_path in [DIRECT_BUILD_SCENE_PATH, PLAYABLE_RECOVERY_STAGE_C_PATH, UNIFIED_CONSTRUCTION_STAGE_A_PATH]
 
 
 func _direct_build_adapter() -> Node:

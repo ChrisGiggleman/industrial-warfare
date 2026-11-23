@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/playable_unified_construction_e3d5c6d_stage_a_test.gd" id="1_test"]
+
+[node name="PlayableUnifiedConstructionE3d5c6dStageATest" type="Node3D"]
+script = ExtResource("1_test")

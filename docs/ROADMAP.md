@@ -1,12 +1,21 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-22: combined regression accepted; integration planning next
+## Current milestone — 2026-11-22: E3d5c6d Stage A implementation staged; F6 pending
+
+- [x] Architecture and authoritative source audit complete. Approved reuse of accepted E3d5c6c Stage C adapter's sole update loop.
+- [x] Stage A new experimental opt-in playable scene and a 16-group isolated F6 test staged; preserve original Main, all accepted scenes and tests.
+- [ ] **Stage A automated F6 16/16 pending local Godot 4.6.2 confirmation**: [guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md); expected `ALL 16 E3D5C6D STAGE A UNIFIED CONSTRUCTION TESTS PASSED`.
+- [ ] Stage B targeted compatibility for relevant accepted construction, recovery, power and drone systems (no double-counting reruns).
+- [ ] Stage C playable mouse/keyboard checks for mixed Direct/Blueprint construction and cancelled-site physical recovery.
+- [ ] Final full 61-suite baseline rerun plus separately accepted E3d5c6d additions, documentation checkpoint and handoff. No Main promotion before milestone closeout.
+
+## Prior milestone — 2026-11-22: combined regression accepted; integration planning completed
 
 - [ ] **Future, after E3d5c6d:** expand existing ore→ingot→ammo supply into a factory-defense vertical slice; add iron/copper/coal resources and alternate coal/solar/wind electricity as separately tested later phases, not in next integration scope. See [handoff](HANDOFF.md) for rationale.
 
 - [x] E3d5c6b original Direct Build Stage C **10/10 manual accepted locally**, alongside accepted E3d5c6c Stage C 10/10 manual.
 - [x] **Fresh combined 61/61 suites PASSED locally** (manifest comprises **850 expected checks**; individual check-by-check log not supplied); [F6 guide](INDUSTRIAL_WARFARE_COMBINED_61_SUITE_REGRESSION.md), [CSV manifest](../tools/industrial_warfare_combined_61_suite_regression.csv).
-- [ ] **Next: E3d5c6d unified construction gameplay integration**, new exact-scope opt-in scene. Not implemented or accepted yet; preserve Main and accepted E3d5c6b/E3d5c6c scenes and regression suites.
+- [ ] **E3d5c6d Stage A code is now staged for local F6; unaccepted.** New exact-scope scene; Main and old E3d5c6b/E3d5c6c scenes/tests untouched; see [Stage A guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md).
 
 ## Current milestone — 2026-11-21: E3d5c6c
 

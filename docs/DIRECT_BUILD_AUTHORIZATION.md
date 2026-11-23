@@ -1,4 +1,6 @@
-# E3d5c6b — Direct Build Authorization (Stages A and B fully accepted; Stage C manual pending)
+# E3d5c6b — Direct Build Authorization (Stages A/B and Stage C manual fully accepted)
+
+**Status clarification (2026-11-22):** Historical sections below retain their original pending descriptions. The newer HANDOFF records original E3d5c6b Stage C manual 10/10, and the fresh 61/61 baseline (850 expected manifest checks). E3d5c6d Stage A is a separate newly staged, not-yet-F6-tested opt-in scene; see [Stage A guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_A.md).
 
 2026-11-18. Prerequisite E3d5c6a fully accepted: 56/56 targeted automated suites, 785/785 checks, expansion manual 9/9; historical Storage manual 9/9 separate. Developer reported local Godot results. See BUILDING_EXPANSION_FINAL_REGRESSION.md and HANDOFF.md. The original proposed sequence is retained below. Stage A is fully accepted by developer local Godot verification; Stage B is staged.
 

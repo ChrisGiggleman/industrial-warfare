@@ -8,6 +8,7 @@ class_name PrototypeCancelledSiteCustodyAudit
 
 const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5c6b.tscn"
 const STAGE_C_SCENE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
+const UNIFIED_STAGE_A_SCENE := "res://scenes/core/playable_unified_construction_e3d5c6d.tscn"
 const STORAGE = preload("res://data/buildings/test_storage.tres")
 const PRESS = preload("res://data/buildings/prototype_ammunition_press.tres")
 const INGOT = preload("res://data/items/test_ingot.tres")
@@ -27,7 +28,7 @@ func _live(node: Variant) -> bool:
 
 func _scope() -> Node3D:
 	var parent := get_parent() as Node3D
-	if not _live(parent) or parent.scene_file_path not in [EXACT_SCENE, STAGE_C_SCENE]:
+	if not _live(parent) or parent.scene_file_path not in [EXACT_SCENE, STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE]:
 		return null
 	return parent
 

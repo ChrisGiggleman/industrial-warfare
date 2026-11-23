@@ -6,6 +6,7 @@ class_name PlayableCancelledSiteRecoveryE3d5c6cStageC
 ## adapter. This subclass is installed ONLY by the exact Stage C test scene.
 ## No parallel _process, second drone, fabricated stock, or escrow shortcut.
 const EXACT_PLAYABLE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
+const UNIFIED_STAGE_A := "res://scenes/core/playable_unified_construction_e3d5c6d.tscn"
 const Audit = preload("res://scripts/components/prototype_cancelled_site_custody_audit.gd")
 const Transport = preload("res://scripts/components/prototype_cancelled_site_recovery_transport.gd")
 
@@ -16,11 +17,11 @@ var _recovery_configured: bool = false
 
 
 func _is_sandbox_path(path: String) -> bool:
-	return path == EXACT_PLAYABLE
+	return path in [EXACT_PLAYABLE, UNIFIED_STAGE_A]
 
 
 func _direct_build_enabled() -> bool:
-	return enable_direct_build_authorization and _live(_scope) and _scope.scene_file_path == EXACT_PLAYABLE
+	return enable_direct_build_authorization and _live(_scope) and _scope.scene_file_path in [EXACT_PLAYABLE, UNIFIED_STAGE_A]
 
 
 func start() -> bool:
