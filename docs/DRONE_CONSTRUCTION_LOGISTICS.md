@@ -1,5 +1,10 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-24 — B2 first local F6 failed at setup; scoped fix committed, RETEST PENDING
+
+Developer screenshot shows `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.gd:62` failed: `assert(b2.configure_b2(site, storage, staging, port, dock))`. The fixture reached this assertion; no successful B2 run or pickup confirmed. Source review identified one definite setup blocker: `PrototypeDroneStorageDiscovery.enable_isolated_discovery` and `PrototypeDroneSupplierReservations.enable_isolated_reservations` both default OFF in the E3d5c6f B1 scene, but the new B2 configurator mistakenly required them ON without enabling them. Updated `configure_b2` to enable both **only after** exact scene, original queued site, real 15-ingot Storage and pinned receiver preflights, then configure/register original services; pre-enabled or replacement authorities fail closed. No older scene/test edits. **B2 F6 must be rerun**; do not claim this fix passes Godot until user verifies. B1 3/3 accepted remains separate; historic 63/880 baseline not rerun.
+
+
 ### 2026-11-24 — E3d5c6f Stage B2 physical logistics IMPLEMENTED, F6 PENDING
 
 User authorized next gated milestone after developer-local B1 **3/3 F6** acceptance. Stage B2 adds a **default-off, exact-scoped** `B2LogisticsController`, genuine existing source discovery + supplier stock claim, physically metered one-load logistics pickup, exact original staging/escrow handoff, and a narrowly guarded nonterminal **empty physical return** using the original drone's return flight. Additive opt-in scene resources and additive methods in existing drone script only; **Main and all previously accepted tests/scenes untouched**. The construction drone stays idle with no worker grant or job timer. Expected material conservation: original Storage 15→10 + five ingots original escrow, zero cargo/queued progress, logistics physically DOCKED. The nonterminal return does NOT fully rearm or charge and retains original provenance; complete multi-role custody/recovery remains future-gated.
