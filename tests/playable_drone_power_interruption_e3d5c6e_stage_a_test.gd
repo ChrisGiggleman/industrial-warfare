@@ -344,7 +344,6 @@ func _test_abort_and_low_battery() -> void:
 	assert(demo.hub.set_generator_enabled(true))
 	assert(_until(demo, &"resumed", 900))
 	assert(original.state == ConstructionJob.State.CONSTRUCTING and original.get_progress() == prior)
-	print("PASS N: Mid-return restoration and mid-resume blackout safely redirect, preserve progress/cargo, then resume")
 	await _end_case(scope, demo)
 
 	instance = await _new_case()
@@ -365,6 +364,28 @@ func _test_abort_and_low_battery() -> void:
 	assert(demo.drone.battery_units() == 0.1 and site.job.get_progress() == paused_progress)
 	assert(not demo.drone._power_parked_assignment and demo.stock.get_amount(INGOT) == 10)
 	await _end_case(scope, demo)
+
+	# Cancellation during outbound re-approach must NOT re-deliver material
+	# or bypass the locked original-site physical recovery mission.
+	instance = await _new_case()
+	scope = instance["scope"] as Node3D
+	demo = instance["demo"] as Demo
+	site = _park_press(demo)
+	var pair: Dictionary = _original_pair(demo, site)
+	var buffer := pair["inventory"] as InventoryComponent
+	var ticket: int = demo.recovery_tickets.back()
+	assert(_until_docked(demo, 400))
+	assert(demo.hub.set_generator_enabled(true))
+	assert(_until(demo, &"resume_started", 800))
+	assert(demo.drone.get_flight_state() == Flight.OUTBOUND)
+	assert(demo.world.call("_cancel_blueprint_site", site))
+	assert(demo.drone.get_flight_state() == Flight.RETURNING)
+	assert(demo.custody.observe(ticket)["status"] == &"ready_read_only")
+	assert(demo.stock.get_amount(INGOT) == 10 and buffer.get_amount(INGOT) == 5)
+	_assert_exact_recovery(demo, ticket, buffer, 5)
+	assert(demo.registry.has_locked_pair(pair["staging"], pair["port"]))
+	await _end_case(scope, demo)
+	print("PASS N: Flapping/outbound interruption, low-battery fail-closed and resume-flight cancellation conserve materials")
 
 
 func _checks() -> void:
