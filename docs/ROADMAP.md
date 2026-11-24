@@ -1,5 +1,17 @@
 # Industrial Warfare — Development Roadmap
 
+### 2026-11-24 — E3d5c6f B1 ACCEPTED: 3/3 F6 scenes developer-local PASS
+
+User confirmed **all three** B1 verification F6 scenes ran locally and passed without issues:
+- NEW `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` — passed, 9 labeled PASS sections in source.
+- Targeted Stage A regression `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` — passed, 6 labeled PASS sections.
+- Targeted Stage A regression `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` — passed, 7 labeled PASS sections.
+
+**Counting:** 3/3 scenes tested at this acceptance gate, **1 new B1 fixture** and **2 already-accepted Stage A reruns**. Twenty-two labeled print sections across the three source fixtures, NOT an independently verified per-assertion count or 22 new unique checks. Developer-local pass report, not assistant-run Godot. Previously accepted E3d5c6e baseline stays **63/63 unique suites / 880 manifest-expected checks** (NOT freshly rerun for E3d5c6f). Do not represent this gate as a 66-suite combined regression.
+
+**Scope:** guarded single-owner inert coordinator, real Hub and two distinct identity-only drone nodes; NO physical flight, material pickup/delivery, job progression, charging or Main integration. Stage B1 accepted; **NEXT is Stage B2 logistics pickup/delivery**, which has not been implemented or tested. Preserve all previous scenes/tests and developer local modified .tres/.tscn files. Continue on feature branch `feature/e3d5c6f-stage-a-role-contracts` (PR #1 draft/unmerged) until deliberate integration decision. See [B1 acceptance guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B1.md) and [Stage B plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B_PLAN.md).
+
+
 ### 2026-11-24 — E3d5c6f Stage B1 committed; F6 PENDING
 
 Developer authorized B1 only: exact-opt-in single-owner, **identity-only** two-drone scene. Added guarded inert `PlayableSpecializedDronesE3d5c6f` controller, one authentic Hub, separate LogisticsDrone and ConstructionDrone nodes, and one original-resource service set. No movement, cargo, charging, job admission, escrow changes, Main wiring or old gameplay-source edits. The new F6 scene is `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9 labeled sections, **UNRUN**, not an assertion count). See [B1 implementation/test guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B1.md). Both Stage A F6 scenes remain developer-local accepted; fresh B1 and Stage A compatibility rerun are pending. Historical baseline E3d5c6e 63 suites / 880 manifest-expected checks remains previously accepted, **not rerun**. Feature branch `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 unmerged; Stage B2 not begun. Preserve local uncommitted resource files and the [F6 Copy navigator](GODOT_F6_COPY_NAVIGATOR.md).
