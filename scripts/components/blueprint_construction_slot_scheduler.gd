@@ -399,3 +399,32 @@ func bind_delivered_site_drone(site: ConstructionSite, drone: PrototypeConstruct
 		drone._rollback_delivered_worker(site)
 		return false
 	return true
+
+
+# E3d5c6f B3 opt-in: separate physical builder, not the delivering drone.
+# Stage A provenance remains QUEUED-only until the ordinary scheduler
+# itself grants readiness. No independent availability or time mutations.
+func bind_specialized_builder(site: ConstructionSite, drone: PrototypeConstructionWorkerDrone, contracts: SpecializedDroneRoleContractsE3d5c6f, receipt_id: int, coordinator: BlueprintConstructionReadinessCoordinator, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if not enable_isolated_drone_presence or not _is_trackable(site) or site.job.state != ConstructionJob.State.QUEUED or not _is_eligible_builder_scope(site, drone, contracts, coordinator, escrow):
+		return false
+	if not contracts.receipt_valid(receipt_id) or not contracts.builder_claim_valid(receipt_id, drone):
+		return false
+	if not drone.is_bound_to_site(site) or not drone.is_at_site() or drone.cargo_amount() != 0 or drone.cargo_item() != null:
+		return false
+	if not coordinator.matches_tick_services(self, escrow):
+		return false
+	if not coordinator.get_status(site).get("materials_reserved", false) or not coordinator.get_status(site).get("power_allocated", false):
+		return false
+	return bind_site_drone(site, drone)
+
+func _is_eligible_builder_scope(site: ConstructionSite, drone: PrototypeConstructionWorkerDrone, contracts: SpecializedDroneRoleContractsE3d5c6f, coordinator: BlueprintConstructionReadinessCoordinator, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	var scope := get_parent() as Node3D
+	if not is_instance_valid(scope) or scope.scene_file_path != "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn":
+		return false
+	if not is_instance_valid(drone) or not is_instance_valid(contracts) or not is_instance_valid(coordinator) or not is_instance_valid(escrow):
+		return false
+	if drone.get_parent() != scope or drone != scope.get_node_or_null("ConstructionDrone"):
+		return false
+	if scope.get_node_or_null("LogisticsDrone") == drone or scope.get_node_or_null("RoleContracts") != contracts or scope.get_node_or_null("ReadinessCoordinator") != coordinator or scope.get_node_or_null("MaterialEscrow") != escrow or scope.get_node_or_null("WorkerScheduler") != self:
+		return false
+	return not _is_assigned(site) and is_tracking_site(site) and not has_drone_binding(drone)
