@@ -215,3 +215,23 @@ func b2_completed() -> bool:
 	var contracts := scope.get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f
 	var original_id: int = escrow.reservation_for(site)
 	return original_id > 0 and contracts.receipt_valid(receipt_id) and contracts.lease_count() == 1 and escrow.held_materials(original_id) == {INGOT: 5} and source.get_amount(INGOT) == 10 and buffer.get_total_amount() == 0 and logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED and logistics.cargo_amount() == 0 and not logistics.grants_worker_readiness() and site.job.state == ConstructionJob.State.QUEUED and site.job.get_progress() == 0.0
+
+
+# B3: single-owner *transfer*, not another active tick driver. The B2
+# controller remains frozen at delivered; only this exact new controller
+# can inherit the same scene's already-owned step token.
+func transfer_tick_owner_to_builder(builder_controller: Node) -> bool:
+	if not b2_completed() or not _live(builder_controller) or builder_controller.get_parent() != _scope():
+		return false
+	if builder_controller.name != "B3BuilderController" or _scope().get_node_or_null("B3BuilderController") != builder_controller:
+		return false
+	if not builder_controller is SpecializedDroneBuilderE3d5c6fB3:
+		return false
+	var scope := _scope()
+	if not scope.has_meta(TICK_OWNER):
+		return false
+	var current := scope.get_meta(TICK_OWNER) as WeakRef
+	if current == null or current.get_ref() != self:
+		return false
+	scope.set_meta(TICK_OWNER, weakref(builder_controller))
+	return true
