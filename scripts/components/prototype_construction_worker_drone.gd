@@ -1262,3 +1262,60 @@ func _lost_assignment_cleanup_valid(supplier: PrototypeDroneSupplierReservations
 	var original_registry := _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry
 	var original_buffer := _delivery_buffer.get_ref() as InventoryComponent
 	return _delivery_live(original_registry) and original_registry.get_parent() == get_parent() and _delivery_live(original_buffer) and coordinator.matches_owned_registry(original_registry) and original_registry.has_locked_delivery_inventory(_cargo_site, original_buffer)
+
+
+# E3d5c6f B2: fail-closed nonterminal return of a logistics-only delivery.
+# No worker admission, escrow mutation, inventory refund, charge, or second tick.
+# The original cargo/site/registry/escrow and Stage A receipt must all match.
+const SPECIALIZED_SCOPE_E3D5C6F := "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn"
+var _specialized_logistics_receipt: int = 0
+
+func _specialized_logistics_authorized(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	var scope := get_parent() as Node3D
+	if not _delivery_live(self) or not _delivery_live(scope) or scope.scene_file_path != SPECIALIZED_SCOPE_E3D5C6F:
+		return false
+	if name != "LogisticsDrone" or scope.get_node_or_null("LogisticsDrone") != self:
+		return false
+	if not _delivery_live(contracts) or contracts != scope.get_node_or_null("RoleContracts") or not contracts.receipt_valid(receipt):
+		return false
+	var site := _delivery_site()
+	if not _delivery_live(site) or site.get_parent() != scope or site.job != _cargo_job or site.job.state != ConstructionJob.State.QUEUED:
+		return false
+	if _delivery_registry == null or _delivery_buffer == null or _delivery_escrow == null:
+		return false
+	var registry := _delivery_registry.get_ref() as BlueprintConstructionSiteStagingRegistry
+	var buffer := _delivery_buffer.get_ref() as InventoryComponent
+	if not _delivery_live(registry) or not _delivery_live(buffer) or registry != scope.get_node_or_null("StagingRegistry"):
+		return false
+	if not _delivery_live(escrow) or escrow != _delivery_escrow.get_ref() or escrow != scope.get_node_or_null("MaterialEscrow"):
+		return false
+	if not registry.matches_owned_inventory(site, buffer) or not escrow.matches_site_source_bill(site, buffer):
+		return false
+	var id: int = escrow.reservation_for(site)
+	return id > 0 and escrow.held_materials(id) == ConstructionMaterialBill.get_costs(site.target_definition) and _cargo_amount == 0 and _cargo_item == null and not _delivered_worker_latched and _assignment_job == null and _site_ref == null
+
+func begin_specialized_logistics_return(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if receipt <= 0 or _specialized_logistics_receipt != 0 or _state != FlightState.DELIVERED:
+		return false
+	if not enable_isolated_cargo_pickup or not enable_isolated_cargo_delivery or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured:
+		return false
+	if not _specialized_logistics_authorized(contracts, receipt, escrow):
+		return false
+	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
+		return false
+	_specialized_logistics_receipt = receipt
+	_state = FlightState.RETURNING
+	return true
+
+# Finishing return is NOT a release of original site material custody.
+# Stage B2 is limited to one full-load delivery; do not recycle its receipt.
+func finish_specialized_logistics_return(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if _specialized_logistics_receipt != receipt or receipt <= 0 or _state != FlightState.DOCKED:
+		return false
+	if not global_position.is_equal_approx(_home) or not _specialized_logistics_authorized(contracts, receipt, escrow):
+		return false
+	if _battery_units + 0.00001 < RETURN_MARGIN_UNITS:
+		return false
+	# Keep original provenance pinned for later builder handoff and cancellation
+	# audit, rather than silently clearing/refunding the reservation.
+	return true
