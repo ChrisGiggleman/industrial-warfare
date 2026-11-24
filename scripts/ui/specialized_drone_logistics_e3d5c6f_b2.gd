@@ -100,7 +100,16 @@ func configure_b2(original_site: ConstructionSite, original_storage: Node3D, ori
 		return false
 	if original_port.get_bound_staging() != original_staging or not original_staging.accepts_delivered_item(INGOT, 5):
 		return false
-	if not discovery.enable_isolated_discovery or not supplier.enable_isolated_reservations or not supplier.configure(discovery) or not discovery.register_dock(dock):
+	# These existing source services are default-OFF in the B1 scene.
+	# Enable only after exact E3d5c6f scope and original site/stock/receiver
+	# preflight; never require the F6 fixture to secretly enable them.
+	if not _live(discovery) or not _live(supplier) or discovery.get_parent() != scope or supplier.get_parent() != scope:
+		return false
+	if discovery.enable_isolated_discovery or supplier.enable_isolated_reservations:
+		return false # A caller must not preconfigure or replace these authorities.
+	discovery.enable_isolated_discovery = true
+	supplier.enable_isolated_reservations = true
+	if not supplier.configure(discovery) or not discovery.register_dock(dock):
 		return false
 	site = original_site
 	storage = original_storage
