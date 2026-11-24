@@ -9,6 +9,8 @@ const EXACT_SCENE := "res://scenes/core/playable_direct_build_authorization_e3d5
 const STAGE_C_SCENE := "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
 const UNIFIED_STAGE_A_SCENE := "res://scenes/core/playable_unified_construction_e3d5c6d.tscn"
 const STAGE_C_ADAPTER := "res://scripts/ui/playable_cancelled_site_recovery_e3d5c6c_stage_c.gd"
+const POWER_PARKING_STAGE_A_SCENE := "res://scenes/core/playable_drone_power_interruption_e3d5c6e.tscn"
+const POWER_PARKING_ADAPTER := "res://scripts/ui/playable_drone_power_interruption_e3d5c6e.gd"
 const INGOT = preload("res://data/items/test_ingot.tres")
 const Flight = PrototypeConstructionWorkerDrone.FlightState
 const SPEED: float = 10.0
@@ -42,7 +44,7 @@ func _live(node: Variant) -> bool:
 
 func _scope() -> Node3D:
 	var root := get_parent() as Node3D
-	return root if _live(root) and root.scene_file_path in [EXACT_SCENE, STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE] else null
+	return root if _live(root) and root.scene_file_path in [EXACT_SCENE, STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE, POWER_PARKING_STAGE_A_SCENE] else null
 
 
 func _enabled() -> bool:
@@ -50,8 +52,15 @@ func _enabled() -> bool:
 	return (
 		enable_isolated_physical_recovery and _configured and root != null and _live(self)
 		and _live(_adapter) and _adapter.get_parent() == root
-		and (not _adapter.is_processing() or (root.scene_file_path in [STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE]
-			and _adapter.get_script() != null and _adapter.get_script().resource_path == STAGE_C_ADAPTER))
+		and (not _adapter.is_processing() or (
+			_adapter.get_script() != null
+			and (
+				(root.scene_file_path in [STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE]
+					and _adapter.get_script().resource_path == STAGE_C_ADAPTER)
+				or (root.scene_file_path == POWER_PARKING_STAGE_A_SCENE
+					and _adapter.get_script().resource_path == POWER_PARKING_ADAPTER)
+			)
+		))
 		and _live(_audit) and _audit.get_parent() == root and _audit._enabled()
 		and _audit.enable_isolated_stage_b_source_access
 		and _live(_drone) and _drone.get_parent() == root and _drone.enable_isolated_cancelled_staging_flight

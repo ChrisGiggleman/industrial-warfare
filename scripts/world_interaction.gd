@@ -23,6 +23,7 @@ const DIRECT_BUILD_SCENE_PATH = "res://scenes/core/playable_direct_build_authori
 const PLAYABLE_RECOVERY_STAGE_C_PATH = "res://scenes/core/playable_cancelled_site_recovery_e3d5c6c_stage_c.tscn"
 # E3d5c6d Stage A: new exact opt-in; not enabled in Main or old scenes.
 const UNIFIED_CONSTRUCTION_STAGE_A_PATH = "res://scenes/core/playable_unified_construction_e3d5c6d.tscn"
+const POWER_PARKING_STAGE_A_PATH = "res://scenes/core/playable_drone_power_interruption_e3d5c6e.tscn"
 
 const GROUND_COLLISION_MASK: int = 1
 const RESOURCE_NODE_COLLISION_MASK: int = 2
@@ -4875,7 +4876,7 @@ func _commit_planned_storage_belt(
 # job, resource transfer or timer. Disabled/missing adapter fails closed.
 func _direct_build_scope() -> bool:
 	var root := get_parent()
-	return is_instance_valid(root) and root.scene_file_path in [DIRECT_BUILD_SCENE_PATH, PLAYABLE_RECOVERY_STAGE_C_PATH, UNIFIED_CONSTRUCTION_STAGE_A_PATH]
+	return is_instance_valid(root) and root.scene_file_path in [DIRECT_BUILD_SCENE_PATH, PLAYABLE_RECOVERY_STAGE_C_PATH, UNIFIED_CONSTRUCTION_STAGE_A_PATH, POWER_PARKING_STAGE_A_PATH]
 
 
 func _direct_build_adapter() -> Node:

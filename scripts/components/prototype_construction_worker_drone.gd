@@ -89,10 +89,97 @@ var _site_ended: bool = false
 # E3d5c6c B: separately opted-in terminal staging recovery. Existing
 # construction delivery states and rearm checks remain unchanged when OFF.
 @export var enable_isolated_cancelled_staging_flight: bool = false
+# E3d5c6e: default-OFF, exact-scene-only temporary worker parking.
+@export var enable_isolated_power_parking: bool = false
+var _power_parked_assignment: bool = false
+const POWER_PARKING_SCENE := "res://scenes/core/playable_drone_power_interruption_e3d5c6e.tscn"
 var _staged_owner: WeakRef
 var _staged_token: RefCounted
 var _staged_hover: Vector3 = Vector3.ZERO
 var _staged_dock: WeakRef
+
+
+# A delivered worker may leave the site only with its original job/escrow
+# retained. Parking cannot free the assignment, worker binding or materials.
+func _power_parking_scope() -> bool:
+	var scope := get_parent() as Node3D
+	return (
+		enable_isolated_power_parking and is_inside_tree()
+		and not is_queued_for_deletion() and is_instance_valid(scope)
+		and scope.scene_file_path == POWER_PARKING_SCENE
+		and enable_isolated_delivered_worker and _delivered_worker_latched
+		and enable_isolated_cargo_reuse and enable_isolated_finite_charging
+		and _battery_configured and enable_isolated_battery
+	)
+
+
+func begin_power_parking(site: ConstructionSite) -> bool:
+	if (
+		not _power_parking_scope() or _state != FlightState.AT_SITE
+		or not _delivered_worker_valid(site) or _bound_site() != site
+		or _site_ended or site.job != _assignment_job
+		or site.job.state != ConstructionJob.State.PAUSED
+		or _cargo_amount != 0 or _cargo_item != null
+		or _pickup_token != null or _return_token != null
+	):
+		return false
+	var required: float = global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS
+	if _battery_units + 0.00001 < required:
+		return false
+	_power_parked_assignment = true
+	_state = FlightState.RETURNING
+	return true
+
+
+func can_resume_power_parking(site: ConstructionSite) -> bool:
+	if (
+		not _power_parking_scope() or not _power_parked_assignment
+		or _state != FlightState.DOCKED or not global_position.is_equal_approx(_home)
+		or not _delivered_worker_valid(site) or _bound_site() != site
+		or _site_ended or site.job != _assignment_job
+		or site.job.state != ConstructionJob.State.PAUSED
+		or _cargo_amount != 0 or _cargo_item != null
+	):
+		return false
+	# Original has_round_trip_energy needs QUEUED, but this already-funded
+	# construction job remains PAUSED; use the existing finite route forecast.
+	var target: Vector3 = site.global_position + Vector3.UP * _hover_height
+	var waypoints: Array[Vector3] = [target]
+	var needed: float = estimate_route_energy(waypoints)
+	return needed >= 0.0 and needed <= _battery_units + 0.00001
+
+
+func begin_power_resume(site: ConstructionSite) -> bool:
+	if not can_resume_power_parking(site):
+		return false
+	_state = FlightState.OUTBOUND
+	return true
+
+
+func abort_power_resume(site: ConstructionSite) -> bool:
+	if (
+		not _power_parking_scope() or not _power_parked_assignment
+		or _state != FlightState.OUTBOUND or _bound_site() != site
+		or _site_ended or not _delivered_worker_valid(site)
+	):
+		return false
+	var required: float = global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS
+	if _battery_units + 0.00001 < required:
+		return false
+	_state = FlightState.RETURNING
+	return true
+
+
+func complete_power_resume(site: ConstructionSite) -> bool:
+	if (
+		not _power_parking_scope() or not _power_parked_assignment
+		or _state != FlightState.AT_SITE or not is_at_site()
+		or _bound_site() != site or site.job != _assignment_job
+		or site.job.state != ConstructionJob.State.CONSTRUCTING
+	):
+		return false
+	_power_parked_assignment = false
+	return true
 
 
 # Stage B companion is a manually ticked authority, never Main or the
@@ -1090,6 +1177,7 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 	_delivery_buffer = null
 	_delivered_scheduler = null
 	_delivered_worker_latched = false
+	_power_parked_assignment = false
 	_cargo_recovered = false
 	_pre_pickup_cancelled = false
 	_pre_pickup_supplier = null

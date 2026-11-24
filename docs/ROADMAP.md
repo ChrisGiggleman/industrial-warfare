@@ -1,6 +1,15 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-23: E3d5c6e blackout worker parking audit complete; implementation plan pending approval
+## Current milestone — 2026-11-23: E3d5c6e Stage A code staged, local F6 pending
+
+- [x] Developer approved [read-only source-grounded audit](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md); exact opt-in new scene, **single original adapter/dispatcher/drone** and preserved material custody.
+- [x] Stage A code staged: default-off guarded two-second blackout return/Hub parking/real charging/original-site resume, cancellation support, and new isolated 14-group test fixture. **No old scenes/tests or Main changed.**
+- [ ] **NOW: Stage A local F6 14/14 pending** at `res://tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn` — [F6 guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_A.md). Expected banner `ALL 14 E3D5C6E STAGE A POWER INTERRUPTION TESTS PASSED`. Not run/accepted yet.
+- [ ] Stage B targeted compatibility against accepted 62/866 baseline and other affected tests (reruns add zero unique checks).
+- [ ] Stage C independent manual real mouse/keyboard F6 blackout/parking/restore/cancel and safe fail-closed behaviors.
+- [ ] After all gates, fresh full combined regression, handoff and milestone closeout. Existing 62/866 developer-local baseline remains accepted; new 14 tests unaccepted.
+
+## Prior milestone — 2026-11-23: E3d5c6e blackout worker parking audit complete; implementation plan pending approval
 
 - [x] **Read-only source architecture audit complete** after E3d5c6d accepted full 62/62-suite regression; [audit and exact-scoped Stage A proposal](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md). No gameplay changes made.
 - [ ] New exact opt-in E3d5c6e scene, single dispatcher-driven Hub parking and worker resume **NOT implemented or accepted**. No research/fleet/main changes until independently gated.

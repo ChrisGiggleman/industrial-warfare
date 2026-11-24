@@ -30,6 +30,97 @@ var _assigned_amount: int = 0
 var _claim_id: int = 0
 var _ticking: bool = false
 
+# E3d5c6e: default-off single-owner tick extension (exact scene only).
+@export var enable_isolated_power_parking: bool = false
+const POWER_PARKING_SCENE := "res://scenes/core/playable_drone_power_interruption_e3d5c6e.tscn"
+const POWER_OUTAGE_DEBOUNCE: float = 2.0
+var _power_outage_seconds: float = 0.0
+
+
+func _parking_enabled() -> bool:
+	var root := get_parent() as Node3D
+	return (
+		enable_isolated_power_parking and _configured and _lifecycle_configured
+		and _live(_drone) and _drone.enable_isolated_power_parking
+		and is_instance_valid(root) and root.scene_file_path == POWER_PARKING_SCENE
+	)
+
+
+func _power_missing(site: ConstructionSite) -> bool:
+	var status: Dictionary = _coordinator.get_status(site)
+	return (
+		_assigned_job != null
+		and _assigned_job.state == ConstructionJob.State.PAUSED
+		and bool(status.get("tracked", false))
+		and bool(status.get("materials_reserved", false))
+		and not bool(status.get("power_allocated", false))
+	)
+
+
+func _begin_power_park_if_due(site: ConstructionSite, delta: float) -> Dictionary:
+	if not _power_missing(site):
+		_power_outage_seconds = 0.0
+		return {"action": &"construction_wait"}
+	_power_outage_seconds += delta
+	if _power_outage_seconds < POWER_OUTAGE_DEBOUNCE:
+		return {"action": &"outage_debounce"}
+	if not _drone.begin_power_parking(site):
+		return {"action": &"parking_energy_wait"}
+	_power_outage_seconds = 0.0
+	_coordinator.reconcile()
+	return {"action": &"parking_started"}
+
+
+# This still runs ONLY within the original dispatch.tick() path.
+# A parked job retains its original assignment; no terminal rearm until
+# completion or cancellation, and no new material pickup on re-approach.
+func _tick_power_parking(site: ConstructionSite, state: int, delta: float) -> Dictionary:
+	_coordinator.reconcile()
+	var terminal: bool = (
+		not _live(site) or _assigned_job == null
+		or _assigned_job.state in [ConstructionJob.State.CANCELLED, ConstructionJob.State.COMPLETE]
+	)
+	if terminal:
+		_power_outage_seconds = 0.0
+		if state == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			if _drone.release_docked_cargo_assignment(_supplier, _returns, _coordinator, _escrow, _scheduler):
+				_clear_assignment()
+				return {"action": &"rearmed"}
+			var charged: float = _charging.advance_charging(delta)
+			return {"action": &"charged" if charged > 0.0 else &"dock_wait", "energy": charged}
+		if state == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+			return {"action": &"return_flight" if _drone.advance_flight(delta) else &"return_wait"}
+		return {"action": &"terminal_return_wait"}
+	if state == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+		return {"action": &"parking_return" if _drone.advance_flight(delta) else &"parking_return_wait"}
+	if state == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+		var status: Dictionary = _coordinator.get_status(site)
+		if (
+			bool(status.get("materials_reserved", false))
+			and bool(status.get("power_allocated", false))
+			and _escrow.reservation_for(site) > 0
+			and _drone.begin_power_resume(site)
+		):
+			_power_outage_seconds = 0.0
+			return {"action": &"resume_started"}
+		var charged_at_hub: float = _charging.advance_charging(delta)
+		return {"action": &"park_charged" if charged_at_hub > 0.0 else &"park_wait", "energy": charged_at_hub}
+	if state == PrototypeConstructionWorkerDrone.FlightState.OUTBOUND:
+		if _power_missing(site):
+			return {"action": &"resume_aborted" if _drone.abort_power_resume(site) else &"resume_wait"}
+		return {"action": &"resume_flight" if _drone.advance_flight(delta) else &"resume_wait"}
+	if state == PrototypeConstructionWorkerDrone.FlightState.AT_SITE:
+		if (
+			_assigned_job.state == ConstructionJob.State.CONSTRUCTING
+			and _scheduler.get_active_sites().has(site)
+			and _drone.complete_power_resume(site)
+		):
+			_power_outage_seconds = 0.0
+			return {"action": &"resumed"}
+		return _begin_power_park_if_due(site, delta)
+	return {"action": &"parking_quarantined"}
+
+
 
 func _live(node: Variant) -> bool:
 	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
@@ -267,6 +358,7 @@ func _clear_assignment() -> void:
 	_assigned_item = null
 	_assigned_amount = 0
 	_claim_id = 0
+	_power_outage_seconds = 0.0
 
 
 # Each call performs at most one timed phase. A successful launch, collect,
@@ -289,6 +381,8 @@ func _tick_once(delta: float) -> Dictionary:
 		var selected: Dictionary = dispatch_next()
 		return {"action": &"launched" if selected.get("claim_id", 0) > 0 else &"waiting", "selection": selected}
 	var site := _assigned_live_site()
+	if _parking_enabled() and _drone._power_parked_assignment:
+		return _tick_power_parking(site, state, delta)
 	match state:
 		PrototypeConstructionWorkerDrone.FlightState.PICKUP_OUTBOUND, PrototypeConstructionWorkerDrone.FlightState.AT_PICKUP:
 			if not _supplier._owned_valid(_claim_id, _drone):
@@ -327,6 +421,10 @@ func _tick_once(delta: float) -> Dictionary:
 			_coordinator.reconcile()
 			if not _live(site) or not _drone.is_at_site():
 				return {"action": &"worker_flight" if _drone.advance_flight(delta) else &"worker_wait"}
+			if _parking_enabled() and state == PrototypeConstructionWorkerDrone.FlightState.AT_SITE:
+				if _power_missing(site):
+					return _begin_power_park_if_due(site, delta)
+				_power_outage_seconds = 0.0
 			# Refuse to double-drive a site's own automatic _process timer.
 			if site.is_processing() or _assigned_job.state != ConstructionJob.State.CONSTRUCTING or not _scheduler.get_active_sites().has(site):
 				return {"action": &"construction_wait"}
