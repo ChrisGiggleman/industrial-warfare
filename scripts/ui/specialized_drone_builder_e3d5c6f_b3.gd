@@ -75,7 +75,11 @@ func _core() -> bool:
 		return false
 	if not coordinator.matches_tick_services(scheduler, escrow) or not scheduler.enable_isolated_drone_presence or not scheduler.uses_priority_queue(x["queue"]):
 		return false
-	if original_job != b2.site.job or b2.receipt_id != receipt_id or b2.source != source:
+	if b2.receipt_id != receipt_id or b2.source != source:
+		return false
+	# The site is queue_free()'d after successful building activation;
+	# never dereference an invalid original site during physical return.
+	if phase not in [&"return", &"complete"] and (not _live(b2.site) or original_job != b2.site.job):
 		return false
 	if logistics.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.DOCKED or logistics.cargo_amount() != 0:
 		return false
