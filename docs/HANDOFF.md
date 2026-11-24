@@ -1,5 +1,12 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-24 — E3d5c6f Stage B2 physical logistics IMPLEMENTED, F6 PENDING
+
+User authorized next gated milestone after developer-local B1 **3/3 F6** acceptance. Stage B2 adds a **default-off, exact-scoped** `B2LogisticsController`, genuine existing source discovery + supplier stock claim, physically metered one-load logistics pickup, exact original staging/escrow handoff, and a narrowly guarded nonterminal **empty physical return** using the original drone's return flight. Additive opt-in scene resources and additive methods in existing drone script only; **Main and all previously accepted tests/scenes untouched**. The construction drone stays idle with no worker grant or job timer. Expected material conservation: original Storage 15→10 + five ingots original escrow, zero cargo/queued progress, logistics physically DOCKED. The nonterminal return does NOT fully rearm or charge and retains original provenance; complete multi-role custody/recovery remains future-gated.
+
+**NEW UNRUN F6:** `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` (9 printed sections, not assertion count). Targeted reruns after it passes: B1, both Stage A scenes, original physical pickup x5a and delivery x5b. See [B2 acceptance/test guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B2.md). No local Godot run by assistant; report first parse/assertion failure. Old **63/63 suites, 880 manifest-expected checks** remains historical accepted, not rerun here. Stage B3 **NOT** started. Work stays on feature `feature/e3d5c6f-stage-a-role-contracts`, PR #1 draft/unmerged, preserve developer local .tres/.tscn modifications.
+
+
 ### 2026-11-24 — E3d5c6f B1 ACCEPTED: 3/3 F6 scenes developer-local PASS
 
 User confirmed **all three** B1 verification F6 scenes ran locally and passed without issues:
