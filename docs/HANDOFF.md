@@ -1,5 +1,16 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-24 — E3d5c6f Stage A: BOTH ISOLATED F6 SCENES ACCEPTED LOCALLY
+
+Developer confirmed **both newly added Godot F6 scenes passed without issues** on the `feature/e3d5c6f-stage-a-role-contracts` branch:
+- `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` — passed (fixture contains six labeled sections).
+- `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` — passed (fixture contains seven labeled sections).
+
+**Evidence boundary:** developer-reported successful local runs; no individual assertion transcript and no independent assistant Godot execution. Two newly accepted isolated fixtures; 13 labeled sections in source, **not** a claimed check/assertion count. Do not silently add 13 to the prior 880 manifest-expected check count or claim that 65-suite combined regression has run. Existing E3d5c6e **63/63 suites and 880 manifest-expected checks** remain the previously accepted historical baseline, **not rerun for E3d5c6f**.
+
+The new stage only introduces exact opt-in bookkeeping and internally stored provenance receipts. **No physical two-drone motion, builder worker admission, shared charging, or Main wiring.** Seven additive files only, no accepted scene/test/source edits. Developer has uncommitted local changes to resource and scene `.tres/.tscn` files; never reset or overwrite them. Stage B **requires new explicit approval**. Keep PR #1 draft/unmerged until user requests merge. [Stage A test manifest and checkpoint](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_A.md).
+
+
 Updated 2026-11-24. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
