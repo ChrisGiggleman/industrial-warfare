@@ -1,5 +1,7 @@
 # Industrial Warfare — Construction Drone Power-Interruption and Specialized Drone Roles
 
+**2026-11-23 source-audit update:** [E3d5c6e source-grounded architecture, exact opt-in boundary and staged tests](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md) prepared. This remains a design proposal; no gameplay implementation or new test acceptance has occurred. Both the existing accepted scenes and 62/62 full regression are preserved.
+
 **2026-11-23 — DESIGN PROPOSAL ONLY; no user approval to implement, no runtime/source changes.** Player suggests (1) a construction drone returning to Hub while power is out instead of hovering at a powerless site, leaving delivered construction materials there; and (2) separate material handling/logistics and construction drone types. Derived from accepted E3d5c6d Stage C manual gameplay and source read of `scripts/components/prototype_drone_automatic_dispatch.gd`, `prototype_construction_worker_drone.gd`, `prototype_drone_hub_charging.gd`.
 
 ## Actual current behavior (already accepted)

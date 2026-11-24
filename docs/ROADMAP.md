@@ -1,6 +1,13 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-23: E3d5c6d FULLY ACCEPTED; new drone power-interruption milestone proposed
+## Current milestone — 2026-11-23: E3d5c6e blackout worker parking audit complete; implementation plan pending approval
+
+- [x] **Read-only source architecture audit complete** after E3d5c6d accepted full 62/62-suite regression; [audit and exact-scoped Stage A proposal](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md). No gameplay changes made.
+- [ ] New exact opt-in E3d5c6e scene, single dispatcher-driven Hub parking and worker resume **NOT implemented or accepted**. No research/fleet/main changes until independently gated.
+- [ ] Stage A isolated Godot F6, Stage B legacy compatibility, Stage C manual F6 and fresh combined regression: proposed, none run yet.
+- [ ] Separate future specialization (material-handling drones vs construction drones), not included in E3d5c6e.
+
+## Prior milestone — 2026-11-23: E3d5c6d FULLY ACCEPTED; new drone power-interruption milestone proposed
 
 - [x] Architecture and authoritative source audit complete. Approved reuse of accepted E3d5c6c Stage C adapter's sole update loop.
 - [x] Stage A new experimental opt-in playable scene and a 16-group isolated F6 test staged; preserve original Main, all accepted scenes and tests.
