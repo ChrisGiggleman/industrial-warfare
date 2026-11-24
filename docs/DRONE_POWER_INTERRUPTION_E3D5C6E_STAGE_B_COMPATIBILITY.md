@@ -1,5 +1,7 @@
 # E3d5c6e Stage B — Targeted compatibility F6 regression (42 scenes / 584 checks)
 
+**2026-11-23 — WAVE 1 ACCEPTED 15/15 F6 scenes (203 manifest-expected checks), developer-reported locally; Wave 2 27/381 NOT YET RUN.** Full 42/584 Stage B remains pending. No full fresh 63-suite / 880-expected-check regression performed yet. The original PREPARED/PENDING instructions below reflect the historical planning state, and Wave 1 scene rows are checked to capture current acceptance. No Godot tests executed by assistant, no Output transcripts provided. Follow [interactive Copy navigator instructions](GODOT_F6_COPY_NAVIGATOR.md).
+
 **2026-11-23 — PREPARED, NOT YET RUN.** E3d5c6e new isolated Stage A **14/14 accepted locally** by developer report. Previously accepted fresh whole project baseline was 62 suites / 866 manifest-expected checks. **The new Stage A makes 63 distinct accepted suites / 880 expected checks**, but the full 63-suite regression has **not** been rerun after the code change.
 
 ## Purpose and checked scope
@@ -27,22 +29,22 @@ The 42 test files are **already present, distinct `res://tests/*.tscn` scene fil
 
 | # | Verified F6 scene | Expected checks | Developer-local status |
 |---:|---|---:|:---:|
-| 01 | [`playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn`](../tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn) | 14 | ☐ |
-| 02 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ☐ |
-| 03 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ☐ |
-| 04 | [`blueprint_sandbox_mode_test.tscn`](../tests/blueprint_sandbox_mode_test.tscn) | 12 | ☐ |
-| 05 | [`timed_storage_placement_test.tscn`](../tests/timed_storage_placement_test.tscn) | 4 | ☐ |
-| 06 | [`planned_storage_build_mode_test.tscn`](../tests/planned_storage_build_mode_test.tscn) | 6 | ☐ |
-| 07 | [`storage_blueprint_preview_snap_e3c2b_test.tscn`](../tests/storage_blueprint_preview_snap_e3c2b_test.tscn) | 15 | ☐ |
-| 08 | [`conveyor_building_placement_snap_test.tscn`](../tests/conveyor_building_placement_snap_test.tscn) | 8 | ☐ |
-| 09 | [`build_hotbar_keyboard_integration_test.tscn`](../tests/build_hotbar_keyboard_integration_test.tscn) | 12 | ☐ |
-| 10 | [`sandbox_blueprint_authorization_test.tscn`](../tests/sandbox_blueprint_authorization_test.tscn) | 18 | ☐ |
-| 11 | [`blueprint_construction_priority_e3d5a_test.tscn`](../tests/blueprint_construction_priority_e3d5a_test.tscn) | 15 | ☐ |
-| 12 | [`sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn`](../tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn) | 19 | ☐ |
-| 13 | [`blueprint_click_inspection_e3d5c3d2e_test.tscn`](../tests/blueprint_click_inspection_e3d5c3d2e_test.tscn) | 16 | ☐ |
-| 14 | [`construction_power_coverage_e3d5c3a_test.tscn`](../tests/construction_power_coverage_e3d5c3a_test.tscn) | 16 | ☐ |
-| 15 | [`finite_construction_power_e3d5c3b2_test.tscn`](../tests/finite_construction_power_e3d5c3b2_test.tscn) | 18 | ☐ |
-| | **Wave 1** | **203** | **PENDING** |
+| 01 | [`playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn`](../tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn) | 14 | ✓ |
+| 02 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ✓ |
+| 03 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ✓ |
+| 04 | [`blueprint_sandbox_mode_test.tscn`](../tests/blueprint_sandbox_mode_test.tscn) | 12 | ✓ |
+| 05 | [`timed_storage_placement_test.tscn`](../tests/timed_storage_placement_test.tscn) | 4 | ✓ |
+| 06 | [`planned_storage_build_mode_test.tscn`](../tests/planned_storage_build_mode_test.tscn) | 6 | ✓ |
+| 07 | [`storage_blueprint_preview_snap_e3c2b_test.tscn`](../tests/storage_blueprint_preview_snap_e3c2b_test.tscn) | 15 | ✓ |
+| 08 | [`conveyor_building_placement_snap_test.tscn`](../tests/conveyor_building_placement_snap_test.tscn) | 8 | ✓ |
+| 09 | [`build_hotbar_keyboard_integration_test.tscn`](../tests/build_hotbar_keyboard_integration_test.tscn) | 12 | ✓ |
+| 10 | [`sandbox_blueprint_authorization_test.tscn`](../tests/sandbox_blueprint_authorization_test.tscn) | 18 | ✓ |
+| 11 | [`blueprint_construction_priority_e3d5a_test.tscn`](../tests/blueprint_construction_priority_e3d5a_test.tscn) | 15 | ✓ |
+| 12 | [`sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn`](../tests/sandbox_authorization_receiver_autowire_e3d5c5d_test.tscn) | 19 | ✓ |
+| 13 | [`blueprint_click_inspection_e3d5c3d2e_test.tscn`](../tests/blueprint_click_inspection_e3d5c3d2e_test.tscn) | 16 | ✓ |
+| 14 | [`construction_power_coverage_e3d5c3a_test.tscn`](../tests/construction_power_coverage_e3d5c3a_test.tscn) | 16 | ✓ |
+| 15 | [`finite_construction_power_e3d5c3b2_test.tscn`](../tests/finite_construction_power_e3d5c3b2_test.tscn) | 18 | ✓ |
+| | **Wave 1** | **203** | **ACCEPTED (developer-local)** |
 
 ## Wave 2 — 27 suites / 381 expected checks (PENDING)
 
