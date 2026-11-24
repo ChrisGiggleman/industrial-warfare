@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/specialized_drone_role_contracts_e3d5c6f.gd" id="1_contracts"]
 [ext_resource type="Script" path="res://scripts/ui/playable_specialized_drones_e3d5c6f.gd" id="2_controller"]
