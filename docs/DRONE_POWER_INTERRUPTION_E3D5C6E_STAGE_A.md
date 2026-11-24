@@ -29,7 +29,7 @@
 | K | Original Press reaches COMPLETE once; original escrow commits once, battery and worker reuse bounded |
 | L | Cancel while returning to Hub: original terminal rearm and exact five-ingot physical site recovery |
 | M | Cancel while parked at unpowered Hub: original custody retained, no instant return, physical recovery later |
-| N | Power return during parking return and interruption during reflight are safe; low-energy negative case fails closed |
+| N | Power restoration mid-return, second outage mid-reflight, simulated low-energy fail-closed hold, and cancellation while resuming outbound preserve original materials and physical recovery |
 
 Test harness uses the **accepted original real placement and worker admission** and manual deterministic stepping of the **ONLY inherited adapter `_process(0.1)`**; it never advances the drone, dispatcher, charging, recovery, job clock or site process separately. Fixtures are created and freed **sequentially**. The low-battery negative test **only reduces charge** for adversarial simulation; it never adds fictional energy/items.
 
