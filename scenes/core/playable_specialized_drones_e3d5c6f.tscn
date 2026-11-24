@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/specialized_drone_role_contracts_e3d5c6f.gd" id="1_contracts"]
 [ext_resource type="Script" path="res://scripts/ui/playable_specialized_drones_e3d5c6f.gd" id="2_controller"]
@@ -11,6 +11,9 @@
 [ext_resource type="Script" path="res://scripts/components/blueprint_construction_readiness_coordinator.gd" id="9_coordinator"]
 [ext_resource type="Script" path="res://scripts/components/prototype_construction_power_allocator.gd" id="10_allocator"]
 [ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="11_inventory"]
+[ext_resource type="Script" path="res://scripts/ui/specialized_drone_logistics_e3d5c6f_b2.gd" id="12_b2"]
+[ext_resource type="Script" path="res://scripts/components/prototype_drone_storage_discovery.gd" id="13_discovery"]
+[ext_resource type="Script" path="res://scripts/components/prototype_drone_supplier_reservations.gd" id="14_supplier"]
 
 [node name="PlayableSpecializedDronesE3d5c6f" type="Node3D"]
 
@@ -53,3 +56,12 @@ max_capacity = 20
 [node name="SingleTickController" type="Node" parent="."]
 script = ExtResource("2_controller")
 enable_b1_controller = true
+
+[node name="StorageDiscovery" type="Node" parent="."]
+script = ExtResource("13_discovery")
+
+[node name="SupplierReservations" type="Node" parent="."]
+script = ExtResource("14_supplier")
+
+[node name="B2LogisticsController" type="Node" parent="."]
+script = ExtResource("12_b2")
