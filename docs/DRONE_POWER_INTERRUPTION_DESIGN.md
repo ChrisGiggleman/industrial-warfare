@@ -1,5 +1,7 @@
 # Industrial Warfare — Construction Drone Power-Interruption and Specialized Drone Roles
 
+**2026-11-24 closeout update:** Power-interruption worker Hub parking is **fully accepted** in separate E3d5c6e opt-in scene after developer-local Stage A 14/14, targeted Stage B 42/42, playable Stage C 10/10 and fresh final regression **63/63 unique suites** (880 manifest-expected checks). See [E3d5c6e closeout](DRONE_POWER_INTERRUPTION_E3D5C6E_CLOSEOUT.md). **Two-role material-handling vs construction drone specialization remains an unapproved future feature**, not part of the accepted system. Historical proposal-only language below is retained as background.
+
 **2026-11-23 current:** Developer explicitly authorized *Stage A of E3d5c6e* and its exact-gated one-drone blackout parking implementation has been staged for new isolated F6 14-check acceptance; **no F6 result yet, and no specialized two-role drone fleet approved.** See [Stage A F6 guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_A.md) and [source audit](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md). Earlier proposal-only status below is historical.
 
 **2026-11-23 source-audit update:** [E3d5c6e source-grounded architecture, exact opt-in boundary and staged tests](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md) prepared. This remains a design proposal; no gameplay implementation or new test acceptance has occurred. Both the existing accepted scenes and 62/62 full regression are preserved.

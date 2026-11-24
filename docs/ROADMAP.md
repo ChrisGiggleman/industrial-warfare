@@ -1,6 +1,6 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-24: E3d5c6e Stage C manual 10/10 accepted; final combined regression next
+## Current milestone — 2026-11-24: E3d5c6e FULLY ACCEPTED, next milestone unselected
 
 - [x] Developer approved [read-only source-grounded audit](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md); exact opt-in new scene, **single original adapter/dispatcher/drone** and preserved material custody.
 - [x] Stage A code staged: default-off guarded two-second blackout return/Hub parking/real charging/original-site resume, cancellation support, and new isolated 14-group test fixture. **No old scenes/tests or Main changed.**
@@ -8,7 +8,8 @@
 - [x] **Stage B Wave 1 15/15 suites PASSED locally** (203 manifest-expected checks), developer-reported, no individual Output transcript supplied.
 - [x] **Stage B Wave 2 27/27 suites PASSED locally**, 381 manifest-expected checks, developer-reported. Together with Wave 1 15/203, **Stage B FULL 42/42 suites / 584 expected rerun checks ACCEPTED**. [Guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_B_COMPATIBILITY.md) / [manifest](../tools/drone_power_interruption_e3d5c6e_stage_b_compatibility.csv). Reruns add no unique checks.
 - [x] **Stage C 10/10 manual gameplay checks PASSED locally** (A1–A5, B1–B3, C1–C2) in the new exact opt-in playable scene, developer-reported with one partial live-game screenshot. [Manual guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_C_MANUAL.md).
-- [ ] **NEXT: fresh full 63-suite / 880-manifest-expected-check F6 combined regression**, [manifest](../tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv) / [exact-scene guide](DRONE_POWER_INTERRUPTION_E3D5C6E_FINAL_63_SUITE_REGRESSION.md). **NOT RUN**. Accepted unique inventory = prior fresh 62/866 + E3d5c6e new Stage A 14, while Stage B 42 compatibility reruns and Stage C ten manual checks add zero unique automated suites. After full developer-local pass close milestone, update handoff, plan future work separately.
+- [x] **Final fresh combined 63/63 unique F6 suites PASSED locally** with **880 manifest-expected checks** (individual assertions not independently supplied; developer-reported suite pass). [Manifest](../tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv) / [guide](DRONE_POWER_INTERRUPTION_E3D5C6E_FINAL_63_SUITE_REGRESSION.md). **E3d5c6e FULLY ACCEPTED** in the new exact opt-in playable scene. Main unchanged. [Milestone closeout](DRONE_POWER_INTERRUPTION_E3D5C6E_CLOSEOUT.md).
+- [ ] **NEXT UNSELECTED, no new code approved:** read-only architecture scoping for material logistics drones vs physical construction drones (existing [design](DRONE_POWER_INTERRUPTION_DESIGN.md)), **or** new resource/power production progression (ore, coal/solar/wind); choose and approve separately. Preserve one-driver physical custody and the accepted 63/880 baseline.
 
 ## Prior milestone — 2026-11-23: E3d5c6e blackout worker parking audit complete; implementation plan pending approval
 

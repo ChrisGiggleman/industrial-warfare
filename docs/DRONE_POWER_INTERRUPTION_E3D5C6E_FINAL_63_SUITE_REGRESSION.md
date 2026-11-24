@@ -1,5 +1,7 @@
 # E3d5c6e — Final fresh full 63-suite / 880-expected-check automated regression
 
+**2026-11-24 — FINAL REGRESSION ACCEPTED: developer explicitly confirms ALL 63/63 suite scenes passed in a fresh local Godot 4.6.2 F6 run.** Manifest contains **880 expected checks** (62 previously accepted suites / 866 + new Stage A 14), and this is suite-level developer testimony, not an independently inspected check-by-check Output transcript. No assistant-run Godot. Stage A **14/14**, Stage B targeted compatibility **42/42 suites**, Stage C manual gameplay **10/10** and final full **63/63** are now accepted; **E3d5c6e FULLY CLOSED**. Pre-run PENDING instructions below are historical. [Closeout](DRONE_POWER_INTERRUPTION_E3D5C6E_CLOSEOUT.md). No gameplay/source code or accepted Main/legacy scenes changed by this documentation checkpoint.
+
 **2026-11-24 — STAGED ONLY. THIS COMBINED 63-SUITE REGRESSION HAS NOT BEEN RUN.** The developer has already reported success for E3d5c6e Stage A 14/14 isolated, Stage B Wave 1 15/15 and Wave 2 27/27 targeted compatibility (42/42 suites total, 584 manifest-expected rerun checks), and Stage C real playable 10/10. **E3d5c6e cannot be marked fully accepted before this separate fresh final gate.**
 
 ## Source of exact suite order and count
@@ -20,70 +22,70 @@
 
 | # | Exact F6 scene under `res://tests/` | Expected checks | Developer-local final |
 |---:|---|---:|:---:|
-| 01 | [`inventory_trasnfer_test.tscn`](../tests/inventory_trasnfer_test.tscn) | 4 | ☐ |
-| 02 | [`item_port_transfer_test.tscn`](../tests/item_port_transfer_test.tscn) | 7 | ☐ |
-| 03 | [`manufacturing_transaction_test.tscn`](../tests/manufacturing_transaction_test.tscn) | 9 | ☐ |
-| 04 | [`recipe_output_capacity_test.tscn`](../tests/recipe_output_capacity_test.tscn) | 11 | ☐ |
-| 05 | [`conveyor_automatic_loading_test.tscn`](../tests/conveyor_automatic_loading_test.tscn) | 10 | ☐ |
-| 06 | [`conveyor_automatic_unloading_test.tscn`](../tests/conveyor_automatic_unloading_test.tscn) | 9 | ☐ |
-| 07 | [`conveyor_connected_transport_test.tscn`](../tests/conveyor_connected_transport_test.tscn) | 7 | ☐ |
-| 08 | [`conveyor_splitter_test.tscn`](../tests/conveyor_splitter_test.tscn) | 10 | ☐ |
-| 09 | [`conveyor_merger_test.tscn`](../tests/conveyor_merger_test.tscn) | 10 | ☐ |
-| 10 | [`conveyor_physical_only_conservation_test.tscn`](../tests/conveyor_physical_only_conservation_test.tscn) | 9 | ☐ |
-| 11 | [`timed_storage_conveyor_delivery_test.tscn`](../tests/timed_storage_conveyor_delivery_test.tscn) | 6 | ☐ |
-| 12 | [`blueprint_construction_material_escrow_e3d5c2a_test.tscn`](../tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn) | 16 | ☐ |
-| 13 | [`unified_receiver_consolidation_e3d5c5v_test.tscn`](../tests/unified_receiver_consolidation_e3d5c5v_test.tscn) | 56 | ☐ |
-| 14 | [`playable_construction_logistics_e3d5c5w_test.tscn`](../tests/playable_construction_logistics_e3d5c5w_test.tscn) | 13 | ☐ |
-| 15 | [`playable_construction_power_e3d5c5x1_test.tscn`](../tests/playable_construction_power_e3d5c5x1_test.tscn) | 9 | ☐ |
-| 16 | [`playable_construction_drone_e3d5c5x2_test.tscn`](../tests/playable_construction_drone_e3d5c5x2_test.tscn) | 11 | ☐ |
-| 17 | [`drone_storage_discovery_e3d5c5x3_test.tscn`](../tests/drone_storage_discovery_e3d5c5x3_test.tscn) | 12 | ☐ |
-| 18 | [`drone_supplier_reservations_e3d5c5x4a_test.tscn`](../tests/drone_supplier_reservations_e3d5c5x4a_test.tscn) | 12 | ☐ |
-| 19 | [`world_salvage_destruction_test.tscn`](../tests/world_salvage_destruction_test.tscn) | 12 | ☐ |
-| 20 | [`destruction_cargo_recovery_test.tscn`](../tests/destruction_cargo_recovery_test.tscn) | 12 | ☐ |
-| 21 | [`drone_return_reservations_e3d5c5x4b_test.tscn`](../tests/drone_return_reservations_e3d5c5x4b_test.tscn) | 14 | ☐ |
-| 22 | [`prototype_construction_worker_drone_e3d5c4u_test.tscn`](../tests/prototype_construction_worker_drone_e3d5c4u_test.tscn) | 16 | ☐ |
-| 23 | [`prototype_drone_worker_readiness_e3d5c4v_test.tscn`](../tests/prototype_drone_worker_readiness_e3d5c4v_test.tscn) | 21 | ☐ |
-| 24 | [`prototype_construction_drone_fleet_e3d5c4w_test.tscn`](../tests/prototype_construction_drone_fleet_e3d5c4w_test.tscn) | 21 | ☐ |
-| 25 | [`prototype_drone_battery_dock_e3d5c4x_test.tscn`](../tests/prototype_drone_battery_dock_e3d5c4x_test.tscn) | 20 | ☐ |
-| 26 | [`prototype_construction_drone_reuse_e3d5c4y_test.tscn`](../tests/prototype_construction_drone_reuse_e3d5c4y_test.tscn) | 20 | ☐ |
-| 27 | [`prototype_construction_drone_tick_e3d5c4z_test.tscn`](../tests/prototype_construction_drone_tick_e3d5c4z_test.tscn) | 20 | ☐ |
-| 28 | [`sandbox_construction_drone_bridge_e3d5c5a_test.tscn`](../tests/sandbox_construction_drone_bridge_e3d5c5a_test.tscn) | 20 | ☐ |
-| 29 | [`drone_physical_pickup_e3d5c5x5a_test.tscn`](../tests/drone_physical_pickup_e3d5c5x5a_test.tscn) | 12 | ☐ |
-| 30 | [`blueprint_material_staging_e3d5c4c_test.tscn`](../tests/blueprint_material_staging_e3d5c4c_test.tscn) | 16 | ☐ |
-| 31 | [`blueprint_physical_staging_e3d5c4d_test.tscn`](../tests/blueprint_physical_staging_e3d5c4d_test.tscn) | 16 | ☐ |
-| 32 | [`blueprint_site_staging_ownership_e3d5c4h_test.tscn`](../tests/blueprint_site_staging_ownership_e3d5c4h_test.tscn) | 16 | ☐ |
-| 33 | [`blueprint_anchored_receiver_e3d5c4i_test.tscn`](../tests/blueprint_anchored_receiver_e3d5c4i_test.tscn) | 16 | ☐ |
-| 34 | [`blueprint_owned_readiness_e3d5c4r_test.tscn`](../tests/blueprint_owned_readiness_e3d5c4r_test.tscn) | 18 | ☐ |
-| 35 | [`blueprint_receiver_recovery_audit_e3d5c4j_test.tscn`](../tests/blueprint_receiver_recovery_audit_e3d5c4j_test.tscn) | 12 | ☐ |
-| 36 | [`drone_physical_delivery_e3d5c5x5b_test.tscn`](../tests/drone_physical_delivery_e3d5c5x5b_test.tscn) | 13 | ☐ |
-| 37 | [`construction_readiness_coordinator_e3d5c3c1_test.tscn`](../tests/construction_readiness_coordinator_e3d5c3c1_test.tscn) | 18 | ☐ |
-| 38 | [`blueprint_construction_readiness_e3d5c1_test.tscn`](../tests/blueprint_construction_readiness_e3d5c1_test.tscn) | 15 | ☐ |
-| 39 | [`drone_delivered_worker_e3d5c5x5c_test.tscn`](../tests/drone_delivered_worker_e3d5c5x5c_test.tscn) | 16 | ☐ |
-| 40 | [`drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn`](../tests/drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn) | 13 | ☐ |
-| 41 | [`construction_power_coverage_e3d5c3a_test.tscn`](../tests/construction_power_coverage_e3d5c3a_test.tscn) | 16 | ☐ |
-| 42 | [`completed_power_structures_e3d5c3b1_test.tscn`](../tests/completed_power_structures_e3d5c3b1_test.tscn) | 16 | ☐ |
-| 43 | [`finite_construction_power_e3d5c3b2_test.tscn`](../tests/finite_construction_power_e3d5c3b2_test.tscn) | 18 | ☐ |
-| 44 | [`drone_finite_hub_charging_e3d5c5x7a_test.tscn`](../tests/drone_finite_hub_charging_e3d5c5x7a_test.tscn) | 13 | ☐ |
-| 45 | [`drone_cargo_worker_reuse_e3d5c5x7b_test.tscn`](../tests/drone_cargo_worker_reuse_e3d5c5x7b_test.tscn) | 16 | ☐ |
-| 46 | [`drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn`](../tests/drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn) | 12 | ☐ |
-| 47 | [`drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn`](../tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn) | 13 | ☐ |
-| 48 | [`drone_lost_site_recovery_e3d5c5x7c3_test.tscn`](../tests/drone_lost_site_recovery_e3d5c5x7c3_test.tscn) | 14 | ☐ |
-| 49 | [`drone_automatic_dispatch_e3d5c5x8a_test.tscn`](../tests/drone_automatic_dispatch_e3d5c5x8a_test.tscn) | 14 | ☐ |
-| 50 | [`drone_automatic_lifecycle_e3d5c5x8b_test.tscn`](../tests/drone_automatic_lifecycle_e3d5c5x8b_test.tscn) | 15 | ☐ |
-| 51 | [`playable_automatic_construction_drone_stage_a_test.tscn`](../tests/playable_automatic_construction_drone_stage_a_test.tscn) | 8 | ☐ |
-| 52 | [`playable_automatic_construction_drone_stage_b_test.tscn`](../tests/playable_automatic_construction_drone_stage_b_test.tscn) | 8 | ☐ |
-| 53 | [`playable_automatic_construction_drone_stage_c_test.tscn`](../tests/playable_automatic_construction_drone_stage_c_test.tscn) | 13 | ☐ |
-| 54 | [`playable_construction_building_expansion_e3d5c6a_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_test.tscn) | 8 | ☐ |
-| 55 | [`playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn) | 12 | ☐ |
-| 56 | [`playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn) | 11 | ☐ |
-| 57 | [`playable_direct_build_authorization_e3d5c6b_test.tscn`](../tests/playable_direct_build_authorization_e3d5c6b_test.tscn) | 11 | ☐ |
-| 58 | [`playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn`](../tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn) | 14 | ☐ |
-| 59 | [`cancelled_site_custody_e3d5c6c_stage_a_test.tscn`](../tests/cancelled_site_custody_e3d5c6c_stage_a_test.tscn) | 13 | ☐ |
-| 60 | [`cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`](../tests/cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn) | 13 | ☐ |
-| 61 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ☐ |
-| 62 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ☐ |
-| 63 | [`playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn`](../tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn) | 14 | ☐ |
-| | **63 distinct suites** | **880** | **PENDING** |
+| 01 | [`inventory_trasnfer_test.tscn`](../tests/inventory_trasnfer_test.tscn) | 4 | ✓ |
+| 02 | [`item_port_transfer_test.tscn`](../tests/item_port_transfer_test.tscn) | 7 | ✓ |
+| 03 | [`manufacturing_transaction_test.tscn`](../tests/manufacturing_transaction_test.tscn) | 9 | ✓ |
+| 04 | [`recipe_output_capacity_test.tscn`](../tests/recipe_output_capacity_test.tscn) | 11 | ✓ |
+| 05 | [`conveyor_automatic_loading_test.tscn`](../tests/conveyor_automatic_loading_test.tscn) | 10 | ✓ |
+| 06 | [`conveyor_automatic_unloading_test.tscn`](../tests/conveyor_automatic_unloading_test.tscn) | 9 | ✓ |
+| 07 | [`conveyor_connected_transport_test.tscn`](../tests/conveyor_connected_transport_test.tscn) | 7 | ✓ |
+| 08 | [`conveyor_splitter_test.tscn`](../tests/conveyor_splitter_test.tscn) | 10 | ✓ |
+| 09 | [`conveyor_merger_test.tscn`](../tests/conveyor_merger_test.tscn) | 10 | ✓ |
+| 10 | [`conveyor_physical_only_conservation_test.tscn`](../tests/conveyor_physical_only_conservation_test.tscn) | 9 | ✓ |
+| 11 | [`timed_storage_conveyor_delivery_test.tscn`](../tests/timed_storage_conveyor_delivery_test.tscn) | 6 | ✓ |
+| 12 | [`blueprint_construction_material_escrow_e3d5c2a_test.tscn`](../tests/blueprint_construction_material_escrow_e3d5c2a_test.tscn) | 16 | ✓ |
+| 13 | [`unified_receiver_consolidation_e3d5c5v_test.tscn`](../tests/unified_receiver_consolidation_e3d5c5v_test.tscn) | 56 | ✓ |
+| 14 | [`playable_construction_logistics_e3d5c5w_test.tscn`](../tests/playable_construction_logistics_e3d5c5w_test.tscn) | 13 | ✓ |
+| 15 | [`playable_construction_power_e3d5c5x1_test.tscn`](../tests/playable_construction_power_e3d5c5x1_test.tscn) | 9 | ✓ |
+| 16 | [`playable_construction_drone_e3d5c5x2_test.tscn`](../tests/playable_construction_drone_e3d5c5x2_test.tscn) | 11 | ✓ |
+| 17 | [`drone_storage_discovery_e3d5c5x3_test.tscn`](../tests/drone_storage_discovery_e3d5c5x3_test.tscn) | 12 | ✓ |
+| 18 | [`drone_supplier_reservations_e3d5c5x4a_test.tscn`](../tests/drone_supplier_reservations_e3d5c5x4a_test.tscn) | 12 | ✓ |
+| 19 | [`world_salvage_destruction_test.tscn`](../tests/world_salvage_destruction_test.tscn) | 12 | ✓ |
+| 20 | [`destruction_cargo_recovery_test.tscn`](../tests/destruction_cargo_recovery_test.tscn) | 12 | ✓ |
+| 21 | [`drone_return_reservations_e3d5c5x4b_test.tscn`](../tests/drone_return_reservations_e3d5c5x4b_test.tscn) | 14 | ✓ |
+| 22 | [`prototype_construction_worker_drone_e3d5c4u_test.tscn`](../tests/prototype_construction_worker_drone_e3d5c4u_test.tscn) | 16 | ✓ |
+| 23 | [`prototype_drone_worker_readiness_e3d5c4v_test.tscn`](../tests/prototype_drone_worker_readiness_e3d5c4v_test.tscn) | 21 | ✓ |
+| 24 | [`prototype_construction_drone_fleet_e3d5c4w_test.tscn`](../tests/prototype_construction_drone_fleet_e3d5c4w_test.tscn) | 21 | ✓ |
+| 25 | [`prototype_drone_battery_dock_e3d5c4x_test.tscn`](../tests/prototype_drone_battery_dock_e3d5c4x_test.tscn) | 20 | ✓ |
+| 26 | [`prototype_construction_drone_reuse_e3d5c4y_test.tscn`](../tests/prototype_construction_drone_reuse_e3d5c4y_test.tscn) | 20 | ✓ |
+| 27 | [`prototype_construction_drone_tick_e3d5c4z_test.tscn`](../tests/prototype_construction_drone_tick_e3d5c4z_test.tscn) | 20 | ✓ |
+| 28 | [`sandbox_construction_drone_bridge_e3d5c5a_test.tscn`](../tests/sandbox_construction_drone_bridge_e3d5c5a_test.tscn) | 20 | ✓ |
+| 29 | [`drone_physical_pickup_e3d5c5x5a_test.tscn`](../tests/drone_physical_pickup_e3d5c5x5a_test.tscn) | 12 | ✓ |
+| 30 | [`blueprint_material_staging_e3d5c4c_test.tscn`](../tests/blueprint_material_staging_e3d5c4c_test.tscn) | 16 | ✓ |
+| 31 | [`blueprint_physical_staging_e3d5c4d_test.tscn`](../tests/blueprint_physical_staging_e3d5c4d_test.tscn) | 16 | ✓ |
+| 32 | [`blueprint_site_staging_ownership_e3d5c4h_test.tscn`](../tests/blueprint_site_staging_ownership_e3d5c4h_test.tscn) | 16 | ✓ |
+| 33 | [`blueprint_anchored_receiver_e3d5c4i_test.tscn`](../tests/blueprint_anchored_receiver_e3d5c4i_test.tscn) | 16 | ✓ |
+| 34 | [`blueprint_owned_readiness_e3d5c4r_test.tscn`](../tests/blueprint_owned_readiness_e3d5c4r_test.tscn) | 18 | ✓ |
+| 35 | [`blueprint_receiver_recovery_audit_e3d5c4j_test.tscn`](../tests/blueprint_receiver_recovery_audit_e3d5c4j_test.tscn) | 12 | ✓ |
+| 36 | [`drone_physical_delivery_e3d5c5x5b_test.tscn`](../tests/drone_physical_delivery_e3d5c5x5b_test.tscn) | 13 | ✓ |
+| 37 | [`construction_readiness_coordinator_e3d5c3c1_test.tscn`](../tests/construction_readiness_coordinator_e3d5c3c1_test.tscn) | 18 | ✓ |
+| 38 | [`blueprint_construction_readiness_e3d5c1_test.tscn`](../tests/blueprint_construction_readiness_e3d5c1_test.tscn) | 15 | ✓ |
+| 39 | [`drone_delivered_worker_e3d5c5x5c_test.tscn`](../tests/drone_delivered_worker_e3d5c5x5c_test.tscn) | 16 | ✓ |
+| 40 | [`drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn`](../tests/drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn) | 13 | ✓ |
+| 41 | [`construction_power_coverage_e3d5c3a_test.tscn`](../tests/construction_power_coverage_e3d5c3a_test.tscn) | 16 | ✓ |
+| 42 | [`completed_power_structures_e3d5c3b1_test.tscn`](../tests/completed_power_structures_e3d5c3b1_test.tscn) | 16 | ✓ |
+| 43 | [`finite_construction_power_e3d5c3b2_test.tscn`](../tests/finite_construction_power_e3d5c3b2_test.tscn) | 18 | ✓ |
+| 44 | [`drone_finite_hub_charging_e3d5c5x7a_test.tscn`](../tests/drone_finite_hub_charging_e3d5c5x7a_test.tscn) | 13 | ✓ |
+| 45 | [`drone_cargo_worker_reuse_e3d5c5x7b_test.tscn`](../tests/drone_cargo_worker_reuse_e3d5c5x7b_test.tscn) | 16 | ✓ |
+| 46 | [`drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn`](../tests/drone_pre_pickup_cancellation_e3d5c5x7c1_test.tscn) | 12 | ✓ |
+| 47 | [`drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn`](../tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn) | 13 | ✓ |
+| 48 | [`drone_lost_site_recovery_e3d5c5x7c3_test.tscn`](../tests/drone_lost_site_recovery_e3d5c5x7c3_test.tscn) | 14 | ✓ |
+| 49 | [`drone_automatic_dispatch_e3d5c5x8a_test.tscn`](../tests/drone_automatic_dispatch_e3d5c5x8a_test.tscn) | 14 | ✓ |
+| 50 | [`drone_automatic_lifecycle_e3d5c5x8b_test.tscn`](../tests/drone_automatic_lifecycle_e3d5c5x8b_test.tscn) | 15 | ✓ |
+| 51 | [`playable_automatic_construction_drone_stage_a_test.tscn`](../tests/playable_automatic_construction_drone_stage_a_test.tscn) | 8 | ✓ |
+| 52 | [`playable_automatic_construction_drone_stage_b_test.tscn`](../tests/playable_automatic_construction_drone_stage_b_test.tscn) | 8 | ✓ |
+| 53 | [`playable_automatic_construction_drone_stage_c_test.tscn`](../tests/playable_automatic_construction_drone_stage_c_test.tscn) | 13 | ✓ |
+| 54 | [`playable_construction_building_expansion_e3d5c6a_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_test.tscn) | 8 | ✓ |
+| 55 | [`playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_stage_b_test.tscn) | 12 | ✓ |
+| 56 | [`playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn`](../tests/playable_construction_building_expansion_e3d5c6a_stage_c_test.tscn) | 11 | ✓ |
+| 57 | [`playable_direct_build_authorization_e3d5c6b_test.tscn`](../tests/playable_direct_build_authorization_e3d5c6b_test.tscn) | 11 | ✓ |
+| 58 | [`playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn`](../tests/playable_direct_build_authorization_e3d5c6b_stage_b_test.tscn) | 14 | ✓ |
+| 59 | [`cancelled_site_custody_e3d5c6c_stage_a_test.tscn`](../tests/cancelled_site_custody_e3d5c6c_stage_a_test.tscn) | 13 | ✓ |
+| 60 | [`cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`](../tests/cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn) | 13 | ✓ |
+| 61 | [`playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn`](../tests/playable_cancelled_site_recovery_e3d5c6c_stage_c_test.tscn) | 14 | ✓ |
+| 62 | [`playable_unified_construction_e3d5c6d_stage_a_test.tscn`](../tests/playable_unified_construction_e3d5c6d_stage_a_test.tscn) | 16 | ✓ |
+| 63 | [`playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn`](../tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn) | 14 | ✓ |
+| | **63 distinct suites** | **880 expected** | **ACCEPTED (developer-local)** |
 
 ## Post-gate
 
