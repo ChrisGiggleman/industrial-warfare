@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/specialized_drone_role_contracts_e3d5c6f.gd" id="1_contracts"]
+
+[node name="PlayableSpecializedDronesE3d5c6f" type="Node3D"]
+
+[node name="RoleContracts" type="Node" parent="."]
+script = ExtResource("1_contracts")
+enable_stage_a_contracts = true
