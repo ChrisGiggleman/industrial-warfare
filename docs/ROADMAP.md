@@ -1,6 +1,6 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-23: E3d5c6d Stage C manual 10/10 accepted; final combined regression next
+## Current milestone — 2026-11-23: E3d5c6d FULLY ACCEPTED; new drone power-interruption milestone proposed
 
 - [x] Architecture and authoritative source audit complete. Approved reuse of accepted E3d5c6c Stage C adapter's sole update loop.
 - [x] Stage A new experimental opt-in playable scene and a 16-group isolated F6 test staged; preserve original Main, all accepted scenes and tests.
@@ -8,7 +8,7 @@
 - [x] **Stage B Wave 1 developer-local 12/12 suites ACCEPTED**, 155 manifest-expected checks (check-by-check Output not supplied). [Guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_B_COMPATIBILITY.md).
 - [x] **Stage B Wave 2 27/27 suites passed locally**, 381 manifest-expected checks. With Wave 1 12/155, **entire Stage B 39/39 suites / 536 expected rerun checks ACCEPTED**, developer-reported; no gameplay changes, no new unique checks. [Stage B guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_B_COMPATIBILITY.md).
 - [x] **Stage C manual playable 10/10 ACCEPTED** (A1–A4, B1–B3, C1–C3) on unified opt-in scene from developer-local report; [manual guide](UNIFIED_CONSTRUCTION_E3D5C6D_STAGE_C_MANUAL.md). Developer-reported, not assistant-executed.
-- [ ] **NEXT Stage D: fresh complete 62-suite / 866-expected-check** combined F6 regression **pending** after Stage C 10/10 acceptance; [combined guide](UNIFIED_CONSTRUCTION_E3D5C6D_FINAL_62_SUITE_REGRESSION.md), [manifest](../tools/unified_construction_e3d5c6d_final_62_suite_regression.csv). No Main promotion before milestone closeout.
+- [x] **Final fresh full 62/62 suites PASSED locally** (866 **manifest-expected** checks, check-by-check Output not supplied); [combined guide](UNIFIED_CONSTRUCTION_E3D5C6D_FINAL_62_SUITE_REGRESSION.md), [manifest](../tools/unified_construction_e3d5c6d_final_62_suite_regression.csv). **E3d5c6d FULLY ACCEPTED** in exact opt-in scene with Stage A 16/16, Stage B 39/39 compatibility, Stage C manual 10/10, and this fresh all-62 regression. Main stays unchanged. No new gameplay code in acceptance.
 - [ ] **FUTURE, design proposal only (not implementation approved):** construction-worker drone parks at Hub on sustained power interruption while original staged materials and paused job stay physically secured; safe finite-energy return and deterministic resume; [design](DRONE_POWER_INTERRUPTION_DESIGN.md). Later independent material-logistics vs construction-drone roles (no duplicate drivers or multi-drone work in E3d5c6d).
 
 ## Prior milestone — 2026-11-22: combined regression accepted; integration planning completed

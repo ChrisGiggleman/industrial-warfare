@@ -35,6 +35,6 @@ Proposed responsibilities and mandatory invariants:
 
 ## Milestone / authority status
 
-- **Current accepted:** E3d5c6d Stage A 16/16 isolated, Stage B 39/39 compatibility (536 expected rerun checks), Stage C manual 10/10 developer-local. Fresh combined 62/866 pending.
-- **Next implementation candidate after E3d5c6d final acceptance:** a separate exact-gated drone power-interruption / worker parking milestone; require architecture approval, isolated F6 tests and manual acceptance before Main.
+- **Current accepted:** E3d5c6d Stage A 16/16 isolated, Stage B 39/39 compatibility (536 expected rerun checks), Stage C manual 10/10, and **fresh combined 62/62 suites passed locally** with 866 manifest-expected checks (no individual assertion transcript). Full E3d5c6d milestone closed.
+- **Next implementation candidate now that E3d5c6d is fully accepted:** a separate exact-gated drone power-interruption / worker parking milestone. **Not yet approved for source edits.** First audit current authority/job/worker contracts, then seek specific architecture approval and isolated F6/manual acceptance before any Main change.
 - **Future separate candidate:** two-role drone fleet/research architecture. User suggested it for design discussion; it is **not yet an agreed implementation specification**.

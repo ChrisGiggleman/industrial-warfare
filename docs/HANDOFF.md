@@ -1,9 +1,17 @@
 # Industrial Warfare — Current Development Handoff
 
-Updated 2026-11-22. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
+Updated 2026-11-23. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
 ## Current checkpoint
+
+### 2026-11-23 — E3d5c6d FULL MILESTONE ACCEPTED: fresh combined 62/62 automated suites PASSED locally
+
+Developer explicitly confirmed **"all 62 tests passed"** after executing the final [62-scene combined F6 guide](UNIFIED_CONSTRUCTION_E3D5C6D_FINAL_62_SUITE_REGRESSION.md) with Godot 4.6.2 Stable. **All 62/62 unique automated suites passed in one fresh local regression**; the validated [62-suite manifest](../tools/unified_construction_e3d5c6d_final_62_suite_regression.csv) specifies **866 expected checks (850 historical plus 16 E3d5c6d Stage A)**. Individual suite-by-suite Output logs/check-by-check transcripts were **not provided**, so **866 is the expected assertion inventory for the 62 reported passed suites**, not independently reviewed 866/866 log evidence. This is **developer-reported local testing, not assistant-executed**. No double counting of earlier Stage B 39/536 targeted compatibility reruns, historical supplementary suites, or manual checks.
+
+**E3d5c6d Unified Construction Gameplay Integration FULLY ACCEPTED in exact opt-in experimental scene** `res://scenes/core/playable_unified_construction_e3d5c6d.tscn`: Stage A isolated **16/16**; Stage B **39/39 compatibility suites, 536 manifest-expected rerun checks**; Stage C **10/10 hands-on checks**; now fresh full **62/62** regression (866 manifest-expected checks). Accepted behavior: Direct Storage and Press build, Blueprint PLANNED until E/Ctrl+E, original priority/FIFO and no worker preemption, one physical drone/sole adapter tick, real site-owned staging and immutable cancellation custody, no free material/refund, original power/finite battery/charging and same-drone physical recovery. **Main and previously accepted E3d5c6b/E3d5c6c scenes/tests remain unchanged.** No code edits occurred in this closeout (documentation-only checkpoint). There is no pending acceptance test for E3d5c6d.
+
+**NEXT decision: separate NEW milestone for worker-drone Hub parking during sustained construction-power outage.** See [Design proposal](DRONE_POWER_INTERRUPTION_DESIGN.md); preserve delivered materials and original job/escrow/site custody while the battery-powered drone flies home, pauses, and later returns/resumes when safe. **Design proposed only, not yet gameplay-implementation approval.** A later second-role system (logistics drones vs construction drones) is also future design, not part of E3d5c6d. Do not add multibot, research, ore, coal/solar/wind, new silo or unscoped Main changes while proposing this next milestone. Read authoritative main source and verify new HEAD before new coding. **Developer-required cross-chat F6 test UI:** one-at-a-time navigator with working Copy scene path, Previous/Next, progress and correct test scene path, documented in [GODOT_F6_COPY_NAVIGATOR.md](GODOT_F6_COPY_NAVIGATOR.md).
 
 ### 2026-11-23 — E3d5c6d Stage C manual 10/10 ACCEPTED; design idea for future drone blackout parking
 

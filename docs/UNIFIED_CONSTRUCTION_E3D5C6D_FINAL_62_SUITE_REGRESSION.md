@@ -1,5 +1,7 @@
 # E3d5c6d — Final fresh automated regression: 62 suites / 866 expected checks
 
+**FINAL GATE ACCEPTED 2026-11-23 — developer reports ALL 62/62 test scenes PASSED in one fresh local Godot 4.6.2 combined F6 run.** Manifest **866 expected assertions**; full per-test Output logs not supplied, so do not misstate this as independently reviewed 866/866. This is developer-reported local execution, not assistant testing. E3d5c6d is now **FULLY ACCEPTED**, including earlier Stage A 16/16, Stage B 39/39 targeted rerun scenes, Stage C manual 10/10. The pre-run STAGED instructions below are historical and retained for future regression use. Main and older scenes remain unchanged.
+
 **2026-11-23 — STAGED FOR DEVELOPER-LOCAL F6, NOT YET RUN.** E3d5c6d Stage A 16/16 isolated, Stage B 39/39 targeted compatibility (536 manifest-expected rerun checks), and Stage C 10/10 manual *are* accepted by developer local Godot report. **This is a distinct final whole-baseline regression, not an already accepted run.**
 
 ## Exact derivation and source
