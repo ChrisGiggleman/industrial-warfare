@@ -1,5 +1,7 @@
 # E3d5c6e — Stage A isolated F6: Construction Worker Blackout Parking and Resumption
 
+**2026-11-23 — Stage A ACCEPTED: developer reports all 14 checks A–N PASSED locally in Godot 4.6.2.** Original STAGED / NOT RUN status below is historical and retained for traceability. Suite-level report is the evidence, not an assistant-run Godot execution or independently furnished Output transcript. Full 63-suite regression not run. **Next:** [Stage B compatibility F6 guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_B_COMPATIBILITY.md), 42 suites / 584 expected rerun checks.
+
 **2026-11-23 — CODE STAGED, LOCAL F6 NOT RUN OR ACCEPTED.** Exact new scene `res://scenes/core/playable_drone_power_interruption_e3d5c6e.tscn`, Godot **4.6.2 Stable**, `ChrisGiggleman/industrial-warfare` / `main`. Developer approved the [source-grounded Stage A architecture](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md).
 
 ## New exact scene and implementation boundaries

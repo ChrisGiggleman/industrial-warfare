@@ -1,5 +1,7 @@
 # E3d5c6e — Power-Outage Drone Hub Parking: Source Audit and Proposed Architecture
 
+**2026-11-23 acceptance update:** Developer confirmed **all 14/14 E3d5c6e Stage A isolated F6 checks passed locally**. Stage B targeted reruns and Stage C manual remain pending; no fresh full 63-suite combined regression yet. The original read-only audit and pending-language below represent the historical design state. [Current Stage A guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_A.md) and [Stage B regression plan](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_B_COMPATIBILITY.md).
+
 **2026-11-23 IMPLEMENTATION UPDATE:** Developer explicitly approved Stage A, and new exact-scope implementation/test scene have been staged in GitHub. **LOCAL F6 STILL PENDING, zero new results accepted.** Source matches approved one-adapter-tick/one-drone model with default-OFF exact-scene-only driver/worker flags, a 2.0-second continuous-power-outage debounce, retained original escrow and job worker binding, battery-metered return and resume, authentic Hub charging, and terminal cancellation recovery. [Exact F6 acceptance guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_A.md). All older “not yet authorized” passages below are audit-era historical status, not current approval status. Do not call the stage accepted without Godot-local A–N results.
 
 **Status: read-only gameplay source audit completed 2026-11-23. Proposed Stage A implementation NOT YET CODED or tested.** Repository `ChrisGiggleman/industrial-warfare`, audited HEAD `b5c51ff69db2c4774221860641e75325758183fd`. Godot 4.6.2 Stable.
