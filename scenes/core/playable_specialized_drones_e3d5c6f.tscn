@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/components/specialized_drone_role_contracts_e3d5c6f.gd" id="1_contracts"]
 [ext_resource type="Script" path="res://scripts/ui/playable_specialized_drones_e3d5c6f.gd" id="2_controller"]
@@ -14,6 +14,8 @@
 [ext_resource type="Script" path="res://scripts/ui/specialized_drone_logistics_e3d5c6f_b2.gd" id="12_b2"]
 [ext_resource type="Script" path="res://scripts/components/prototype_drone_storage_discovery.gd" id="13_discovery"]
 [ext_resource type="Script" path="res://scripts/components/prototype_drone_supplier_reservations.gd" id="14_supplier"]
+[ext_resource type="Script" path="res://scripts/ui/specialized_drone_builder_e3d5c6f_b3.gd" id="15_builder"]
+[ext_resource type="Script" path="res://scripts/components/construction_power_coverage_network.gd" id="16_network"]
 
 [node name="PlayableSpecializedDronesE3d5c6f" type="Node3D"]
 
@@ -65,3 +67,9 @@ script = ExtResource("14_supplier")
 
 [node name="B2LogisticsController" type="Node" parent="."]
 script = ExtResource("12_b2")
+
+[node name="PowerNetwork" type="Node" parent="."]
+script = ExtResource("16_network")
+
+[node name="B3BuilderController" type="Node" parent="."]
+script = ExtResource("15_builder")
