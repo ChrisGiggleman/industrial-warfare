@@ -1,5 +1,7 @@
 # E3d5c6e — Stage C playable manual checks: blackout parking, return, resume and physical recovery
 
+**2026-11-24 — STAGE C 10/10 ACCEPTED by developer-local report,** covering A1–A5, B1–B3 and C1–C2. User also supplied a partial gameplay screenshot showing one Press actively building at 30%, one drone at site, 29.5/40 battery, empty cargo, original Storage at 10 ingots, Hub output 12 and worker slots 1/1. Screenshot does not itself demonstrate blackout parking, resumption or actual cancellation recovery; those rely on developer's stated all-ten manual checks passed. No assistant Godot execution. The earlier 0/10 and instructions below are the originally staged manual test plan. [NEXT final fresh 63-suite / 880-expected-check regression](DRONE_POWER_INTERRUPTION_E3D5C6E_FINAL_63_SUITE_REGRESSION.md), **not yet run**.
+
 **2026-11-24 — STAGED, 0/10 checks reported.** E3d5c6e Stage A isolated 14/14 and Stage B targeted compatibility 42/42 suites (584 manifest-expected rerun checks) **have been developer-local accepted**. This manual real-player-control gate is **not** established by those automated fixtures.
 
 ## Exact new scene — one single existing drone and construction driver

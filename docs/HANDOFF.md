@@ -1,9 +1,15 @@
 # Industrial Warfare — Current Development Handoff
 
-Updated 2026-11-23. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
+Updated 2026-11-24. Repository: ChrisGiggleman/industrial-warfare, main. Godot 4.6.2, GDScript, Forward+.
 Read this first when resuming a new conversation. GitHub history and actual source take precedence over chat recollection; verify main HEAD and any local changes before making edits.
 
 ## Current checkpoint
+
+### 2026-11-24 — E3d5c6e Stage C 10/10 hands-on manual checks ACCEPTED locally; final 63-suite regression NEXT
+
+Developer explicitly reports **"all 10 tests passed successfully"** while showing an in-game screenshot of the new `E3d5c6e` opt-in playable scene. **All Stage C manual checks A1–A5, B1–B3 and C1–C2 accepted as developer-local 10/10**. These cover real player Direct Build of Ammunition Press (five-ingot physical delivery), a brief power flicker (drone stays at site), sustained outage (job paused, drone returns to Hub on battery), no charge while Hub is OFF, real charging and same-worker return/resumption after power restored, one building completing from preserved progress, and cancellation while parked followed by original physical site→Storage five-ingot recovery without duplicate refund. Evidence: **developer's explicit all-ten report** plus **one partial in-game screenshot** showing an actively building Press at 30% progress, original single drone physically AT_SITE with 29.5/40 battery and 0/5 cargo, Storage 10 ingots (zero reserved), generator output 12/spare 5, and construction worker slots 1/1. Screenshot alone is **not** separate proof of later blackout/return/recovery stages, so rely on developer's manual result for those. No assistant-run Godot, extra inventory or test log provided. [Stage C 10-check manual guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_C_MANUAL.md).
+
+**Milestone status:** E3d5c6e Stage A **14/14 isolated** PASSED locally; Stage B compatibility **Wave 1 15/15 / 203 expected rerun checks**, **Wave 2 27/27 / 381**, combined **42/42 / 584 expected rerun checks** PASSED locally; Stage C **10/10 manual** PASSED locally. These are separately reported developer-local gates, not a fresh combined regression. Unique accepted automated test inventory remains **63 distinct suites / 880 manifest-expected checks** (prior fresh 62/866 + one new Stage A 14). **NEXT is fresh full combined 63-suite / 880-expected-check F6 regression**, [new verified manifest](../tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv), [one-by-one F6 guide](DRONE_POWER_INTERRUPTION_E3D5C6E_FINAL_63_SUITE_REGRESSION.md), **NOT RUN YET**. Completion is needed before closing E3d5c6e. Do not promote Main or change accepted scenes. The original staging escrow, one dispatcher/drone update ownership and original physical custody must remain unchanged. For user-friendly tests always provide the [interactive Copy scene path / Previous / Next navigator](GODOT_F6_COPY_NAVIGATOR.md), including for future chats.
 
 ### 2026-11-24 — E3d5c6e Stage B FULL 42/42 compatibility suites ACCEPTED; Stage C manual next
 

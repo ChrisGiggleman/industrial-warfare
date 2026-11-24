@@ -1,14 +1,14 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-24: E3d5c6e Stage B FULL 42/42 accepted; Stage C hands-on gameplay next
+## Current milestone — 2026-11-24: E3d5c6e Stage C manual 10/10 accepted; final combined regression next
 
 - [x] Developer approved [read-only source-grounded audit](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md); exact opt-in new scene, **single original adapter/dispatcher/drone** and preserved material custody.
 - [x] Stage A code staged: default-off guarded two-second blackout return/Hub parking/real charging/original-site resume, cancellation support, and new isolated 14-group test fixture. **No old scenes/tests or Main changed.**
 - [x] **Stage A developer-local 14/14 accepted** on `res://tests/playable_drone_power_interruption_e3d5c6e_stage_a_test.tscn`; [F6 guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_A.md). User reported passing; assistant did not run Godot.
 - [x] **Stage B Wave 1 15/15 suites PASSED locally** (203 manifest-expected checks), developer-reported, no individual Output transcript supplied.
 - [x] **Stage B Wave 2 27/27 suites PASSED locally**, 381 manifest-expected checks, developer-reported. Together with Wave 1 15/203, **Stage B FULL 42/42 suites / 584 expected rerun checks ACCEPTED**. [Guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_B_COMPATIBILITY.md) / [manifest](../tools/drone_power_interruption_e3d5c6e_stage_b_compatibility.csv). Reruns add no unique checks.
-- [ ] **Stage C manual real mouse/keyboard F6 10/10 PENDING** on the new exact opt-in playable scene. [10-check manual guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_C_MANUAL.md) / [copy navigator convention](GODOT_F6_COPY_NAVIGATOR.md).
-- [ ] After Stage B and manual Stage C, fresh full **63-suite / 880-expected-check** combined regression, handoff and milestone closeout. Accepted unique inventory = previously fresh 62/866 + Stage A new 14 checks, but full 63 has NOT been freshly rerun.
+- [x] **Stage C 10/10 manual gameplay checks PASSED locally** (A1–A5, B1–B3, C1–C2) in the new exact opt-in playable scene, developer-reported with one partial live-game screenshot. [Manual guide](DRONE_POWER_INTERRUPTION_E3D5C6E_STAGE_C_MANUAL.md).
+- [ ] **NEXT: fresh full 63-suite / 880-manifest-expected-check F6 combined regression**, [manifest](../tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv) / [exact-scene guide](DRONE_POWER_INTERRUPTION_E3D5C6E_FINAL_63_SUITE_REGRESSION.md). **NOT RUN**. Accepted unique inventory = prior fresh 62/866 + E3d5c6e new Stage A 14, while Stage B 42 compatibility reruns and Stage C ten manual checks add zero unique automated suites. After full developer-local pass close milestone, update handoff, plan future work separately.
 
 ## Prior milestone — 2026-11-23: E3d5c6e blackout worker parking audit complete; implementation plan pending approval
 
