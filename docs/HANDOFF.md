@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-24 — E3d5c6f B2 NEW ISOLATED F6 PASSED; TARGETED COMPATIBILITY PENDING
+
+Developer confirmed the fixed `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` passed locally after an earlier `configure_b2` setup assertion at line 62 was corrected. The B2 fixture has **9 labeled printed PASS sections** in source, not a measured independent assertion count. This is **1 new isolated scene passed**, not yet complete Stage B2 acceptance. Required targeted reruns **PENDING**: B1 single-owner; Stage A role guards and material handoff; E3d5c5x5a physical pickup; E3d5c5x5b physical delivery. Developer-local report only; assistant did not execute Godot. Do not add rerun counts to unique checks. Historical E3d5c6e 63/63 suites / 880 manifest-expected checks remain previously accepted, not rerun. Keep PR #1 draft and Main untouched. Stage B3 not started.
+
+
 ### 2026-11-24 — B2 first local F6 failed at setup; scoped fix committed, RETEST PENDING
 
 Developer screenshot shows `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.gd:62` failed: `assert(b2.configure_b2(site, storage, staging, port, dock))`. The fixture reached this assertion; no successful B2 run or pickup confirmed. Source review identified one definite setup blocker: `PrototypeDroneStorageDiscovery.enable_isolated_discovery` and `PrototypeDroneSupplierReservations.enable_isolated_reservations` both default OFF in the E3d5c6f B1 scene, but the new B2 configurator mistakenly required them ON without enabling them. Updated `configure_b2` to enable both **only after** exact scene, original queued site, real 15-ingot Storage and pinned receiver preflights, then configure/register original services; pre-enabled or replacement authorities fail closed. No older scene/test edits. **B2 F6 must be rerun**; do not claim this fix passes Godot until user verifies. B1 3/3 accepted remains separate; historic 63/880 baseline not rerun.
