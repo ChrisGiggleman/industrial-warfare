@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-24 — E3d5c6f Stage B1 committed; F6 PENDING
+
+Developer authorized B1 only: exact-opt-in single-owner, **identity-only** two-drone scene. Added guarded inert `PlayableSpecializedDronesE3d5c6f` controller, one authentic Hub, separate LogisticsDrone and ConstructionDrone nodes, and one original-resource service set. No movement, cargo, charging, job admission, escrow changes, Main wiring or old gameplay-source edits. The new F6 scene is `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9 labeled sections, **UNRUN**, not an assertion count). See [B1 implementation/test guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B1.md). Both Stage A F6 scenes remain developer-local accepted; fresh B1 and Stage A compatibility rerun are pending. Historical baseline E3d5c6e 63 suites / 880 manifest-expected checks remains previously accepted, **not rerun**. Feature branch `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 unmerged; Stage B2 not begun. Preserve local uncommitted resource files and the [F6 Copy navigator](GODOT_F6_COPY_NAVIGATOR.md).
+
+
 ### 2026-11-24 — E3d5c6f Stage A: BOTH ISOLATED F6 SCENES ACCEPTED LOCALLY
 
 Developer confirmed **both newly added Godot F6 scenes passed without issues** on the `feature/e3d5c6f-stage-a-role-contracts` branch:
