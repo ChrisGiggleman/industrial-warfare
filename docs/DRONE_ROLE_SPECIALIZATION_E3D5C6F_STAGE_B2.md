@@ -1,6 +1,6 @@
 # E3d5c6f Stage B2 — Physical Logistics Pickup, Delivery and Empty Return
 
-**Status: code committed, Godot F6 UNRUN (2026-11-24).** This is one isolated physical logistics mission, not a fully playable two-drone construction flow. B1 and Stage A were previously developer-local accepted (three F6 scenes in B1 gate). Original E3d5c6e 63 unique suites/880 manifest-expected checks is historical, not freshly rerun.
+**Status: new B2 F6 fixture PASSED locally (developer report, 2026-11-24); targeted compatibility reruns PENDING.** This is one isolated physical logistics mission, not a fully playable two-drone construction flow. B1 and Stage A were previously developer-local accepted (three F6 scenes in B1 gate). Original E3d5c6e 63 unique suites/880 manifest-expected checks is historical, not freshly rerun.
 
 ## Scope and accepted interfaces
 
@@ -12,7 +12,7 @@ Source conservation at end: **Storage 15→10, cargo 0, staged buffer 0, origina
 
 ## Copy navigator and Godot local test order
 
-**First F6 scene (NEW, UNRUN):**
+**First F6 scene (NEW, DEVELOPER-LOCAL PASS):**
 `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn`
 Nine labeled sections A–I: planned refusal, real Storage and receiver, reserved inventory before pickup, metered cargo collection, exact original-site unload, held escrow and verified receipt, metered return, no duplicate/unearned construction, total physical material conservation. Sections are **not** authoritative individual assertion counts. Run with **F6**, not F5. If any assertion/parse error, stop and report screenshot before regression.
 
@@ -30,3 +30,9 @@ Those are existing accepted suites being **rerun**, not new unique suites. Sourc
 No legacy source scene or test changes; only the current E3d5c6f opt-in scene and additive guarded methods in shared drone class. No mutation of Main, prior E3d5c6b/c/d/e scenes, settled fixtures or their defaults. No power production/network expansion, charging from caller booleans, worker admission, construction timer, builder launch, multi-load/multi-site work, recovery after cancel, or new ore/electricity. Preserve the developer's uncommitted local resource edits and keep draft PR #1 unmerged. Godot runtime unavailable to assistant; local F6 gate required.
 
 **Next gate:** developer-confirmed B2 isolated pass plus targeted compatibility. Stage B3 is not yet implemented.
+
+
+### 2026-11-24 — E3d5c6f B2 NEW ISOLATED F6 PASSED; TARGETED COMPATIBILITY PENDING
+
+Developer confirmed the fixed `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` passed locally after an earlier `configure_b2` setup assertion at line 62 was corrected. The B2 fixture has **9 labeled printed PASS sections** in source, not a measured independent assertion count. This is **1 new isolated scene passed**, not yet complete Stage B2 acceptance. Required targeted reruns **PENDING**: B1 single-owner; Stage A role guards and material handoff; E3d5c5x5a physical pickup; E3d5c5x5b physical delivery. Developer-local report only; assistant did not execute Godot. Do not add rerun counts to unique checks. Historical E3d5c6e 63/63 suites / 880 manifest-expected checks remain previously accepted, not rerun. Keep PR #1 draft and Main untouched. Stage B3 not started.
+
