@@ -1,6 +1,13 @@
 # Industrial Warfare — Development Roadmap
 
-## Current milestone — 2026-11-24: E3d5c6e FULLY ACCEPTED, next milestone unselected
+## Current design checkpoint — 2026-11-24: E3d5c6f specialized drone roles SOURCE AUDIT COMPLETE (implementation unapproved)
+
+- [x] Read-only Github source audit against accepted E3d5c6e **63/63 unique suites / 880 manifest-expected checks**; [E3d5c6f role specialization audit](DRONE_ROLE_SPECIALIZATION_E3D5C6F_ARCHITECTURE_AUDIT.md). No gameplay/test/Main modification.
+- [x] Identified **single-drone dispatcher guard, same-drone cargo→worker handoff, global terminal-rearm and single-drone recovery** as architectural blockers to a naive second drone or legacy E3d5c4w/z fleet.
+- [ ] **NEXT: Developer approval needed for E3d5c6f Stage A role-lease/provenance contract and isolated F6 tests**. Proposed exact-scoped new scene and future physical two-drone steps only; **no new E3d5c6f code or tests yet**.
+- [ ] Future B: genuine two-drone material delivery and builder work; C: physical recovery/blackout and shared charging; D: manual playable and final fresh combined regression. **All proposal-only.** Keep Main, old scenes and 63-suite baseline intact.
+
+## Prior milestone — 2026-11-24: E3d5c6e FULLY ACCEPTED, next milestone unselected
 
 - [x] Developer approved [read-only source-grounded audit](DRONE_POWER_INTERRUPTION_ARCHITECTURE_AUDIT.md); exact opt-in new scene, **single original adapter/dispatcher/drone** and preserved material custody.
 - [x] Stage A code staged: default-off guarded two-second blackout return/Hub parking/real charging/original-site resume, cancellation support, and new isolated 14-group test fixture. **No old scenes/tests or Main changed.**
