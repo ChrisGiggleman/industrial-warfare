@@ -1269,6 +1269,7 @@ func _lost_assignment_cleanup_valid(supplier: PrototypeDroneSupplierReservations
 # The original cargo/site/registry/escrow and Stage A receipt must all match.
 const SPECIALIZED_SCOPE_E3D5C6F := "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn"
 var _specialized_logistics_receipt: int = 0
+var _specialized_return_finalized: bool = false
 
 func _specialized_logistics_authorized(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
 	var scope := get_parent() as Node3D
@@ -1310,7 +1311,7 @@ func begin_specialized_logistics_return(contracts: SpecializedDroneRoleContracts
 # Finishing return is NOT a release of original site material custody.
 # Stage B2 is limited to one full-load delivery; do not recycle its receipt.
 func finish_specialized_logistics_return(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
-	if _specialized_logistics_receipt != receipt or receipt <= 0 or _state != FlightState.DOCKED:
+	if _specialized_return_finalized or _specialized_logistics_receipt != receipt or receipt <= 0 or _state != FlightState.DOCKED:
 		return false
 	if not global_position.is_equal_approx(_home) or not _specialized_logistics_authorized(contracts, receipt, escrow):
 		return false
@@ -1318,4 +1319,5 @@ func finish_specialized_logistics_return(contracts: SpecializedDroneRoleContract
 		return false
 	# Keep original provenance pinned for later builder handoff and cancellation
 	# audit, rather than silently clearing/refunding the reservation.
+	_specialized_return_finalized = true
 	return true
