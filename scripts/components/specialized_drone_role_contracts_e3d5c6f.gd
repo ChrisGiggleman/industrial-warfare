@@ -43,7 +43,7 @@ func seal_handoff(lease_id: int, escrow: BlueprintConstructionMaterialEscrow) ->
 	if not _scope_ok() or not _leases.has(lease_id) or not _live(escrow):
 		return 0
 	var lease: Dictionary = _leases[lease_id]
-	if lease["role"] != LOGISTICS or not _lease_valid(lease) or _receipts.has(lease_id):
+	if lease["role"] != LOGISTICS or lease.get("revoked", false) or not _lease_valid(lease) or _receipts.has(lease_id):
 		return 0
 	var site := (lease["site"] as WeakRef).get_ref() as ConstructionSite
 	var buffer := (lease["buffer"] as WeakRef).get_ref() as InventoryComponent
