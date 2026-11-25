@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Roadmap
 
+### 2026-11-25 — C2 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C2 isolated F6 16/16 labeled sections passed locally in Godot against implementation commit bb666235f575bad4c83cdde90a7d378c9c25e4ba on 2026-11-25. Cumulative unique accepted coverage 70 suites / 951 expected sections (B4 68/923 + C1 1/12 + C2 1/16); last fresh full regression remains B4 68/923. C2 targeted compatibility 27 existing suites / 356 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect assertion logs. C3 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C2_COMPATIBILITY.md).
+
+
 ### 2026-11-25 — E3d5c6f C2 implementation staged; F6 PENDING
 
 Developer approved C2. Default-off C2 extension of existing C1/B2 single owner, explicit physical collection and delivery without unload, original job cancellation and exact revoked lease, original return reservation/discovery service, registered return-only alternate docks, metered home return and finite charging/rearm. New isolated F6 res://tests/specialized_drone_loaded_cancel_e3d5c6f_c2_test.tscn with 16 labeled sections A–P is **PENDING local execution**. C2 tests cover capacity shrink, disabled and moved docks (actual deletion not included in this new fixture; historical x6 covers deletion and should be rerun). No gameplay activation in Main or old scene/test changes. Cumulative accepted baseline remains 69/935; fresh B4 68/923 unchanged. No assistant Godot runtime. C2 targeted compatibility after local acceptance.
