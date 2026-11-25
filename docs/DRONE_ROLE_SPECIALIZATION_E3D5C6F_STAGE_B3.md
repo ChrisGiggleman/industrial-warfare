@@ -1,6 +1,6 @@
 # E3d5c6f Stage B3 — Distinct Physical Construction Worker and Original 18-Second Press
 
-**Implementation committed 2026-11-24 on `feature/e3d5c6f-stage-a-role-contracts`. Godot local F6 UNRUN. Stage B3 NOT YET ACCEPTED.** B2 fully targeted accepted: its new F6 and five compatibility reruns were reported passed locally. Historical E3d5c6e 63 suites/880 manifest-expected checks are previously accepted, **not rerun** for E3d5c6f.
+**B3 targeted ACCEPTED on 2026-11-24 (developer-local Godot): NEW B3 F6 scene and all seven targeted compatibility reruns PASSED, 8/8 scene runs.** B2 fully targeted accepted: its new F6 and five compatibility reruns were reported passed locally. Historical E3d5c6e 63 suites/880 manifest-expected checks are previously accepted, **not rerun** for E3d5c6f.
 
 ## One physical mission, one job clock and one power/worker authority
 
@@ -17,7 +17,7 @@ Only after a valid original B2 escrow/receipt may the **different, empty Constru
 `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn`
 
 **12 labeled PASS sections (source, not assertion count):**
-A unauthorized early builder refused; B exact Press/site/receiver setup; C real B2 delivery and escrow return; D real power and one finite slot; E distinct builder lease and transferred single tick; F battery-metered arrival under outage cannot grant worker; G restored power allows physical admission exactly once; H original construction clock at 6/18 and loss-of-power pause without escrow loss; I remaining 12 seconds yield genuine Press and once-only escrow commit; J builder metered return, zero active slots; K no replay or duplicate goods; L Main opt-out. **Godot unrun**. Open scene and press **F6**, not F5. Stop on FIRST parse or assertion failure; screenshot/line number for correction.
+A unauthorized early builder refused; B exact Press/site/receiver setup; C real B2 delivery and escrow return; D real power and one finite slot; E distinct builder lease and transferred single tick; F battery-metered arrival under outage cannot grant worker; G restored power allows physical admission exactly once; H original construction clock at 6/18 and loss-of-power pause without escrow loss; I remaining 12 seconds yield genuine Press and once-only escrow commit; J builder metered return, zero active slots; K no replay or duplicate goods; L Main opt-out. **Developer-local F6 PASS confirmed.** Open with **F6**, not F5, for any rerun.
 
 ## Targeted compatibility after B3 new fixture passes
 
@@ -29,4 +29,4 @@ A unauthorized early builder refused; B exact Press/site/receiver setup; C real 
 6. `res://tests/drone_physical_delivery_e3d5c5x5b_test.tscn` — 13 (historic cargo)
 7. `res://tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` — 13 (historic cancellation)
 
-These are **seven reruns, not newly added unique suites or new checks**. Verify local outcomes separately. Only then consider Stage B3 isolated/targeted acceptance; B4 fresh combined regression and Stage C custody remain further gates. Developer's uncommitted `.tres/.tscn` files must not be reset or overwritten. Draft PR #1 remains unmerged; `main` remains unchanged.
+All **seven compatibility reruns passed locally**, per developer. Together with the new B3 fixture, **8/8 F6 scenes passed** (source reports 81 labeled printed PASS sections, *not* 81 individual assertions/checks or 81 new unique checks). These are **seven reruns, not newly added unique suites or new checks**. **Stage B3 targeted acceptance recorded.** B4 fresh combined unique-suite regression and Stage C custody remain further gates. Developer's uncommitted `.tres/.tscn` files must not be reset or overwritten. Draft PR #1 remains unmerged; `main` remains unchanged.
