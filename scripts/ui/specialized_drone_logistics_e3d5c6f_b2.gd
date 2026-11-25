@@ -594,3 +594,199 @@ func step_c2(delta: float) -> StringName:
 	if not advanced:
 		return &"recovery_wait"
 	return &"recovery"
+
+# C3 retains C1/B2 single tick ownership; the existing staged transport is
+# a subordinate service, not a dispatcher or independent simulation loop.
+@export var enable_c3_staging_recovery: bool = false
+var _c3_audit: PrototypeCancelledSiteCustodyAudit
+var _c3_transport: PrototypeCancelledSiteRecoveryTransport
+var _c3_ticket: int = 0
+var _c3_escrow_id: int = 0
+var _c3_staging: BlueprintConstructionMaterialStaging
+var _c3_port: BlueprintConstructionStagingInputPort
+var _c3_configured: bool = false
+var _c3_empty_started: bool = false
+
+func _c3_owner() -> bool:
+	if not enable_c3_staging_recovery or not _c2_configured or not enable_c2_loaded_cancel or not _c1_owner() or not enable_b2_logistics or _c2_drone == null:
+		return false
+	var scope := _scope()
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	var builder := scope.get_node_or_null("ConstructionDrone") as PrototypeConstructionWorkerDrone
+	var b1 := scope.get_node_or_null("SingleTickController") as PlayableSpecializedDronesE3d5c6f
+	if not _live(logistics) or logistics != scope.get_node_or_null("LogisticsDrone") or not _live(builder) or builder.enable_isolated_drone or builder.enable_isolated_cargo_pickup or builder.cargo_amount() != 0 or builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
+		return false
+	if not _live(b1) or b1.enable_b1_controller or b1.is_processing() or b1.is_physics_processing():
+		return false
+	for service: Node in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
+		if not _live(service) or service.get_parent() != scope:
+			return false
+	if _c2_contracts != scope.get_node_or_null("RoleContracts") or _c2_supplier != scope.get_node_or_null("SupplierReservations") or _c2_discovery != scope.get_node_or_null("StorageDiscovery") or _c2_coordinator != scope.get_node_or_null("ReadinessCoordinator") or _c2_scheduler != scope.get_node_or_null("WorkerScheduler") or _c2_escrow != scope.get_node_or_null("MaterialEscrow"):
+		return false
+	if _c2_supplier._service() != _c2_discovery or _c1_returns._service() != _c2_discovery or not _c2_coordinator.matches_tick_services(_c2_scheduler, _c2_escrow):
+		return false
+	if _c2_scheduler.get_active_count() != 0 or _c2_scheduler.has_drone_binding(logistics) or _c2_scheduler.has_drone_binding(builder) or logistics.grants_worker_readiness():
+		return false
+	for child: Node in scope.get_children():
+		if not _live(child):
+			continue
+		if child is PrototypeDroneAutomaticDispatch or child is PrototypeConstructionDroneFleet or child is PrototypeConstructionDroneTickController:
+			return false
+		if child is SpecializedDroneLogisticsE3d5c6fB2 and child != self:
+			return false
+		if child is PrototypeCancelledSiteCustodyAudit and child != _c3_audit:
+			return false
+		if child is PrototypeCancelledSiteRecoveryTransport and child != _c3_transport:
+			return false
+	return true
+
+func c3_audit_authorized(audit: PrototypeCancelledSiteCustodyAudit) -> bool:
+	return _c3_owner() and _live(audit) and audit == _c3_audit and audit.get_parent() == _scope()
+
+func c3_transport_authorized(transport: PrototypeCancelledSiteRecoveryTransport, audit: PrototypeCancelledSiteCustodyAudit) -> bool:
+	return _c3_owner() and c3_audit_authorized(audit) and _live(transport) and transport == _c3_transport and transport.get_parent() == _scope()
+
+func c3_dock_admitted(dock: PrototypeDroneStorageDock) -> bool:
+	if not _c3_owner() or not _live(dock):
+		return false
+	for ref: WeakRef in _c2_docks:
+		if ref.get_ref() == dock:
+			return true
+	return false
+
+func configure_c3(staging: BlueprintConstructionMaterialStaging, port: BlueprintConstructionStagingInputPort) -> bool:
+	if not _c3_owner() or _c3_configured or phase != &"c1_ready" or not _core() or not _live(staging) or not _live(port):
+		return false
+	if staging.get_staged_inventory() != buffer or port.get_bound_staging() != staging or not port.global_position.is_equal_approx(site.global_position + Vector3.UP * 2.0):
+		return false
+	var registry := _scope().get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry
+	if not registry.has_locked_pair(staging, port) or not _live(port.get_parent()) or port.get_parent().get_parent() != _scope():
+		return false
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	logistics.enable_isolated_post_delivery_rearm = true
+	logistics.enable_isolated_cancelled_staging_flight = true
+	_c3_staging = staging
+	_c3_port = port
+	_c3_audit = PrototypeCancelledSiteCustodyAudit.new()
+	_c3_audit.enable_isolated_custody_audit = true
+	_c3_audit.enable_isolated_stage_b_source_access = true
+	_c3_audit.enable_specialized_c3 = true
+	_scope().add_child(_c3_audit)
+	if not _c3_audit.configure(registry, _c2_escrow):
+		return false
+	_c3_transport = PrototypeCancelledSiteRecoveryTransport.new()
+	_c3_transport.enable_isolated_physical_recovery = true
+	_c3_transport.enable_specialized_c3 = true
+	_scope().add_child(_c3_transport)
+	if not _c3_transport.configure_specialized(self, _c3_audit):
+		return false
+	_c3_configured = true
+	_c1_job.job_cancelled.connect(_c3_on_cancelled)
+	return true
+
+func c3_unload() -> bool:
+	if not _c3_owner() or not _c3_configured or phase != &"c2_at_delivery" or not _core():
+		return false
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if not _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, false) or not logistics.unload_delivery():
+		return false
+	phase = &"c3_staged"
+	return logistics.cargo_amount() == 0 and buffer.get_amount(INGOT) == 5 and buffer.get_total_amount() == 5
+
+func c3_reserve_escrow() -> bool:
+	if not _c3_owner() or phase != &"c3_staged" or not _core() or buffer.get_total_amount() != 5 or buffer.get_amount(INGOT) != 5:
+		return false
+	var registry := _scope().get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry
+	_c3_escrow_id = registry.reserve_for_site(site, _c2_escrow)
+	if _c3_escrow_id <= 0:
+		return false
+	receipt_id = _c2_contracts.seal_handoff(_c2_lease, _c2_escrow)
+	phase = &"c3_escrow"
+	return receipt_id == _c2_lease and _c2_contracts.receipt_valid(receipt_id)
+
+func c3_begin_empty_return() -> bool:
+	if not _c3_owner() or phase != &"c3_escrow" or not _core():
+		return false
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if not logistics.begin_specialized_logistics_return(_c2_contracts, receipt_id, _c2_escrow):
+		return false
+	phase = &"c3_return"
+	return true
+
+func cancel_c3(original_site: ConstructionSite, logistics: PrototypeConstructionWorkerDrone, original_lease: int) -> bool:
+	if not _c3_owner() or not _c3_configured or phase not in [&"c3_staged", &"c3_escrow", &"c3_return", &"c3_docked"] or not _core():
+		return false
+	if original_site != site or site.job != _c1_job or logistics != _c2_drone.get_ref() or original_lease != _c2_lease or logistics.cargo_amount() != 0:
+		return false
+	if not _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, false):
+		return false
+	_c3_ticket = _c3_audit.capture_site(site, _c3_staging, _c3_port)
+	if _c3_ticket <= 0:
+		return false
+	return _c1_job.cancel()
+
+func _c3_on_cancelled() -> void:
+	if not _c3_owner() or _c3_ticket <= 0 or _c1_job.state != ConstructionJob.State.CANCELLED or phase not in [&"c3_staged", &"c3_escrow", &"c3_return", &"c3_docked"]:
+		return
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if not _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, false):
+		return
+	if _c2_contracts.revoke(_c2_lease):
+		phase = &"c3_cancelled"
+
+func c3_empty_return_authorized(logistics: PrototypeConstructionWorkerDrone) -> bool:
+	return _c3_owner() and phase == &"c3_cancelled" and _c3_ticket > 0 and _c1_job.state == ConstructionJob.State.CANCELLED and logistics == _c2_drone.get_ref() and _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, true)
+
+func step_c3(delta: float) -> StringName:
+	if not _c3_owner() or not _c3_configured or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
+		return &"rejected"
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if phase == &"c3_return":
+		if not _core() or not _c2_contracts.receipt_valid(receipt_id) or not logistics.advance_flight(delta):
+			return &"rejected"
+		if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			if not logistics.finish_specialized_logistics_return(_c2_contracts, receipt_id, _c2_escrow):
+				return &"rejected"
+			phase = &"c3_docked"
+		tick_count += 1
+		return &"empty_return"
+	if phase not in [&"c3_cancelled", &"c3_recovery"] or _c1_job.state != ConstructionJob.State.CANCELLED or not _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, true):
+		return &"rejected"
+	if _c2_supplier.reservation_count() != 0 or _c1_returns.reservation_count() != 0:
+		return &"rejected"
+	_c2_coordinator.reconcile()
+	if not (_scope().get_node("PriorityQueue") as BlueprintConstructionPriorityQueue).get_waiting_sites().is_empty():
+		return &"rejected"
+	tick_count += 1
+	if phase == &"c3_recovery":
+		var action: StringName = _c3_transport.tick(delta).get("action", &"blocked")
+		if action == &"rearmed":
+			phase = &"c3_complete"
+		return action
+	if not _c3_empty_started:
+		if not logistics.begin_c3_cancelled_empty_return(self):
+			return &"rejected"
+		_c3_empty_started = true
+	if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+		return &"empty_return" if logistics.advance_flight(delta) else &"energy_wait"
+	if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+		if logistics.battery_units() + 0.00001 < logistics.battery_capacity():
+			return &"charged" if _c1_charging.advance_charging(delta) > 0.0 else &"dock_wait"
+		var snapshot: Dictionary = _c3_audit.observe(_c3_ticket)
+		if snapshot.get("status") == &"escrow_unsettled":
+			if _c3_escrow_id <= 0 or not _c2_escrow.has_reservation(_c3_escrow_id) or not _live(buffer) or not _live(_c3_port) or not _live(_c3_staging) or _c3_staging.get_staged_inventory() != buffer or _c3_port.get_bound_staging() != _c3_staging or not (_scope().get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry).has_locked_pair(_c3_staging, _c3_port):
+				return &"source_quarantined"
+			return &"escrow_settled" if _c2_escrow.recover_to(_c3_escrow_id) else &"escrow_wait"
+		if snapshot.get("status") != &"ready_read_only" or _c2_escrow.held_count() != 0:
+			return &"source_quarantined"
+		if not logistics.release_docked_cargo_assignment(_c2_supplier, _c1_returns, _c2_coordinator, _c2_escrow, _c2_scheduler):
+			return &"rejected"
+		return &"ready_recovery"
+	if logistics.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
+		return &"rejected"
+	if _c3_audit.observe(_c3_ticket).get("status") != &"ready_read_only":
+		return &"source_quarantined"
+	if not _c3_transport.begin(_c3_ticket):
+		return &"destination_wait"
+	phase = &"c3_recovery"
+	return &"recovery_started"

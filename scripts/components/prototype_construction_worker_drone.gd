@@ -230,7 +230,9 @@ func _staged_step(owner: Node, token: RefCounted, delta: float) -> bool:
 	if not _staged_authority(owner, token) or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
 		return false
 	var dock := _staged_dock.get_ref() as PrototypeDroneStorageDock
-	if not _delivery_live(dock) or not dock.global_position.is_finite() or not _staged_hover.is_finite():
+	# After a committed specialized deposit, the home leg owns no dock custody.
+	var specialized_home: bool = _state == FlightState.STAGED_HOME and owner is PrototypeCancelledSiteRecoveryTransport and owner.enable_specialized_c3
+	if not specialized_home and (not _delivery_live(dock) or not dock.global_position.is_finite() or not _staged_hover.is_finite()):
 		return false
 	var target: Vector3
 	var reserve: float
@@ -1320,4 +1322,21 @@ func finish_specialized_logistics_return(contracts: SpecializedDroneRoleContract
 	# Keep original provenance pinned for later builder handoff and cancellation
 	# audit, rather than silently clearing/refunding the reservation.
 	_specialized_return_finalized = true
+	return true
+
+# C3 terminal empty-return bridge. Receipt is revoked, never reused.
+func begin_c3_cancelled_empty_return(controller: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
+	if not _delivery_live(controller) or not controller.c3_empty_return_authorized(self):
+		return false
+	if _state not in [FlightState.DELIVERED, FlightState.RETURNING, FlightState.DOCKED] or _cargo_amount != 0 or _cargo_item != null or _cargo_job == null or _cargo_job.state != ConstructionJob.State.CANCELLED:
+		return false
+	if _delivered_worker_latched or _site_ref != null or _assignment_job != null or _pickup_token != null or _return_token != null:
+		return false
+	if not _post_delivery_rearm_latched or _delivery_registry == null or _delivery_buffer == null or _delivery_escrow == null:
+		return false
+	_post_delivery_cancelled = true
+	_post_delivery_rearm_latched = false
+	_specialized_logistics_receipt = 0
+	_specialized_return_finalized = false
+	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
 	return true

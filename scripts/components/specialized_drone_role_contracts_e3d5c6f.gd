@@ -111,3 +111,14 @@ func c2_logistics_lease_matches(id: int, job: ConstructionJob, drone: Node, revo
 		return false
 	var lease: Dictionary = _leases[id]
 	return lease["role"] == LOGISTICS and lease["job"] == job and (lease["drone"] as WeakRef).get_ref() == drone and bool(lease.get("revoked", false)) == revoked and not _receipts.has(id) and not lease.has("builder")
+
+func c3_logistics_lease_matches(id: int, job: ConstructionJob, drone: Node, revoked: bool) -> bool:
+	if not _scope_ok() or id <= 0 or not _leases.has(id) or not _live(drone) or job == null:
+		return false
+	var lease: Dictionary = _leases[id]
+	if lease["role"] != LOGISTICS or lease["job"] != job or (lease["drone"] as WeakRef).get_ref() != drone or bool(lease.get("revoked", false)) != revoked or lease.has("builder"):
+		return false
+	if _receipts.has(id):
+		var receipt: Dictionary = _receipts[id]
+		return receipt["job"] == job and (receipt["logistics_drone"] as WeakRef).get_ref() == drone and bool(receipt["revoked"]) == revoked
+	return true

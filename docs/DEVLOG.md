@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-25 — C3 implementation staged; F6 PENDING
+
+Developer approved C3; implementation staged with default-off exact specialized controller, original custody audit, escrow refund/retry, terminal empty return, existing staged recovery transport without dispatcher, whole-route destination capacity forecast and protected physical pickup/deposit. Invalid destination during staged mission deliberately waits with existing claim and custody; automatic rerouting/deleted destination before deposit not implemented. Home after deposit independent of dock. Explicit controller cancellation captures ticket before job.cancel; external direct job.cancel without capture is not integrated. New isolated F6 res://tests/specialized_drone_staging_recovery_e3d5c6f_c3_test.tscn 18 labeled sections A–R PENDING local execution. No assistant Godot run. Accepted baseline 70/951; fresh B4 68/923. Main and prior scenes/tests unchanged. C4 remains gated.
+
+
 ### 2026-11-25 — C2 FULLY ACCEPTED; C3 proposal
 
 Developer confirmed C2 compatibility 27/27 F6 scenes passed locally against 356 manifest-expected sections on 2026-11-25, following isolated 16/16. C2 FULLY ACCEPTED: 28 gate scene runs / 372 associated sections, 27/356 overlapping accepted coverage. Unique accepted coverage 70 suites / 951 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C3 plan awaits explicit implementation approval. [C3 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C3_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C3 gameplay or F6 fixture yet.

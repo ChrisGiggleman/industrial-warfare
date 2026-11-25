@@ -16,6 +16,8 @@ const INGOT = preload("res://data/items/test_ingot.tres")
 
 @export var enable_isolated_custody_audit: bool = false
 
+@export var enable_specialized_c3: bool = false
+
 var _registry: BlueprintConstructionSiteStagingRegistry
 var _escrow: BlueprintConstructionMaterialEscrow
 var _configured: bool = false
@@ -29,6 +31,9 @@ func _live(node: Variant) -> bool:
 
 func _scope() -> Node3D:
 	var parent := get_parent() as Node3D
+	if _live(parent) and enable_specialized_c3 and parent.scene_file_path == "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn":
+		var adapter := parent.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+		return parent if is_instance_valid(adapter) and adapter.c3_audit_authorized(self) else null
 	if not _live(parent) or parent.scene_file_path not in [EXACT_SCENE, STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE, POWER_PARKING_STAGE_A_SCENE]:
 		return null
 	return parent
