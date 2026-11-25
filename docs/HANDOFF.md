@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-25 — E3d5c6f C0 reviewed / C1 isolated implementation staged; F6 PENDING
+
+Developer approved C1 only. [C0 audit and C1 gate](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C0_C1.md). Default-off same-B2-owner pre-pickup cancellation, exact supplier release, physical empty return, finite hub recharge and terminal rearm; no collection in C1 isolated mode. New F6 `res://tests/specialized_drone_pre_pickup_cancel_e3d5c6f_c1_test.tscn` (12 labeled sections) **not yet run**. Accepted B4 remains 68 unique suites / 923 manifest-expected sections. Main, old scenes/tests and local edits untouched; draft PR #1 unmerged. C2–C5 remain pending.
+
+
 ### 2026-11-25 — E3d5c6f Stage B4 FINAL ACCEPTED: 68/68 fresh local F6 unique suites
 
 Developer explicitly reported **Wave 4 all 8/8 F6 scenes passed locally**, completing a fresh distinct four-wave regression: **Wave 1 20/20 (245 manifest-expected groups), Wave 2 20/20 (333), Wave 3 20/20 (258), Wave 4 8/8 (87)**. Combined **68/68 unique Godot F6 scenes accepted against 923 manifest-expected check sections**. The manifest count/sum and unique scene names are audited; the assistant did **not** run Godot or independently inspect 923 individual assertion logs. Previously accepted A/B1/B2/B3 targeted reruns do not add to the unique count.

@@ -1,5 +1,10 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-25 — E3d5c6f C0 reviewed / C1 isolated implementation staged; F6 PENDING
+
+Developer approved C1 only. [C0 audit and C1 gate](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C0_C1.md). Default-off same-B2-owner pre-pickup cancellation, exact supplier release, physical empty return, finite hub recharge and terminal rearm; no collection in C1 isolated mode. New F6 `res://tests/specialized_drone_pre_pickup_cancel_e3d5c6f_c1_test.tscn` (12 labeled sections) **not yet run**. Accepted B4 remains 68 unique suites / 923 manifest-expected sections. Main, old scenes/tests and local edits untouched; draft PR #1 unmerged. C2–C5 remain pending.
+
+
 ### 2026-11-25 — E3d5c6f B4 FINAL ACCEPTED: 68/68 fresh F6 scenes
 
 Developer confirmed Wave 4 **8/8 locally passed**, completing accepted Waves 1 **20/20 (245 expected)**, 2 **20/20 (333)**, 3 **20/20 (258)** and 4 **8/8 (87)**. **Total fresh unique B4 regression: 68/68 scenes against 923 manifest-expected test sections.** Scene-level developer-local testimony; assistant did not run Godot and 923 are not independently audited individual assertions. This closes E3d5c6f **isolated Stage B (B1–B4)**, not Main integration or comprehensive cancellation recovery. [B4 closeout](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_CLOSEOUT.md) and [manifest](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv). **Next proposed gate:** [Stage C0 read-only architecture audit for specialized-drone cancellation and physical materials recovery](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C_PROPOSAL.md). No Stage C gameplay changes authorized yet. Preserve Main, accepted scenes/tests, local resource edits, and unmerged draft PR #1 on `feature/e3d5c6f-stage-a-role-contracts`.

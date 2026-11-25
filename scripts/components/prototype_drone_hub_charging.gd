@@ -8,6 +8,7 @@ class_name PrototypeDroneHubCharging
 @export var enable_isolated_charging: bool = false
 const SCOPE_KEY: StringName = &"isolated_drone_hub_charging_owner"
 const HUB_PATH: String = "res://scenes/buildings/prototype_main_hub.tscn"
+@export var enable_specialized_c1_dock: bool = false
 var _hub: WeakRef
 var _allocator: WeakRef
 var _power_node: WeakRef
@@ -60,6 +61,15 @@ func _live_hub() -> PrototypePowerStructure:
 	return hub
 
 
+# C1 uses the existing left-hand logistics berth, never a caller coordinate.
+func _dock_for(hub: PrototypePowerStructure, drone: PrototypeConstructionWorkerDrone) -> Vector3:
+	var scope := get_parent()
+	if enable_specialized_c1_dock and scope.scene_file_path == "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn" and scope.get_node_or_null("LogisticsDrone") == drone:
+		var b2 := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+		if is_instance_valid(b2) and b2.enable_c1_pre_pickup_cancel:
+			return hub.global_position + Vector3(-0.65, 2, 0)
+	return hub.global_position + Vector3.UP * 2.0
+
 func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
 	var hub := _live_hub()
 	if hub == null or not _live(drone) or drone.get_parent() != get_parent():
@@ -68,7 +78,7 @@ func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
 		if (entry["drone"] as WeakRef).get_ref() == drone:
 			return false
 	var token := RefCounted.new()
-	if not drone._bind_finite_charging(self, token, hub.global_position + Vector3.UP * 2.0):
+	if not drone._bind_finite_charging(self, token, _dock_for(hub, drone)):
 		return false
 	_entries.append({"drone": weakref(drone), "token": token})
 	return true
@@ -88,12 +98,11 @@ func advance_charging(delta: float) -> float:
 	if not is_finite(budget) or budget <= 0.0:
 		return 0.0
 	var total: float = 0.0
-	var dock: Vector3 = hub.global_position + Vector3.UP * 2.0
 	for entry: Dictionary in _entries:
 		var drone := (entry["drone"] as WeakRef).get_ref() as PrototypeConstructionWorkerDrone
 		if not _live(drone) or drone.get_parent() != get_parent():
 			continue
-		var accepted: float = drone._accept_finite_charge(self, entry["token"], dock, delta, maxf(0.0, budget - total))
+		var accepted: float = drone._accept_finite_charge(self, entry["token"], _dock_for(hub, drone), delta, maxf(0.0, budget - total))
 		total += accepted
 	return total
 
@@ -114,7 +123,7 @@ func matches_docked_registration(drone: PrototypeConstructionWorkerDrone, token:
 		return false
 	if drone.get_flight_state() not in [PrototypeConstructionWorkerDrone.FlightState.IDLE, PrototypeConstructionWorkerDrone.FlightState.DOCKED]:
 		return false
-	if not drone.global_position.is_finite() or not hub.global_position.is_finite() or drone.global_position.distance_to(hub.global_position + Vector3.UP * 2.0) > 0.00001:
+	if not drone.global_position.is_finite() or not hub.global_position.is_finite() or drone.global_position.distance_to(_dock_for(hub, drone)) > 0.00001:
 		return false
 	for entry: Dictionary in _entries:
 		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token:

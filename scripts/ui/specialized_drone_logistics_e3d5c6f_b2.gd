@@ -130,6 +130,8 @@ func configure_b2(original_site: ConstructionSite, original_storage: Node3D, ori
 	return _core()
 
 func start_b2() -> bool:
+	if enable_c1_pre_pickup_cancel:
+		return false
 	if phase != &"ready" or not _core():
 		return false
 	var scope := _scope()
@@ -153,6 +155,8 @@ func start_b2() -> bool:
 	return true
 
 func step_b2(delta: float) -> bool:
+	if enable_c1_pre_pickup_cancel:
+		return false
 	if not is_finite(delta) or delta <= 0.0 or delta > 10.0 or not _core():
 		return false
 	var scope := _scope()
@@ -234,4 +238,167 @@ func transfer_tick_owner_to_builder(builder_controller: Node) -> bool:
 	if current == null or current.get_ref() != self:
 		return false
 	scope.set_meta(TICK_OWNER, weakref(builder_controller))
+	return true
+
+# C1 opt-in: isolated pre-collection lifecycle, using the same B2 owner.
+# The normal B2 successful delivery path remains unchanged when disabled.
+@export var enable_c1_pre_pickup_cancel: bool = false
+var _c1_job: ConstructionJob
+var _c1_returns: PrototypeDroneReturnReservations
+var _c1_charging: PrototypeDroneHubCharging
+var _c1_home: Vector3
+
+func _c1_owner() -> bool:
+	var scope := _scope()
+	if not enable_c1_pre_pickup_cancel or not _live(scope) or scope.scene_file_path != EXACT_SCOPE or scope.get_node_or_null("B2LogisticsController") != self:
+		return false
+	if is_processing() or is_physics_processing() or not scope.has_meta(TICK_OWNER):
+		return false
+	var token := scope.get_meta(TICK_OWNER) as WeakRef
+	return token != null and token.get_ref() == self
+
+func configure_c1() -> bool:
+	if not enable_c1_pre_pickup_cancel or phase != &"ready" or _c1_job != null or not _core():
+		return false
+	var scope := _scope()
+	if scope.has_meta(TICK_OWNER):
+		return false
+	var logistics := scope.get_node("LogisticsDrone") as PrototypeConstructionWorkerDrone
+	var hub := scope.get_node("MainHub") as PrototypePowerStructure
+	var network := scope.get_node("PowerNetwork") as ConstructionPowerCoverageNetwork
+	var power := scope.get_node("PowerAllocator") as PrototypeConstructionPowerAllocator
+	var coordinator := scope.get_node("ReadinessCoordinator") as BlueprintConstructionReadinessCoordinator
+	var scheduler := scope.get_node("WorkerScheduler") as BlueprintConstructionSlotScheduler
+	var escrow := scope.get_node("MaterialEscrow") as BlueprintConstructionMaterialEscrow
+	var queue := scope.get_node("PriorityQueue") as BlueprintConstructionPriorityQueue
+	var registry := scope.get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry
+	var discovery := scope.get_node("StorageDiscovery") as PrototypeDroneStorageDiscovery
+	if not _live(hub) or not _live(network) or not _live(power) or not _live(hub.get_power_node()):
+		return false
+	if not logistics.global_position.is_equal_approx(hub.global_position + Vector3(-0.65, 2, 0)):
+		return false
+	for child: Node in scope.get_children():
+		if child is PrototypeDroneReturnReservations or child is PrototypeDroneHubCharging:
+			return false
+	if not network.register_node(hub.get_power_node()) or not power.configure(network):
+		return false
+	if not coordinator.configure(queue, scheduler, escrow, power, scope.get_node("StarterInventory") as InventoryComponent, 1):
+		return false
+	coordinator.enable_isolated_owned_staging = true
+	if not coordinator.configure_owned_staging(registry):
+		return false
+	_c1_returns = PrototypeDroneReturnReservations.new()
+	_c1_returns.enable_isolated_reservations = true
+	scope.add_child(_c1_returns)
+	if not _c1_returns.configure(discovery):
+		return false
+	_c1_charging = PrototypeDroneHubCharging.new()
+	_c1_charging.enable_isolated_charging = true
+	_c1_charging.enable_specialized_c1_dock = true
+	scope.add_child(_c1_charging)
+	logistics.enable_isolated_finite_charging = true
+	logistics.enable_isolated_cargo_reuse = true
+	logistics.enable_isolated_pre_pickup_rearm = true
+	if not _c1_charging.configure(hub, power) or not _c1_charging.register_drone(logistics):
+		return false
+	_c1_home = logistics.global_position
+	_c1_job = site.job
+	scope.set_meta(TICK_OWNER, weakref(self))
+	_c1_job.job_cancelled.connect(_c1_on_cancelled)
+	phase = &"c1_ready"
+	return true
+
+func c1_reserve() -> bool:
+	if not _c1_owner() or phase != &"c1_ready" or not _core() or site.job != _c1_job or lease_id != 0:
+		return false
+	var scope := _scope()
+	var logistics := scope.get_node("LogisticsDrone") as PrototypeConstructionWorkerDrone
+	var contracts := scope.get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f
+	var supplier := scope.get_node("SupplierReservations") as PrototypeDroneSupplierReservations
+	lease_id = contracts.claim_logistics(site, logistics, scope.get_node("PriorityQueue") as BlueprintConstructionPriorityQueue, scope.get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry, buffer)
+	if lease_id <= 0:
+		return false
+	pickup_id = supplier.reserve(logistics, site, INGOT, 5, 5)
+	if pickup_id <= 0:
+		contracts.revoke(lease_id)
+		return false
+	phase = &"c1_reserved"
+	return true
+
+func c1_launch() -> bool:
+	if not _c1_owner() or phase != &"c1_reserved" or not _core() or site.job != _c1_job:
+		return false
+	var scope := _scope()
+	var supplier := scope.get_node("SupplierReservations") as PrototypeDroneSupplierReservations
+	var logistics := scope.get_node("LogisticsDrone") as PrototypeConstructionWorkerDrone
+	if not supplier.begin_pickup(pickup_id, logistics, 2.0):
+		return false
+	phase = &"c1_outbound"
+	return true
+
+func cancel_c1(original_site: ConstructionSite, drone: PrototypeConstructionWorkerDrone, original_lease: int) -> bool:
+	if not _c1_owner() or phase not in [&"c1_ready", &"c1_reserved", &"c1_outbound", &"c1_at_pickup"] or not _core():
+		return false
+	if original_site != site or site.job != _c1_job or drone != _scope().get_node("LogisticsDrone") or original_lease != lease_id or drone.cargo_amount() != 0:
+		return false
+	return _c1_job.cancel()
+
+# The original supplier's cancellation signal releases its exact token.
+# Signal ordering is irrelevant: the next explicit tick checks settlement.
+func _c1_on_cancelled() -> void:
+	if not _c1_owner() or _c1_job == null or _c1_job.state != ConstructionJob.State.CANCELLED or phase not in [&"c1_ready", &"c1_reserved", &"c1_outbound", &"c1_at_pickup"]:
+		return
+	if lease_id > 0:
+		(_scope().get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f).revoke(lease_id)
+	phase = &"c1_cancelled"
+
+func step_c1(delta: float) -> bool:
+	if not _c1_owner() or not is_finite(delta) or delta <= 0.0 or delta > 1.0:
+		return false
+	var scope := _scope()
+	var logistics := scope.get_node("LogisticsDrone") as PrototypeConstructionWorkerDrone
+	var builder := scope.get_node("ConstructionDrone") as PrototypeConstructionWorkerDrone
+	var supplier := scope.get_node("SupplierReservations") as PrototypeDroneSupplierReservations
+	var coordinator := scope.get_node("ReadinessCoordinator") as BlueprintConstructionReadinessCoordinator
+	var scheduler := scope.get_node("WorkerScheduler") as BlueprintConstructionSlotScheduler
+	var escrow := scope.get_node("MaterialEscrow") as BlueprintConstructionMaterialEscrow
+	var queue := scope.get_node("PriorityQueue") as BlueprintConstructionPriorityQueue
+	if not _live(logistics) or not _live(builder) or not _live(supplier) or not _live(coordinator) or not _live(scheduler) or not _live(escrow) or not _live(queue) or not _live(_c1_returns) or not _live(_c1_charging):
+		return false
+	if builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE or builder.cargo_amount() != 0 or logistics.cargo_amount() != 0 or not _live(source) or source.get_amount(INGOT) != 15 or not _live(buffer) or buffer.get_total_amount() != 0 or escrow.held_count() != 0:
+		return false
+	if phase == &"c1_outbound":
+		if not _core() or not supplier.advance_pickup(pickup_id, logistics, delta):
+			return false
+		if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.AT_PICKUP:
+			phase = &"c1_at_pickup" # No collection in this isolated gate.
+	elif phase == &"c1_cancelled":
+		if _c1_job.state != ConstructionJob.State.CANCELLED or supplier.reservation_count() != 0 or source.get_reserved_amount(INGOT) != 0 or _c1_returns.reservation_count() != 0:
+			return false
+		coordinator.reconcile()
+		if not queue.get_waiting_sites().is_empty() or scheduler.get_active_count() != 0 or scheduler.has_drone_binding(logistics) or scheduler.has_drone_binding(builder):
+			return false
+		match logistics.get_flight_state():
+			PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+				if not logistics.advance_flight(delta):
+					return false
+			PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+				if not logistics.global_position.is_equal_approx(_c1_home):
+					return false
+				if logistics.battery_units() + 0.00001 < logistics.battery_capacity():
+					_c1_charging.advance_charging(delta)
+				elif logistics.release_docked_cargo_assignment(supplier, _c1_returns, coordinator, escrow, scheduler):
+					phase = &"c1_complete"
+				else:
+					return false
+			PrototypeConstructionWorkerDrone.FlightState.IDLE:
+				# No launch occurred; no flight assignment exists to rearm.
+				if not logistics.global_position.is_equal_approx(_c1_home) or not logistics._finite_cargo_rearm_ready():
+					return false
+				phase = &"c1_complete"
+			_:
+				return false
+	else:
+		return false
+	tick_count += 1
 	return true
