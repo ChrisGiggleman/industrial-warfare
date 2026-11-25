@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-25 — C2 FULLY ACCEPTED; C3 proposal
+
+Developer confirmed C2 compatibility 27/27 F6 scenes passed locally against 356 manifest-expected sections on 2026-11-25, following isolated 16/16. C2 FULLY ACCEPTED: 28 gate scene runs / 372 associated sections, 27/356 overlapping accepted coverage. Unique accepted coverage 70 suites / 951 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C3 plan awaits explicit implementation approval. [C3 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C3_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C3 gameplay or F6 fixture yet.
+
+
 ### 2026-11-25 — C2 isolated ACCEPTED; compatibility PENDING
 
 Developer confirmed C2 isolated F6 16/16 labeled sections passed locally in Godot against implementation commit bb666235f575bad4c83cdde90a7d378c9c25e4ba on 2026-11-25. Cumulative unique accepted coverage 70 suites / 951 expected sections (B4 68/923 + C1 1/12 + C2 1/16); last fresh full regression remains B4 68/923. C2 targeted compatibility 27 existing suites / 356 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect assertion logs. C3 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C2_COMPATIBILITY.md).
