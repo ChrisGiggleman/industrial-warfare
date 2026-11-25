@@ -1,6 +1,6 @@
 # E3d5c6f Stage B4 — Fresh Combined 68-Suite Regression
 
-**Status: MANIFEST AUDITED AND COMMITTED, 2026-11-24; FRESH COMBINED GODOT RUN NOT STARTED.** The developer already reported local targeted acceptance of Stage A, B1, B2, B3, including the B3 gate (eight scene runs). These historical targeted reruns do **not** establish fresh combined B4 acceptance.
+**Status (2026-11-24): Wave 1 accepted developer-locally, 20/20 F6 scenes (245 manifest-expected sections); Wave 2 (20/333) next; Waves 3–4 pending.** The developer already reported local targeted acceptance of Stage A, B1, B2, B3, including the B3 gate (eight scene runs). These historical targeted reruns do **not** establish fresh combined B4 acceptance.
 
 ## Authoritative manifest
 [Four-wave CSV](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv) `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, columns `Wave,Scene,ExpectedChecks,Origin`.
@@ -33,4 +33,4 @@
 - No change to previously accepted scenes, fixtures, `main.tscn` or source gameplay code from this B4 manifest gate.
 - No new autonomous dispatch, two-role cancellation recovery, charging/fleet scheduling or Main integration; all are future decisions.
 - Draft PR #1 remains unmerged and `main` unchanged. E3d5c6e historical acceptance 63/63/880 remains intact but **does not substitute** for this fresh feature-branch 68-scene run.
-- Current result: audit/manifest completed; **Wave 1 0/20 freshly run**, Wave 2 0/20, Wave 3 0/20, Wave 4 0/8.
+- Current result: audit/manifest completed; **Wave 1 20/20 developer-local PASS**, associated **245 manifest-expected sections**; **Wave 2 0/20**, Wave 3 0/20, Wave 4 0/8. No assistant-run Godot, no independently inspected assertion-by-assertion log.
