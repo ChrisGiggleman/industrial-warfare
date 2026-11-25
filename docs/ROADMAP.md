@@ -1,5 +1,12 @@
 # Industrial Warfare — Development Roadmap
 
+### 2026-11-25 — E3d5c6f B4 Wave 3 ACCEPTED: 20/20 developer-local F6 scenes
+
+Developer explicitly confirmed **all 20/20 Wave 3 F6 scenes passed locally** in Godot, matching the committed unique manifest rows 41–60 from `construction_power_coverage_e3d5c3a_test.tscn` through `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`. These scenes account for **258 manifest-expected sections**, not independently counted source-level assertions. Accepted waves: **Wave 1 20/20 (245 expected), Wave 2 20/20 (333), Wave 3 20/20 (258)**. Fresh cumulative B4 acceptance is **60/68 unique F6 scenes with 836/923 associated manifest-expected sections**. This is developer-local testimony; assistant has not run Godot.
+
+**NEXT: Wave 4, 8 F6 scenes / 87 expected sections, PENDING** in `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, rows 61–68: historical playable cancelled-site recovery E3d5c6c, unified construction E3d5c6d, power interruption E3d5c6e, then E3d5c6f Stage A role guards, Stage A handoff, B1 single owner, B2 logistics and B3 builder. Prior targeted passes do NOT count as fresh Wave 4 runs. **Do not close out B4 or claim 68/68 until all eight fresh F6 scenes are confirmed.** Preserve accepted source/tests, `main`, local uncommitted `.tres/.tscn` files, feature branch `feature/e3d5c6f-stage-a-role-contracts` and draft PR #1 unmerged. [B4 authoritative guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md).
+
+
 ### 2026-11-24 — E3d5c6f B4 Wave 2 ACCEPTED: 20/20 developer-local F6 scenes
 
 Developer explicitly confirmed **all 20/20 Wave 2 F6 scenes passed locally**, corresponding to the exact scene paths in manifest rows **21–40** of `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, from `drone_return_reservations_e3d5c5x4b_test.tscn` through `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn`. These scenes carry **333 manifest-expected printed check sections**; this is not an independently audited per-assertion transcript. Local developer confirmation supersedes any unsubmitted UI checkbox progress.
