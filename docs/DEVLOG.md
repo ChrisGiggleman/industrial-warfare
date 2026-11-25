@@ -1,5 +1,12 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-25 — E3d5c6f Stage B4 FINAL ACCEPTED: 68/68 fresh local F6 unique suites
+
+Developer explicitly reported **Wave 4 all 8/8 F6 scenes passed locally**, completing a fresh distinct four-wave regression: **Wave 1 20/20 (245 manifest-expected groups), Wave 2 20/20 (333), Wave 3 20/20 (258), Wave 4 8/8 (87)**. Combined **68/68 unique Godot F6 scenes accepted against 923 manifest-expected check sections**. The manifest count/sum and unique scene names are audited; the assistant did **not** run Godot or independently inspect 923 individual assertion logs. Previously accepted A/B1/B2/B3 targeted reruns do not add to the unique count.
+
+**E3d5c6f isolated Stage B (B1–B4) CLOSED.** [Final B4 closeout](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_CLOSEOUT.md); [authoritative B4 regression guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md); [deduplicated manifest](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv). **Recommended next milestone:** [E3d5c6f Stage C specialized-drone cancellation and physical material custody recovery proposal](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C_PROPOSAL.md). Begin with **C0 read-only architecture audit** to specify exact custody owner and canceled-site material recovery at pickup, in-flight cargo, delivered staging, escrow, and active builder phases; no gameplay coding in C0. Main and accepted scenes/tests remain unchanged; preserve local resource edits. Draft PR #1 stays open/unmerged on `feature/e3d5c6f-stage-a-role-contracts`.
+
+
 ### 2026-11-25 — E3d5c6f B4 Wave 3 ACCEPTED: 20/20 developer-local F6 scenes
 
 Developer explicitly confirmed **all 20/20 Wave 3 F6 scenes passed locally** in Godot, matching the committed unique manifest rows 41–60 from `construction_power_coverage_e3d5c3a_test.tscn` through `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`. These scenes account for **258 manifest-expected sections**, not independently counted source-level assertions. Accepted waves: **Wave 1 20/20 (245 expected), Wave 2 20/20 (333), Wave 3 20/20 (258)**. Fresh cumulative B4 acceptance is **60/68 unique F6 scenes with 836/923 associated manifest-expected sections**. This is developer-local testimony; assistant has not run Godot.
