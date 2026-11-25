@@ -103,3 +103,11 @@ func builder_claim_valid(receipt_id: int, builder: Node) -> bool:
 
 func lease_count() -> int:
 	return _leases.size()
+
+# Read-only exact lease observation for C2, including its terminal tombstone.
+# No authority to transfer cargo or grant a worker.
+func c2_logistics_lease_matches(id: int, job: ConstructionJob, drone: Node, revoked: bool) -> bool:
+	if not _scope_ok() or id <= 0 or not _leases.has(id) or not _live(drone) or job == null:
+		return false
+	var lease: Dictionary = _leases[id]
+	return lease["role"] == LOGISTICS and lease["job"] == job and (lease["drone"] as WeakRef).get_ref() == drone and bool(lease.get("revoked", false)) == revoked and not _receipts.has(id) and not lease.has("builder")

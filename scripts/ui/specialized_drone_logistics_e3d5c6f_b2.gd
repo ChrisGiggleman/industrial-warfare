@@ -402,3 +402,195 @@ func step_c1(delta: float) -> bool:
 		return false
 	tick_count += 1
 	return true
+
+# C2 is an additional opt-in on the original C1/B2 tick owner.
+@export var enable_c2_loaded_cancel: bool = false
+var _c2_configured: bool = false
+var _c2_docks: Array[WeakRef] = []
+var _c2_drone: WeakRef
+var _c2_lease: int = 0
+var _c2_contracts: SpecializedDroneRoleContractsE3d5c6f
+var _c2_supplier: PrototypeDroneSupplierReservations
+var _c2_discovery: PrototypeDroneStorageDiscovery
+var _c2_coordinator: BlueprintConstructionReadinessCoordinator
+var _c2_scheduler: BlueprintConstructionSlotScheduler
+var _c2_escrow: BlueprintConstructionMaterialEscrow
+
+func configure_c2() -> bool:
+	if not enable_c2_loaded_cancel or not _c1_owner() or phase != &"c1_ready" or _c2_configured or not _core():
+		return false
+	var scope := _scope()
+	_c2_drone = weakref(scope.get_node("LogisticsDrone"))
+	_c2_contracts = scope.get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f
+	_c2_supplier = scope.get_node("SupplierReservations") as PrototypeDroneSupplierReservations
+	_c2_discovery = scope.get_node("StorageDiscovery") as PrototypeDroneStorageDiscovery
+	_c2_coordinator = scope.get_node("ReadinessCoordinator") as BlueprintConstructionReadinessCoordinator
+	_c2_scheduler = scope.get_node("WorkerScheduler") as BlueprintConstructionSlotScheduler
+	_c2_escrow = scope.get_node("MaterialEscrow") as BlueprintConstructionMaterialEscrow
+	if not _live(_c1_returns) or not _live(_c1_charging) or not _live(_c2_discovery):
+		return false
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	# Original dock already registered by B2. Resolve the actual registered
+	# entry, not an arbitrary caller inventory or coordinate.
+	for candidate: Dictionary in _c2_discovery._entries_for(drone, INGOT, 5):
+		if candidate["storage"] == storage and candidate["inventory"] == source:
+			_c2_docks.append(weakref(candidate["dock"]))
+	if _c2_docks.size() != 1:
+		return false
+	source.enable_isolated_drone_return_claims = true
+	drone.enable_isolated_cargo_recovery = true
+	_c1_returns.enable_isolated_cargo_recovery = true
+	_c2_configured = true
+	_c1_job.job_cancelled.connect(_c2_on_cancelled)
+	return true
+
+func _c2_authorized() -> bool:
+	if not enable_c2_loaded_cancel or not _c2_configured or not enable_b2_logistics or not _c1_owner() or _c2_drone == null:
+		return false
+	var scope := _scope()
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	var builder := scope.get_node_or_null("ConstructionDrone") as PrototypeConstructionWorkerDrone
+	var b1 := scope.get_node_or_null("SingleTickController") as PlayableSpecializedDronesE3d5c6f
+	if not _live(drone) or drone != scope.get_node_or_null("LogisticsDrone") or drone.get_parent() != scope or not _live(builder) or builder == drone:
+		return false
+	if not _live(b1) or b1.enable_b1_controller or b1.is_processing() or b1.is_physics_processing():
+		return false
+	if builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE or builder.cargo_amount() != 0 or builder.enable_isolated_drone or builder.enable_isolated_cargo_pickup:
+		return false
+	for service: Node in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
+		if not _live(service) or service.get_parent() != scope:
+			return false
+	if _c2_contracts != scope.get_node_or_null("RoleContracts") or _c2_supplier != scope.get_node_or_null("SupplierReservations") or _c2_discovery != scope.get_node_or_null("StorageDiscovery") or _c2_coordinator != scope.get_node_or_null("ReadinessCoordinator") or _c2_scheduler != scope.get_node_or_null("WorkerScheduler") or _c2_escrow != scope.get_node_or_null("MaterialEscrow"):
+		return false
+	if _c2_supplier._service() != _c2_discovery or _c1_returns._service() != _c2_discovery or not _c2_coordinator.matches_tick_services(_c2_scheduler, _c2_escrow):
+		return false
+	if not _live(source) or not _live(buffer) or buffer.get_total_amount() != 0 or _c2_escrow.held_count() != 0 or receipt_id != 0:
+		return false
+	if _c2_scheduler.get_active_count() != 0 or _c2_scheduler.has_drone_binding(drone) or _c2_scheduler.has_drone_binding(builder) or drone.grants_worker_readiness():
+		return false
+	var controllers: int = 0
+	var returns: int = 0
+	var chargers: int = 0
+	for child: Node in scope.get_children():
+		if not _live(child):
+			continue
+		if child is SpecializedDroneLogisticsE3d5c6fB2:
+			controllers += 1
+		if child is PrototypeDroneReturnReservations:
+			returns += 1
+		if child is PrototypeDroneHubCharging:
+			chargers += 1
+		if child is PrototypeDroneAutomaticDispatch or child is PrototypeConstructionDroneFleet or child is PrototypeConstructionDroneTickController:
+			return false
+	return controllers == 1 and returns == 1 and chargers == 1
+
+# Alternate return docks are admitted by existing discovery validation.
+# Never enable their pickup permissions or touch their physical stock.
+func c2_register_return_dock(dock: PrototypeDroneStorageDock) -> bool:
+	if not _c2_authorized() or phase not in [&"c1_ready", &"c2_loaded", &"c2_delivery", &"c2_at_delivery", &"c2_cancelled"] or not _live(dock):
+		return false
+	if dock.allow_pickup:
+		return false # C2 alternate is a return-only dock.
+	for ref: WeakRef in _c2_docks:
+		if ref.get_ref() == dock:
+			return false
+	if not _c2_discovery.register_dock(dock):
+		return false
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	for candidate: Dictionary in _c2_discovery._entries_for(drone, INGOT, 5):
+		if candidate["dock"] == dock:
+			var inventory: InventoryComponent = candidate["inventory"]
+			inventory.enable_isolated_drone_return_claims = true
+			_c2_docks.append(weakref(dock))
+			return true
+	return false
+
+func c2_collect() -> bool:
+	if not _c2_authorized() or phase != &"c1_at_pickup" or not _core() or site.job != _c1_job or lease_id <= 0:
+		return false
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if source.get_amount(INGOT) != 15 or drone.cargo_amount() != 0 or not _c2_contracts.c2_logistics_lease_matches(lease_id, _c1_job, drone, false):
+		return false
+	if not _c2_supplier.collect_pickup(pickup_id, drone):
+		return false
+	_c2_lease = lease_id
+	phase = &"c2_loaded"
+	return source.get_amount(INGOT) == 10 and drone.cargo_amount() == 5 and drone.cargo_item() == INGOT and _c2_supplier.reservation_count() == 0
+
+func c2_begin_delivery() -> bool:
+	if not _c2_authorized() or phase != &"c2_loaded" or not _core() or site.job != _c1_job:
+		return false
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if not _c2_contracts.c2_logistics_lease_matches(_c2_lease, _c1_job, drone, false) or not drone.begin_delivery(site, _scope().get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry, _c2_escrow):
+		return false
+	phase = &"c2_delivery"
+	return true
+
+func cancel_c2(original_site: ConstructionSite, drone: PrototypeConstructionWorkerDrone, original_lease: int) -> bool:
+	if not _c2_authorized() or phase not in [&"c2_loaded", &"c2_delivery", &"c2_at_delivery"] or not _core():
+		return false
+	if original_site != site or site.job != _c1_job or drone != _c2_drone.get_ref() or original_lease != _c2_lease or drone.cargo_amount() != 5 or drone.cargo_item() != INGOT:
+		return false
+	if not _c2_contracts.c2_logistics_lease_matches(_c2_lease, _c1_job, drone, false):
+		return false
+	return _c1_job.cancel()
+
+func _c2_on_cancelled() -> void:
+	if not _c2_authorized() or _c1_job == null or _c1_job.state != ConstructionJob.State.CANCELLED or phase not in [&"c2_loaded", &"c2_delivery", &"c2_at_delivery"]:
+		return
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if drone.cargo_amount() != 5 or drone.cargo_item() != INGOT or not _c2_contracts.c2_logistics_lease_matches(_c2_lease, _c1_job, drone, false):
+		return
+	if _c2_contracts.revoke(_c2_lease):
+		phase = &"c2_cancelled"
+
+# Return status is explicit: a valid blocked recovery is not an authority
+# failure. Exactly one physical service advance per bounded owner tick.
+func step_c2(delta: float) -> StringName:
+	if not _c2_authorized() or not is_finite(delta) or delta <= 0.0 or delta > 1.0:
+		return &"rejected"
+	var drone := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if phase == &"c2_delivery":
+		if not _core() or not _c2_contracts.c2_logistics_lease_matches(_c2_lease, _c1_job, drone, false) or not drone.advance_delivery(delta):
+			return &"rejected"
+		if drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.AT_DELIVERY:
+			phase = &"c2_at_delivery" # Never unload in C2.
+		tick_count += 1
+		return &"delivery"
+	if phase != &"c2_cancelled" or _c1_job.state != ConstructionJob.State.CANCELLED or not _c2_contracts.c2_logistics_lease_matches(_c2_lease, _c1_job, drone, true):
+		return &"rejected"
+	if _c2_supplier.reservation_count() != 0 or source.get_reserved_amount(INGOT) != 0:
+		return &"rejected"
+	_c2_coordinator.reconcile()
+	if not (_scope().get_node("PriorityQueue") as BlueprintConstructionPriorityQueue).get_waiting_sites().is_empty():
+		return &"rejected"
+	var state: int = drone.get_flight_state()
+	if state == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+		if drone.cargo_amount() != 0 or _c1_returns.reservation_count() != 0 or not drone.global_position.is_equal_approx(_c1_home):
+			return &"rejected"
+		tick_count += 1
+		if drone.battery_units() + 0.00001 < drone.battery_capacity():
+			return &"charging" if _c1_charging.advance_charging(delta) > 0.0 else &"charging_wait"
+		if not drone.release_docked_cargo_assignment(_c2_supplier, _c1_returns, _c2_coordinator, _c2_escrow, _c2_scheduler):
+			return &"rejected"
+		phase = &"c2_complete"
+		return &"complete"
+	if state == PrototypeConstructionWorkerDrone.FlightState.RECOVERY_HOME:
+		if drone.cargo_amount() != 0 or _c1_returns.reservation_count() != 0:
+			return &"rejected"
+	elif drone.cargo_amount() != 5 or drone.cargo_item() != INGOT:
+		return &"rejected"
+	# The discovery service may only select originally admitted C2 docks.
+	for candidate: Dictionary in _c2_discovery._entries_for(drone, INGOT, 5):
+		var admitted: bool = false
+		for ref: WeakRef in _c2_docks:
+			if ref.get_ref() == candidate["dock"]:
+				admitted = true
+				break
+		if not admitted:
+			return &"rejected"
+	tick_count += 1
+	var advanced: bool = _c1_returns.advance_cancelled_recovery(drone, delta)
+	if not advanced:
+		return &"recovery_wait"
+	return &"recovery"
