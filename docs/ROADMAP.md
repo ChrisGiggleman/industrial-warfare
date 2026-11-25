@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Roadmap
 
+### 2026-11-25 — C1 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed all 12/12 labeled C1 sections passed locally in Godot against implementation commit acec11e64df4d9987a8156e63bc68f7ff59ad56f. Assistant did not execute Godot. Cumulative unique accepted coverage 69 suites / 935 expected sections (68/923 historical fresh B4 + 1/12 C1); no fresh full 69-suite regression claimed. Targeted compatibility 22 existing scenes / 295 manifest-expected sections PENDING; these overlap B4 and must not inflate unique coverage. C2 remains gated on developer-local compatibility acceptance. Main, accepted scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C1_COMPATIBILITY.md).
+
+
 ### 2026-11-25 — E3d5c6f C0 reviewed / C1 isolated implementation staged; F6 PENDING
 
 Developer approved C1 only. [C0 audit and C1 gate](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C0_C1.md). Default-off same-B2-owner pre-pickup cancellation, exact supplier release, physical empty return, finite hub recharge and terminal rearm; no collection in C1 isolated mode. New F6 `res://tests/specialized_drone_pre_pickup_cancel_e3d5c6f_c1_test.tscn` (12 labeled sections) **not yet run**. Accepted B4 remains 68 unique suites / 923 manifest-expected sections. Main, old scenes/tests and local edits untouched; draft PR #1 unmerged. C2–C5 remain pending.

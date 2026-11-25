@@ -1,5 +1,10 @@
 # E3d5c6f C0 audit and C1 implementation gate
 
+### 2026-11-25 — C1 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed all 12/12 labeled C1 sections passed locally in Godot against implementation commit acec11e64df4d9987a8156e63bc68f7ff59ad56f. Assistant did not execute Godot. Cumulative unique accepted coverage 69 suites / 935 expected sections (68/923 historical fresh B4 + 1/12 C1); no fresh full 69-suite regression claimed. Targeted compatibility 22 existing scenes / 295 manifest-expected sections PENDING; these overlap B4 and must not inflate unique coverage. C2 remains gated on developer-local compatibility acceptance. Main, accepted scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C1_COMPATIBILITY.md).
+
+
 Approved by developer after B4 68/68 unique local F6 scenes / 923 manifest-expected sections. Base fd4772b1562ab. No new Godot run claimed.
 
 ## C0 custody and authority
