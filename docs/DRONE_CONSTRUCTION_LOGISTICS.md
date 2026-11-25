@@ -1,5 +1,12 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-24 — E3d5c6f Stage B4 regression manifest AUDITED; fresh run PENDING
+
+Developer requested B4 after **Stage B3 targeted 8/8 local F6** acceptance. Audited existing authoritative `tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv` (63 unique scene names, historical manifest total 880); verified every original `tests/*.tscn` path exists on feature branch. Appended all five committed E3d5c6f A/B1/B2/B3 fixture scenes exactly once (6+7+9+9+12 = 43 source-derived labeled printed PASS sections) to new **`tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`**: **68 unique F6 scenes, 923 manifest-expected check groups**, no duplicates, all scene paths verified. Historical expected groups + new printed sections are manifest bookkeeping, **not** independently audited 923 assertions. Four ordered waves: **Wave 1 20 scenes/245 expected, Wave 2 20/333, Wave 3 20/258, Wave 4 8/87**. **NO fresh B4 Godot suite has yet been reported run**; next is **Wave 1** one-at-a-time interactive Copy scene path F6 navigator. [B4 regression guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md). Stop on first failing suite; count completed waves only on developer confirmation, not prior B3 targeted reruns.
+
+No changes to gameplay sources or accepted legacy scenes/tests in this B4 manifest checkpoint. Keep `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 unmerged, `main` untouched, and preserve developer's uncommitted local `.tres/.tscn` modifications. Historical accepted E3d5c6e 63/63/880 remains distinct from current pending fresh 68/923.
+
+
 ### 2026-11-24 — E3d5c6f Stage B3 TARGETED ACCEPTED: 8/8 F6 scenes developer-local PASSED
 
 Developer reports **all eight requested Godot F6 scenes passed**, including NEW `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn` (12 labeled PASS sections) and seven targeted compatibility reruns:
