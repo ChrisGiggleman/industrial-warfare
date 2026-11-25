@@ -1,5 +1,10 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-25 — E3d5c6f B4 FINAL ACCEPTED: 68/68 fresh F6 scenes
+
+Developer confirmed Wave 4 **8/8 locally passed**, completing accepted Waves 1 **20/20 (245 expected)**, 2 **20/20 (333)**, 3 **20/20 (258)** and 4 **8/8 (87)**. **Total fresh unique B4 regression: 68/68 scenes against 923 manifest-expected test sections.** Scene-level developer-local testimony; assistant did not run Godot and 923 are not independently audited individual assertions. This closes E3d5c6f **isolated Stage B (B1–B4)**, not Main integration or comprehensive cancellation recovery. [B4 closeout](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_CLOSEOUT.md) and [manifest](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv). **Next proposed gate:** [Stage C0 read-only architecture audit for specialized-drone cancellation and physical materials recovery](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C_PROPOSAL.md). No Stage C gameplay changes authorized yet. Preserve Main, accepted scenes/tests, local resource edits, and unmerged draft PR #1 on `feature/e3d5c6f-stage-a-role-contracts`.
+
+
 ### 2026-11-25 — E3d5c6f B4 Wave 3 ACCEPTED: 20/20 developer-local F6 scenes
 
 Developer explicitly confirmed **all 20/20 Wave 3 F6 scenes passed locally** in Godot, matching the committed unique manifest rows 41–60 from `construction_power_coverage_e3d5c3a_test.tscn` through `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`. These scenes account for **258 manifest-expected sections**, not independently counted source-level assertions. Accepted waves: **Wave 1 20/20 (245 expected), Wave 2 20/20 (333), Wave 3 20/20 (258)**. Fresh cumulative B4 acceptance is **60/68 unique F6 scenes with 836/923 associated manifest-expected sections**. This is developer-local testimony; assistant has not run Godot.
