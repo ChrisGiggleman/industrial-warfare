@@ -1,5 +1,10 @@
 # E3d5c6f C3 — Delivered staging and escrow physical recovery (proposed)
 
+### 2026-11-25 — C3 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C3 isolated F6 18/18 labeled sections passed locally in Godot against implementation commit 33ddb5288f51b8c3dd45c2d36cf999a8980cd8c1 on 2026-11-25. Cumulative unique accepted coverage 71 suites / 969 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18); last fresh full regression remains B4 68/923. C3 targeted compatibility 44 existing suites / 623 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C3_COMPATIBILITY.md).
+
+
 ### 2026-11-25 — C3 implementation staged; F6 PENDING
 
 Developer approved C3; implementation staged with default-off exact specialized controller, original custody audit, escrow refund/retry, terminal empty return, existing staged recovery transport without dispatcher, whole-route destination capacity forecast and protected physical pickup/deposit. Invalid destination during staged mission deliberately waits with existing claim and custody; automatic rerouting/deleted destination before deposit not implemented. Home after deposit independent of dock. Explicit controller cancellation captures ticket before job.cancel; external direct job.cancel without capture is not integrated. New isolated F6 res://tests/specialized_drone_staging_recovery_e3d5c6f_c3_test.tscn 18 labeled sections A–R PENDING local execution. No assistant Godot run. Accepted baseline 70/951; fresh B4 68/923. Main and prior scenes/tests unchanged. C4 remains gated.
