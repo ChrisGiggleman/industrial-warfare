@@ -1,6 +1,6 @@
 # E3d5c6f Stage B4 — Fresh Combined 68-Suite Regression
 
-**Status (2026-11-25): Waves 1, 2 and 3 accepted developer-locally, each 20/20 F6 scenes (245 + 333 + 258 manifest-expected sections); cumulative 60/68 scenes / 836 associated expected sections. Wave 4 (8/87) pending.** The developer already reported local targeted acceptance of Stage A, B1, B2, B3, including the B3 gate (eight scene runs). These historical targeted reruns do **not** establish fresh combined B4 acceptance.
+**FINAL ACCEPTED (2026-11-25): Developer confirmed all four fresh local Godot F6 waves passed: 20/245 + 20/333 + 20/258 + 8/87 = 68/68 unique suites against 923 manifest-expected check sections.** Earlier targeted runs are not added again.
 
 ## Authoritative manifest
 [Four-wave CSV](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv) `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, columns `Wave,Scene,ExpectedChecks,Origin`.
@@ -33,4 +33,8 @@
 - No change to previously accepted scenes, fixtures, `main.tscn` or source gameplay code from this B4 manifest gate.
 - No new autonomous dispatch, two-role cancellation recovery, charging/fleet scheduling or Main integration; all are future decisions.
 - Draft PR #1 remains unmerged and `main` unchanged. E3d5c6e historical acceptance 63/63/880 remains intact but **does not substitute** for this fresh feature-branch 68-scene run.
-- Current result: audit/manifest completed; **Wave 1 20/20 developer-local PASS** (245 expected), **Wave 2 20/20 developer-local PASS** (333 expected), **Wave 3 20/20 developer-local PASS** (258 expected), cumulative **60/68 scenes / 836 associated expected sections**; **Wave 4 0/8 (87 expected)**. No assistant-run Godot, no independently inspected assertion-by-assertion log.
+- Current result: audit/manifest completed; **Wave 1 20/20 PASS** (245 expected), **Wave 2 20/20 PASS** (333), **Wave 3 20/20 PASS** (258), **Wave 4 8/8 PASS** (87): **68/68 suites ACCEPTED, associated 923 manifest-expected sections**. No assistant-run Godot, no independently inspected assertion-by-assertion log.
+
+## Final acceptance (2026-11-25)
+
+Developer explicitly reported Wave 4 **8/8** F6 scenes passed locally after earlier fresh Waves 1–3 each passed **20/20**. The committed deduplicated manifest is 68 unique paths and 923 manifest-expected groups, not individually audited assertions. Assistant did not run Godot. **Stage B4 and E3d5c6f isolated Stage B are accepted and closed.** Draft PR #1 remains unmerged, Main unchanged, broader cancellation-recovery and Main integration not implemented. [Closeout](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_CLOSEOUT.md).
