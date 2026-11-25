@@ -1,6 +1,6 @@
 # E3d5c6f Stage B4 — Fresh Combined 68-Suite Regression
 
-**Status (2026-11-24): Waves 1 and 2 accepted developer-locally, each 20/20 F6 scenes (245 + 333 manifest-expected sections); cumulative 40/68 scenes / 578 associated expected sections. Wave 3 (20/258) next; Wave 4 (8/87) pending.** The developer already reported local targeted acceptance of Stage A, B1, B2, B3, including the B3 gate (eight scene runs). These historical targeted reruns do **not** establish fresh combined B4 acceptance.
+**Status (2026-11-25): Waves 1, 2 and 3 accepted developer-locally, each 20/20 F6 scenes (245 + 333 + 258 manifest-expected sections); cumulative 60/68 scenes / 836 associated expected sections. Wave 4 (8/87) pending.** The developer already reported local targeted acceptance of Stage A, B1, B2, B3, including the B3 gate (eight scene runs). These historical targeted reruns do **not** establish fresh combined B4 acceptance.
 
 ## Authoritative manifest
 [Four-wave CSV](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv) `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, columns `Wave,Scene,ExpectedChecks,Origin`.
@@ -33,4 +33,4 @@
 - No change to previously accepted scenes, fixtures, `main.tscn` or source gameplay code from this B4 manifest gate.
 - No new autonomous dispatch, two-role cancellation recovery, charging/fleet scheduling or Main integration; all are future decisions.
 - Draft PR #1 remains unmerged and `main` unchanged. E3d5c6e historical acceptance 63/63/880 remains intact but **does not substitute** for this fresh feature-branch 68-scene run.
-- Current result: audit/manifest completed; **Wave 1 20/20 developer-local PASS** (245 expected), **Wave 2 20/20 developer-local PASS** (333 expected), cumulative **40/68 scenes / 578 associated expected sections**; **Wave 3 0/20**, Wave 4 0/8. No assistant-run Godot, no independently inspected assertion-by-assertion log.
+- Current result: audit/manifest completed; **Wave 1 20/20 developer-local PASS** (245 expected), **Wave 2 20/20 developer-local PASS** (333 expected), **Wave 3 20/20 developer-local PASS** (258 expected), cumulative **60/68 scenes / 836 associated expected sections**; **Wave 4 0/8 (87 expected)**. No assistant-run Godot, no independently inspected assertion-by-assertion log.
