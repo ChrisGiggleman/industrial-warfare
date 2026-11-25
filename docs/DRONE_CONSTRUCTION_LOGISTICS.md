@@ -1,5 +1,21 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-24 — E3d5c6f Stage B3 TARGETED ACCEPTED: 8/8 F6 scenes developer-local PASSED
+
+Developer reports **all eight requested Godot F6 scenes passed**, including NEW `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn` (12 labeled PASS sections) and seven targeted compatibility reruns:
+- `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` (9 labeled sections)
+- `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9)
+- `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` (6)
+- `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` (7)
+- `res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn` (12)
+- `res://tests/drone_physical_delivery_e3d5c5x5b_test.tscn` (13)
+- `res://tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` (13)
+
+**Counting:** 8/8 F6 scene runs at this gate = **1 new B3 fixture and 7 already accepted regression reruns**, with 81 labeled PASS sections across source, **not 81 independent assertion/check counts or 81 new unique checks**. Developer-local verification; assistant did not execute Godot. The scoped end-to-end two-role vertical slice is accepted: original logistics physical collection of five ingots and handoff/return, separate construction drone battery-metered arrival and one worker-slot admission through original coordinator, real power outage/pause/restart, original 18-second Ammunition Press build completion and escrow commitment, metered construction drone return. **B4 combined unique-suite regression is NOT yet run.** Historical E3d5c6e baseline **63 unique suites / 880 manifest-expected checks** remains accepted from earlier stage but has **NOT** been freshly rerun against B3; do not invent new combined counts.
+
+Keep `main` and previously accepted scenes/tests unchanged; preserve developer's uncommitted local `.tres/.tscn` files. Work is on `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 remains unmerged. Next gate **E3d5c6f Stage B4** — generate an audited unique regression manifest and run developer-local comprehensive compatibility, before deciding merge or future gameplay integration. Stage C cancellations, custody recovery and fleet scheduling remain future gates. [B3 checkpoint](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B3.md).
+
+
 ### 2026-11-24 — E3d5c6f Stage B3 separate physical builder IMPLEMENTED; F6 PENDING
 
 User requested B3 after accepted B2 targeted **6/6 local F6 scene runs**. Code now adds a **default-off** `B3BuilderController` and original `PowerNetwork` in the one E3d5c6f opt-in scene, an **exact B2→B3 single-tick-owner handoff**, and an **additive receipt-backed distinct physically-arrived builder binding** on the existing slot scheduler. The original PowerAllocator, ReadinessCoordinator, site escrow and single scheduler retain all real power/material/worker permission; original ConstructionJob is the **sole** 18-second timer. The new `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn` (12 labeled sections) exercises actual B2 material movement, physically separate builder, no permission before physical arrival, real power outage waiting and construction pause/resume, escrow commitment upon real Press activation, and metered return. **UNRUN in Godot**; do not claim passage, acceptance or fresh aggregate regression. After new scene passes, seven targeted accepted suite reruns remain. [B3 scope and one-at-a-time F6 guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B3.md).
