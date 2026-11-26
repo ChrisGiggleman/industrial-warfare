@@ -1,5 +1,10 @@
 # E3d5c6f C3 — Isolated acceptance and targeted compatibility
 
+### 2026-11-25 — C3 FULLY ACCEPTED; C4 proposal
+
+Developer confirmed C3 compatibility 44/44 F6 scenes passed locally against 623 manifest-expected sections on 2026-11-25, following isolated 18/18. C3 FULLY ACCEPTED: 45 gate scene runs / 641 associated sections; 44/623 overlap prior accepted coverage. Unique accepted coverage 71 suites / 969 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4 awaits explicit implementation approval. [C4 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4 gameplay or F6 fixtures yet.
+
+
 Developer confirmed C3 isolated F6 18/18 labeled sections passed locally in Godot against implementation commit 33ddb5288f51b8c3dd45c2d36cf999a8980cd8c1 on 2026-11-25. Cumulative unique accepted coverage 71 suites / 969 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18); last fresh full regression remains B4 68/923. C3 targeted compatibility 44 existing suites / 623 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved.
 
 Run each scene with F6, stop on first error. Counts inherited from B4/C1/C2 accepted manifests and labeled sections, not assertion-level logs. All paths verified at implementation commit. Selection retains the 27 C2 compatibility scenes and adds 16 original staging, receiver, worker, tick, dispatcher and playable recovery suites plus C2 isolated regression. Shared scripts modified by C3 justify expanded coverage. C3 itself already passed and is not counted as a rerun. C3 limitations remain: invalid destination safe wait rather than automatic reroute; permanent destination deletion before deposit not implemented; cancellation requires controller entry point with original custody capture. No gameplay changes at this checkpoint.
