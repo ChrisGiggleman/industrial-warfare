@@ -1,5 +1,10 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-25 — C4A isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C4A isolated F6 14/14 labeled sections passed locally in Godot against implementation commit 18391041722c4ae2fc4ff4f92645f7930b43f4b0 on 2026-11-25. Cumulative unique accepted coverage 72 suites / 983 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14); last fresh full regression remains B4 68/923. C4A targeted compatibility 40 existing suites / 581 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4B gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4A_COMPATIBILITY.md).
+
+
 ### 2026-11-25 — C4A implementation staged; F6 PENDING
 
 Developer approved C4A. Default-off specialized builder admission from C3 docked delivery, exact original custody ticket and one owner transfer, separate right berth finite registration on existing shared allocator, active receipt validation across queued/constructing/paused, physical blackout parking/resume with preserved progress/escrow and existing scheduler binding, normal completion and empty return. New isolated F6 res://tests/specialized_drone_builder_blackout_e3d5c6f_c4a_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Terminal cancellation/hand-back deferred C4B; no generalized dynamic site relocation or automatic reroute. Accepted baseline 71/969; fresh B4 68/923. Main and prior scenes/tests unchanged.
