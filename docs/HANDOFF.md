@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-26 — C5A Wave 1 ACCEPTED; Wave 2 ready
+
+2026-11-26: Developer confirmed C5A Wave 1 all 20/20 F6 scenes passed locally in Godot against 245 manifest-expected sections, using C5 manifest prepared at 5f32bd84fa9f973381f22754884649a82753352e. Fresh C5A progress 20/73 suites and 245/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Wave 2: 20 scenes / 333 expected sections PENDING; on acceptance fresh progress 40/73 and 578/997. Waves 3–4 and C5B manual sandbox implementation/verification pending. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
+
+
 ### 2026-11-25 — C4B FULLY ACCEPTED; C5 verification prepared
 
 Developer confirmed C4B compatibility 53/53 F6 scenes passed locally against 751 manifest-expected sections on 2026-11-25, following isolated 14/14. C4B FULLY ACCEPTED: 54 gate scene runs / 765 associated sections; compatibility overlaps prior accepted coverage. Unique accepted coverage 73 suites / 997 expected sections; last fresh full regression B4 68/923. Assistant did not run Godot or inspect assertion logs. C5A fresh full 73/997 regression PENDING. C5B manual playable verification requires a separately approved isolated harness; existing specialized scene is inert B1 by default, has no player-facing controls or camera, and B2/B3/C stages require explicit fixture setup and manual ticks. No C5 gameplay or harness implementation yet; no manual acceptance. [C5 verification plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5_PLAN.md). Documentation-only checkpoint; Main, existing gameplay, accepted scenes/tests, local edits and draft PR #1 preserved.
