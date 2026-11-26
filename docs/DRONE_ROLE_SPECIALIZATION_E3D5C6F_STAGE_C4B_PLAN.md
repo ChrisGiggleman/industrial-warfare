@@ -1,5 +1,10 @@
 # E3d5c6f C4B — Specialized builder terminal cancellation and recovery hand-back (proposed)
 
+### 2026-11-25 — C4B isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C4B isolated F6 14/14 labeled sections passed locally in Godot against implementation commit bed2c8dd4189d5fc1c2a9572134e5ef761a1723c on 2026-11-25. Cumulative unique accepted coverage 73 suites / 997 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14 + C4B 1/14); last fresh full regression remains B4 68/923. C4B targeted compatibility 53 existing suites / 751 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C5 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_COMPATIBILITY.md).
+
+
 ### 2026-11-25 — C4B implementation staged; F6 PENDING
 
 Developer approved C4B. Implemented default-off terminal builder cancellation at C4A flight/work/parking/parked including resume, exact revoked builder-bearing receipt, coordinator cleanup, metered empty right berth retirement without recharge, one B3→B2 token hand-back, original C3 custody ticket/escrow and existing physical recovery/finite charging. New isolated F6 res://tests/specialized_drone_builder_cancel_e3d5c6f_c4b_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Explicit controller cancel only; no generalized reroute, dynamic relocation or source destruction; retired builder stays DOCKED and disabled, retains charging registration history but cannot charge. Accepted baseline 72/983; fresh B4 68/923. Main and prior scenes/tests unchanged. C5 gated.
