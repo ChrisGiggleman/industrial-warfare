@@ -141,3 +141,14 @@ func c4_builder_authorized(id: int, builder: Node, site: ConstructionSite, job: 
 	var buffer := (proof["buffer"] as WeakRef).get_ref() as InventoryComponent
 	var registry := (proof["registry"] as WeakRef).get_ref() as BlueprintConstructionSiteStagingRegistry
 	return _live(buffer) and _live(registry) and registry == scope.get_node_or_null("StagingRegistry") and (proof["escrow"] as WeakRef).get_ref() == escrow and (proof["logistics_drone"] as WeakRef).get_ref() == scope.get_node_or_null("LogisticsDrone") and registry.matches_owned_inventory(site, buffer) and escrow.reservation_for(site) == proof["escrow_id"] and escrow.matches_site_source_bill(site, buffer) and escrow.held_materials(proof["escrow_id"]) == proof["bill"]
+
+# Terminal proof deliberately retains both original role identities.
+func c4b_terminal_matches(id: int, job: ConstructionJob, builder: Node, logistics: Node, escrow: BlueprintConstructionMaterialEscrow, original_escrow_id: int) -> bool:
+	if not _scope_ok() or not _leases.has(id) or not _receipts.has(id) or job == null or job.state != ConstructionJob.State.CANCELLED or not _live(builder) or not _live(logistics) or not _live(escrow):
+		return false
+	var scope := get_parent()
+	if builder != scope.get_node_or_null("ConstructionDrone") or logistics != scope.get_node_or_null("LogisticsDrone") or builder == logistics or escrow != scope.get_node_or_null("MaterialEscrow"):
+		return false
+	var lease: Dictionary = _leases[id]
+	var proof: Dictionary = _receipts[id]
+	return lease["role"] == LOGISTICS and lease["job"] == job and proof["job"] == job and lease.get("revoked", false) and proof["revoked"] and lease.has("builder") and (lease["builder"] as WeakRef).get_ref() == builder and (lease["drone"] as WeakRef).get_ref() == logistics and (proof["logistics_drone"] as WeakRef).get_ref() == logistics and (proof["escrow"] as WeakRef).get_ref() == escrow and proof["escrow_id"] == original_escrow_id

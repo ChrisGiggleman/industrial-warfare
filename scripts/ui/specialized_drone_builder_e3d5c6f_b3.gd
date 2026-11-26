@@ -488,3 +488,68 @@ func step_c4a(delta: float) -> StringName:
 
 func c4_resume_power_authorized(builder: PrototypeConstructionWorkerDrone, original_site: ConstructionSite) -> bool:
 	return phase == &"c4_parked" and c4_flight_authorized(builder, original_site) and _c4_refs["coordinator"].get_status(site).get("power_allocated", false) and _c4_refs["scheduler"].get_active_count() == 0
+
+# Terminal path is separate from active C4A flight authorization.
+@export var enable_c4b_terminal_cancel: bool = false
+var _c4b_ticket: int = 0
+var _c4b_progress: float = -1.0
+var _c4b_cancelled: bool = false
+var _c4b_handed_back: bool = false
+
+func cancel_c4b(original_site: ConstructionSite, builder: PrototypeConstructionWorkerDrone, original_receipt: int) -> bool:
+	if not enable_c4b_terminal_cancel or not _c4_owner() or _c4b_cancelled or phase not in [&"c4_flight", &"c4_work", &"c4_parking", &"c4_parked"]:
+		return false
+	if original_site != site or builder != _c4_builder or original_receipt != receipt_id or not c4_flight_authorized(builder, original_site):
+		return false
+	var b2: SpecializedDroneLogisticsE3d5c6fB2 = _c4_refs["b2"]
+	var audit: PrototypeCancelledSiteCustodyAudit = b2._c3_audit
+	if not _live(audit) or b2._c3_ticket <= 0 or not audit._records.has(b2._c3_ticket):
+		return false
+	var record: Dictionary = audit._records[b2._c3_ticket]
+	if record["original_job"] != original_job or int(record["escrow_id"]) != escrow_id or bool(record["cancel_seen"]) or (record["original_site"] as WeakRef).get_ref() != site:
+		return false
+	_c4b_ticket = b2._c3_ticket
+	_c4b_progress = original_job.get_progress()
+	if not original_job.cancel():
+		return false
+	if not _c4_refs["contracts"].revoke(receipt_id):
+		return false
+	_c4b_cancelled = true
+	phase = &"c4b_terminal"
+	_c4_refs["coordinator"].reconcile()
+	if not c4b_terminal_flight_authorized(builder, original_job):
+		return false
+	return builder.c4b_begin_terminal_return(self, original_job)
+
+func c4b_terminal_flight_authorized(builder: PrototypeConstructionWorkerDrone, job: ConstructionJob) -> bool:
+	if not enable_c4b_terminal_cancel or not _c4_owner() or not _c4b_cancelled or _c4b_handed_back or phase != &"c4b_terminal" or builder != _c4_builder or job != original_job or job.state != ConstructionJob.State.CANCELLED or job.get_progress() != _c4b_progress or is_instance_valid(completed_building):
+		return false
+	var b2: SpecializedDroneLogisticsE3d5c6fB2 = _c4_refs["b2"]
+	var scheduler: BlueprintConstructionSlotScheduler = _c4_refs["scheduler"]
+	return _c4b_ticket > 0 and b2._c3_ticket == _c4b_ticket and scheduler.get_active_count() == 0 and not scheduler.has_drone_binding(builder) and not scheduler.has_drone_binding(_c4_logistics) and _c4_refs["contracts"].c4b_terminal_matches(receipt_id, job, builder, _c4_logistics, _c4_refs["escrow"], escrow_id)
+
+func c4b_handback_authorized(b2: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
+	return b2 == _c4_refs.get("b2") and c4b_terminal_flight_authorized(_c4_builder, original_job) and _c4_builder.c4b_is_retired()
+
+func c4b_retired_proof(b2: SpecializedDroneLogisticsE3d5c6fB2, builder: PrototypeConstructionWorkerDrone, ticket: int) -> bool:
+	if not _c4_scope() or not enable_c4b_terminal_cancel or not _c4b_cancelled or not _c4b_handed_back or phase != &"c4b_retired" or b2 != _c4_refs.get("b2") or builder != _c4_builder or ticket != _c4b_ticket or not _live(builder):
+		return false
+	return builder.c4b_is_retired() and original_job.state == ConstructionJob.State.CANCELLED and original_job.get_progress() == _c4b_progress and _c4_refs["contracts"].c4b_terminal_matches(receipt_id, original_job, builder, _c4_logistics, _c4_refs["escrow"], escrow_id)
+
+func step_c4b(delta: float) -> StringName:
+	if not is_finite(delta) or delta <= 0.0 or delta > 1.0 or not c4b_terminal_flight_authorized(_c4_builder, original_job):
+		return &"rejected"
+	_c4_refs["coordinator"].reconcile()
+	tick_count += 1
+	if _c4_builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+		return &"terminal_return" if _c4_builder.advance_flight(delta) else &"energy_wait"
+	if _c4_builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+		return &"rejected"
+	if not _c4_builder.c4b_is_retired() and not _c4_builder.c4b_retire(self, original_job):
+		return &"rejected"
+	var b2: SpecializedDroneLogisticsE3d5c6fB2 = _c4_refs["b2"]
+	if not b2.c4b_accept_handback(self):
+		return &"rejected"
+	_c4b_handed_back = true
+	phase = &"c4b_retired"
+	return &"handed_back"

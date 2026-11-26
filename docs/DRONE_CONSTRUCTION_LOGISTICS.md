@@ -1,5 +1,10 @@
 # Industrial Warfare — Drone Construction Logistics
 
+### 2026-11-25 — C4B implementation staged; F6 PENDING
+
+Developer approved C4B. Implemented default-off terminal builder cancellation at C4A flight/work/parking/parked including resume, exact revoked builder-bearing receipt, coordinator cleanup, metered empty right berth retirement without recharge, one B3→B2 token hand-back, original C3 custody ticket/escrow and existing physical recovery/finite charging. New isolated F6 res://tests/specialized_drone_builder_cancel_e3d5c6f_c4b_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Explicit controller cancel only; no generalized reroute, dynamic relocation or source destruction; retired builder stays DOCKED and disabled, retains charging registration history but cannot charge. Accepted baseline 72/983; fresh B4 68/923. Main and prior scenes/tests unchanged. C5 gated.
+
+
 ### 2026-11-25 — C4A FULLY ACCEPTED; C4B proposal
 
 Developer confirmed C4A compatibility 40/40 F6 scenes passed locally against 581 manifest-expected sections on 2026-11-25, following isolated 14/14. C4A FULLY ACCEPTED: 41 gate scene runs / 595 associated sections; 40/581 overlap prior accepted coverage. Unique accepted coverage 72 suites / 983 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4B awaits explicit implementation approval. [C4B implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4B gameplay or F6 fixture yet.

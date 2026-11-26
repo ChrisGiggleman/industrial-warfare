@@ -1375,3 +1375,40 @@ func c4_finish_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: Constr
 		return false
 	_c4_parked = false
 	return true
+
+# C4B: only the original terminal builder controller can retire this
+# exact assignment. No material, charging or worker entitlement is created.
+var _c4b_retired: bool = false
+
+func c4b_begin_terminal_return(controller: SpecializedDroneBuilderE3d5c6fB3, job: ConstructionJob) -> bool:
+	if not enable_specialized_c4_parking or _c4b_retired or not _delivery_live(controller) or not controller.c4b_terminal_flight_authorized(self, job) or job != _assignment_job or not _site_ended:
+		return false
+	if _state not in [FlightState.OUTBOUND, FlightState.AT_SITE, FlightState.RETURNING, FlightState.DOCKED] or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
+		return false
+	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter:
+		return false
+	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
+	return true
+
+func c4b_retire(controller: SpecializedDroneBuilderE3d5c6fB3, job: ConstructionJob) -> bool:
+	if _c4b_retired or not _delivery_live(controller) or not controller.c4b_terminal_flight_authorized(self, job) or job != _assignment_job or not _site_ended or _state != FlightState.DOCKED:
+		return false
+	if global_position.distance_to(_home) > 0.00001 or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
+		return false
+	if job.job_cancelled.is_connected(_on_site_ended):
+		job.job_cancelled.disconnect(_on_site_ended)
+	var old_site := _bound_site()
+	if is_instance_valid(old_site) and old_site.tree_exiting.is_connected(_on_site_ended):
+		old_site.tree_exiting.disconnect(_on_site_ended)
+	_site_ref = null
+	_assignment_job = null
+	_c4_parked = false
+	enable_specialized_c4_parking = false
+	enable_isolated_drone = false
+	enable_isolated_battery = false
+	enable_isolated_finite_charging = false
+	_c4b_retired = true
+	return true
+
+func c4b_is_retired() -> bool:
+	return _c4b_retired and _state == FlightState.DOCKED and global_position.distance_to(_home) <= 0.00001 and _assignment_job == null and _site_ref == null and not _c4_parked and not enable_isolated_drone and not enable_isolated_cargo_pickup and not enable_isolated_cargo_delivery and _cargo_amount == 0 and _cargo_item == null

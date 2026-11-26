@@ -614,7 +614,9 @@ func _c3_owner() -> bool:
 	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
 	var builder := scope.get_node_or_null("ConstructionDrone") as PrototypeConstructionWorkerDrone
 	var b1 := scope.get_node_or_null("SingleTickController") as PlayableSpecializedDronesE3d5c6f
-	if not _live(logistics) or logistics != scope.get_node_or_null("LogisticsDrone") or not _live(builder) or builder.enable_isolated_drone or builder.enable_isolated_cargo_pickup or builder.cargo_amount() != 0 or builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
+	if not _live(logistics) or logistics != scope.get_node_or_null("LogisticsDrone") or not _live(builder) or builder.enable_isolated_drone or builder.enable_isolated_cargo_pickup or builder.cargo_amount() != 0:
+		return false
+	if builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE and not _c4b_retired_builder_matches(builder):
 		return false
 	if not _live(b1) or b1.enable_b1_controller or b1.is_processing() or b1.is_physics_processing():
 		return false
@@ -735,7 +737,7 @@ func _c3_on_cancelled() -> void:
 		phase = &"c3_cancelled"
 
 func c3_empty_return_authorized(logistics: PrototypeConstructionWorkerDrone) -> bool:
-	return _c3_owner() and phase == &"c3_cancelled" and _c3_ticket > 0 and _c1_job.state == ConstructionJob.State.CANCELLED and logistics == _c2_drone.get_ref() and _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, true)
+	return _c3_owner() and phase == &"c3_cancelled" and _c3_ticket > 0 and _c1_job.state == ConstructionJob.State.CANCELLED and logistics == _c2_drone.get_ref() and _c3_terminal_lease_matches(logistics)
 
 func step_c3(delta: float) -> StringName:
 	if not _c3_owner() or not _c3_configured or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
@@ -750,7 +752,7 @@ func step_c3(delta: float) -> StringName:
 			phase = &"c3_docked"
 		tick_count += 1
 		return &"empty_return"
-	if phase not in [&"c3_cancelled", &"c3_recovery"] or _c1_job.state != ConstructionJob.State.CANCELLED or not _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, true):
+	if phase not in [&"c3_cancelled", &"c3_recovery"] or _c1_job.state != ConstructionJob.State.CANCELLED or not _c3_terminal_lease_matches(logistics):
 		return &"rejected"
 	if _c2_supplier.reservation_count() != 0 or _c1_returns.reservation_count() != 0:
 		return &"rejected"
@@ -803,4 +805,35 @@ func c4_transfer_to_builder(controller: SpecializedDroneBuilderE3d5c6fB3) -> boo
 		return false
 	phase = &"c4_builder_owned"
 	_scope().set_meta(TICK_OWNER, weakref(controller))
+	return true
+
+var _c4b_returned_owner: WeakRef
+
+func _c4b_retired_builder_matches(builder: PrototypeConstructionWorkerDrone) -> bool:
+	if _c4b_returned_owner == null or not _live(builder):
+		return false
+	var controller := _c4b_returned_owner.get_ref() as SpecializedDroneBuilderE3d5c6fB3
+	return _live(controller) and controller == _scope().get_node_or_null("B3BuilderController") and controller.c4b_retired_proof(self, builder, _c3_ticket)
+
+func _c3_terminal_lease_matches(logistics: PrototypeConstructionWorkerDrone) -> bool:
+	if _c4b_returned_owner == null:
+		return _c2_contracts.c3_logistics_lease_matches(_c2_lease, _c1_job, logistics, true)
+	var builder := _scope().get_node_or_null("ConstructionDrone") as PrototypeConstructionWorkerDrone
+	return _c4b_retired_builder_matches(builder) and _c2_contracts.c4b_terminal_matches(_c2_lease, _c1_job, builder, logistics, _c2_escrow, _c3_escrow_id)
+
+func c4b_accept_handback(controller: SpecializedDroneBuilderE3d5c6fB3) -> bool:
+	if not enable_c3_staging_recovery or not _c3_configured or phase != &"c4_builder_owned" or _c4b_returned_owner != null or not _live(controller) or controller != _scope().get_node_or_null("B3BuilderController") or not controller.c4b_handback_authorized(self):
+		return false
+	var token := _scope().get_meta(TICK_OWNER) as WeakRef
+	if token == null or token.get_ref() != controller or _c3_ticket <= 0 or _c1_job.state != ConstructionJob.State.CANCELLED:
+		return false
+	var builder := _scope().get_node("ConstructionDrone") as PrototypeConstructionWorkerDrone
+	var logistics := _c2_drone.get_ref() as PrototypeConstructionWorkerDrone
+	if not builder.c4b_is_retired() or not _c2_contracts.c4b_terminal_matches(_c2_lease, _c1_job, builder, logistics, _c2_escrow, _c3_escrow_id):
+		return false
+	if _c2_scheduler.get_active_count() != 0 or _c2_scheduler.has_drone_binding(builder) or _c2_scheduler.has_drone_binding(logistics):
+		return false
+	_c4b_returned_owner = weakref(controller)
+	phase = &"c3_cancelled"
+	_scope().set_meta(TICK_OWNER, weakref(self))
 	return true
