@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-25 — C4A FULLY ACCEPTED; C4B proposal
+
+Developer confirmed C4A compatibility 40/40 F6 scenes passed locally against 581 manifest-expected sections on 2026-11-25, following isolated 14/14. C4A FULLY ACCEPTED: 41 gate scene runs / 595 associated sections; 40/581 overlap prior accepted coverage. Unique accepted coverage 72 suites / 983 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4B awaits explicit implementation approval. [C4B implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4B gameplay or F6 fixture yet.
+
+
 ### 2026-11-25 — C4A isolated ACCEPTED; compatibility PENDING
 
 Developer confirmed C4A isolated F6 14/14 labeled sections passed locally in Godot against implementation commit 18391041722c4ae2fc4ff4f92645f7930b43f4b0 on 2026-11-25. Cumulative unique accepted coverage 72 suites / 983 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14); last fresh full regression remains B4 68/923. C4A targeted compatibility 40 existing suites / 581 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4B gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4A_COMPATIBILITY.md).
