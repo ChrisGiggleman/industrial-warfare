@@ -98,6 +98,8 @@ func _on_building_completed(building: Node3D) -> void:
 # exact receipt remains valid. Original power network and coordinator are
 # configured once, without creating a second escrow or worker-slot service.
 func configure_b3(pole: PrototypePowerStructure) -> bool:
+	if enable_c4a_blackout:
+		return false
 	if not enable_b3_builder or phase != &"disabled":
 		return false
 	var x := _refs()
@@ -148,6 +150,8 @@ func configure_b3(pole: PrototypePowerStructure) -> bool:
 	return _core()
 
 func start_builder() -> bool:
+	if enable_c4a_blackout:
+		return false
 	if phase != &"ready" or not _core():
 		return false
 	var x := _refs()
@@ -184,6 +188,8 @@ func start_builder() -> bool:
 # relinquished the tick token. Always reconcile once before advancing the
 # existing job, and never advance a job from a second site timer.
 func step_builder(delta: float) -> bool:
+	if enable_c4a_blackout:
+		return false
 	if not is_finite(delta) or delta <= 0.0 or delta > 18.0 or phase not in [&"flight", &"work", &"return"] or not _core():
 		return false
 	var scope := _scope()
@@ -260,3 +266,225 @@ func b3_completed() -> bool:
 		return false
 	var runtime := completed_building.get_node_or_null("BuildingRuntime") as BuildingRuntime
 	return is_instance_valid(runtime) and runtime.building_definition == PRESS and original_job.state == ConstructionJob.State.COMPLETE and original_job.get_progress() >= 1.0 and original_job.get_remaining_seconds() <= 0.0 and escrow.held_count() == 0 and source.get_amount(INGOT) == 10 and builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED and logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED and builder.cargo_amount() == 0 and logistics.cargo_amount() == 0 and scheduler.get_active_count() == 0
+
+# C4A is explicitly separate from the historical B3 success path.
+@export var enable_c4a_blackout: bool = false
+var _c4_charging: PrototypeDroneHubCharging
+var _c4_home: Vector3
+var _c4_logistics: PrototypeConstructionWorkerDrone
+var _c4_builder: PrototypeConstructionWorkerDrone
+var _c4_admitted: bool = false
+var _c4_bound_once: bool = false
+var _c4_refs: Dictionary = {}
+
+func _c4_scope() -> bool:
+	var scope := _scope()
+	return enable_c4a_blackout and enable_b3_builder and _live(self) and _live(scope) and scope.scene_file_path == EXACT_SCOPE and scope.get_node_or_null("B3BuilderController") == self and not is_processing() and not is_physics_processing()
+
+func _c4_owner() -> bool:
+	if not _c4_scope() or not _c4_admitted or not _scope().has_meta(TICK_OWNER):
+		return false
+	var token := _scope().get_meta(TICK_OWNER) as WeakRef
+	if token == null or token.get_ref() != self:
+		return false
+	var x := _refs()
+	for key: Variant in _c4_refs.keys():
+		if not _live(_c4_refs[key]) or x.get(key) != _c4_refs[key]:
+			return false
+	if x["b1"].enable_b1_controller or x["b1"].is_processing() or x["b1"].is_physics_processing() or x["b2"].phase != &"c4_builder_owned":
+		return false
+	if not _live(_c4_charging) or _c4_charging != x["b2"]._c1_charging or _c4_charging.get_parent() != _scope() or not _live(power_pole) or not _live(power_pole.get_power_node()):
+		return false
+	if _c4_logistics.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.DOCKED or _c4_logistics.cargo_amount() != 0 or _c4_builder.cargo_amount() != 0 or _c4_builder.enable_isolated_cargo_pickup or _c4_builder.enable_isolated_cargo_delivery or not _live(source):
+		return false
+	if not x["coordinator"].matches_tick_services(x["scheduler"], x["escrow"]) or not x["coordinator"].matches_owned_registry(x["registry"]) or x["scheduler"].has_drone_binding(_c4_logistics):
+		return false
+	var chargers: int = 0
+	for child: Node in _scope().get_children():
+		if not _live(child):
+			continue
+		if child is PrototypeDroneHubCharging:
+			chargers += 1
+		if child is PrototypeDroneAutomaticDispatch or child is PrototypeConstructionDroneFleet or child is PrototypeConstructionDroneTickController:
+			return false
+		if child is SpecializedDroneBuilderE3d5c6fB3 and child != self:
+			return false
+	return chargers == 1
+
+func c4_admission_preflight(b2: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
+	if not _c4_scope() or phase != &"c4_ready" or _c4_admitted or not _live(b2) or b2 != _scope().get_node_or_null("B2LogisticsController") or not b2._c3_owner():
+		return false
+	return b2.phase == &"c3_docked" and b2.receipt_id == receipt_id and b2.site == site and site.job == original_job and _c4_refs["contracts"].receipt_valid(receipt_id) and _c4_refs["escrow"].reservation_for(site) == escrow_id and _c4_refs["coordinator"].get_status(site).get("power_allocated", false) and _c4_refs["scheduler"].get_active_count() == 0 and _c4_builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.IDLE and _c4_home.distance_to(site.global_position + Vector3.UP * 2.0) * 2.0 + 0.25 <= 40.0
+
+func c4_charging_authorized(charging: PrototypeDroneHubCharging, builder: PrototypeConstructionWorkerDrone) -> bool:
+	if not _c4_scope() or charging != _c4_charging or builder != _c4_builder or not _live(charging) or not _live(builder) or builder != _scope().get_node_or_null("ConstructionDrone"):
+		return false
+	# Registration is performed after owner transfer, before assignment.
+	return _c4_owner()
+
+func configure_c4a(pole: PrototypePowerStructure) -> bool:
+	if not _c4_scope() or phase != &"disabled":
+		return false
+	var x := _refs()
+	if x.is_empty():
+		return false
+	for node: Variant in x.values():
+		if not _live(node as Node):
+			return false
+	var b2: SpecializedDroneLogisticsE3d5c6fB2 = x["b2"]
+	if not b2._c3_owner() or b2.phase != &"c3_docked" or not b2._core() or not x["contracts"].receipt_valid(b2.receipt_id):
+		return false
+	if not _live(pole) or pole.get_parent() != _scope() or pole.scene_file_path != "res://scenes/buildings/prototype_power_pole.tscn" or not _live(pole.get_power_node()):
+		return false
+	var hub := _scope().get_node("MainHub") as PrototypePowerStructure
+	var builder: PrototypeConstructionWorkerDrone = x["builder"]
+	if not _live(hub) or not builder.global_position.is_equal_approx(hub.global_position + Vector3(0.65, 2, 0)) or builder.enable_isolated_drone or builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE:
+		return false
+	site = b2.site
+	original_job = site.job
+	source = b2.source
+	power_pole = pole
+	receipt_id = b2.receipt_id
+	escrow_id = x["escrow"].reservation_for(site)
+	if escrow_id <= 0 or x["escrow"].held_materials(escrow_id) != {INGOT: 5}:
+		return false
+	_c4_refs = x
+	_c4_builder = builder
+	_c4_logistics = x["logistics"]
+	_c4_home = builder.global_position
+	_c4_charging = b2._c1_charging
+	if not _live(_c4_charging) or not x["network"].register_node(pole.get_power_node()) or not x["network"].link_nodes(hub.get_power_node(), pole.get_power_node()):
+		return false
+	if not x["coordinator"].matches_tick_services(x["scheduler"], x["escrow"]) or not x["coordinator"].matches_owned_registry(x["registry"]):
+		return false
+	x["scheduler"].enable_isolated_drone_presence = true
+	if not x["coordinator"].track_site(site, 7):
+		return false
+	site.building_completed.connect(_on_building_completed)
+	phase = &"c4_ready"
+	return true
+
+func start_c4a() -> bool:
+	if not _c4_scope() or phase != &"c4_ready":
+		return false
+	var x := _c4_refs
+	var b2: SpecializedDroneLogisticsE3d5c6fB2 = x["b2"]
+	# B2's exact guards require an inert builder until transfer. Forecast
+	# the configured 40-unit round trip without mutating builder beforehand.
+	if not b2._c3_owner() or not x["contracts"].receipt_valid(receipt_id) or x["coordinator"].reconcile() != 0 or not x["coordinator"].get_status(site).get("power_allocated", false):
+		return false
+	var distance: float = _c4_home.distance_to(site.global_position + Vector3.UP * 2.0)
+	if distance * 2.0 + 0.25 > 40.0:
+		return false
+	if not b2.c4_transfer_to_builder(self):
+		return false
+	_c4_admitted = true
+	_c4_builder.enable_isolated_drone = true
+	_c4_builder.enable_isolated_battery = true
+	_c4_builder.enable_isolated_finite_charging = true
+	_c4_builder.enable_specialized_c4_parking = true
+	if not _c4_builder.configure_battery(40.0, 40.0, 1.0, 4.0):
+		return false
+	_c4_charging.enable_specialized_c4_builder_dock = true
+	if not _c4_charging.register_drone(_c4_builder):
+		return false
+	if not x["contracts"].claim_builder(receipt_id, _c4_builder) or not _c4_builder.assign_to_site(site, _c4_home, 2.0, 2.0):
+		return false
+	phase = &"c4_flight"
+	return true
+
+func c4_flight_authorized(builder: PrototypeConstructionWorkerDrone, original_site: ConstructionSite) -> bool:
+	if not _c4_owner() or builder != _c4_builder or not _live(original_site) or original_site != site or site.job != original_job:
+		return false
+	return _c4_refs["contracts"].c4_builder_authorized(receipt_id, builder, site, original_job, _c4_refs["escrow"])
+
+func step_c4a(delta: float) -> StringName:
+	if not _c4_owner() or not is_finite(delta) or delta <= 0.0 or delta > 1.0 or phase not in [&"c4_flight", &"c4_work", &"c4_parking", &"c4_parked", &"c4_complete_return"]:
+		return &"rejected"
+	var coordinator: BlueprintConstructionReadinessCoordinator = _c4_refs["coordinator"]
+	var scheduler: BlueprintConstructionSlotScheduler = _c4_refs["scheduler"]
+	var escrow: BlueprintConstructionMaterialEscrow = _c4_refs["escrow"]
+	var builder := _c4_builder
+	var flight := builder.get_flight_state()
+	if phase == &"c4_complete_return":
+		if original_job.state != ConstructionJob.State.COMPLETE or not _live(completed_building) or escrow.has_reservation(escrow_id):
+			return &"rejected"
+		coordinator.reconcile()
+		if flight == PrototypeConstructionWorkerDrone.FlightState.AT_SITE:
+			builder.advance_flight(0.001)
+		elif flight == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+			if not builder.advance_flight(delta):
+				return &"energy_wait"
+		elif flight != PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			return &"rejected"
+		tick_count += 1
+		if builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			phase = &"c4_complete"
+			return &"complete"
+		return &"complete_return"
+	if not c4_flight_authorized(builder, site):
+		return &"rejected"
+	coordinator.reconcile()
+	var status: Dictionary = coordinator.get_status(site)
+	var powered: bool = bool(status.get("power_allocated", false))
+	if not status.get("materials_reserved", false):
+		return &"rejected"
+	tick_count += 1
+	if phase in [&"c4_flight", &"c4_work"] and not powered:
+		if scheduler.get_active_count() != 0 or not builder.c4_begin_parking(self, site):
+			return &"rejected"
+		phase = &"c4_parked" if builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED else &"c4_parking"
+		return &"parking_started"
+	if phase == &"c4_parking":
+		if not builder.advance_flight(delta):
+			return &"energy_wait"
+		if builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			phase = &"c4_parked"
+		return &"parking"
+	if phase == &"c4_parked":
+		if scheduler.get_active_count() != 0 or flight != PrototypeConstructionWorkerDrone.FlightState.DOCKED:
+			return &"rejected"
+		if not powered:
+			return &"blackout_wait"
+		if not builder.c4_can_resume(self, site):
+			_c4_charging.advance_charging(delta)
+			return &"energy_wait"
+		if not builder._finite_cargo_rearm_ready():
+			_c4_charging.advance_charging(delta)
+			return &"charging"
+		if not builder.c4_begin_resume(self, site):
+			return &"rejected"
+		phase = &"c4_flight"
+		return &"resumed_flight"
+	if phase == &"c4_flight":
+		if not builder.is_at_site():
+			if not builder.advance_flight(delta):
+				# Existing flight energy forecast can safely retire a trip.
+				if builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
+					return &"rejected"
+				return &"energy_wait"
+		if builder.is_at_site():
+			if not _c4_bound_once:
+				if not scheduler.bind_specialized_builder(site, builder, _c4_refs["contracts"], receipt_id, coordinator, escrow):
+					return &"rejected"
+				_c4_bound_once = true
+			coordinator.reconcile()
+			if original_job.state != ConstructionJob.State.CONSTRUCTING or scheduler.get_active_count() != 1 or not builder.c4_finish_resume(self, site):
+				return &"rejected"
+			phase = &"c4_work"
+			return &"admitted"
+		return &"flight"
+	if not builder.is_at_site() or not scheduler.has_drone_binding(builder) or scheduler.get_active_count() != 1 or original_job.state != ConstructionJob.State.CONSTRUCTING:
+		return &"rejected"
+	progress_ticks += 1
+	original_job.advance(delta)
+	if original_job.state == ConstructionJob.State.COMPLETE:
+		if not _live(completed_building) or escrow.has_reservation(escrow_id):
+			return &"rejected"
+		builder.advance_flight(0.001)
+		phase = &"c4_complete_return"
+		return &"built"
+	return &"work"
+
+func c4_resume_power_authorized(builder: PrototypeConstructionWorkerDrone, original_site: ConstructionSite) -> bool:
+	return phase == &"c4_parked" and c4_flight_authorized(builder, original_site) and _c4_refs["coordinator"].get_status(site).get("power_allocated", false) and _c4_refs["scheduler"].get_active_count() == 0

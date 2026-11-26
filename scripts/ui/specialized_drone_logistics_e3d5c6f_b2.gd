@@ -790,3 +790,17 @@ func step_c3(delta: float) -> StringName:
 		return &"destination_wait"
 	phase = &"c3_recovery"
 	return &"recovery_started"
+
+# C4A transfers only the exact C3 docked delivery to the named builder
+# controller. Capture the anchored custody ticket while B2 still owns tick.
+func c4_transfer_to_builder(controller: SpecializedDroneBuilderE3d5c6fB3) -> bool:
+	if not _c3_owner() or not _c3_configured or phase != &"c3_docked" or not _core() or not _live(controller) or controller != _scope().get_node_or_null("B3BuilderController") or not controller.enable_c4a_blackout:
+		return false
+	if not _c2_contracts.receipt_valid(receipt_id) or _c3_ticket != 0 or not controller.c4_admission_preflight(self):
+		return false
+	_c3_ticket = _c3_audit.capture_site(site, _c3_staging, _c3_port)
+	if _c3_ticket <= 0:
+		return false
+	phase = &"c4_builder_owned"
+	_scope().set_meta(TICK_OWNER, weakref(controller))
+	return true

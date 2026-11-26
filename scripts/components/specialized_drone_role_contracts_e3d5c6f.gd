@@ -122,3 +122,22 @@ func c3_logistics_lease_matches(id: int, job: ConstructionJob, drone: Node, revo
 		var receipt: Dictionary = _receipts[id]
 		return receipt["job"] == job and (receipt["logistics_drone"] as WeakRef).get_ref() == drone and bool(receipt["revoked"]) == revoked
 	return true
+
+# C4A: the admission receipt remains immutable. Unlike the original
+# queued-only receipt query, this validates the same admitted builder during
+# constructing/paused states, without granting a scheduler slot.
+func c4_builder_authorized(id: int, builder: Node, site: ConstructionSite, job: ConstructionJob, escrow: BlueprintConstructionMaterialEscrow) -> bool:
+	if not _scope_ok() or not _leases.has(id) or not _receipts.has(id) or not _live(builder) or not _live(site) or not _live(escrow) or job == null:
+		return false
+	var scope := get_parent()
+	if builder != scope.get_node_or_null("ConstructionDrone") or escrow != scope.get_node_or_null("MaterialEscrow") or site.get_parent() != scope:
+		return false
+	var lease: Dictionary = _leases[id]
+	var proof: Dictionary = _receipts[id]
+	if lease.get("revoked", false) or proof["revoked"] or not lease.has("builder") or (lease["builder"] as WeakRef).get_ref() != builder:
+		return false
+	if (proof["site"] as WeakRef).get_ref() != site or proof["job"] != job or site.job != job or site.target_definition != proof["definition"] or job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED]:
+		return false
+	var buffer := (proof["buffer"] as WeakRef).get_ref() as InventoryComponent
+	var registry := (proof["registry"] as WeakRef).get_ref() as BlueprintConstructionSiteStagingRegistry
+	return _live(buffer) and _live(registry) and registry == scope.get_node_or_null("StagingRegistry") and (proof["escrow"] as WeakRef).get_ref() == escrow and (proof["logistics_drone"] as WeakRef).get_ref() == scope.get_node_or_null("LogisticsDrone") and registry.matches_owned_inventory(site, buffer) and escrow.reservation_for(site) == proof["escrow_id"] and escrow.matches_site_source_bill(site, buffer) and escrow.held_materials(proof["escrow_id"]) == proof["bill"]

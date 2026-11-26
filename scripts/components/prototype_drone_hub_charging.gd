@@ -9,6 +9,7 @@ class_name PrototypeDroneHubCharging
 const SCOPE_KEY: StringName = &"isolated_drone_hub_charging_owner"
 const HUB_PATH: String = "res://scenes/buildings/prototype_main_hub.tscn"
 @export var enable_specialized_c1_dock: bool = false
+@export var enable_specialized_c4_builder_dock: bool = false
 var _hub: WeakRef
 var _allocator: WeakRef
 var _power_node: WeakRef
@@ -68,6 +69,10 @@ func _dock_for(hub: PrototypePowerStructure, drone: PrototypeConstructionWorkerD
 		var b2 := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
 		if is_instance_valid(b2) and b2.enable_c1_pre_pickup_cancel:
 			return hub.global_position + Vector3(-0.65, 2, 0)
+	if enable_specialized_c4_builder_dock and scope.scene_file_path == "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn" and scope.get_node_or_null("ConstructionDrone") == drone:
+		var b3 := scope.get_node_or_null("B3BuilderController") as SpecializedDroneBuilderE3d5c6fB3
+		if is_instance_valid(b3) and b3.c4_charging_authorized(self, drone):
+			return hub.global_position + Vector3(0.65, 2, 0)
 	return hub.global_position + Vector3.UP * 2.0
 
 func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:

@@ -70,6 +70,8 @@ var _lost_site_rearm_latched: bool = false
 var _lost_pre_pickup: bool = false
 var _lost_post_delivery: bool = false
 
+@export var enable_specialized_c4_parking: bool = false
+var _c4_parked: bool = false
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
 const RETURN_MARGIN_UNITS: float = 0.25
@@ -513,7 +515,7 @@ func advance_flight(delta: float) -> bool:
 				0.0, _battery_units - return_distance * _energy_per_meter
 			)
 		global_position = next_return
-		if global_position.distance_to(_home) <= (0.00001 if (_pre_pickup_cancelled or _post_delivery_cancelled or _lost_site_rearm_latched) else ARRIVAL_EPSILON):
+		if global_position.distance_to(_home) <= (0.00001 if (_pre_pickup_cancelled or _post_delivery_cancelled or _lost_site_rearm_latched or enable_specialized_c4_parking) else ARRIVAL_EPSILON):
 			global_position = _home
 			_state = FlightState.DOCKED
 		return true
@@ -1339,4 +1341,37 @@ func begin_c3_cancelled_empty_return(controller: SpecializedDroneLogisticsE3d5c6
 	_specialized_logistics_receipt = 0
 	_specialized_return_finalized = false
 	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
+	return true
+
+# Dedicated build-only parking path; never set the delivered cargo-worker latch.
+func c4_begin_parking(controller: SpecializedDroneBuilderE3d5c6fB3, site: ConstructionSite) -> bool:
+	if not enable_specialized_c4_parking or not _delivery_live(controller) or not controller.c4_flight_authorized(self, site) or _bound_site() != site or _assignment_job != site.job or _site_ended:
+		return false
+	if _state not in [FlightState.OUTBOUND, FlightState.AT_SITE] or site.job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.PAUSED] or _cargo_amount != 0 or _cargo_item != null:
+		return false
+	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
+		return false
+	_c4_parked = true
+	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
+	return true
+
+func c4_can_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: ConstructionSite) -> bool:
+	if not enable_specialized_c4_parking or not _c4_parked or not _delivery_live(controller) or not controller.c4_flight_authorized(self, site) or _bound_site() != site or _assignment_job != site.job or _site_ended:
+		return false
+	if _state != FlightState.DOCKED or not global_position.is_equal_approx(_home) or site.job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.PAUSED] or _cargo_amount != 0 or _cargo_item != null:
+		return false
+	var points: Array[Vector3] = [site.global_position + Vector3.UP * _hover_height]
+	var needed: float = estimate_route_energy(points)
+	return needed >= 0.0 and needed <= _battery_units + 0.00001
+
+func c4_begin_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: ConstructionSite) -> bool:
+	if not c4_can_resume(controller, site) or not controller.c4_resume_power_authorized(self, site) or not _finite_cargo_rearm_ready():
+		return false
+	_state = FlightState.OUTBOUND
+	return true
+
+func c4_finish_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: ConstructionSite) -> bool:
+	if not enable_specialized_c4_parking or not _delivery_live(controller) or not controller.c4_flight_authorized(self, site) or not is_at_site() or _bound_site() != site or site.job.state != ConstructionJob.State.CONSTRUCTING:
+		return false
+	_c4_parked = false
 	return true

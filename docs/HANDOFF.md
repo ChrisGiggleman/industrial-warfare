@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-25 — C4A implementation staged; F6 PENDING
+
+Developer approved C4A. Default-off specialized builder admission from C3 docked delivery, exact original custody ticket and one owner transfer, separate right berth finite registration on existing shared allocator, active receipt validation across queued/constructing/paused, physical blackout parking/resume with preserved progress/escrow and existing scheduler binding, normal completion and empty return. New isolated F6 res://tests/specialized_drone_builder_blackout_e3d5c6f_c4a_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Terminal cancellation/hand-back deferred C4B; no generalized dynamic site relocation or automatic reroute. Accepted baseline 71/969; fresh B4 68/923. Main and prior scenes/tests unchanged.
+
+
 ### 2026-11-25 — C3 FULLY ACCEPTED; C4 proposal
 
 Developer confirmed C3 compatibility 44/44 F6 scenes passed locally against 623 manifest-expected sections on 2026-11-25, following isolated 18/18. C3 FULLY ACCEPTED: 45 gate scene runs / 641 associated sections; 44/623 overlap prior accepted coverage. Unique accepted coverage 71 suites / 969 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4 awaits explicit implementation approval. [C4 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4 gameplay or F6 fixtures yet.
