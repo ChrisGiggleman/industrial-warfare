@@ -1,5 +1,10 @@
 # E3d5c6f C4 — Specialized construction drone cancellation and blackout (proposed)
 
+### 2026-11-25 — C4B FULLY ACCEPTED; C5 verification prepared
+
+Developer confirmed C4B compatibility 53/53 F6 scenes passed locally against 751 manifest-expected sections on 2026-11-25, following isolated 14/14. C4B FULLY ACCEPTED: 54 gate scene runs / 765 associated sections; compatibility overlaps prior accepted coverage. Unique accepted coverage 73 suites / 997 expected sections; last fresh full regression B4 68/923. Assistant did not run Godot or inspect assertion logs. C5A fresh full 73/997 regression PENDING. C5B manual playable verification requires a separately approved isolated harness; existing specialized scene is inert B1 by default, has no player-facing controls or camera, and B2/B3/C stages require explicit fixture setup and manual ticks. No C5 gameplay or harness implementation yet; no manual acceptance. [C5 verification plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5_PLAN.md). Documentation-only checkpoint; Main, existing gameplay, accepted scenes/tests, local edits and draft PR #1 preserved.
+
+
 ### 2026-11-25 — C4B isolated ACCEPTED; compatibility PENDING
 
 Developer confirmed C4B isolated F6 14/14 labeled sections passed locally in Godot against implementation commit bed2c8dd4189d5fc1c2a9572134e5ef761a1723c on 2026-11-25. Cumulative unique accepted coverage 73 suites / 997 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14 + C4B 1/14); last fresh full regression remains B4 68/923. C4B targeted compatibility 53 existing suites / 751 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C5 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_COMPATIBILITY.md).
