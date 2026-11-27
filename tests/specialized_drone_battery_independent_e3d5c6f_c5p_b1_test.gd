@@ -212,7 +212,8 @@ func _checks() -> void:
 	assert(not x.b2._c1_charging.matches_docked_registration(x.drone, token))
 	x.drone.global_position = x.home
 	x.drone.enable_isolated_battery = true
-	assert(not x.drone.route_feasible([Vector3(100, 2, 0)]))
+	points = [Vector3(100, 2, 0)]
+	assert(not x.drone.route_feasible(points))
 	x.drone.enable_isolated_battery = false
 	print("PASS B: finite physical routes without synthetic energy")
 	_load(x)
@@ -305,13 +306,14 @@ func _checks() -> void:
 	var before: Vector3 = x.drone.global_position
 	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.scope.get_node("B3BuilderController")))
 	assert(not x.b2.step_c1(0.1))
-	assert(not x.drone.route_feasible([Vector3(10, 2, 0)]))
+	points = [Vector3(10, 2, 0)]
+	assert(not x.drone.route_feasible(points))
 	assert(x.drone.global_position == before and x.stock.get_amount(INGOT) == 15)
 	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.b2))
 	assert(x.b2.step_c1(0.1))
 	x.b2._c1_charging.free()
 	before = x.drone.global_position
-	assert(not x.b2.step_c1(0.1) and not x.drone.route_feasible([Vector3(10, 2, 0)]))
+	assert(not x.b2.step_c1(0.1) and not x.drone.route_feasible(points))
 	assert(x.drone.global_position == before and x.stock.get_amount(INGOT) == 15)
 	print("PASS J: wrong tick owner and lost dock authority fail closed")
 	x.scope.free()
