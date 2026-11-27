@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Log
 
+### 2026-11-26 — C5A FULL FRESH REGRESSION ACCEPTED; C5B proposal ready
+
+2026-11-26: Developer confirmed C5A Wave 4 13/13 F6 scenes passed locally in Godot against 161 manifest-expected sections. Waves 1–3 previously accepted 20/245, 20/333, 20/258. C5A FRESH FULL REGRESSION ACCEPTED: 73/73 unique suites and 997/997 manifest-expected sections (20+20+20+13; 245+333+258+161). Supersedes B4 fresh 68/923; cumulative unique accepted baseline remains 73/997. Runtime revision expected C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; local HEAD and individual assertion logs not independently inspected. C5B interactive sandbox implementation proposal ready for explicit approval; smoke and manual checks PENDING. Main, existing runtime, accepted scenes/tests, manifest, local edits and draft PR #1 preserved; no merge. [C5B sandbox implementation proposal](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5B_PLAN.md).
+
+
 ### 2026-11-26 — C5A Wave 3 ACCEPTED; final Wave 4 ready
 
 2026-11-26: Developer confirmed C5A Wave 3 all 20/20 F6 scenes passed locally in Godot against 258 manifest-expected sections. Waves 1 and 2 remain accepted 20/245 and 20/333. Fresh C5A progress 60/73 suites and 836/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Final Wave 4: 13 scenes / 161 expected sections PENDING; on acceptance fresh progress 73/73 and 997/997. C5B manual sandbox implementation/verification pending separate approval. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
