@@ -1,5 +1,10 @@
 # Industrial Warfare — Development Roadmap
 
+### 2026-11-27 — C5P-B1 candidate implementation; local F6 pending
+
+Approved isolated battery-independent worker/dock/route mode implemented as candidate; legacy default preserved, B2/B3 follow-on stages not authorized. [B1 test and implementation notes](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B1.md). New six-section fixture UNRUN; historical accepted baseline remains 73/997. Main and prior tests preserved. No new acceptance.
+
+
 ### 2026-11-26 — C5P-A simplified drone power design checkpoint
 
 C5A remains developer-confirmed 73/73 suites / 997/997 manifest-expected sections; manifest independently recounted. C5B original battery-dependent sandbox proposal is on hold. Targeted read-only source audit at 36cdef6fab1bd9815986dfe925ce434b57c11a8a identified battery coupling in worker movement, discovery/reservations/recovery, B2/B3, docking and dispatch; pre-delivery power cannot depend on escrow-gated allocation. [C5P-A audit and scoped implementation proposal](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_AUDIT.md) awaits explicit implementation approval. Approved direction: automated drones use destination/site power, not individual batteries/charging/path coverage; suspend on outage, preserve original cargo/escrow/progress, physically return and resume. Power extensions need no site power, but must be within valid completed network link range; scoped bootstrap/restoration exception proposed. Future backlog: construction drones repair surviving buildings automatically, free time-limited default with optional material cost; configurable per-world demolition refund 0–100% (recommended custom default 100%), stored inventory recovered separately, unconsumed cancellation materials returned, no enemy-destruction construction refund by default; world difficulty settings and player-controlled exploration batteries later. No gameplay, Main, accepted tests or manifest changes; no new Godot runs or accepted counts. Next: approve staged C5P implementation, isolated tests, compatibility/full regression, revised C5B, then separate Main review.

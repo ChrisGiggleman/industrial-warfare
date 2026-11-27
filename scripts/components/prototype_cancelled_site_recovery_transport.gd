@@ -173,8 +173,7 @@ func begin(ticket: int) -> bool:
 	var dest: InventoryComponent = candidate["inventory"]
 	var building: Node3D = candidate["storage"]
 	var path: Array[Vector3] = [hover, dock.global_position]
-	var energy: float = _drone.estimate_route_energy(path)
-	if energy < 0.0 or energy > _drone.battery_units() + 0.00001:
+	if not _drone.route_feasible(path):
 		return false
 	var token := RefCounted.new()
 	if not dest.reserve_drone_return_space(token, INGOT, amount):
@@ -273,6 +272,8 @@ func tick(delta: float) -> Dictionary:
 			_completed[_ticket] = _amount
 			_clear()
 			return {"action": &"rearmed"}
+		if _drone.c5p_automated_mode():
+			return {"action": &"dock_wait"}
 		var charged: float = _charging.advance_charging(delta)
 		return {"action": &"charged" if charged > 0.0 else &"dock_wait"}
 	return {"action": &"quarantined"}
@@ -312,8 +313,7 @@ func _c3_candidate(hover: Vector3, amount: int) -> Dictionary:
 		if space >= 0 and space < amount:
 			continue
 		var points: Array[Vector3] = [hover, dock.global_position]
-		var energy: float = _drone.estimate_route_energy(points)
-		if energy < 0.0 or energy > _drone.battery_units() + 0.00001:
+		if not _drone.route_feasible(points):
 			continue
 		var distance: float = _drone.global_position.distance_to(dock.global_position)
 		if best.is_empty() or distance < float(best["distance"]) - 0.00001:

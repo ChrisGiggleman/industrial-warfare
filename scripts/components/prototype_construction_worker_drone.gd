@@ -75,6 +75,7 @@ var _c4_parked: bool = false
 var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
 const RETURN_MARGIN_UNITS: float = 0.25
+var _c5p_automated: bool = false
 var _battery_configured: bool = false
 var _battery_capacity: float = 0.0
 var _battery_units: float = 0.0
@@ -126,7 +127,7 @@ func begin_power_parking(site: ConstructionSite) -> bool:
 	):
 		return false
 	var required: float = global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS
-	if _battery_units + 0.00001 < required:
+	if not _c5p_automated and _battery_units + 0.00001 < required:
 		return false
 	_power_parked_assignment = true
 	_state = FlightState.RETURNING
@@ -166,7 +167,7 @@ func abort_power_resume(site: ConstructionSite) -> bool:
 	):
 		return false
 	var required: float = global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS
-	if _battery_units + 0.00001 < required:
+	if not _c5p_automated and _battery_units + 0.00001 < required:
 		return false
 	_state = FlightState.RETURNING
 	return true
@@ -189,7 +190,7 @@ func complete_power_resume(site: ConstructionSite) -> bool:
 func _staged_authority(owner: Node, token: RefCounted) -> bool:
 	return (
 		enable_isolated_cancelled_staging_flight
-		and enable_isolated_drone and enable_isolated_battery and _battery_configured
+		and enable_isolated_drone and _motion_mode_ready()
 		and _delivery_live(self) and _delivery_live(owner)
 		and owner.get_parent() == get_parent()
 		and owner.get_script() != null
@@ -215,7 +216,7 @@ func _staged_begin(owner: Node, token: RefCounted, hover: Vector3, dock: Prototy
 	if not is_finite(speed) or speed <= 0.0 or speed > MAX_SPEED or global_position.distance_to(_home) > 0.00001:
 		return false
 	var route: Array[Vector3] = [hover, dock.global_position]
-	if estimate_route_energy(route) < 0.0 or estimate_route_energy(route) > _battery_units + 0.00001:
+	if not route_feasible(route):
 		return false
 	_staged_owner = weakref(owner)
 	_staged_token = token
@@ -229,6 +230,8 @@ func _staged_begin(owner: Node, token: RefCounted, hover: Vector3, dock: Prototy
 # Physically metered leg. Every segment retains the energy needed to finish
 # the planned route and reach the registered home with the safety margin.
 func _staged_step(owner: Node, token: RefCounted, delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if not _staged_authority(owner, token) or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
 		return false
 	var dock := _staged_dock.get_ref() as PrototypeDroneStorageDock
@@ -257,9 +260,10 @@ func _staged_step(owner: Node, token: RefCounted, delta: float) -> bool:
 	var step: float = minf(global_position.distance_to(target), _speed * delta)
 	var next: Vector3 = global_position.move_toward(target, step)
 	var remaining: float = next.distance_to(target) + reserve
-	if _battery_units + 0.00001 < (step + remaining) * _energy_per_meter + RETURN_MARGIN_UNITS:
+	if not _c5p_automated and _battery_units + 0.00001 < (step + remaining) * _energy_per_meter + RETURN_MARGIN_UNITS:
 		return false
-	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if not _c5p_automated:
+		_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
 	global_position = next
 	if global_position.distance_to(target) <= 0.00001:
 		global_position = target
@@ -351,6 +355,80 @@ func _ready() -> void:
 # Configure only at home, before an assignment. The first configuration
 # permanently latches metering; it is never safe to switch back to unmetered
 # motion for this worker. 'Powered' during charging is caller supplied.
+# Only the named specialized controllers may latch this mode before assignment.
+# The original dock authority must subsequently enroll the worker.
+func configure_c5p_automated(controller: Node) -> bool:
+	var scope := get_parent()
+	if _c5p_automated or _battery_configured or enable_isolated_battery or enable_isolated_finite_charging or _charging_owner != null or not enable_isolated_drone or _state != FlightState.IDLE or _site_ref != null or _cargo_job != null or _pickup_token != null or _cargo_amount != 0:
+		return false
+	if not _delivery_live(self) or not _delivery_live(scope) or scope.scene_file_path != SPECIALIZED_SCOPE_E3D5C6F or not _delivery_live(controller) or controller.get_parent() != scope:
+		return false
+	var b2 := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+	if not _delivery_live(b2) or not b2.c5p_automated_mode():
+		return false
+	if self == scope.get_node_or_null("LogisticsDrone"):
+		if controller != b2 or b2.phase != &"disabled":
+			return false
+	elif self == scope.get_node_or_null("ConstructionDrone"):
+		if controller != scope.get_node_or_null("B3BuilderController") or not scope.has_meta(&"e3d5c6f_single_tick_owner") or (scope.get_meta(&"e3d5c6f_single_tick_owner") as WeakRef).get_ref() != controller:
+			return false
+	else:
+		return false
+	if not global_position.is_finite():
+		return false
+	_home = global_position
+	_c5p_automated = true
+	return true
+
+func c5p_automated_mode() -> bool:
+	return _c5p_automated
+
+func _c5p_enrolled() -> bool:
+	if not _c5p_automated or _battery_configured or enable_isolated_battery or enable_isolated_finite_charging or not _delivery_live(self) or _charging_owner == null or _charging_token == null:
+		return false
+	var owner := _charging_owner.get_ref() as PrototypeDroneHubCharging
+	return _delivery_live(owner) and owner.matches_c5p_enrollment(self, _charging_token)
+
+func _bind_c5p_dock(owner: Node, token: RefCounted, at: Vector3) -> bool:
+	if not _c5p_automated or not enable_isolated_drone or _battery_configured or enable_isolated_battery or enable_isolated_finite_charging or _charging_owner != null or token == null or _state != FlightState.IDLE:
+		return false
+	if not owner is PrototypeDroneHubCharging or not _delivery_live(owner) or owner.get_parent() != get_parent() or not owner.c5p_dock_only():
+		return false
+	if not at.is_finite() or not global_position.is_finite() or not _home.is_equal_approx(at) or not global_position.is_equal_approx(at):
+		return false
+	_charging_owner = weakref(owner)
+	_charging_token = token
+	return true
+
+func _motion_mode_ready() -> bool:
+	if _c5p_automated:
+		return _c5p_enrolled()
+	return enable_isolated_battery and _battery_configured
+
+# A route score is distance in automated mode, legacy energy otherwise.
+# No synthetic battery balance is exposed to either caller.
+func route_score(waypoints: Array[Vector3]) -> float:
+	if not _c5p_automated:
+		return estimate_route_energy(waypoints)
+	if not _c5p_enrolled() or not enable_isolated_drone or waypoints.is_empty() or waypoints.size() > 8 or not global_position.is_finite() or not _home.is_finite():
+		return -1.0
+	var previous := global_position
+	var distance: float = 0.0
+	for point: Vector3 in waypoints:
+		if not point.is_finite():
+			return -1.0
+		distance += previous.distance_to(point)
+		previous = point
+	distance += previous.distance_to(_home)
+	return distance if is_finite(distance) else -1.0
+
+func route_feasible(waypoints: Array[Vector3]) -> bool:
+	var score := route_score(waypoints)
+	return score >= 0.0 and (_c5p_automated or score <= _battery_units + 0.00001)
+
+func _c5p_step_valid(delta: float) -> bool:
+	return not _c5p_automated or (_c5p_enrolled() and enable_isolated_drone and is_finite(delta) and delta > 0.0 and delta <= 1.0 and global_position.is_finite() and _home.is_finite() and is_finite(_speed) and _speed > 0.0 and _speed <= MAX_SPEED)
+
 func configure_battery(
 	capacity_units: float,
 	starting_units: float,
@@ -358,7 +436,7 @@ func configure_battery(
 	charge_per_second: float
 ) -> bool:
 	if (
-		not enable_isolated_battery or _battery_configured
+		_c5p_automated or not enable_isolated_battery or _battery_configured
 		or not is_inside_tree() or _state != FlightState.IDLE
 		or not global_position.is_finite()
 		or not is_finite(capacity_units) or capacity_units <= 0.0
@@ -464,6 +542,8 @@ func assign_to_site(
 		or hover_height < 0.5 or hover_height > 10.0
 	):
 		return false
+	if _c5p_automated and (not _c5p_enrolled() or not home_position.is_equal_approx(_home) or not global_position.is_equal_approx(_home) or not route_feasible([site.global_position + Vector3.UP * hover_height])):
+		return false
 	if _battery_configured:
 		if (
 			not enable_isolated_battery
@@ -487,6 +567,8 @@ func assign_to_site(
 # Manual movement only. Returning the drone HOME never unlocks any
 # construction resource or claim.
 func advance_flight(delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY, FlightState.RECOVERY_HOME]:
 		return false # Cargo legs are distinct from legacy worker flight.
 	if (
@@ -532,6 +614,8 @@ func advance_flight(delta: float) -> bool:
 		return false
 
 	var target: Vector3 = site.global_position + Vector3.UP * _hover_height
+	if _c5p_automated and not target.is_finite():
+		return false
 	if _state == FlightState.AT_SITE:
 		if global_position.distance_to(target) <= ARRIVAL_EPSILON:
 			return false
@@ -563,6 +647,8 @@ func advance_flight(delta: float) -> bool:
 
 
 func is_at_site() -> bool:
+	if _c5p_automated and not _c5p_enrolled():
+		return false
 	if not enable_isolated_drone or _state != FlightState.AT_SITE:
 		return false
 	if _delivered_worker_latched and not _delivered_worker_valid(_bound_site()):
@@ -712,7 +798,7 @@ func cargo_item() -> ItemDefinition:
 
 
 func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity: int, speed: float) -> bool:
-	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not is_inside_tree() or is_queued_for_deletion():
+	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not _motion_mode_ready() or not is_inside_tree() or is_queued_for_deletion():
 		return false
 	if _cargo_reuse_latched and (not enable_isolated_cargo_reuse or not _finite_cargo_rearm_ready()):
 		return false
@@ -733,10 +819,12 @@ func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity:
 
 
 func _owns_pickup(token: RefCounted, dock: PrototypeDroneStorageDock) -> bool:
-	return enable_isolated_cargo_pickup and enable_isolated_drone and enable_isolated_battery and _battery_configured and token != null and _pickup_token == token and _pickup_dock != null and is_instance_valid(dock) and _pickup_dock.get_ref() == dock and _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP] and _cargo_amount == 0
+	return enable_isolated_cargo_pickup and enable_isolated_drone and _motion_mode_ready() and token != null and _pickup_token == token and _pickup_dock != null and is_instance_valid(dock) and _pickup_dock.get_ref() == dock and _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP] and _cargo_amount == 0
 
 
 func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if not _owns_pickup(token, dock) or not is_finite(delta) or delta <= 0.0 or not dock.global_position.is_finite():
 		return false
 	var target: Vector3 = dock.global_position
@@ -744,9 +832,10 @@ func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: 
 	var step: float = minf(distance, _speed * delta)
 	var next: Vector3 = global_position.move_toward(target, step)
 	var required: float = (step + next.distance_to(_home)) * _energy_per_meter + RETURN_MARGIN_UNITS
-	if _battery_units + 0.00001 < required:
+	if not _c5p_automated and _battery_units + 0.00001 < required:
 		return false
-	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if not _c5p_automated:
+		_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
 	global_position = next
 	_state = FlightState.AT_PICKUP if global_position.is_equal_approx(target) else FlightState.PICKUP_OUTBOUND
 	return true
@@ -809,7 +898,7 @@ func _delivery_live(node: Node) -> bool:
 
 
 func _delivery_target(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> InventoryComponent:
-	if not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+	if not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not _motion_mode_ready() or not _delivery_live(self):
 		return null
 	if _cargo_amount <= 0 or not is_instance_valid(_cargo_item) or _cargo_site == null or _cargo_site.get_ref() != site:
 		return null
@@ -841,8 +930,7 @@ func _delivery_target(site: ConstructionSite, registry: BlueprintConstructionSit
 func _delivery_energy_ok(site: ConstructionSite) -> bool:
 	var target: Vector3 = site.global_position + Vector3.UP * 2.0
 	var points: Array[Vector3] = [target]
-	var energy: float = estimate_route_energy(points)
-	return energy >= 0.0 and energy <= _battery_units + 0.00001
+	return route_feasible(points)
 
 
 func begin_delivery(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> bool:
@@ -870,6 +958,8 @@ func _pinned_delivery_target() -> InventoryComponent:
 
 
 func advance_delivery(delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if _state not in [FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY] or not is_finite(delta) or delta <= 0.0:
 		return false
 	var site := _delivery_site()
@@ -879,7 +969,8 @@ func advance_delivery(delta: float) -> bool:
 	var target: Vector3 = site.global_position + Vector3.UP * 2.0
 	var step: float = minf(global_position.distance_to(target), _speed * delta)
 	var next: Vector3 = global_position.move_toward(target, step)
-	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if not _c5p_automated:
+		_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
 	global_position = next
 	_state = FlightState.AT_DELIVERY if global_position.distance_to(target) <= 0.00001 else FlightState.DELIVERY_OUTBOUND
 	return true
@@ -913,7 +1004,7 @@ func unload_delivery() -> bool:
 # x5c: observe original job, exact owned buffer and actual escrow. A valid
 # handoff is not a readiness grant. The existing scheduler owns that grant.
 func _delivered_worker_valid(site: ConstructionSite) -> bool:
-	if not enable_isolated_delivered_worker or not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+	if not enable_isolated_delivered_worker or not enable_isolated_cargo_delivery or not enable_isolated_cargo_pickup or not enable_isolated_drone or not _motion_mode_ready() or not _delivery_live(self):
 		return false
 	if _cargo_amount != 0 or _cargo_item != null or _cargo_site == null or _cargo_site.get_ref() != site or not _delivery_live(site):
 		return false
@@ -969,7 +1060,7 @@ func _rollback_delivered_worker(site: ConstructionSite) -> void:
 # x6: recovery can only adopt an actual load from a canceled or lost
 # original assignment, never a healthy queued delivery or an empty drone.
 func _recovery_enabled() -> bool:
-	return enable_isolated_cargo_recovery and enable_isolated_cargo_pickup and enable_isolated_drone and enable_isolated_battery and _battery_configured and _delivery_live(self)
+	return enable_isolated_cargo_recovery and enable_isolated_cargo_pickup and enable_isolated_drone and _motion_mode_ready() and _delivery_live(self)
 
 
 func _recovery_cargo_valid() -> bool:
@@ -1014,16 +1105,18 @@ func _cancel_cargo_return(token: RefCounted) -> void:
 
 
 func _advance_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if not _owns_cargo_return(token, dock, _cargo_item, _cargo_amount) or not is_finite(delta) or delta <= 0.0:
 		return false
 	var target: Vector3 = dock.global_position
 	var points: Array[Vector3] = [target]
-	var needed: float = estimate_route_energy(points)
-	if needed < 0.0 or needed > _battery_units + 0.00001:
+	if not route_feasible(points):
 		return false
 	var step: float = minf(global_position.distance_to(target), _speed * delta)
 	global_position = global_position.move_toward(target, step)
-	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if not _c5p_automated:
+		_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
 	_state = FlightState.AT_RECOVERY if global_position.distance_to(target) <= 0.00001 else FlightState.RECOVERY_OUTBOUND
 	return true
 
@@ -1046,12 +1139,15 @@ func _deposit_cargo_return(token: RefCounted, dock: PrototypeDroneStorageDock, i
 
 # Empty return only. Never rearm the canceled cargo assignment in x6.
 func _advance_recovery_home(delta: float) -> bool:
+	if not _c5p_step_valid(delta):
+		return false
 	if not _recovery_enabled() or _state != FlightState.RECOVERY_HOME or _cargo_amount != 0 or _return_token != null or not is_finite(delta) or delta <= 0.0:
 		return false
 	var distance: float = global_position.distance_to(_home)
-	var step: float = minf(distance, minf(_speed * delta, _battery_units / _energy_per_meter))
+	var step: float = minf(distance, _speed * delta) if _c5p_automated else minf(distance, minf(_speed * delta, _battery_units / _energy_per_meter))
 	global_position = global_position.move_toward(_home, step)
-	_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
+	if not _c5p_automated:
+		_battery_units = maxf(0.0, _battery_units - step * _energy_per_meter)
 	if global_position.distance_to(_home) <= 0.00001:
 		_state = FlightState.DOCKED
 		return true
@@ -1076,6 +1172,8 @@ func _bind_finite_charging(owner: Node, token: RefCounted, at: Vector3) -> bool:
 # Called only by the registered authority with its exact runtime token.
 # Both the battery's own rate/headroom and the shared tick budget apply.
 func _accept_finite_charge(owner: Node, token: RefCounted, at: Vector3, delta: float, budget: float) -> float:
+	if _c5p_automated:
+		return 0.0
 	if not enable_isolated_finite_charging or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self) or not _delivery_live(owner):
 		return 0.0
 	if token == null or token != _charging_token or _charging_owner == null or _charging_owner.get_ref() != owner or owner.get_parent() != get_parent():
@@ -1093,7 +1191,12 @@ func _accept_finite_charge(owner: Node, token: RefCounted, at: Vector3, delta: f
 
 # x7b: live x7a authority and exact registered dock, not a caller's bool.
 func _finite_cargo_rearm_ready() -> bool:
-	if not enable_isolated_finite_charging or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured or not _delivery_live(self):
+	if _c5p_automated:
+		if not _c5p_enrolled() or not enable_isolated_drone:
+			return false
+		var dock_owner := _charging_owner.get_ref() as PrototypeDroneHubCharging
+		return dock_owner.matches_docked_registration(self, _charging_token)
+	if not enable_isolated_finite_charging or not enable_isolated_drone or not _motion_mode_ready() or not _delivery_live(self):
 		return false
 	if _charging_owner == null or _charging_token == null or _battery_units + 0.00001 < _battery_capacity:
 		return false
@@ -1203,7 +1306,7 @@ func release_docked_cargo_assignment(supplier: PrototypeDroneSupplierReservation
 # A terminal cancellation permits a safe empty return even if the opt-in
 # has since been disabled; current opt-in still gates rearm at home.
 func begin_cancelled_delivery_return() -> bool:
-	if not _post_delivery_rearm_latched or _post_delivery_cancelled or _state != FlightState.DELIVERED or not _delivery_live(self) or not _battery_configured:
+	if not _post_delivery_rearm_latched or _post_delivery_cancelled or _state != FlightState.DELIVERED or not _delivery_live(self) or (not _battery_configured and not _c5p_enrolled()):
 		return false
 	if _cargo_amount != 0 or _cargo_item != null or _cargo_job == null or _cargo_job.state != ConstructionJob.State.CANCELLED or _cargo_site == null:
 		return false
@@ -1231,7 +1334,7 @@ func _original_site_freed() -> bool:
 # An empty, fully unloaded drone may take the existing metered return
 # route when its original nonterminal site is irreversibly gone.
 func begin_lost_delivery_return() -> bool:
-	if not _lost_site_rearm_latched or _lost_post_delivery or _state != FlightState.DELIVERED or not _delivery_live(self) or not _battery_configured:
+	if not _lost_site_rearm_latched or _lost_post_delivery or _state != FlightState.DELIVERED or not _delivery_live(self) or (not _battery_configured and not _c5p_enrolled()):
 		return false
 	if not _original_site_freed() or _cargo_job == null or _cargo_job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.CONSTRUCTING, ConstructionJob.State.PAUSED]:
 		return false
@@ -1302,11 +1405,13 @@ func _specialized_logistics_authorized(contracts: SpecializedDroneRoleContractsE
 func begin_specialized_logistics_return(contracts: SpecializedDroneRoleContractsE3d5c6f, receipt: int, escrow: BlueprintConstructionMaterialEscrow) -> bool:
 	if receipt <= 0 or _specialized_logistics_receipt != 0 or _state != FlightState.DELIVERED:
 		return false
-	if not enable_isolated_cargo_pickup or not enable_isolated_cargo_delivery or not enable_isolated_drone or not enable_isolated_battery or not _battery_configured:
+	if not enable_isolated_cargo_pickup or not enable_isolated_cargo_delivery or not enable_isolated_drone or not _motion_mode_ready():
 		return false
 	if not _specialized_logistics_authorized(contracts, receipt, escrow):
 		return false
-	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
+	if _c5p_automated and not _c5p_enrolled():
+		return false
+	if not _c5p_automated and _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
 		return false
 	_specialized_logistics_receipt = receipt
 	_state = FlightState.RETURNING
@@ -1319,7 +1424,9 @@ func finish_specialized_logistics_return(contracts: SpecializedDroneRoleContract
 		return false
 	if not global_position.is_equal_approx(_home) or not _specialized_logistics_authorized(contracts, receipt, escrow):
 		return false
-	if _battery_units + 0.00001 < RETURN_MARGIN_UNITS:
+	if _c5p_automated and not _finite_cargo_rearm_ready():
+		return false
+	if not _c5p_automated and _battery_units + 0.00001 < RETURN_MARGIN_UNITS:
 		return false
 	# Keep original provenance pinned for later builder handoff and cancellation
 	# audit, rather than silently clearing/refunding the reservation.
@@ -1349,7 +1456,9 @@ func c4_begin_parking(controller: SpecializedDroneBuilderE3d5c6fB3, site: Constr
 		return false
 	if _state not in [FlightState.OUTBOUND, FlightState.AT_SITE] or site.job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.PAUSED] or _cargo_amount != 0 or _cargo_item != null:
 		return false
-	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
+	if _c5p_automated and not _c5p_enrolled():
+		return false
+	if not _c5p_automated and _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter + RETURN_MARGIN_UNITS:
 		return false
 	_c4_parked = true
 	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
@@ -1361,8 +1470,7 @@ func c4_can_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: Construct
 	if _state != FlightState.DOCKED or not global_position.is_equal_approx(_home) or site.job.state not in [ConstructionJob.State.QUEUED, ConstructionJob.State.PAUSED] or _cargo_amount != 0 or _cargo_item != null:
 		return false
 	var points: Array[Vector3] = [site.global_position + Vector3.UP * _hover_height]
-	var needed: float = estimate_route_energy(points)
-	return needed >= 0.0 and needed <= _battery_units + 0.00001
+	return route_feasible(points)
 
 func c4_begin_resume(controller: SpecializedDroneBuilderE3d5c6fB3, site: ConstructionSite) -> bool:
 	if not c4_can_resume(controller, site) or not controller.c4_resume_power_authorized(self, site) or not _finite_cargo_rearm_ready():
@@ -1385,7 +1493,9 @@ func c4b_begin_terminal_return(controller: SpecializedDroneBuilderE3d5c6fB3, job
 		return false
 	if _state not in [FlightState.OUTBOUND, FlightState.AT_SITE, FlightState.RETURNING, FlightState.DOCKED] or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
 		return false
-	if _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter:
+	if _c5p_automated and not _c5p_enrolled():
+		return false
+	if not _c5p_automated and _battery_units + 0.00001 < global_position.distance_to(_home) * _energy_per_meter:
 		return false
 	_state = FlightState.DOCKED if global_position.distance_to(_home) <= 0.00001 else FlightState.RETURNING
 	return true
@@ -1394,6 +1504,8 @@ func c4b_retire(controller: SpecializedDroneBuilderE3d5c6fB3, job: ConstructionJ
 	if _c4b_retired or not _delivery_live(controller) or not controller.c4b_terminal_flight_authorized(self, job) or job != _assignment_job or not _site_ended or _state != FlightState.DOCKED:
 		return false
 	if global_position.distance_to(_home) > 0.00001 or _cargo_amount != 0 or _cargo_item != null or _pickup_token != null or _return_token != null:
+		return false
+	if _c5p_automated and not _finite_cargo_rearm_ready():
 		return false
 	if job.job_cancelled.is_connected(_on_site_ended):
 		job.job_cancelled.disconnect(_on_site_ended)

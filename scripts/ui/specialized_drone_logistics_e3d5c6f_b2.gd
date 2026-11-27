@@ -4,6 +4,10 @@ class_name SpecializedDroneLogisticsE3d5c6fB2
 ## B2 single-mission explicit step owner. No _process, second dispatcher, or builder movement.
 ## The original supplier, physical drone, staging registry and escrow own all items.
 @export var enable_b2_logistics: bool = false
+@export var enable_c5p_automated_lifecycle: bool = false
+var _c5p_mode: bool = false
+func c5p_automated_mode() -> bool:
+	return _c5p_mode
 const EXACT_SCOPE := "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn"
 const TICK_OWNER := &"e3d5c6f_single_tick_owner"
 const INGOT := preload("res://data/items/test_ingot.tres")
@@ -117,10 +121,11 @@ func configure_b2(original_site: ConstructionSite, original_storage: Node3D, ori
 	buffer = original_staging.get_staged_inventory()
 	# Cargo permissions enabled only AFTER exact scope/material identity preflight.
 	logistics.enable_isolated_drone = true
-	logistics.enable_isolated_battery = true
+	_c5p_mode = enable_c5p_automated_lifecycle
+	logistics.enable_isolated_battery = not _c5p_mode
 	logistics.enable_isolated_cargo_pickup = true
 	logistics.enable_isolated_cargo_delivery = true
-	if not logistics.configure_battery(40.0, 40.0, 1.0, 4.0):
+	if not (logistics.configure_c5p_automated(self) if _c5p_mode else logistics.configure_battery(40.0, 40.0, 1.0, 4.0)):
 		logistics.enable_isolated_drone = false
 		logistics.enable_isolated_battery = false
 		logistics.enable_isolated_cargo_pickup = false
@@ -130,7 +135,7 @@ func configure_b2(original_site: ConstructionSite, original_storage: Node3D, ori
 	return _core()
 
 func start_b2() -> bool:
-	if enable_c1_pre_pickup_cancel:
+	if _c5p_mode or enable_c1_pre_pickup_cancel:
 		return false
 	if phase != &"ready" or not _core():
 		return false
@@ -293,13 +298,13 @@ func configure_c1() -> bool:
 	if not _c1_returns.configure(discovery):
 		return false
 	_c1_charging = PrototypeDroneHubCharging.new()
-	_c1_charging.enable_isolated_charging = true
+	_c1_charging.enable_isolated_charging = not _c5p_mode
 	_c1_charging.enable_specialized_c1_dock = true
 	scope.add_child(_c1_charging)
-	logistics.enable_isolated_finite_charging = true
+	logistics.enable_isolated_finite_charging = not _c5p_mode
 	logistics.enable_isolated_cargo_reuse = true
 	logistics.enable_isolated_pre_pickup_rearm = true
-	if not _c1_charging.configure(hub, power) or not _c1_charging.register_drone(logistics):
+	if not (_c1_charging.configure_c5p_dock(hub, power, self) if _c5p_mode else _c1_charging.configure(hub, power)) or not _c1_charging.register_drone(logistics):
 		return false
 	_c1_home = logistics.global_position
 	_c1_job = site.job
@@ -385,7 +390,7 @@ func step_c1(delta: float) -> bool:
 			PrototypeConstructionWorkerDrone.FlightState.DOCKED:
 				if not logistics.global_position.is_equal_approx(_c1_home):
 					return false
-				if logistics.battery_units() + 0.00001 < logistics.battery_capacity():
+				if not _c5p_mode and logistics.battery_units() + 0.00001 < logistics.battery_capacity():
 					_c1_charging.advance_charging(delta)
 				elif logistics.release_docked_cargo_assignment(supplier, _c1_returns, coordinator, escrow, scheduler):
 					phase = &"c1_complete"
@@ -569,7 +574,7 @@ func step_c2(delta: float) -> StringName:
 		if drone.cargo_amount() != 0 or _c1_returns.reservation_count() != 0 or not drone.global_position.is_equal_approx(_c1_home):
 			return &"rejected"
 		tick_count += 1
-		if drone.battery_units() + 0.00001 < drone.battery_capacity():
+		if not _c5p_mode and drone.battery_units() + 0.00001 < drone.battery_capacity():
 			return &"charging" if _c1_charging.advance_charging(delta) > 0.0 else &"charging_wait"
 		if not drone.release_docked_cargo_assignment(_c2_supplier, _c1_returns, _c2_coordinator, _c2_escrow, _c2_scheduler):
 			return &"rejected"
@@ -772,7 +777,7 @@ func step_c3(delta: float) -> StringName:
 	if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.RETURNING:
 		return &"empty_return" if logistics.advance_flight(delta) else &"energy_wait"
 	if logistics.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.DOCKED:
-		if logistics.battery_units() + 0.00001 < logistics.battery_capacity():
+		if not _c5p_mode and logistics.battery_units() + 0.00001 < logistics.battery_capacity():
 			return &"charged" if _c1_charging.advance_charging(delta) > 0.0 else &"dock_wait"
 		var snapshot: Dictionary = _c3_audit.observe(_c3_ticket)
 		if snapshot.get("status") == &"escrow_unsettled":

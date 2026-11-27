@@ -131,8 +131,7 @@ func _valid(claim: Dictionary, discovery: PrototypeDroneStorageDiscovery) -> boo
 			if not dock.allow_returns:
 				return false
 			var points: Array[Vector3] = [dock.global_position]
-			var energy: float = drone.estimate_route_energy(points)
-			return energy >= 0.0 and energy <= drone.battery_units() + 0.00001
+			return drone.route_feasible(points)
 	return false
 
 

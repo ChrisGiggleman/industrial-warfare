@@ -314,7 +314,7 @@ func _c4_owner() -> bool:
 func c4_admission_preflight(b2: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
 	if not _c4_scope() or phase != &"c4_ready" or _c4_admitted or not _live(b2) or b2 != _scope().get_node_or_null("B2LogisticsController") or not b2._c3_owner():
 		return false
-	return b2.phase == &"c3_docked" and b2.receipt_id == receipt_id and b2.site == site and site.job == original_job and _c4_refs["contracts"].receipt_valid(receipt_id) and _c4_refs["escrow"].reservation_for(site) == escrow_id and _c4_refs["coordinator"].get_status(site).get("power_allocated", false) and _c4_refs["scheduler"].get_active_count() == 0 and _c4_builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.IDLE and _c4_home.distance_to(site.global_position + Vector3.UP * 2.0) * 2.0 + 0.25 <= 40.0
+	return b2.phase == &"c3_docked" and b2.receipt_id == receipt_id and b2.site == site and site.job == original_job and _c4_refs["contracts"].receipt_valid(receipt_id) and _c4_refs["escrow"].reservation_for(site) == escrow_id and _c4_refs["coordinator"].get_status(site).get("power_allocated", false) and _c4_refs["scheduler"].get_active_count() == 0 and _c4_builder.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.IDLE and (b2.c5p_automated_mode() or _c4_home.distance_to(site.global_position + Vector3.UP * 2.0) * 2.0 + 0.25 <= 40.0) and _c4_home.is_finite() and site.global_position.is_finite()
 
 func c4_charging_authorized(charging: PrototypeDroneHubCharging, builder: PrototypeConstructionWorkerDrone) -> bool:
 	if not _c4_scope() or charging != _c4_charging or builder != _c4_builder or not _live(charging) or not _live(builder) or builder != _scope().get_node_or_null("ConstructionDrone"):
@@ -374,16 +374,16 @@ func start_c4a() -> bool:
 	if not b2._c3_owner() or not x["contracts"].receipt_valid(receipt_id) or x["coordinator"].reconcile() != 0 or not x["coordinator"].get_status(site).get("power_allocated", false):
 		return false
 	var distance: float = _c4_home.distance_to(site.global_position + Vector3.UP * 2.0)
-	if distance * 2.0 + 0.25 > 40.0:
+	if not is_finite(distance) or (not b2.c5p_automated_mode() and distance * 2.0 + 0.25 > 40.0):
 		return false
 	if not b2.c4_transfer_to_builder(self):
 		return false
 	_c4_admitted = true
 	_c4_builder.enable_isolated_drone = true
-	_c4_builder.enable_isolated_battery = true
-	_c4_builder.enable_isolated_finite_charging = true
+	_c4_builder.enable_isolated_battery = not b2.c5p_automated_mode()
+	_c4_builder.enable_isolated_finite_charging = not b2.c5p_automated_mode()
 	_c4_builder.enable_specialized_c4_parking = true
-	if not _c4_builder.configure_battery(40.0, 40.0, 1.0, 4.0):
+	if not (_c4_builder.configure_c5p_automated(self) if b2.c5p_automated_mode() else _c4_builder.configure_battery(40.0, 40.0, 1.0, 4.0)):
 		return false
 	_c4_charging.enable_specialized_c4_builder_dock = true
 	if not _c4_charging.register_drone(_c4_builder):
@@ -447,9 +447,13 @@ func step_c4a(delta: float) -> StringName:
 		if not powered:
 			return &"blackout_wait"
 		if not builder.c4_can_resume(self, site):
+			if builder.c5p_automated_mode():
+				return &"dock_wait"
 			_c4_charging.advance_charging(delta)
 			return &"energy_wait"
 		if not builder._finite_cargo_rearm_ready():
+			if builder.c5p_automated_mode():
+				return &"dock_wait"
 			_c4_charging.advance_charging(delta)
 			return &"charging"
 		if not builder.c4_begin_resume(self, site):
