@@ -1,5 +1,7 @@
 # Industrial Warfare — Development Log
 
+2026-11-27: Developer confirmed all 10/10 isolated C5P-B1 F6 labeled sections passed locally after freed-object guard correction at 1b3908f7e23820cbea8d69c78742c3a30fdc1578 (local HEAD and logs not independently inspected). Isolated acceptance only. Historical 73/997 plus new isolated 1/10 = cumulative unique 74/1007, not fresh full regression. Targeted compatibility gate: 43 existing suites / 606 manifest-expected sections in 3 waves; all pending. No gameplay, existing tests, historical manifest or Main changes. B2/B3 remain blocked pending B1 compatibility acceptance and separate implementation approval.
+
 ### 2026-11-27 — C5P-B1 candidate implementation; local F6 pending
 
 Approved isolated battery-independent worker/dock/route mode implemented as candidate; legacy default preserved, B2/B3 follow-on stages not authorized. [B1 test and implementation notes](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B1.md). New ten-section fixture UNRUN; historical accepted baseline remains 73/997. Main and prior tests preserved. No new acceptance.
