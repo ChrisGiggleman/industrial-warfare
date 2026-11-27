@@ -1,5 +1,10 @@
 # Industrial Warfare — Current Development Handoff
 
+### 2026-11-26 — C5A Wave 3 ACCEPTED; final Wave 4 ready
+
+2026-11-26: Developer confirmed C5A Wave 3 all 20/20 F6 scenes passed locally in Godot against 258 manifest-expected sections. Waves 1 and 2 remain accepted 20/245 and 20/333. Fresh C5A progress 60/73 suites and 836/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Final Wave 4: 13 scenes / 161 expected sections PENDING; on acceptance fresh progress 73/73 and 997/997. C5B manual sandbox implementation/verification pending separate approval. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
+
+
 ### 2026-11-26 — C5A Wave 2 ACCEPTED; Wave 3 ready
 
 2026-11-26: Developer confirmed C5A Wave 2 all 20/20 F6 scenes passed locally in Godot against 333 manifest-expected sections. Wave 1 remains accepted 20/245. Fresh C5A progress 40/73 suites and 578/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Wave 3: 20 scenes / 258 expected sections PENDING; on acceptance fresh progress 60/73 and 836/997. Wave 4 and C5B manual sandbox implementation/verification pending. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
