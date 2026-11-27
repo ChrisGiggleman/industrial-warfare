@@ -26,8 +26,8 @@ func _ready() -> void:
 	set_process(false)
 	set_physics_process(false)
 
-func _live(node: Node) -> bool:
-	return is_instance_valid(node) and node.is_inside_tree() and not node.is_queued_for_deletion()
+func _live(node: Variant) -> bool:
+	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
 
 func _scope() -> Node3D:
 	return get_parent() as Node3D
@@ -462,7 +462,7 @@ func _c2_authorized() -> bool:
 		return false
 	if builder.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.IDLE or builder.cargo_amount() != 0 or builder.enable_isolated_drone or builder.enable_isolated_cargo_pickup:
 		return false
-	for service: Node in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
+	for service: Variant in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
 		if not _live(service) or service.get_parent() != scope:
 			return false
 	if _c2_contracts != scope.get_node_or_null("RoleContracts") or _c2_supplier != scope.get_node_or_null("SupplierReservations") or _c2_discovery != scope.get_node_or_null("StorageDiscovery") or _c2_coordinator != scope.get_node_or_null("ReadinessCoordinator") or _c2_scheduler != scope.get_node_or_null("WorkerScheduler") or _c2_escrow != scope.get_node_or_null("MaterialEscrow"):
@@ -625,7 +625,7 @@ func _c3_owner() -> bool:
 		return false
 	if not _live(b1) or b1.enable_b1_controller or b1.is_processing() or b1.is_physics_processing():
 		return false
-	for service: Node in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
+	for service: Variant in [_c2_contracts, _c2_supplier, _c2_discovery, _c2_coordinator, _c2_scheduler, _c2_escrow, _c1_returns, _c1_charging]:
 		if not _live(service) or service.get_parent() != scope:
 			return false
 	if _c2_contracts != scope.get_node_or_null("RoleContracts") or _c2_supplier != scope.get_node_or_null("SupplierReservations") or _c2_discovery != scope.get_node_or_null("StorageDiscovery") or _c2_coordinator != scope.get_node_or_null("ReadinessCoordinator") or _c2_scheduler != scope.get_node_or_null("WorkerScheduler") or _c2_escrow != scope.get_node_or_null("MaterialEscrow"):

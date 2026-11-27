@@ -25,8 +25,8 @@ func _ready() -> void:
 	set_process(false)
 	set_physics_process(false)
 
-func _live(node: Node) -> bool:
-	return is_instance_valid(node) and node.is_inside_tree() and not node.is_queued_for_deletion()
+func _live(node: Variant) -> bool:
+	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
 
 func _scope() -> Node3D:
 	return get_parent() as Node3D
@@ -60,7 +60,7 @@ func _core() -> bool:
 	if x.is_empty():
 		return false
 	for node: Variant in x.values():
-		if not _live(node as Node):
+		if not _live(node):
 			return false
 	var b1: PlayableSpecializedDronesE3d5c6f = x["b1"]
 	var b2: SpecializedDroneLogisticsE3d5c6fB2 = x["b2"]
@@ -329,7 +329,7 @@ func configure_c4a(pole: PrototypePowerStructure) -> bool:
 	if x.is_empty():
 		return false
 	for node: Variant in x.values():
-		if not _live(node as Node):
+		if not _live(node):
 			return false
 	var b2: SpecializedDroneLogisticsE3d5c6fB2 = x["b2"]
 	if not b2._c3_owner() or b2.phase != &"c3_docked" or not b2._core() or not x["contracts"].receipt_valid(b2.receipt_id):

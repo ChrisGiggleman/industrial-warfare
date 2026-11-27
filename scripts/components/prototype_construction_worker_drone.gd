@@ -932,8 +932,8 @@ func _cancel_pickup(token: RefCounted, supplier: PrototypeDroneSupplierReservati
 # E3d5c5x5b: delivery is never the legacy worker/readiness state.
 # The original pickup site/job/definition are pinned by the source service.
 # The fixture must have one authoritative registry and one escrow ledger.
-func _delivery_live(node: Node) -> bool:
-	return is_instance_valid(node) and node.is_inside_tree() and not node.is_queued_for_deletion()
+func _delivery_live(node: Variant) -> bool:
+	return is_instance_valid(node) and node is Node and node.is_inside_tree() and not node.is_queued_for_deletion()
 
 
 func _delivery_target(site: ConstructionSite, registry: BlueprintConstructionSiteStagingRegistry, escrow: BlueprintConstructionMaterialEscrow) -> InventoryComponent:
