@@ -33,10 +33,27 @@ func matches_c5p_enrollment(drone: PrototypeConstructionWorkerDrone, token: RefC
 	var hub := _live_hub()
 	if not _c5p_dock_only or enable_isolated_charging or hub == null or not _live(drone) or drone.get_parent() != get_parent() or token == null:
 		return false
-	if drone != get_parent().get_node_or_null("LogisticsDrone") and drone != get_parent().get_node_or_null("ConstructionDrone"):
+	var scope := get_parent()
+	if scope.scene_file_path != "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn" or hub != scope.get_node_or_null("MainHub") or not hub.global_position.is_finite():
+		return false
+	var b2 := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+	if not _live(b2) or not b2.c5p_automated_mode() or b2._c1_charging != self:
+		return false
+	var berth: Vector3
+	if drone == scope.get_node_or_null("LogisticsDrone"):
+		berth = hub.global_position + Vector3(-0.65, 2, 0)
+	elif drone == scope.get_node_or_null("ConstructionDrone"):
+		berth = hub.global_position + Vector3(0.65, 2, 0)
+	else:
+		return false
+	var authorities: int = 0
+	for child: Node in scope.get_children():
+		if child is PrototypeDroneHubCharging and _live(child):
+			authorities += 1
+	if authorities != 1:
 		return false
 	for entry: Dictionary in _entries:
-		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token and drone._home.is_equal_approx(entry["berth"]) and hub.global_position.is_finite():
+		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token and drone._home.is_equal_approx(berth) and berth.is_equal_approx(entry["berth"]):
 			return true
 	return false
 
@@ -122,7 +139,10 @@ func register_drone(drone: PrototypeConstructionWorkerDrone) -> bool:
 			return false
 	elif not drone._bind_finite_charging(self, token, berth):
 		return false
-	_entries.append({"drone": weakref(drone), "token": token, "berth": berth})
+	if _c5p_dock_only:
+		_entries.append({"drone": weakref(drone), "token": token, "berth": berth})
+	else:
+		_entries.append({"drone": weakref(drone), "token": token})
 	return true
 
 
@@ -162,8 +182,8 @@ func _exit_tree() -> void:
 # This is not a new power grant; previously stored energy remains usable
 # during generator outage if the Hub/service itself is still intact.
 func matches_docked_registration(drone: PrototypeConstructionWorkerDrone, token: RefCounted) -> bool:
-	if _c5p_dock_only and not matches_c5p_enrollment(drone, token):
-		return false
+	if _c5p_dock_only:
+		return matches_c5p_enrollment(drone, token) and drone.get_flight_state() in [PrototypeConstructionWorkerDrone.FlightState.IDLE, PrototypeConstructionWorkerDrone.FlightState.DOCKED] and drone.global_position.is_finite() and drone.global_position.distance_to(drone._home) <= 0.00001
 	var hub := _live_hub()
 	if hub == null or not _live(drone) or drone.get_parent() != get_parent() or token == null:
 		return false

@@ -392,7 +392,8 @@ func _c5p_enrolled() -> bool:
 func _bind_c5p_dock(owner: Node, token: RefCounted, at: Vector3) -> bool:
 	if not _c5p_automated or not enable_isolated_drone or _battery_configured or enable_isolated_battery or enable_isolated_finite_charging or _charging_owner != null or token == null or _state != FlightState.IDLE:
 		return false
-	if not owner is PrototypeDroneHubCharging or not _delivery_live(owner) or owner.get_parent() != get_parent() or not owner.c5p_dock_only():
+	var dock_owner := owner as PrototypeDroneHubCharging
+	if not _delivery_live(dock_owner) or dock_owner.get_parent() != get_parent() or not dock_owner.c5p_dock_only():
 		return false
 	if not at.is_finite() or not global_position.is_finite() or not _home.is_equal_approx(at) or not global_position.is_equal_approx(at):
 		return false
@@ -400,9 +401,41 @@ func _bind_c5p_dock(owner: Node, token: RefCounted, at: Vector3) -> bool:
 	_charging_token = token
 	return true
 
+# Explicit step paths retain the named single controller as tick owner.
+# Dock registration itself is independent of which role currently owns work.
+func _c5p_tick_owner_ready() -> bool:
+	var scope := get_parent()
+	if not _delivery_live(scope) or scope.scene_file_path != SPECIALIZED_SCOPE_E3D5C6F or not scope.has_meta(&"e3d5c6f_single_tick_owner"):
+		return false
+	var ref := scope.get_meta(&"e3d5c6f_single_tick_owner") as WeakRef
+	if ref == null:
+		return false
+	var expected: Node
+	if self == scope.get_node_or_null("LogisticsDrone"):
+		expected = scope.get_node_or_null("B2LogisticsController")
+	elif self == scope.get_node_or_null("ConstructionDrone"):
+		expected = scope.get_node_or_null("B3BuilderController")
+	else:
+		return false
+	if not _delivery_live(expected) or ref.get_ref() != expected or expected.is_processing() or expected.is_physics_processing():
+		return false
+	var b1 := scope.get_node_or_null("SingleTickController") as PlayableSpecializedDronesE3d5c6f
+	if not _delivery_live(b1) or b1.enable_b1_controller or b1.is_processing() or b1.is_physics_processing():
+		return false
+	for child: Node in scope.get_children():
+		if not _delivery_live(child):
+			continue
+		if child is PrototypeDroneAutomaticDispatch or child is PrototypeConstructionDroneFleet or child is PrototypeConstructionDroneTickController:
+			return false
+		if child is SpecializedDroneLogisticsE3d5c6fB2 and child != scope.get_node_or_null("B2LogisticsController"):
+			return false
+		if child is SpecializedDroneBuilderE3d5c6fB3 and child != scope.get_node_or_null("B3BuilderController"):
+			return false
+	return true
+
 func _motion_mode_ready() -> bool:
 	if _c5p_automated:
-		return _c5p_enrolled()
+		return _c5p_enrolled() and _c5p_tick_owner_ready()
 	return enable_isolated_battery and _battery_configured
 
 # A route score is distance in automated mode, legacy energy otherwise.
@@ -410,7 +443,7 @@ func _motion_mode_ready() -> bool:
 func route_score(waypoints: Array[Vector3]) -> float:
 	if not _c5p_automated:
 		return estimate_route_energy(waypoints)
-	if not _c5p_enrolled() or not enable_isolated_drone or waypoints.is_empty() or waypoints.size() > 8 or not global_position.is_finite() or not _home.is_finite():
+	if not _c5p_enrolled() or not _c5p_tick_owner_ready() or not enable_isolated_drone or waypoints.is_empty() or waypoints.size() > 8 or not global_position.is_finite() or not _home.is_finite():
 		return -1.0
 	var previous := global_position
 	var distance: float = 0.0
@@ -427,7 +460,7 @@ func route_feasible(waypoints: Array[Vector3]) -> bool:
 	return score >= 0.0 and (_c5p_automated or score <= _battery_units + 0.00001)
 
 func _c5p_step_valid(delta: float) -> bool:
-	return not _c5p_automated or (_c5p_enrolled() and enable_isolated_drone and is_finite(delta) and delta > 0.0 and delta <= 1.0 and global_position.is_finite() and _home.is_finite() and is_finite(_speed) and _speed > 0.0 and _speed <= MAX_SPEED)
+	return not _c5p_automated or (_c5p_enrolled() and _c5p_tick_owner_ready() and enable_isolated_drone and is_finite(delta) and delta > 0.0 and delta <= 1.0 and global_position.is_finite() and _home.is_finite() and is_finite(_speed) and _speed > 0.0 and _speed <= MAX_SPEED)
 
 func configure_battery(
 	capacity_units: float,
@@ -542,8 +575,12 @@ func assign_to_site(
 		or hover_height < 0.5 or hover_height > 10.0
 	):
 		return false
-	if _c5p_automated and (not _c5p_enrolled() or not home_position.is_equal_approx(_home) or not global_position.is_equal_approx(_home) or not route_feasible([site.global_position + Vector3.UP * hover_height])):
-		return false
+	if _c5p_automated:
+		var scope := get_parent()
+		var builder_controller := scope.get_node_or_null("B3BuilderController") as SpecializedDroneBuilderE3d5c6fB3
+		var route: Array[Vector3] = [site.global_position + Vector3.UP * hover_height]
+		if self != scope.get_node_or_null("ConstructionDrone") or not _delivery_live(builder_controller) or not builder_controller.c4_flight_authorized(self, site) or not _c5p_enrolled() or not home_position.is_equal_approx(_home) or not global_position.is_equal_approx(_home) or not route_feasible(route):
+			return false
 	if _battery_configured:
 		if (
 			not enable_isolated_battery
@@ -647,7 +684,7 @@ func advance_flight(delta: float) -> bool:
 
 
 func is_at_site() -> bool:
-	if _c5p_automated and not _c5p_enrolled():
+	if _c5p_automated and (not _c5p_enrolled() or not _c5p_tick_owner_ready()):
 		return false
 	if not enable_isolated_drone or _state != FlightState.AT_SITE:
 		return false
@@ -798,6 +835,8 @@ func cargo_item() -> ItemDefinition:
 
 
 func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity: int, speed: float) -> bool:
+	if _c5p_automated and (not _c5p_enrolled() or self != get_parent().get_node_or_null("LogisticsDrone")):
+		return false
 	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not _motion_mode_ready() or not is_inside_tree() or is_queued_for_deletion():
 		return false
 	if _cargo_reuse_latched and (not enable_isolated_cargo_reuse or not _finite_cargo_rearm_ready()):
@@ -1192,7 +1231,7 @@ func _accept_finite_charge(owner: Node, token: RefCounted, at: Vector3, delta: f
 # x7b: live x7a authority and exact registered dock, not a caller's bool.
 func _finite_cargo_rearm_ready() -> bool:
 	if _c5p_automated:
-		if not _c5p_enrolled() or not enable_isolated_drone:
+		if not _c5p_enrolled() or not _c5p_tick_owner_ready() or not enable_isolated_drone:
 			return false
 		var dock_owner := _charging_owner.get_ref() as PrototypeDroneHubCharging
 		return dock_owner.matches_docked_registration(self, _charging_token)

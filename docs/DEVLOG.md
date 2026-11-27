@@ -2,7 +2,7 @@
 
 ### 2026-11-27 — C5P-B1 candidate implementation; local F6 pending
 
-Approved isolated battery-independent worker/dock/route mode implemented as candidate; legacy default preserved, B2/B3 follow-on stages not authorized. [B1 test and implementation notes](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B1.md). New six-section fixture UNRUN; historical accepted baseline remains 73/997. Main and prior tests preserved. No new acceptance.
+Approved isolated battery-independent worker/dock/route mode implemented as candidate; legacy default preserved, B2/B3 follow-on stages not authorized. [B1 test and implementation notes](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B1.md). New ten-section fixture UNRUN; historical accepted baseline remains 73/997. Main and prior tests preserved. No new acceptance.
 
 
 ### 2026-11-26 — C5P-A simplified drone power design checkpoint

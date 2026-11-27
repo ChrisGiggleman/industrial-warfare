@@ -93,8 +93,9 @@ func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite
 		var score: float = drone.route_score(waypoints)
 		if not drone.route_feasible(waypoints):
 			continue
-		candidate["route_score"] = score
-		if not drone.c5p_automated_mode():
+		if drone.c5p_automated_mode():
+			candidate["route_distance"] = score
+		else:
 			candidate["energy_required"] = score
 		candidate["distance_to_site"] = dock.global_position.distance_to(destination)
 		candidate["amount"] = amount
@@ -121,8 +122,9 @@ func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, 
 		var score: float = drone.route_score(waypoints)
 		if not drone.route_feasible(waypoints):
 			continue
-		candidate["route_score"] = score
-		if not drone.c5p_automated_mode():
+		if drone.c5p_automated_mode():
+			candidate["route_distance"] = score
+		else:
 			candidate["energy_required"] = score
 		candidate["distance_to_dock"] = drone.global_position.distance_to(dock.global_position)
 		candidate["amount"] = amount
@@ -132,8 +134,8 @@ func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, 
 
 
 func _better_pickup(a: Dictionary, b: Dictionary) -> bool:
-	var ea: float = a["route_score"]
-	var eb: float = b["route_score"]
+	var ea: float = a.get("route_distance", a.get("energy_required", INF))
+	var eb: float = b.get("route_distance", b.get("energy_required", INF))
 	if absf(ea - eb) > 0.00001:
 		return ea < eb
 	var da: float = a["distance_to_site"]

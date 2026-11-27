@@ -8,7 +8,7 @@ const Flight = PrototypeConstructionWorkerDrone.FlightState
 func _ready() -> void:
 	call_deferred("_checks")
 
-func _fixture() -> Dictionary:
+func _fixture(automated: bool = true) -> Dictionary:
 	var scope := SCOPE.instantiate() as Node3D
 	add_child(scope)
 	var b1 := scope.get_node("SingleTickController") as PlayableSpecializedDronesE3d5c6f
@@ -28,7 +28,7 @@ func _fixture() -> Dictionary:
 	assert(site.job.state == ConstructionJob.State.PLANNED)
 	b1.enable_b1_controller = false
 	b2.enable_b2_logistics = true
-	b2.enable_c5p_automated_lifecycle = true
+	b2.enable_c5p_automated_lifecycle = automated
 
 	var storage := STORAGE.building_scene.instantiate() as Node3D
 	scope.add_child(storage)
@@ -189,6 +189,15 @@ func _checks() -> void:
 	assert(not x.drone.charge_at_home(1.0, true) and x.b2._c1_charging.advance_charging(1.0) == 0.0)
 	assert(not x.drone.configure_battery(40.0, 40.0, 1.0, 4.0))
 	assert(not x.b2._c1_charging.register_drone(x.drone))
+	x.b2.enable_c5p_automated_lifecycle = false
+	assert(x.b2.c5p_automated_mode() and x.drone.c5p_automated_mode())
+	assert(not x.drone.configure_c5p_automated(x.b2))
+	var foreign := PrototypeConstructionWorkerDrone.new()
+	x.scope.add_child(foreign)
+	foreign.enable_isolated_drone = true
+	assert(not foreign.configure_c5p_automated(x.b2))
+	assert(not x.b2._c1_charging.register_drone(foreign))
+	foreign.free()
 	print("PASS A: immutable battery-independent mode and unique dock")
 	var points: Array[Vector3] = [Vector3(100, 2, 0)]
 	assert(x.drone.route_feasible(points) and x.drone.route_score(points) > 40.0)
@@ -196,10 +205,24 @@ func _checks() -> void:
 	points = [Vector3(INF, 0, 0)]
 	assert(not x.drone.route_feasible(points))
 	assert(not x.drone.advance_flight(NAN))
+	var token := x.drone._charging_token as RefCounted
+	assert(x.b2._c1_charging.matches_docked_registration(x.drone, token))
+	assert(not x.b2._c1_charging.matches_docked_registration(x.drone, RefCounted.new()))
+	x.drone.global_position += Vector3(1, 0, 0)
+	assert(not x.b2._c1_charging.matches_docked_registration(x.drone, token))
+	x.drone.global_position = x.home
+	x.drone.enable_isolated_battery = true
+	assert(not x.drone.route_feasible([Vector3(100, 2, 0)]))
+	x.drone.enable_isolated_battery = false
 	print("PASS B: finite physical routes without synthetic energy")
 	_load(x)
 	assert(x.drone.battery_units() == -1.0)
 	assert(x.b2.cancel_c2(x.site, x.drone, x.b2.lease_id))
+	assert(x.hub.set_generator_enabled(false))
+	x.stock.max_capacity = 10
+	assert(x.b2.step_c2(1.0) == &"recovery_wait")
+	assert(x.stock.get_amount(INGOT) == 10 and x.drone.cargo_amount() == 5)
+	x.stock.max_capacity = 20
 	for i: int in range(100):
 		if x.b2.phase == &"c2_complete":
 			break
@@ -231,4 +254,65 @@ func _checks() -> void:
 	assert(x.drone.battery_units() == -1.0 and x.builder.battery_units() == -1.0)
 	print("PASS F: retirement, handback and physical staging recovery conserve all materials")
 	x.scope.free()
-	print("E3d5c6f C5P-B1: 6/6 printed sections passed")
+	x = _fixture()
+	_enable(x)
+	assert(x.b2.c1_reserve() and x.b2.c1_launch())
+	assert(x.b2.step_c1(0.1))
+	assert(x.b2.cancel_c1(x.site, x.drone, x.b2.lease_id))
+	for i: int in range(100):
+		if x.b2.phase == &"c1_complete":
+			break
+		assert(x.b2.step_c1(0.1))
+	assert(x.b2.phase == &"c1_complete" and x.stock.get_amount(INGOT) == 15 and x.supplier.reservation_count() == 0)
+	print("PASS G: pre-pickup cancellation returns empty and releases only unused stock claim")
+	x.scope.free()
+
+	x = _fixture()
+	_admit(x)
+	_arrive(x)
+	for i: int in range(30):
+		if x.b3.phase == &"c4_complete_return":
+			break
+		assert(x.b3.step_c4a(1.0) in [&"work", &"built"])
+	assert(x.job.state == ConstructionJob.State.COMPLETE and x.escrow.held_count() == 0 and x.stock.get_amount(INGOT) == 10)
+	assert(is_instance_valid(x.b3.completed_building))
+	for i: int in range(30):
+		if x.b3.phase == &"c4_complete":
+			break
+		assert(x.b3.step_c4a(1.0) in [&"complete_return", &"complete"])
+	assert(x.b3.phase == &"c4_complete" and x.builder.global_position.is_equal_approx(x.builder_home))
+	assert(x.b3.step_c4a(1.0) == &"rejected" and x.b2.step_c3(0.1) == &"rejected")
+	assert(x.builder.battery_units() == -1.0 and x.buffer.get_total_amount() == 0)
+	print("PASS H: normal construction consumes escrow once and returns; no replay")
+	x.scope.free()
+
+	x = _fixture(false)
+	_enable(x)
+	assert(not x.b2.c5p_automated_mode() and not x.drone.c5p_automated_mode())
+	assert(x.drone.battery_units() == 40.0 and x.drone.battery_capacity() == 40.0)
+	assert(not x.b2._c1_charging.c5p_dock_only())
+	var long_route: Array[Vector3] = [Vector3(100, 2, 0)]
+	assert(not x.drone.route_feasible(long_route))
+	x.scope.free()
+	var main := (load("res://scenes/core/main.tscn") as PackedScene).instantiate()
+	assert(main.get_node_or_null("B3BuilderController") == null)
+	main.free()
+	print("PASS I: legacy default still finite and Main remains opted out")
+
+	x = _fixture()
+	_enable(x)
+	assert(x.b2.c1_reserve() and x.b2.c1_launch())
+	var before: Vector3 = x.drone.global_position
+	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.scope.get_node("B3BuilderController")))
+	assert(not x.b2.step_c1(0.1))
+	assert(not x.drone.route_feasible([Vector3(10, 2, 0)]))
+	assert(x.drone.global_position == before and x.stock.get_amount(INGOT) == 15)
+	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.b2))
+	assert(x.b2.step_c1(0.1))
+	x.b2._c1_charging.free()
+	before = x.drone.global_position
+	assert(not x.b2.step_c1(0.1) and not x.drone.route_feasible([Vector3(10, 2, 0)]))
+	assert(x.drone.global_position == before and x.stock.get_amount(INGOT) == 15)
+	print("PASS J: wrong tick owner and lost dock authority fail closed")
+	x.scope.free()
+	print("E3d5c6f C5P-B1: 10/10 printed sections passed")
