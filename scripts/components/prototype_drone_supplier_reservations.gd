@@ -226,7 +226,7 @@ func collect_pickup(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
 # Suspension is not a terminal cancellation. Clear only the exact unused claim
 # after the worker pins the original nonterminal assignment.
 func suspend_c5p_claim(id: int, drone: PrototypeConstructionWorkerDrone, controller: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
-	if not _claims.has(id) or not _live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or controller.pickup_id != id or not _live(drone) or not controller._c5p_empty_lease(drone) or controller._c5p_empty_power() or controller._c5p_original_supplier.get_ref() != self:
+	if not _claims.has(id) or not _live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or controller.pickup_id != id or controller._c5p_pickup_action != &"suspend" or not _live(drone) or not controller._c5p_empty_lease(drone) or controller._c5p_empty_power() or controller._c5p_original_supplier.get_ref() != self:
 		return false
 	var claim: Dictionary = _claims[id]
 	var inventory := claim["inventory"].get_ref() as InventoryComponent

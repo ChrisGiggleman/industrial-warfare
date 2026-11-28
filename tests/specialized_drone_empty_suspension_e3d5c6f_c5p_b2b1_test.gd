@@ -207,6 +207,9 @@ func _checks() -> void:
 	assert(x.b2.c1_reserve() and x.b2.c1_launch() and x.b2.step_c1(1.0))
 	assert(x.hub.set_generator_enabled(false) and x.b2.step_c1(0.1))
 	before = x.drone.global_position
+	assert(not x.drone.c5p_step_empty_return(x.b2, 0.5, false))
+	assert(not x.b2.step_c1(0.0) and not x.b2.step_c1(2.0))
+	assert(x.drone.global_position == before)
 	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.scope.get_node("B3BuilderController")))
 	assert(not x.b2.step_c1(0.5) and x.drone.global_position == before)
 	x.scope.set_meta("e3d5c6f_single_tick_owner", weakref(x.b2))
@@ -219,7 +222,7 @@ func _checks() -> void:
 
 	x = _setup()
 	assert(x.b2.c1_reserve() and x.b2.c1_launch() and x.b2.step_c1(1.0))
-	x.b2._c5p_power_authority.free()
+	x.power.free()
 	assert(x.b2.step_c1(0.1))
 	_park(x)
 	assert(x.b2.step_c1(0.1) and x.b2.phase == &"c5p_empty_parked" and x.b2.c5p_empty_diagnostic == &"invalid_authority")
@@ -246,4 +249,14 @@ func _checks() -> void:
 	assert(main.get_node_or_null("B2LogisticsController") == null)
 	main.free()
 	print("PASS K: B2a-only mode and Main opt-out preserved")
-	print("E3d5c6f C5P-B2b-1: 11/11 printed sections passed")
+
+	x = _setup()
+	assert(x.b2.c1_reserve() and x.b2.c1_launch() and x.b2.step_c1(0.5))
+	var old_pickup: int = x.b2.pickup_id
+	x.dock.free()
+	assert(x.supplier.reservation_count() == 0 and x.stock.get_reserved_amount(INGOT) == 0)
+	assert(not x.b2.step_c1(0.5) and not x.supplier.collect_pickup(old_pickup, x.drone))
+	assert(x.stock.get_amount(INGOT) == 15 and x.drone.cargo_amount() == 0 and x.job.state == ConstructionJob.State.QUEUED)
+	print("PASS L: lost source dock releases unused claim and blocks stale pickup")
+	x.scope.free()
+	print("E3d5c6f C5P-B2b-1: 12/12 printed sections passed")

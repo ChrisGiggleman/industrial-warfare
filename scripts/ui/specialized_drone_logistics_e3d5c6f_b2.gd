@@ -58,7 +58,13 @@ func _c5p_empty_suspend() -> bool:
 	if not _c5p_empty_lease(drone) or phase not in [&"c1_reserved", &"c1_outbound", &"c1_at_pickup"] or _c5p_empty_power():
 		return false
 	var supplier := _c5p_original_supplier.get_ref() as PrototypeDroneSupplierReservations
-	if not _live(supplier) or not supplier.suspend_c5p_claim(pickup_id, drone, self):
+	if not _live(supplier):
+		c5p_empty_diagnostic = &"claim_or_berth_invalid"
+		return false
+	_c5p_pickup_action = &"suspend"
+	var suspended: bool = supplier.suspend_c5p_claim(pickup_id, drone, self)
+	_c5p_pickup_action = &""
+	if not suspended:
 		c5p_empty_diagnostic = &"claim_or_berth_invalid"
 		return false
 	pickup_id = 0
@@ -72,7 +78,10 @@ func _c5p_empty_step(delta: float) -> bool:
 	if not _c5p_empty_lease(drone, terminal) or not is_finite(delta) or delta <= 0.0 or delta > 1.0:
 		return false
 	if drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.C5P_EMPTY_RETURN:
-		if not drone.c5p_step_empty_return(self, delta, terminal):
+		_c5p_pickup_action = &"return"
+		var moved: bool = drone.c5p_step_empty_return(self, delta, terminal)
+		_c5p_pickup_action = &""
+		if not moved:
 			c5p_empty_diagnostic = &"berth_invalid"
 			return false
 		if not terminal and drone.get_flight_state() == PrototypeConstructionWorkerDrone.FlightState.C5P_EMPTY_PARKED:
@@ -82,7 +91,10 @@ func _c5p_empty_step(delta: float) -> bool:
 	if drone.get_flight_state() != PrototypeConstructionWorkerDrone.FlightState.C5P_EMPTY_PARKED:
 		return false
 	if terminal:
-		if not drone.c5p_finish_empty_park(self, true):
+		_c5p_pickup_action = &"finish"
+		var settled: bool = drone.c5p_finish_empty_park(self, true)
+		_c5p_pickup_action = &""
+		if not settled:
 			return false
 		var coordinator := _scope().get_node_or_null("ReadinessCoordinator") as BlueprintConstructionReadinessCoordinator
 		if _live(coordinator):
@@ -94,17 +106,26 @@ func _c5p_empty_step(delta: float) -> bool:
 	if not _c5p_empty_power():
 		tick_count += 1
 		return true
-	if not drone.c5p_finish_empty_park(self, false):
+	_c5p_pickup_action = &"finish"
+	var rearmed: bool = drone.c5p_finish_empty_park(self, false)
+	_c5p_pickup_action = &""
+	if not rearmed:
 		return false
 	var supplier := _c5p_original_supplier.get_ref() as PrototypeDroneSupplierReservations
 	if not _live(supplier):
-		drone.c5p_restore_empty_park(self)
+		_c5p_pickup_action = &"restore"
+		var restored: bool = drone.c5p_restore_empty_park(self)
+		_c5p_pickup_action = &""
+		c5p_empty_diagnostic = &"supplier_invalid" if restored else &"berth_invalid"
 		return false
 	_c5p_pickup_action = &"reserve"
 	pickup_id = supplier.reserve(drone, site, INGOT, 5, 5)
 	_c5p_pickup_action = &""
 	if pickup_id <= 0:
-		if not drone.c5p_restore_empty_park(self):
+		_c5p_pickup_action = &"restore"
+		var restored: bool = drone.c5p_restore_empty_park(self)
+		_c5p_pickup_action = &""
+		if not restored:
 			return false
 		c5p_empty_diagnostic = &"stock_wait"
 	else:
@@ -458,6 +479,9 @@ func c1_reserve() -> bool:
 	var contracts := scope.get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f
 	var supplier := scope.get_node("SupplierReservations") as PrototypeDroneSupplierReservations
 	if _c5p_empty_mode:
+		if not _live(supplier) or supplier != _c5p_original_supplier.get_ref() or not _live(supplier._service()):
+			c5p_empty_diagnostic = &"supplier_invalid"
+			return false
 		var forecast := supplier._service().find_pickup(logistics, site, INGOT, 5, 5, 2.0, true)
 		if forecast.is_empty() or forecast.get("dock") != _c5p_original_dock.get_ref() or forecast.get("inventory") != source:
 			c5p_empty_diagnostic = &"stock_wait"
@@ -530,6 +554,8 @@ func step_c1(delta: float) -> bool:
 		return false
 	if phase == &"c1_outbound":
 		if not _core():
+			if _c5p_empty_mode:
+				c5p_empty_diagnostic = &"claim_or_source_invalid"
 			return false
 		_c5p_pickup_action = &"advance" if _c5p_empty_mode else &""
 		var advanced: bool = supplier.advance_pickup(pickup_id, logistics, delta)

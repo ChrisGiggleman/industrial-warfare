@@ -89,7 +89,7 @@ func _c5p_pickup_allowed(action: StringName, token: RefCounted, dock: PrototypeD
 	return _delivery_live(controller) and _delivery_live(supplier) and token != null and controller.c5p_pickup_permitted(action, self, supplier, token, dock)
 
 func c5p_begin_empty_suspend(controller: SpecializedDroneLogisticsE3d5c6fB2, token: RefCounted) -> bool:
-	if not _c5p_empty_latched or not _delivery_live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or not controller._c5p_empty_lease(self) or controller._c5p_empty_power() or not _motion_mode_ready():
+	if not _c5p_empty_latched or not _delivery_live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or controller._c5p_pickup_action != &"suspend" or not controller._c5p_empty_lease(self) or controller._c5p_empty_power() or not _motion_mode_ready():
 		return false
 	if _cargo_amount != 0 or _cargo_job != null or _cargo_item != null or _return_token != null or token == null or _state not in [FlightState.IDLE, FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP]:
 		return false
@@ -115,7 +115,7 @@ func _c5p_empty_proof(controller: SpecializedDroneLogisticsE3d5c6fB2, terminal: 
 	return _c5p_empty_latched and _delivery_live(controller) and controller == get_parent().get_node_or_null("B2LogisticsController") and controller._c5p_empty_lease(self, terminal) and _c5p_empty_lease_id == controller.lease_id and _c5p_empty_job == controller._c1_job and _cargo_amount == 0 and _cargo_item == null and _pickup_token == null and _return_token == null and _motion_mode_ready()
 
 func c5p_step_empty_return(controller: SpecializedDroneLogisticsE3d5c6fB2, delta: float, terminal: bool) -> bool:
-	if _state != FlightState.C5P_EMPTY_RETURN or not _c5p_empty_proof(controller, terminal) or not _c5p_step_valid(delta):
+	if _state != FlightState.C5P_EMPTY_RETURN or not _c5p_empty_proof(controller, terminal) or controller._c5p_pickup_action != &"return" or not _c5p_step_valid(delta):
 		return false
 	global_position = global_position.move_toward(_home, _speed * delta)
 	if global_position.distance_to(_home) <= 0.00001:
@@ -123,7 +123,7 @@ func c5p_step_empty_return(controller: SpecializedDroneLogisticsE3d5c6fB2, delta
 	return true
 
 func c5p_finish_empty_park(controller: SpecializedDroneLogisticsE3d5c6fB2, terminal: bool) -> bool:
-	if _state != FlightState.C5P_EMPTY_PARKED or not _c5p_empty_proof(controller, terminal) or not global_position.is_finite() or global_position.distance_to(_home) > 0.00001 or (not terminal and not controller._c5p_empty_power()):
+	if _state != FlightState.C5P_EMPTY_PARKED or not _c5p_empty_proof(controller, terminal) or controller._c5p_pickup_action != &"finish" or not global_position.is_finite() or global_position.distance_to(_home) > 0.00001 or (not terminal and not controller._c5p_empty_power()):
 		return false
 	_state = FlightState.IDLE
 	if terminal:
@@ -132,7 +132,7 @@ func c5p_finish_empty_park(controller: SpecializedDroneLogisticsE3d5c6fB2, termi
 	return true
 
 func c5p_restore_empty_park(controller: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
-	if _state != FlightState.IDLE or not _c5p_empty_proof(controller, false) or global_position.distance_to(_home) > 0.00001:
+	if _state != FlightState.IDLE or not _c5p_empty_proof(controller, false) or controller._c5p_pickup_action != &"restore" or global_position.distance_to(_home) > 0.00001:
 		return false
 	_state = FlightState.C5P_EMPTY_PARKED
 	return true
