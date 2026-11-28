@@ -12,7 +12,7 @@ class_name PrototypeConstructionWorkerDrone
 # No _process / physics step: F6 fixture explicitly calls advance_flight().
 # Not installed in Main or Factory Testing Sandbox.
 
-enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED, RECOVERY_WAIT, RECOVERY_OUTBOUND, AT_RECOVERY, RECOVERY_HOME, STAGED_TO_SITE, STAGED_AT_SITE, STAGED_LOADED, STAGED_TO_STORAGE, STAGED_AT_STORAGE, STAGED_HOME }
+enum FlightState { IDLE, OUTBOUND, AT_SITE, RETURNING, DOCKED, PICKUP_OUTBOUND, AT_PICKUP, CARGO_HELD, DELIVERY_OUTBOUND, AT_DELIVERY, DELIVERED, RECOVERY_WAIT, RECOVERY_OUTBOUND, AT_RECOVERY, RECOVERY_HOME, STAGED_TO_SITE, STAGED_AT_SITE, STAGED_LOADED, STAGED_TO_STORAGE, STAGED_AT_STORAGE, STAGED_HOME, C5P_EMPTY_RETURN, C5P_EMPTY_PARKED }
 
 const ARRIVAL_EPSILON: float = 0.05
 const MAX_SPEED: float = 50.0
@@ -76,6 +76,67 @@ var _assignment_job: ConstructionJob = null
 var _reuse_count: int = 0
 const RETURN_MARGIN_UNITS: float = 0.25
 var _c5p_automated: bool = false
+var _c5p_empty_latched: bool = false
+var _c5p_empty_lease_id: int = 0
+var _c5p_empty_job: ConstructionJob
+
+func _c5p_pickup_allowed(action: StringName, token: RefCounted, dock: PrototypeDroneStorageDock) -> bool:
+	if not _c5p_empty_latched:
+		return true
+	var scope := get_parent()
+	var controller := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+	var supplier := scope.get_node_or_null("SupplierReservations") as PrototypeDroneSupplierReservations
+	return _delivery_live(controller) and _delivery_live(supplier) and token != null and controller.c5p_pickup_permitted(action, self, supplier, token, dock)
+
+func c5p_begin_empty_suspend(controller: SpecializedDroneLogisticsE3d5c6fB2, token: RefCounted) -> bool:
+	if not _c5p_empty_latched or not _delivery_live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or not controller._c5p_empty_lease(self) or controller._c5p_empty_power() or not _motion_mode_ready():
+		return false
+	if _cargo_amount != 0 or _cargo_job != null or _cargo_item != null or _return_token != null or token == null or _state not in [FlightState.IDLE, FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP]:
+		return false
+	if (_state == FlightState.IDLE and (_pickup_token != null or not global_position.is_equal_approx(_home))) or (_state != FlightState.IDLE and _pickup_token != token):
+		return false
+	var supplier := get_parent().get_node_or_null("SupplierReservations") as PrototypeDroneSupplierReservations
+	if not _delivery_live(supplier) or not supplier._claims.has(controller.pickup_id):
+		return false
+	var claim: Dictionary = supplier._claims[controller.pickup_id]
+	if claim["token"] != token or claim["drone"].get_ref() != self or claim["job"] != controller._c1_job or claim["site"].get_ref() != controller.site:
+		return false
+	_c5p_empty_lease_id = controller.lease_id
+	_c5p_empty_job = controller._c1_job
+	_pickup_token = null
+	_pickup_dock = null
+	_pickup_capacity = 0
+	_pre_pickup_rearm_latched = false
+	_speed = 2.0
+	_state = FlightState.C5P_EMPTY_PARKED if global_position.distance_to(_home) <= 0.00001 else FlightState.C5P_EMPTY_RETURN
+	return true
+
+func _c5p_empty_proof(controller: SpecializedDroneLogisticsE3d5c6fB2, terminal: bool) -> bool:
+	return _c5p_empty_latched and _delivery_live(controller) and controller == get_parent().get_node_or_null("B2LogisticsController") and controller._c5p_empty_lease(self, terminal) and _c5p_empty_lease_id == controller.lease_id and _c5p_empty_job == controller._c1_job and _cargo_amount == 0 and _cargo_item == null and _pickup_token == null and _return_token == null and _motion_mode_ready()
+
+func c5p_step_empty_return(controller: SpecializedDroneLogisticsE3d5c6fB2, delta: float, terminal: bool) -> bool:
+	if _state != FlightState.C5P_EMPTY_RETURN or not _c5p_empty_proof(controller, terminal) or not _c5p_step_valid(delta):
+		return false
+	global_position = global_position.move_toward(_home, _speed * delta)
+	if global_position.distance_to(_home) <= 0.00001:
+		_state = FlightState.C5P_EMPTY_PARKED
+	return true
+
+func c5p_finish_empty_park(controller: SpecializedDroneLogisticsE3d5c6fB2, terminal: bool) -> bool:
+	if _state != FlightState.C5P_EMPTY_PARKED or not _c5p_empty_proof(controller, terminal) or not global_position.is_finite() or global_position.distance_to(_home) > 0.00001 or (not terminal and not controller._c5p_empty_power()):
+		return false
+	_state = FlightState.IDLE
+	if terminal:
+		_c5p_empty_lease_id = 0
+		_c5p_empty_job = null
+	return true
+
+func c5p_restore_empty_park(controller: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
+	if _state != FlightState.IDLE or not _c5p_empty_proof(controller, false) or global_position.distance_to(_home) > 0.00001:
+		return false
+	_state = FlightState.C5P_EMPTY_PARKED
+	return true
+
 var _battery_configured: bool = false
 var _battery_capacity: float = 0.0
 var _battery_units: float = 0.0
@@ -369,6 +430,7 @@ func configure_c5p_automated(controller: Node) -> bool:
 	if self == scope.get_node_or_null("LogisticsDrone"):
 		if controller != b2 or b2.phase != &"disabled":
 			return false
+		_c5p_empty_latched = b2.c5p_empty_mode()
 	elif self == scope.get_node_or_null("ConstructionDrone"):
 		if controller != scope.get_node_or_null("B3BuilderController") or not scope.has_meta(&"e3d5c6f_single_tick_owner") or (scope.get_meta(&"e3d5c6f_single_tick_owner") as WeakRef).get_ref() != controller:
 			return false
@@ -606,7 +668,7 @@ func assign_to_site(
 func advance_flight(delta: float) -> bool:
 	if not _c5p_step_valid(delta):
 		return false
-	if _state in [FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY, FlightState.RECOVERY_HOME]:
+	if _state in [FlightState.C5P_EMPTY_RETURN, FlightState.C5P_EMPTY_PARKED, FlightState.PICKUP_OUTBOUND, FlightState.AT_PICKUP, FlightState.CARGO_HELD, FlightState.DELIVERY_OUTBOUND, FlightState.AT_DELIVERY, FlightState.DELIVERED, FlightState.RECOVERY_WAIT, FlightState.RECOVERY_OUTBOUND, FlightState.AT_RECOVERY, FlightState.RECOVERY_HOME]:
 		return false # Cargo legs are distinct from legacy worker flight.
 	if (
 		not is_finite(delta) or delta <= 0.0
@@ -835,6 +897,8 @@ func cargo_item() -> ItemDefinition:
 
 
 func _begin_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, capacity: int, speed: float) -> bool:
+	if not _c5p_pickup_allowed(&"launch", token, dock):
+		return false
 	if _c5p_automated and (not _c5p_enrolled() or self != get_parent().get_node_or_null("LogisticsDrone")):
 		return false
 	if not enable_isolated_cargo_pickup or not enable_isolated_drone or not _motion_mode_ready() or not is_inside_tree() or is_queued_for_deletion():
@@ -862,6 +926,8 @@ func _owns_pickup(token: RefCounted, dock: PrototypeDroneStorageDock) -> bool:
 
 
 func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: float) -> bool:
+	if not _c5p_pickup_allowed(&"advance", token, dock):
+		return false
 	if not _c5p_step_valid(delta):
 		return false
 	if not _owns_pickup(token, dock) or not is_finite(delta) or delta <= 0.0 or not dock.global_position.is_finite():
@@ -881,6 +947,8 @@ func _advance_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, delta: 
 
 
 func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory: InventoryComponent, item: ItemDefinition, amount: int, site: ConstructionSite) -> bool:
+	if not _c5p_pickup_allowed(&"collect", token, dock):
+		return false
 	if not _owns_pickup(token, dock) or _state != FlightState.AT_PICKUP or not global_position.is_equal_approx(dock.global_position):
 		return false
 	if not is_instance_valid(inventory) or amount <= 0 or amount > _pickup_capacity:
@@ -891,6 +959,8 @@ func _take_pickup(token: RefCounted, dock: PrototypeDroneStorageDock, inventory:
 		return false
 	_cargo_item = item
 	_cargo_amount = amount
+	_c5p_empty_lease_id = 0
+	_c5p_empty_job = null
 	_cargo_site = weakref(site)
 	_cargo_job = site.job
 	_cargo_definition = site.target_definition

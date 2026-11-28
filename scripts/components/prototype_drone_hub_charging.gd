@@ -31,6 +31,8 @@ func configure_c5p_dock(hub: PrototypePowerStructure, allocator: PrototypeConstr
 
 func matches_c5p_enrollment(drone: PrototypeConstructionWorkerDrone, token: RefCounted) -> bool:
 	var hub := _live_hub()
+	if _live(drone) and drone._c5p_empty_latched and drone.cargo_amount() == 0:
+		hub = _c5p_empty_physical_hub(drone)
 	if not _c5p_dock_only or enable_isolated_charging or hub == null or not _live(drone) or drone.get_parent() != get_parent() or token == null:
 		return false
 	var scope := get_parent()
@@ -195,3 +197,17 @@ func matches_docked_registration(drone: PrototypeConstructionWorkerDrone, token:
 		if (entry["drone"] as WeakRef).get_ref() == drone and entry["token"] == token:
 			return true
 	return false
+
+# B2b-1: empty logistics can reach its original intact berth without
+# electrical or allocator permission. All original enrollment checks follow.
+func _c5p_empty_physical_hub(drone: PrototypeConstructionWorkerDrone) -> PrototypePowerStructure:
+	if not _c5p_dock_only or enable_isolated_charging or not _live(self) or _hub == null or not _live(drone):
+		return null
+	var scope := get_parent()
+	var hub := _hub.get_ref() as PrototypePowerStructure
+	var b2 := scope.get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+	if not _live(b2) or not b2.c5p_empty_mode() or b2._c1_charging != self or drone != scope.get_node_or_null("LogisticsDrone") or not _live(hub) or hub != scope.get_node_or_null("MainHub") or hub.scene_file_path != HUB_PATH or hub.get_parent() != scope:
+		return null
+	if not _live(hub.get_health()) or not hub.get_health().is_intact() or not hub.global_transform.is_finite() or not scope.has_meta(SCOPE_KEY) or (scope.get_meta(SCOPE_KEY) as WeakRef).get_ref() != self:
+		return null
+	return hub

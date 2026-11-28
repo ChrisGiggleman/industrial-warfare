@@ -1,5 +1,7 @@
 # E3d5c6f C5P-B2b — Logistics suspension and resumption proposal
 
+2026-11-27: C5P-B2b-1 candidate implements opt-in empty suspension, exact claim release, original lease and physical berth, power-gated reserve/launch/advance/collect, stock retry and cancellation. New isolated F6 res://tests/specialized_drone_empty_suspension_e3d5c6f_c5p_b2b1_test.tscn: 11 labeled sections UNRUN. B2b-2 loaded suspension, B2b-3 handoff, B2c and B3 not implemented. Historical 75/1018 unchanged; Main and accepted tests preserved.
+
 2026-11-27. Targeted read-only review pinned to dae5a5363d3c27609e6cfd5529d267da5bfdf91e. B2a accepted at expected runtime 967bc44e9c89d593f1dc7833e5710bec35f7f996: isolated 1/11 plus targeted 22/296; historical unique 75/1018. Developer-local verification, not independent Godot execution. Proposal only.
 
 ## Scope and invariants
