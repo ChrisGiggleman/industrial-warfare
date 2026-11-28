@@ -353,7 +353,12 @@ func configure_c4a(pole: PrototypePowerStructure) -> bool:
 	_c4_logistics = x["logistics"]
 	_c4_home = builder.global_position
 	_c4_charging = b2._c1_charging
-	if not _live(_c4_charging) or not x["network"].register_node(pole.get_power_node()) or not x["network"].link_nodes(hub.get_power_node(), pole.get_power_node()):
+	if not _live(_c4_charging):
+		return false
+	if b2.c5p_power_mode():
+		if not _live(b2._c5p_power_authority) or not b2._c5p_power_authority.matches_builder_topology(pole, x["network"], x["power"]):
+			return false
+	elif not x["network"].register_node(pole.get_power_node()) or not x["network"].link_nodes(hub.get_power_node(), pole.get_power_node()):
 		return false
 	if not x["coordinator"].matches_tick_services(x["scheduler"], x["escrow"]) or not x["coordinator"].matches_owned_registry(x["registry"]):
 		return false

@@ -1,5 +1,7 @@
 # E3d5c6f C5P-B2 — Building-driven power authorization proposal
 
+2026-11-27 — C5P-B2a candidate: isolated opt-in power authorization snapshot and early authentic pole registration/reuse implemented. B2b suspension and B2c work enforcement NOT implemented. New F6 scene res://tests/specialized_drone_power_authorization_e3d5c6f_c5p_b2a_test.tscn has 11 provisional labeled sections, UNRUN. B1 accepted 44/616 fresh targeted including isolated; historical unique 74/1007 unchanged. Main and existing tests unchanged; approval for later stages pending.
+
 2026-11-27. Read-only source review pinned to 07c870d61672b494342c9a0cd0134705db7a3751; accepted B1 runtime expected 1b3908f. B1 isolated 1/10 and targeted 43/606 accepted developer-local; historical unique 74/1007. This document is a proposal, not implementation. Main and prior test fixtures remain unchanged.
 
 ## Scope and player-facing rules

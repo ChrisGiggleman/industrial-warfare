@@ -6,6 +6,31 @@ class_name SpecializedDroneLogisticsE3d5c6fB2
 @export var enable_b2_logistics: bool = false
 @export var enable_c5p_automated_lifecycle: bool = false
 var _c5p_mode: bool = false
+@export var enable_c5p_building_power: bool = false
+var _c5p_power_mode: bool = false
+var _c5p_power_authority: SpecializedDronePowerAuthorizationC5PB2A
+
+func c5p_power_mode() -> bool:
+	return _c5p_power_mode
+
+func configure_c5p_power(pole: PrototypePowerStructure) -> bool:
+	if not _c5p_power_mode or not _c5p_mode or not _c1_owner() or phase != &"c1_ready" or lease_id != 0 or _c5p_power_authority != null:
+		return false
+	for child: Node in _scope().get_children():
+		if child is SpecializedDronePowerAuthorizationC5PB2A:
+			return false
+	_c5p_power_authority = SpecializedDronePowerAuthorizationC5PB2A.new()
+	_scope().add_child(_c5p_power_authority)
+	if not _c5p_power_authority.configure(self, pole, 7):
+		_c5p_power_authority.free()
+		return false
+	return true
+
+func c5p_power_snapshot() -> Dictionary:
+	if not _c5p_power_mode or not _live(_c5p_power_authority):
+		return {"reason": &"invalid_authority", "forecast_available": false, "actual_allocation_ready": false}
+	return _c5p_power_authority.snapshot()
+
 func c5p_automated_mode() -> bool:
 	return _c5p_mode
 const EXACT_SCOPE := "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn"
@@ -83,7 +108,7 @@ func _core() -> bool:
 	return count == 1 and suppliers == 1 and discoveries == 1 and not is_processing() and not is_physics_processing()
 
 func configure_b2(original_site: ConstructionSite, original_storage: Node3D, original_staging: BlueprintConstructionMaterialStaging, original_port: BlueprintConstructionStagingInputPort, dock: PrototypeDroneStorageDock) -> bool:
-	if not enable_b2_logistics or phase != &"disabled" or not _live(self):
+	if not enable_b2_logistics or phase != &"disabled" or not _live(self) or (enable_c5p_building_power and not enable_c5p_automated_lifecycle):
 		return false
 	var scope := _scope()
 	if scope == null or scope.scene_file_path != EXACT_SCOPE or not _live(original_site) or original_site.get_parent() != scope or original_site.target_definition != PRESS or original_site.job.state != ConstructionJob.State.QUEUED:
@@ -122,6 +147,7 @@ func configure_b2(original_site: ConstructionSite, original_storage: Node3D, ori
 	# Cargo permissions enabled only AFTER exact scope/material identity preflight.
 	logistics.enable_isolated_drone = true
 	_c5p_mode = enable_c5p_automated_lifecycle
+	_c5p_power_mode = enable_c5p_building_power
 	logistics.enable_isolated_battery = not _c5p_mode
 	logistics.enable_isolated_cargo_pickup = true
 	logistics.enable_isolated_cargo_delivery = true
