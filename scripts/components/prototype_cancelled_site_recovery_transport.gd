@@ -17,6 +17,8 @@ const SPEED: float = 10.0
 
 @export var enable_isolated_physical_recovery: bool = false
 
+@export var enable_specialized_c3: bool = false
+
 var _adapter: Node
 var _audit: PrototypeCancelledSiteCustodyAudit
 var _drone: PrototypeConstructionWorkerDrone
@@ -44,11 +46,15 @@ func _live(node: Variant) -> bool:
 
 func _scope() -> Node3D:
 	var root := get_parent() as Node3D
+	if _live(root) and enable_specialized_c3 and root.scene_file_path == "res://scenes/core/playable_specialized_drones_e3d5c6f.tscn":
+		return root
 	return root if _live(root) and root.scene_file_path in [EXACT_SCENE, STAGE_C_SCENE, UNIFIED_STAGE_A_SCENE, POWER_PARKING_STAGE_A_SCENE] else null
 
 
 func _enabled() -> bool:
 	var root := _scope()
+	if enable_specialized_c3:
+		return enable_isolated_physical_recovery and _configured and root != null and _live(self) and _live(_adapter) and _adapter is SpecializedDroneLogisticsE3d5c6fB2 and _adapter.c3_transport_authorized(self, _audit) and _live(_audit) and _audit._enabled() and _audit.enable_isolated_stage_b_source_access and _live(_drone) and _drone.enable_isolated_cancelled_staging_flight
 	return (
 		enable_isolated_physical_recovery and _configured and root != null and _live(self)
 		and _live(_adapter) and _adapter.get_parent() == root
@@ -117,7 +123,7 @@ func _audit_owned(audit: PrototypeCancelledSiteCustodyAudit) -> bool:
 
 
 func _owns_staged_mission(drone: PrototypeConstructionWorkerDrone, token: RefCounted) -> bool:
-	return _enabled() and _ticket > 0 and _token != null and token == _token and drone == _drone and not _dispatch.has_lifecycle_assignment()
+	return _enabled() and _ticket > 0 and _token != null and token == _token and drone == _drone and not _foreign_assignment()
 
 
 func _claimed_destination() -> bool:
@@ -146,7 +152,7 @@ func _claimed_destination() -> bool:
 func begin(ticket: int) -> bool:
 	if not _enabled() or _ticket != 0 or ticket <= 0 or _completed.has(ticket):
 		return false
-	if _dispatch.has_lifecycle_assignment() or _drone.get_flight_state() != Flight.IDLE:
+	if _foreign_assignment() or _drone.get_flight_state() != Flight.IDLE:
 		return false
 	if _drone.cargo_amount() != 0 or _drone.cargo_item() != null:
 		return false
@@ -160,15 +166,14 @@ func begin(ticket: int) -> bool:
 	if amount not in [3, 5]:
 		return false
 	var hover: Vector3 = original["hover"]
-	var candidate: Dictionary = _discovery.find_return(_drone, INGOT, amount, true)
+	var candidate: Dictionary = _c3_candidate(hover, amount) if enable_specialized_c3 else _discovery.find_return(_drone, INGOT, amount, true)
 	if candidate.is_empty():
 		return false
 	var dock: PrototypeDroneStorageDock = candidate["dock"]
 	var dest: InventoryComponent = candidate["inventory"]
 	var building: Node3D = candidate["storage"]
 	var path: Array[Vector3] = [hover, dock.global_position]
-	var energy: float = _drone.estimate_route_energy(path)
-	if energy < 0.0 or energy > _drone.battery_units() + 0.00001:
+	if not _drone.route_feasible(path):
 		return false
 	var token := RefCounted.new()
 	if not dest.reserve_drone_return_space(token, INGOT, amount):
@@ -223,7 +228,7 @@ func observe() -> Dictionary:
 func tick(delta: float) -> Dictionary:
 	if not _enabled() or _ticket == 0 or not is_finite(delta) or delta <= 0.0 or delta > 0.1:
 		return {"action": &"blocked"}
-	if _dispatch.has_lifecycle_assignment():
+	if _foreign_assignment():
 		return {"action": &"foreign_assignment"}
 	var state: int = _drone.get_flight_state()
 	if state == Flight.STAGED_TO_SITE:
@@ -267,6 +272,51 @@ func tick(delta: float) -> Dictionary:
 			_completed[_ticket] = _amount
 			_clear()
 			return {"action": &"rearmed"}
+		if _drone.c5p_automated_mode():
+			return {"action": &"dock_wait"}
 		var charged: float = _charging.advance_charging(delta)
 		return {"action": &"charged" if charged > 0.0 else &"dock_wait"}
 	return {"action": &"quarantined"}
+
+func _foreign_assignment() -> bool:
+	if enable_specialized_c3:
+		return not _enabled()
+	return not _live(_dispatch) or _dispatch.has_lifecycle_assignment()
+
+func configure_specialized(adapter: SpecializedDroneLogisticsE3d5c6fB2, audit: PrototypeCancelledSiteCustodyAudit) -> bool:
+	var root := _scope()
+	if not enable_specialized_c3 or not enable_isolated_physical_recovery or _configured or root == null or not _live(adapter) or not adapter.c3_transport_authorized(self, audit):
+		return false
+	if not _live(audit) or not audit._enabled() or not audit.enable_isolated_stage_b_source_access:
+		return false
+	_adapter = adapter
+	_audit = audit
+	_drone = root.get_node("LogisticsDrone") as PrototypeConstructionWorkerDrone
+	_discovery = adapter._c2_discovery
+	_charging = adapter._c1_charging
+	_registry = root.get_node("StagingRegistry") as BlueprintConstructionSiteStagingRegistry
+	_escrow = adapter._c2_escrow
+	if audit._registry != _registry or audit._escrow != _escrow:
+		return false
+	_configured = true
+	return _enabled()
+
+# For specialized recovery, rank only candidates that can complete ALL legs.
+func _c3_candidate(hover: Vector3, amount: int) -> Dictionary:
+	var best: Dictionary = {}
+	for candidate: Dictionary in _discovery._entries_for(_drone, INGOT, amount):
+		var dock: PrototypeDroneStorageDock = candidate["dock"]
+		var stock: InventoryComponent = candidate["inventory"]
+		if not _adapter.c3_dock_admitted(dock) or not dock.allow_returns or not stock.enable_isolated_drone_return_claims:
+			continue
+		var space: int = stock.get_available_space()
+		if space >= 0 and space < amount:
+			continue
+		var points: Array[Vector3] = [hover, dock.global_position]
+		if not _drone.route_feasible(points):
+			continue
+		var distance: float = _drone.global_position.distance_to(dock.global_position)
+		if best.is_empty() or distance < float(best["distance"]) - 0.00001:
+			best = candidate
+			best["distance"] = distance
+	return best

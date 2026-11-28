@@ -1,5 +1,240 @@
 # Industrial Warfare — Development Roadmap
 
+2026-11-27: Developer confirmed C5P-B2b-1 compatibility Wave 2 all 15/15 F6 scenes passed locally in Godot against 204 manifest-expected sections. Fresh targeted compatibility progress 30/46 suites and 450/645 expected sections; isolated 1 suite / 12 labeled sections accepted separately. Cumulative historical unique acceptance remains 76 suites / 1030 sections, not fresh full regression. Runtime expected ba5d179 plus documentation-only checkpoints; local HEAD and logs not independently inspected. Wave 3 (15/184) and Wave 4 (1/11) pending. No gameplay, existing tests, historical manifest or Main changes; B2b-2/B2b-3/B2c/B3 remain blocked pending acceptance and separate approval.
+
+2026-11-27: Developer confirmed C5P-B2b-1 compatibility Wave 1 all 15/15 F6 scenes passed locally in Godot against 246 manifest-expected sections. Fresh targeted compatibility progress 15/46 suites and 246/645 expected sections; isolated 1 suite / 12 labeled sections accepted separately. Cumulative historical unique acceptance remains 76 suites / 1030 sections, not fresh full regression. Runtime expected ba5d179 plus documentation-only checkpoints; local HEAD and logs not independently inspected. Wave 2 (15/204), Wave 3 (15/184) and Wave 4 (1/11) pending. No gameplay, existing tests, historical manifest or Main changes; B2b-2/B2b-3/B2c/B3 remain blocked pending acceptance and separate approval.
+
+2026-11-27: Developer confirmed C5P-B2b-1 isolated F6 all 12/12 labeled sections passed locally in Godot against expected runtime ba5d179cce1bf01a2580d16036183b29724920df; local HEAD/logs not independently inspected. Cumulative historical unique acceptance 76 suites / 1030 sections, not fresh full regression. Targeted compatibility 46 suites / 645 expected sections pending in 4 waves. B2b-2/B2b-3/B2c/B3 blocked pending acceptance and respective approval. No gameplay, existing tests, historical manifest or Main changes.
+
+2026-11-27: C5P-B2b-1 candidate implements opt-in empty suspension, exact claim release, original lease and physical berth, power-gated reserve/launch/advance/collect, stock retry and cancellation. New isolated F6 res://tests/specialized_drone_empty_suspension_e3d5c6f_c5p_b2b1_test.tscn: 11 labeled sections UNRUN. B2b-2 loaded suspension, B2b-3 handoff, B2c and B3 not implemented. Historical 75/1018 unchanged; Main and accepted tests preserved.
+
+2026-11-27: Developer confirmed final C5P-B2a compatibility Wave 2 10/10 F6 scenes and 121/121 expected sections (including B1 labeled sections). B2a CLOSED / ACCEPTED: targeted 22/22 suites / 296/296 expected sections (12/175 + 10/121); isolated 1 suite / 11/11 labeled sections accepted separately; fresh B2a 23 suites / 307 expected sections. Historical unique coverage 75/1018, not fresh full regression. Expected runtime 967bc44 plus documentation checkpoints; local HEAD and individual logs not independently inspected. B2b implementation awaits explicit approval of docs/DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B2B_PLAN.md; B2c/B3/C5P-C/C5B/Main integration pending. Documentation only; no gameplay, existing tests or historical manifest changes.
+
+2026-11-27: Developer confirmed C5P-B2a compatibility Wave 1 all 12/12 F6 scenes passed locally in Godot against 175 manifest-expected sections. Fresh targeted compatibility progress 12/22 suites and 175/296 expected sections; isolated 1 suite / 11 labeled sections accepted separately. Cumulative historical unique acceptance remains 75 suites / 1018 sections, not fresh full regression. Runtime expected 967bc44 plus documentation-only checkpoints; local HEAD and logs not independently inspected. Final Wave 2 (10 suites / 121 expected sections, including B1 labeled sections) pending. No gameplay, existing tests, historical manifest or Main changes. C5P-B2b/B2c/B3 remain blocked pending acceptance and separate approval.
+
+2026-11-27: Developer confirmed C5P-B2a isolated F6 all 11/11 labeled sections passed locally in Godot against candidate runtime 967bc44e9c89d593f1dc7833e5710bec35f7f996; local HEAD/logs not independently inspected. Cumulative historical unique acceptance 75 suites / 1018 sections; not fresh full regression. Targeted compatibility 22 suites / 296 expected sections pending in two waves. B2b/B2c/B3 blocked; no gameplay, existing tests, historical manifest or Main changes.
+
+2026-11-27 — C5P-B2a candidate: isolated opt-in power authorization snapshot and early authentic pole registration/reuse implemented. B2b suspension and B2c work enforcement NOT implemented. New F6 scene res://tests/specialized_drone_power_authorization_e3d5c6f_c5p_b2a_test.tscn has 11 provisional labeled sections, UNRUN. B1 accepted 44/616 fresh targeted including isolated; historical unique 74/1007 unchanged. Main and existing tests unchanged; approval for later stages pending.
+
+2026-11-27: Developer confirmed final C5P-B1 compatibility Wave 3 all 13/13 F6 scenes passed locally against 161 manifest-expected sections. B1 CLOSED / ACCEPTED: targeted compatibility 43/43 suites, 606/606 sections (15/246 + 15/199 + 13/161); isolated 1 suite / 10/10 sections accepted separately; fresh B1 verification 44 suites / 616 sections. Historical cumulative unique coverage 74/1007, not a fresh full regression. Runtime expected 1b3908f plus documentation-only checkpoints; local HEAD and logs not independently inspected. C5P-B2 implementation awaits explicit approval of docs/DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B2_PLAN.md; B3, C5P-C, revised C5B and Main integration remain pending. No gameplay, existing tests, historical manifest or Main changes.
+
+2026-11-27: Developer confirmed C5P-B1 compatibility Wave 2 all 15/15 F6 scenes passed locally in Godot against 199 manifest-expected sections. Targeted fresh compatibility progress 30/43 suites and 445/606 sections; isolated 1/10 remains accepted separately; cumulative historical unique coverage unchanged at 74/1007. Runtime expected 1b3908f plus documentation-only checkpoints; local HEAD and individual logs not independently inspected. Final Wave 3 (13/161) pending. No gameplay, existing tests, manifest or Main changes; C5P-B2/B3 not started.
+
+2026-11-27: Developer confirmed C5P-B1 compatibility Wave 1 all 15/15 F6 scenes passed locally in Godot against 246 manifest-expected sections. Targeted fresh compatibility progress 15/43 suites and 246/606 sections; isolated 1/10 remains accepted separately; cumulative historical unique coverage unchanged at 74/1007. Runtime expected 1b3908f plus documentation-only checkpoints; local HEAD and individual logs not independently inspected. Wave 2 (15/199) and Wave 3 (13/161) pending. No gameplay, existing tests, manifest or Main changes; C5P-B2/B3 not started.
+
+2026-11-27: Developer confirmed all 10/10 isolated C5P-B1 F6 labeled sections passed locally after freed-object guard correction at 1b3908f7e23820cbea8d69c78742c3a30fdc1578 (local HEAD and logs not independently inspected). Isolated acceptance only. Historical 73/997 plus new isolated 1/10 = cumulative unique 74/1007, not fresh full regression. Targeted compatibility gate: 43 existing suites / 606 manifest-expected sections in 3 waves; all pending. No gameplay, existing tests, historical manifest or Main changes. B2/B3 remain blocked pending B1 compatibility acceptance and separate implementation approval.
+
+### 2026-11-27 — C5P-B1 candidate implementation; local F6 pending
+
+Approved isolated battery-independent worker/dock/route mode implemented as candidate; legacy default preserved, B2/B3 follow-on stages not authorized. [B1 test and implementation notes](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_B1.md). New ten-section fixture UNRUN; historical accepted baseline remains 73/997. Main and prior tests preserved. No new acceptance.
+
+
+### 2026-11-26 — C5P-A simplified drone power design checkpoint
+
+C5A remains developer-confirmed 73/73 suites / 997/997 manifest-expected sections; manifest independently recounted. C5B original battery-dependent sandbox proposal is on hold. Targeted read-only source audit at 36cdef6fab1bd9815986dfe925ce434b57c11a8a identified battery coupling in worker movement, discovery/reservations/recovery, B2/B3, docking and dispatch; pre-delivery power cannot depend on escrow-gated allocation. [C5P-A audit and scoped implementation proposal](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5P_AUDIT.md) awaits explicit implementation approval. Approved direction: automated drones use destination/site power, not individual batteries/charging/path coverage; suspend on outage, preserve original cargo/escrow/progress, physically return and resume. Power extensions need no site power, but must be within valid completed network link range; scoped bootstrap/restoration exception proposed. Future backlog: construction drones repair surviving buildings automatically, free time-limited default with optional material cost; configurable per-world demolition refund 0–100% (recommended custom default 100%), stored inventory recovered separately, unconsumed cancellation materials returned, no enemy-destruction construction refund by default; world difficulty settings and player-controlled exploration batteries later. No gameplay, Main, accepted tests or manifest changes; no new Godot runs or accepted counts. Next: approve staged C5P implementation, isolated tests, compatibility/full regression, revised C5B, then separate Main review.
+
+
+### 2026-11-26 — C5A FULL FRESH REGRESSION ACCEPTED; C5B proposal ready
+
+2026-11-26: Developer confirmed C5A Wave 4 13/13 F6 scenes passed locally in Godot against 161 manifest-expected sections. Waves 1–3 previously accepted 20/245, 20/333, 20/258. C5A FRESH FULL REGRESSION ACCEPTED: 73/73 unique suites and 997/997 manifest-expected sections (20+20+20+13; 245+333+258+161). Supersedes B4 fresh 68/923; cumulative unique accepted baseline remains 73/997. Runtime revision expected C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; local HEAD and individual assertion logs not independently inspected. C5B interactive sandbox implementation proposal ready for explicit approval; smoke and manual checks PENDING. Main, existing runtime, accepted scenes/tests, manifest, local edits and draft PR #1 preserved; no merge. [C5B sandbox implementation proposal](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5B_PLAN.md).
+
+
+### 2026-11-26 — C5A Wave 3 ACCEPTED; final Wave 4 ready
+
+2026-11-26: Developer confirmed C5A Wave 3 all 20/20 F6 scenes passed locally in Godot against 258 manifest-expected sections. Waves 1 and 2 remain accepted 20/245 and 20/333. Fresh C5A progress 60/73 suites and 836/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Final Wave 4: 13 scenes / 161 expected sections PENDING; on acceptance fresh progress 73/73 and 997/997. C5B manual sandbox implementation/verification pending separate approval. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
+
+
+### 2026-11-26 — C5A Wave 2 ACCEPTED; Wave 3 ready
+
+2026-11-26: Developer confirmed C5A Wave 2 all 20/20 F6 scenes passed locally in Godot against 333 manifest-expected sections. Wave 1 remains accepted 20/245. Fresh C5A progress 40/73 suites and 578/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Wave 3: 20 scenes / 258 expected sections PENDING; on acceptance fresh progress 60/73 and 836/997. Wave 4 and C5B manual sandbox implementation/verification pending. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
+
+
+### 2026-11-26 — C5A Wave 1 ACCEPTED; Wave 2 ready
+
+2026-11-26: Developer confirmed C5A Wave 1 all 20/20 F6 scenes passed locally in Godot against 245 manifest-expected sections, using C5 manifest prepared at 5f32bd84fa9f973381f22754884649a82753352e. Fresh C5A progress 20/73 suites and 245/997 expected sections; cumulative unique accepted baseline 73/997 unchanged. Runtime revision expected to remain C4B implementation bed2c8dd4189d5fc1c2a9572134e5ef761a1723c plus documentation checkpoints; actual local HEAD and assertion logs not independently inspected. Wave 2: 20 scenes / 333 expected sections PENDING; on acceptance fresh progress 40/73 and 578/997. Waves 3–4 and C5B manual sandbox implementation/verification pending. No gameplay, manifest, existing tests or Main changes. Draft PR #1 remains unmerged.
+
+
+### 2026-11-25 — C4B FULLY ACCEPTED; C5 verification prepared
+
+Developer confirmed C4B compatibility 53/53 F6 scenes passed locally against 751 manifest-expected sections on 2026-11-25, following isolated 14/14. C4B FULLY ACCEPTED: 54 gate scene runs / 765 associated sections; compatibility overlaps prior accepted coverage. Unique accepted coverage 73 suites / 997 expected sections; last fresh full regression B4 68/923. Assistant did not run Godot or inspect assertion logs. C5A fresh full 73/997 regression PENDING. C5B manual playable verification requires a separately approved isolated harness; existing specialized scene is inert B1 by default, has no player-facing controls or camera, and B2/B3/C stages require explicit fixture setup and manual ticks. No C5 gameplay or harness implementation yet; no manual acceptance. [C5 verification plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C5_PLAN.md). Documentation-only checkpoint; Main, existing gameplay, accepted scenes/tests, local edits and draft PR #1 preserved.
+
+
+### 2026-11-25 — C4B isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C4B isolated F6 14/14 labeled sections passed locally in Godot against implementation commit bed2c8dd4189d5fc1c2a9572134e5ef761a1723c on 2026-11-25. Cumulative unique accepted coverage 73 suites / 997 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14 + C4B 1/14); last fresh full regression remains B4 68/923. C4B targeted compatibility 53 existing suites / 751 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C5 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_COMPATIBILITY.md).
+
+
+### 2026-11-25 — C4B implementation staged; F6 PENDING
+
+Developer approved C4B. Implemented default-off terminal builder cancellation at C4A flight/work/parking/parked including resume, exact revoked builder-bearing receipt, coordinator cleanup, metered empty right berth retirement without recharge, one B3→B2 token hand-back, original C3 custody ticket/escrow and existing physical recovery/finite charging. New isolated F6 res://tests/specialized_drone_builder_cancel_e3d5c6f_c4b_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Explicit controller cancel only; no generalized reroute, dynamic relocation or source destruction; retired builder stays DOCKED and disabled, retains charging registration history but cannot charge. Accepted baseline 72/983; fresh B4 68/923. Main and prior scenes/tests unchanged. C5 gated.
+
+
+### 2026-11-25 — C4A FULLY ACCEPTED; C4B proposal
+
+Developer confirmed C4A compatibility 40/40 F6 scenes passed locally against 581 manifest-expected sections on 2026-11-25, following isolated 14/14. C4A FULLY ACCEPTED: 41 gate scene runs / 595 associated sections; 40/581 overlap prior accepted coverage. Unique accepted coverage 72 suites / 983 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4B awaits explicit implementation approval. [C4B implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4B_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4B gameplay or F6 fixture yet.
+
+
+### 2026-11-25 — C4A isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C4A isolated F6 14/14 labeled sections passed locally in Godot against implementation commit 18391041722c4ae2fc4ff4f92645f7930b43f4b0 on 2026-11-25. Cumulative unique accepted coverage 72 suites / 983 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18 + C4A 1/14); last fresh full regression remains B4 68/923. C4A targeted compatibility 40 existing suites / 581 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4B gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4A_COMPATIBILITY.md).
+
+
+### 2026-11-25 — C4A implementation staged; F6 PENDING
+
+Developer approved C4A. Default-off specialized builder admission from C3 docked delivery, exact original custody ticket and one owner transfer, separate right berth finite registration on existing shared allocator, active receipt validation across queued/constructing/paused, physical blackout parking/resume with preserved progress/escrow and existing scheduler binding, normal completion and empty return. New isolated F6 res://tests/specialized_drone_builder_blackout_e3d5c6f_c4a_test.tscn 14 labeled sections A–N PENDING local execution. No assistant Godot run. Terminal cancellation/hand-back deferred C4B; no generalized dynamic site relocation or automatic reroute. Accepted baseline 71/969; fresh B4 68/923. Main and prior scenes/tests unchanged.
+
+
+### 2026-11-25 — C3 FULLY ACCEPTED; C4 proposal
+
+Developer confirmed C3 compatibility 44/44 F6 scenes passed locally against 623 manifest-expected sections on 2026-11-25, following isolated 18/18. C3 FULLY ACCEPTED: 45 gate scene runs / 641 associated sections; 44/623 overlap prior accepted coverage. Unique accepted coverage 71 suites / 969 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C4 awaits explicit implementation approval. [C4 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C4_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C4 gameplay or F6 fixtures yet.
+
+
+### 2026-11-25 — C3 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C3 isolated F6 18/18 labeled sections passed locally in Godot against implementation commit 33ddb5288f51b8c3dd45c2d36cf999a8980cd8c1 on 2026-11-25. Cumulative unique accepted coverage 71 suites / 969 expected sections (B4 68/923 + C1 1/12 + C2 1/16 + C3 1/18); last fresh full regression remains B4 68/923. C3 targeted compatibility 44 existing suites / 623 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect individual assertion logs. C4 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C3_COMPATIBILITY.md).
+
+
+### 2026-11-25 — C3 implementation staged; F6 PENDING
+
+Developer approved C3; implementation staged with default-off exact specialized controller, original custody audit, escrow refund/retry, terminal empty return, existing staged recovery transport without dispatcher, whole-route destination capacity forecast and protected physical pickup/deposit. Invalid destination during staged mission deliberately waits with existing claim and custody; automatic rerouting/deleted destination before deposit not implemented. Home after deposit independent of dock. Explicit controller cancellation captures ticket before job.cancel; external direct job.cancel without capture is not integrated. New isolated F6 res://tests/specialized_drone_staging_recovery_e3d5c6f_c3_test.tscn 18 labeled sections A–R PENDING local execution. No assistant Godot run. Accepted baseline 70/951; fresh B4 68/923. Main and prior scenes/tests unchanged. C4 remains gated.
+
+
+### 2026-11-25 — C2 FULLY ACCEPTED; C3 proposal
+
+Developer confirmed C2 compatibility 27/27 F6 scenes passed locally against 356 manifest-expected sections on 2026-11-25, following isolated 16/16. C2 FULLY ACCEPTED: 28 gate scene runs / 372 associated sections, 27/356 overlapping accepted coverage. Unique accepted coverage 70 suites / 951 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect assertion logs. C3 plan awaits explicit implementation approval. [C3 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C3_PLAN.md). Documentation-only checkpoint; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. No C3 gameplay or F6 fixture yet.
+
+
+### 2026-11-25 — C2 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed C2 isolated F6 16/16 labeled sections passed locally in Godot against implementation commit bb666235f575bad4c83cdde90a7d378c9c25e4ba on 2026-11-25. Cumulative unique accepted coverage 70 suites / 951 expected sections (B4 68/923 + C1 1/12 + C2 1/16); last fresh full regression remains B4 68/923. C2 targeted compatibility 27 existing suites / 356 manifest-expected sections PENDING; reruns overlap accepted coverage. Assistant did not run Godot or inspect assertion logs. C3 gated on local compatibility acceptance; Main, prior scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C2_COMPATIBILITY.md).
+
+
+### 2026-11-25 — E3d5c6f C2 implementation staged; F6 PENDING
+
+Developer approved C2. Default-off C2 extension of existing C1/B2 single owner, explicit physical collection and delivery without unload, original job cancellation and exact revoked lease, original return reservation/discovery service, registered return-only alternate docks, metered home return and finite charging/rearm. New isolated F6 res://tests/specialized_drone_loaded_cancel_e3d5c6f_c2_test.tscn with 16 labeled sections A–P is **PENDING local execution**. C2 tests cover capacity shrink, disabled and moved docks (actual deletion not included in this new fixture; historical x6 covers deletion and should be rerun). No gameplay activation in Main or old scene/test changes. Cumulative accepted baseline remains 69/935; fresh B4 68/923 unchanged. No assistant Godot runtime. C2 targeted compatibility after local acceptance.
+
+
+### 2026-11-25 — E3d5c6f C1 FULLY ACCEPTED; C2 proposal
+
+Developer confirmed C1 targeted compatibility 22/22 F6 scenes passed locally against 295 manifest-expected sections on 2026-11-25, following isolated 12/12 acceptance. C1 FULLY ACCEPTED: 23 gate scene runs / 307 associated expected sections, of which 22/295 overlap B4. Unique accepted coverage 69 suites / 935 expected sections; last fresh full B4 68/923 remains distinct. Assistant did not run Godot or inspect individual assertion logs. Next C2 scoped plan awaits explicit implementation approval. [C2 implementation plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C2_PLAN.md). Documentation-only checkpoint; Main, all previously accepted scenes/tests, local edits and draft PR #1 preserved. No C2 gameplay code or new F6 fixture yet.
+
+
+### 2026-11-25 — C1 isolated ACCEPTED; compatibility PENDING
+
+Developer confirmed all 12/12 labeled C1 sections passed locally in Godot against implementation commit acec11e64df4d9987a8156e63bc68f7ff59ad56f. Assistant did not execute Godot. Cumulative unique accepted coverage 69 suites / 935 expected sections (68/923 historical fresh B4 + 1/12 C1); no fresh full 69-suite regression claimed. Targeted compatibility 22 existing scenes / 295 manifest-expected sections PENDING; these overlap B4 and must not inflate unique coverage. C2 remains gated on developer-local compatibility acceptance. Main, accepted scenes/tests, local edits and unmerged draft PR #1 preserved. [Compatibility guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C1_COMPATIBILITY.md).
+
+
+### 2026-11-25 — E3d5c6f C0 reviewed / C1 isolated implementation staged; F6 PENDING
+
+Developer approved C1 only. [C0 audit and C1 gate](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C0_C1.md). Default-off same-B2-owner pre-pickup cancellation, exact supplier release, physical empty return, finite hub recharge and terminal rearm; no collection in C1 isolated mode. New F6 `res://tests/specialized_drone_pre_pickup_cancel_e3d5c6f_c1_test.tscn` (12 labeled sections) **not yet run**. Accepted B4 remains 68 unique suites / 923 manifest-expected sections. Main, old scenes/tests and local edits untouched; draft PR #1 unmerged. C2–C5 remain pending.
+
+
+### 2026-11-25 — E3d5c6f B4 FINAL ACCEPTED: 68/68 fresh F6 scenes
+
+Developer confirmed Wave 4 **8/8 locally passed**, completing accepted Waves 1 **20/20 (245 expected)**, 2 **20/20 (333)**, 3 **20/20 (258)** and 4 **8/8 (87)**. **Total fresh unique B4 regression: 68/68 scenes against 923 manifest-expected test sections.** Scene-level developer-local testimony; assistant did not run Godot and 923 are not independently audited individual assertions. This closes E3d5c6f **isolated Stage B (B1–B4)**, not Main integration or comprehensive cancellation recovery. [B4 closeout](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_CLOSEOUT.md) and [manifest](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv). **Next proposed gate:** [Stage C0 read-only architecture audit for specialized-drone cancellation and physical materials recovery](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_C_PROPOSAL.md). No Stage C gameplay changes authorized yet. Preserve Main, accepted scenes/tests, local resource edits, and unmerged draft PR #1 on `feature/e3d5c6f-stage-a-role-contracts`.
+
+
+### 2026-11-25 — E3d5c6f B4 Wave 3 ACCEPTED: 20/20 developer-local F6 scenes
+
+Developer explicitly confirmed **all 20/20 Wave 3 F6 scenes passed locally** in Godot, matching the committed unique manifest rows 41–60 from `construction_power_coverage_e3d5c3a_test.tscn` through `cancelled_site_physical_recovery_e3d5c6c_stage_b_test.tscn`. These scenes account for **258 manifest-expected sections**, not independently counted source-level assertions. Accepted waves: **Wave 1 20/20 (245 expected), Wave 2 20/20 (333), Wave 3 20/20 (258)**. Fresh cumulative B4 acceptance is **60/68 unique F6 scenes with 836/923 associated manifest-expected sections**. This is developer-local testimony; assistant has not run Godot.
+
+**NEXT: Wave 4, 8 F6 scenes / 87 expected sections, PENDING** in `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, rows 61–68: historical playable cancelled-site recovery E3d5c6c, unified construction E3d5c6d, power interruption E3d5c6e, then E3d5c6f Stage A role guards, Stage A handoff, B1 single owner, B2 logistics and B3 builder. Prior targeted passes do NOT count as fresh Wave 4 runs. **Do not close out B4 or claim 68/68 until all eight fresh F6 scenes are confirmed.** Preserve accepted source/tests, `main`, local uncommitted `.tres/.tscn` files, feature branch `feature/e3d5c6f-stage-a-role-contracts` and draft PR #1 unmerged. [B4 authoritative guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md).
+
+
+### 2026-11-24 — E3d5c6f B4 Wave 2 ACCEPTED: 20/20 developer-local F6 scenes
+
+Developer explicitly confirmed **all 20/20 Wave 2 F6 scenes passed locally**, corresponding to the exact scene paths in manifest rows **21–40** of `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`, from `drone_return_reservations_e3d5c5x4b_test.tscn` through `drone_cancelled_cargo_recovery_e3d5c5x6_test.tscn`. These scenes carry **333 manifest-expected printed check sections**; this is not an independently audited per-assertion transcript. Local developer confirmation supersedes any unsubmitted UI checkbox progress.
+
+**Fresh B4 cumulative acceptance: 40/68 unique scenes, 578/923 associated manifest-expected sections** (Wave 1 20/20 / 245, Wave 2 20/20 / 333). **NEXT Wave 3 PENDING:** 20 F6 scenes / 258 expected sections, manifest rows 41–60 (power, finite hub charging, drone dispatch/lifecycle, construction expansion, direct-build, canceled-site custody). **Wave 4 PENDING:** 8 scenes / 87. Do not claim all 68 passed yet or treat old targeted reruns as fresh. Historical E3d5c6e 63/63/880 accepted remains distinct. Preserve Main, old accepted scenes/tests and local .tres/.tscn modifications; use branch `feature/e3d5c6f-stage-a-role-contracts`, leave draft PR #1 unmerged. [B4 manifest and protocol](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md).
+
+
+### 2026-11-24 — E3d5c6f B4 Wave 1 ACCEPTED: 20/20 local F6 scenes
+
+Developer confirmed **ALL 20/20 Wave 1 F6 scenes PASSED** against the freshly committed four-wave [68-unique-suite manifest](../tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv) `tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`. Wave 1 = manifest rows 1–20 (from `inventory_trasnfer_test.tscn` through `destruction_cargo_recovery_test.tscn`), **245 manifest-expected test/check sections**, not an independently verified assertion-by-assertion tally. Local developer report; Godot not run by assistant. **B4 progress: 20/68 unique scenes reported freshly passed, 245/923 manifest-expected sections associated with passed scenes.** **Wave 2 NEXT/PENDING: 20 scenes / 333 expected sections**, manifest rows 21–40. Waves 3 (20/258) and 4 (8/87) PENDING. Do not claim full B4 68/68 or reuse prior targeted reruns as this fresh regression. Preserve Main, previously accepted fixtures, developer local resource edits, feature branch `feature/e3d5c6f-stage-a-role-contracts` and unmerged PR #1. [B4 guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md).
+
+
+### 2026-11-24 — E3d5c6f Stage B4 regression manifest AUDITED; fresh run PENDING
+
+Developer requested B4 after **Stage B3 targeted 8/8 local F6** acceptance. Audited existing authoritative `tools/drone_power_interruption_e3d5c6e_final_63_suite_regression.csv` (63 unique scene names, historical manifest total 880); verified every original `tests/*.tscn` path exists on feature branch. Appended all five committed E3d5c6f A/B1/B2/B3 fixture scenes exactly once (6+7+9+9+12 = 43 source-derived labeled printed PASS sections) to new **`tools/specialized_drones_e3d5c6f_stage_b4_68_suite_regression.csv`**: **68 unique F6 scenes, 923 manifest-expected check groups**, no duplicates, all scene paths verified. Historical expected groups + new printed sections are manifest bookkeeping, **not** independently audited 923 assertions. Four ordered waves: **Wave 1 20 scenes/245 expected, Wave 2 20/333, Wave 3 20/258, Wave 4 8/87**. **NO fresh B4 Godot suite has yet been reported run**; next is **Wave 1** one-at-a-time interactive Copy scene path F6 navigator. [B4 regression guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B4_REGRESSION.md). Stop on first failing suite; count completed waves only on developer confirmation, not prior B3 targeted reruns.
+
+No changes to gameplay sources or accepted legacy scenes/tests in this B4 manifest checkpoint. Keep `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 unmerged, `main` untouched, and preserve developer's uncommitted local `.tres/.tscn` modifications. Historical accepted E3d5c6e 63/63/880 remains distinct from current pending fresh 68/923.
+
+
+### 2026-11-24 — E3d5c6f Stage B3 TARGETED ACCEPTED: 8/8 F6 scenes developer-local PASSED
+
+Developer reports **all eight requested Godot F6 scenes passed**, including NEW `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn` (12 labeled PASS sections) and seven targeted compatibility reruns:
+- `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` (9 labeled sections)
+- `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9)
+- `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` (6)
+- `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` (7)
+- `res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn` (12)
+- `res://tests/drone_physical_delivery_e3d5c5x5b_test.tscn` (13)
+- `res://tests/drone_post_delivery_cancellation_e3d5c5x7c2_test.tscn` (13)
+
+**Counting:** 8/8 F6 scene runs at this gate = **1 new B3 fixture and 7 already accepted regression reruns**, with 81 labeled PASS sections across source, **not 81 independent assertion/check counts or 81 new unique checks**. Developer-local verification; assistant did not execute Godot. The scoped end-to-end two-role vertical slice is accepted: original logistics physical collection of five ingots and handoff/return, separate construction drone battery-metered arrival and one worker-slot admission through original coordinator, real power outage/pause/restart, original 18-second Ammunition Press build completion and escrow commitment, metered construction drone return. **B4 combined unique-suite regression is NOT yet run.** Historical E3d5c6e baseline **63 unique suites / 880 manifest-expected checks** remains accepted from earlier stage but has **NOT** been freshly rerun against B3; do not invent new combined counts.
+
+Keep `main` and previously accepted scenes/tests unchanged; preserve developer's uncommitted local `.tres/.tscn` files. Work is on `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 remains unmerged. Next gate **E3d5c6f Stage B4** — generate an audited unique regression manifest and run developer-local comprehensive compatibility, before deciding merge or future gameplay integration. Stage C cancellations, custody recovery and fleet scheduling remain future gates. [B3 checkpoint](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B3.md).
+
+
+### 2026-11-24 — E3d5c6f Stage B3 separate physical builder IMPLEMENTED; F6 PENDING
+
+User requested B3 after accepted B2 targeted **6/6 local F6 scene runs**. Code now adds a **default-off** `B3BuilderController` and original `PowerNetwork` in the one E3d5c6f opt-in scene, an **exact B2→B3 single-tick-owner handoff**, and an **additive receipt-backed distinct physically-arrived builder binding** on the existing slot scheduler. The original PowerAllocator, ReadinessCoordinator, site escrow and single scheduler retain all real power/material/worker permission; original ConstructionJob is the **sole** 18-second timer. The new `res://tests/specialized_drone_builder_e3d5c6f_b3_test.tscn` (12 labeled sections) exercises actual B2 material movement, physically separate builder, no permission before physical arrival, real power outage waiting and construction pause/resume, escrow commitment upon real Press activation, and metered return. **UNRUN in Godot**; do not claim passage, acceptance or fresh aggregate regression. After new scene passes, seven targeted accepted suite reruns remain. [B3 scope and one-at-a-time F6 guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B3.md).
+
+Preserve Main and every previously accepted test scene; avoid modifying developer local `.tres/.tscn` changes, keep feature `feature/e3d5c6f-stage-a-role-contracts`, PR #1 draft/unmerged. Older accepted historical baseline E3d5c6e **63 suites / 880 manifest-expected checks** has NOT been freshly rerun. Stage B4 combined regression and Stage C custody are NOT started.
+
+
+### 2026-11-24 — E3d5c6f Stage B2 TARGETED ACCEPTANCE COMPLETE: 6/6 F6 SCENES PASSED LOCALLY
+
+Developer confirmed **all five requested targeted compatibility F6 scenes passed**, following the separately confirmed new B2 isolated logistics fixture passing after its setup fix. Thus **six scene runs passed at the B2 gate**: (1) new `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` (9 labeled sections); (2) B1 `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9); (3) Stage A role guards `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` (6); (4) Stage A material handoff `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` (7); (5) earlier E3d5c5x5a physical pickup `res://tests/drone_physical_pickup_e3d5c5x5a_test.tscn` (12); (6) earlier E3d5c5x5b physical delivery `res://tests/drone_physical_delivery_e3d5c5x5b_test.tscn` (13). These comprise **one new B2 fixture plus five preexisting reruns**, with 56 labeled printed sections across source fixtures, **not an audited individual-assertion/check count or 56 new checks**. Results are **developer-reported local Godot F6**, not independently assistant-run.
+
+**B2 accepted within its scoped physical logistics-only and original-material-provenance boundaries:** original Storage 15→10 Test Ingots, original site escrow 5, physically empty logistics drone returns on battery, construction drone remains idle, original Press stays QUEUED with zero progress and no worker readiness. The historical fully accepted E3d5c6e **63/63 unique suites / 880 manifest-expected checks has NOT been freshly rerun** for E3d5c6f. A combined full regression and Stage B3 physical *distinct-builder* arrival/worker admission remain pending; do not claim complete Stage B or integrated gameplay. Preserve Main, previous scenes/tests, local uncommitted .tres/.tscn changes, feature branch `feature/e3d5c6f-stage-a-role-contracts`, and unmerged draft PR #1. [B2 acceptance record](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B2.md). **Next gate: Stage B3**, which requires a separate guarded physical builder implementation and F6 validation.
+
+
+### 2026-11-24 — E3d5c6f B2 NEW ISOLATED F6 PASSED; TARGETED COMPATIBILITY PENDING
+
+Developer confirmed the fixed `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` passed locally after an earlier `configure_b2` setup assertion at line 62 was corrected. The B2 fixture has **9 labeled printed PASS sections** in source, not a measured independent assertion count. This is **1 new isolated scene passed**, not yet complete Stage B2 acceptance. Required targeted reruns **PENDING**: B1 single-owner; Stage A role guards and material handoff; E3d5c5x5a physical pickup; E3d5c5x5b physical delivery. Developer-local report only; assistant did not execute Godot. Do not add rerun counts to unique checks. Historical E3d5c6e 63/63 suites / 880 manifest-expected checks remain previously accepted, not rerun. Keep PR #1 draft and Main untouched. Stage B3 not started.
+
+
+### 2026-11-24 — B2 first local F6 failed at setup; scoped fix committed, RETEST PENDING
+
+Developer screenshot shows `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.gd:62` failed: `assert(b2.configure_b2(site, storage, staging, port, dock))`. The fixture reached this assertion; no successful B2 run or pickup confirmed. Source review identified one definite setup blocker: `PrototypeDroneStorageDiscovery.enable_isolated_discovery` and `PrototypeDroneSupplierReservations.enable_isolated_reservations` both default OFF in the E3d5c6f B1 scene, but the new B2 configurator mistakenly required them ON without enabling them. Updated `configure_b2` to enable both **only after** exact scene, original queued site, real 15-ingot Storage and pinned receiver preflights, then configure/register original services; pre-enabled or replacement authorities fail closed. No older scene/test edits. **B2 F6 must be rerun**; do not claim this fix passes Godot until user verifies. B1 3/3 accepted remains separate; historic 63/880 baseline not rerun.
+
+
+### 2026-11-24 — E3d5c6f Stage B2 physical logistics IMPLEMENTED, F6 PENDING
+
+User authorized next gated milestone after developer-local B1 **3/3 F6** acceptance. Stage B2 adds a **default-off, exact-scoped** `B2LogisticsController`, genuine existing source discovery + supplier stock claim, physically metered one-load logistics pickup, exact original staging/escrow handoff, and a narrowly guarded nonterminal **empty physical return** using the original drone's return flight. Additive opt-in scene resources and additive methods in existing drone script only; **Main and all previously accepted tests/scenes untouched**. The construction drone stays idle with no worker grant or job timer. Expected material conservation: original Storage 15→10 + five ingots original escrow, zero cargo/queued progress, logistics physically DOCKED. The nonterminal return does NOT fully rearm or charge and retains original provenance; complete multi-role custody/recovery remains future-gated.
+
+**NEW UNRUN F6:** `res://tests/specialized_drone_logistics_e3d5c6f_b2_test.tscn` (9 printed sections, not assertion count). Targeted reruns after it passes: B1, both Stage A scenes, original physical pickup x5a and delivery x5b. See [B2 acceptance/test guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B2.md). No local Godot run by assistant; report first parse/assertion failure. Old **63/63 suites, 880 manifest-expected checks** remains historical accepted, not rerun here. Stage B3 **NOT** started. Work stays on feature `feature/e3d5c6f-stage-a-role-contracts`, PR #1 draft/unmerged, preserve developer local .tres/.tscn modifications.
+
+
+### 2026-11-24 — E3d5c6f B1 ACCEPTED: 3/3 F6 scenes developer-local PASS
+
+User confirmed **all three** B1 verification F6 scenes ran locally and passed without issues:
+- NEW `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` — passed, 9 labeled PASS sections in source.
+- Targeted Stage A regression `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` — passed, 6 labeled PASS sections.
+- Targeted Stage A regression `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` — passed, 7 labeled PASS sections.
+
+**Counting:** 3/3 scenes tested at this acceptance gate, **1 new B1 fixture** and **2 already-accepted Stage A reruns**. Twenty-two labeled print sections across the three source fixtures, NOT an independently verified per-assertion count or 22 new unique checks. Developer-local pass report, not assistant-run Godot. Previously accepted E3d5c6e baseline stays **63/63 unique suites / 880 manifest-expected checks** (NOT freshly rerun for E3d5c6f). Do not represent this gate as a 66-suite combined regression.
+
+**Scope:** guarded single-owner inert coordinator, real Hub and two distinct identity-only drone nodes; NO physical flight, material pickup/delivery, job progression, charging or Main integration. Stage B1 accepted; **NEXT is Stage B2 logistics pickup/delivery**, which has not been implemented or tested. Preserve all previous scenes/tests and developer local modified .tres/.tscn files. Continue on feature branch `feature/e3d5c6f-stage-a-role-contracts` (PR #1 draft/unmerged) until deliberate integration decision. See [B1 acceptance guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B1.md) and [Stage B plan](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B_PLAN.md).
+
+
+### 2026-11-24 — E3d5c6f Stage B1 committed; F6 PENDING
+
+Developer authorized B1 only: exact-opt-in single-owner, **identity-only** two-drone scene. Added guarded inert `PlayableSpecializedDronesE3d5c6f` controller, one authentic Hub, separate LogisticsDrone and ConstructionDrone nodes, and one original-resource service set. No movement, cargo, charging, job admission, escrow changes, Main wiring or old gameplay-source edits. The new F6 scene is `res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.tscn` (9 labeled sections, **UNRUN**, not an assertion count). See [B1 implementation/test guide](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_B1.md). Both Stage A F6 scenes remain developer-local accepted; fresh B1 and Stage A compatibility rerun are pending. Historical baseline E3d5c6e 63 suites / 880 manifest-expected checks remains previously accepted, **not rerun**. Feature branch `feature/e3d5c6f-stage-a-role-contracts`, draft PR #1 unmerged; Stage B2 not begun. Preserve local uncommitted resource files and the [F6 Copy navigator](GODOT_F6_COPY_NAVIGATOR.md).
+
+
+### 2026-11-24 — E3d5c6f Stage A: BOTH ISOLATED F6 SCENES ACCEPTED LOCALLY
+
+Developer confirmed **both newly added Godot F6 scenes passed without issues** on the `feature/e3d5c6f-stage-a-role-contracts` branch:
+- `res://tests/specialized_drone_role_guards_e3d5c6f_stage_a_test.tscn` — passed (fixture contains six labeled sections).
+- `res://tests/specialized_drone_handoff_e3d5c6f_stage_a_test.tscn` — passed (fixture contains seven labeled sections).
+
+**Evidence boundary:** developer-reported successful local runs; no individual assertion transcript and no independent assistant Godot execution. Two newly accepted isolated fixtures; 13 labeled sections in source, **not** a claimed check/assertion count. Do not silently add 13 to the prior 880 manifest-expected check count or claim that 65-suite combined regression has run. Existing E3d5c6e **63/63 suites and 880 manifest-expected checks** remain the previously accepted historical baseline, **not rerun for E3d5c6f**.
+
+The new stage only introduces exact opt-in bookkeeping and internally stored provenance receipts. **No physical two-drone motion, builder worker admission, shared charging, or Main wiring.** Seven additive files only, no accepted scene/test/source edits. Developer has uncommitted local changes to resource and scene `.tres/.tscn` files; never reset or overwrite them. Stage B **requires new explicit approval**. Keep PR #1 draft/unmerged until user requests merge. [Stage A test manifest and checkpoint](DRONE_ROLE_SPECIALIZATION_E3D5C6F_STAGE_A.md).
+
+
 ## Current design checkpoint — 2026-11-24: E3d5c6f specialized drone roles SOURCE AUDIT COMPLETE (implementation unapproved)
 
 - [x] Read-only Github source audit against accepted E3d5c6e **63/63 unique suites / 880 manifest-expected checks**; [E3d5c6f role specialization audit](DRONE_ROLE_SPECIALIZATION_E3D5C6F_ARCHITECTURE_AUDIT.md). No gameplay/test/Main modification.

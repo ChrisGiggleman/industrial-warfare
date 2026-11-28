@@ -42,6 +42,8 @@ func _service() -> PrototypeDroneStorageDiscovery:
 # One outstanding whole-item claim per drone and site in this prototype.
 # No UI-supplied discovery result can authorize the operation: query again.
 func reserve(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, item: ItemDefinition, amount: int, cargo_capacity: int) -> int:
+	if not _c5p_action_allowed(&"reserve", drone):
+		return 0
 	var discovery := _service()
 	if discovery == null:
 		return 0
@@ -54,6 +56,10 @@ func reserve(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite, it
 		return 0
 	var inventory: InventoryComponent = candidate["inventory"]
 	var dock: PrototypeDroneStorageDock = candidate["dock"]
+	if drone._c5p_empty_latched:
+		var controller := get_parent().get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+		if site != controller.site or inventory != controller.source or dock != controller._c5p_original_dock.get_ref() or item != controller.INGOT or amount != 5 or cargo_capacity != 5:
+			return 0
 	var token := RefCounted.new()
 	if not inventory.reserve_drone_stock(token, item, amount, dock.minimum_retained):
 		return 0
@@ -139,8 +145,7 @@ func _valid(claim: Dictionary, discovery: PrototypeDroneStorageDiscovery) -> boo
 			if not dock.allow_pickup or inventory.get_unreserved_amount(item) < dock.minimum_retained:
 				return false
 			var points: Array[Vector3] = [dock.global_position, site.global_position + Vector3.UP * 2.0]
-			var energy: float = drone.estimate_route_energy(points)
-			return energy >= 0.0 and energy <= drone.battery_units() + 0.00001
+			return drone.route_feasible(points)
 	return false
 
 
@@ -178,6 +183,10 @@ func _owned_valid(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
 
 
 func begin_pickup(id: int, drone: PrototypeConstructionWorkerDrone, speed: float) -> bool:
+	if not _c5p_action_allowed(&"launch", drone):
+		return false
+	if drone._c5p_empty_latched and id != get_parent().get_node("B2LogisticsController").pickup_id:
+		return false
 	if not _owned_valid(id, drone):
 		return false
 	var claim: Dictionary = _claims[id]
@@ -186,6 +195,10 @@ func begin_pickup(id: int, drone: PrototypeConstructionWorkerDrone, speed: float
 
 
 func advance_pickup(id: int, drone: PrototypeConstructionWorkerDrone, delta: float) -> bool:
+	if not _c5p_action_allowed(&"advance", drone):
+		return false
+	if drone._c5p_empty_latched and id != get_parent().get_node("B2LogisticsController").pickup_id:
+		return false
 	if not _owned_valid(id, drone):
 		if _claims.has(id) and is_instance_valid(drone) and (_claims[id]["drone"] as WeakRef).get_ref() == drone:
 			_release(id)
@@ -196,6 +209,10 @@ func advance_pickup(id: int, drone: PrototypeConstructionWorkerDrone, delta: flo
 
 
 func collect_pickup(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
+	if not _c5p_action_allowed(&"collect", drone):
+		return false
+	if drone._c5p_empty_latched and id != get_parent().get_node("B2LogisticsController").pickup_id:
+		return false
 	if not _owned_valid(id, drone):
 		return false
 	var claim: Dictionary = _claims[id]
@@ -205,3 +222,24 @@ func collect_pickup(id: int, drone: PrototypeConstructionWorkerDrone) -> bool:
 		return false
 	_release(id)
 	return true
+
+# Suspension is not a terminal cancellation. Clear only the exact unused claim
+# after the worker pins the original nonterminal assignment.
+func suspend_c5p_claim(id: int, drone: PrototypeConstructionWorkerDrone, controller: SpecializedDroneLogisticsE3d5c6fB2) -> bool:
+	if not _claims.has(id) or not _live(controller) or controller != get_parent().get_node_or_null("B2LogisticsController") or controller.pickup_id != id or controller._c5p_pickup_action != &"suspend" or not _live(drone) or not controller._c5p_empty_lease(drone) or controller._c5p_empty_power() or controller._c5p_original_supplier.get_ref() != self:
+		return false
+	var claim: Dictionary = _claims[id]
+	var inventory := claim["inventory"].get_ref() as InventoryComponent
+	if claim["drone"].get_ref() != drone or claim["site"].get_ref() != controller.site or claim["job"] != controller._c1_job or not _live(inventory) or inventory != controller.source or claim["dock"].get_ref() != controller._c5p_original_dock.get_ref() or claim["item"] != controller.INGOT or int(claim["amount"]) != 5 or not inventory.has_drone_stock_claim(claim["token"], claim["item"], 5):
+		return false
+	if not drone.c5p_begin_empty_suspend(controller, claim["token"]):
+		return false
+	return _release(id)
+
+func _c5p_action_allowed(action: StringName, drone: PrototypeConstructionWorkerDrone) -> bool:
+	if not _live(drone):
+		return false
+	if not drone._c5p_empty_latched:
+		return true
+	var controller := get_parent().get_node_or_null("B2LogisticsController") as SpecializedDroneLogisticsE3d5c6fB2
+	return _live(controller) and controller.c5p_pickup_permitted(action, drone, self)

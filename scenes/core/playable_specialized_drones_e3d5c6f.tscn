@@ -1,0 +1,75 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/specialized_drone_role_contracts_e3d5c6f.gd" id="1_contracts"]
+[ext_resource type="Script" path="res://scripts/ui/playable_specialized_drones_e3d5c6f.gd" id="2_controller"]
+[ext_resource type="Script" path="res://scripts/components/prototype_construction_worker_drone.gd" id="3_drone"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/prototype_main_hub.tscn" id="4_hub"]
+[ext_resource type="Script" path="res://scripts/components/blueprint_construction_priority_queue.gd" id="5_queue"]
+[ext_resource type="Script" path="res://scripts/components/blueprint_construction_site_staging_registry.gd" id="6_registry"]
+[ext_resource type="Script" path="res://scripts/components/blueprint_construction_material_escrow.gd" id="7_escrow"]
+[ext_resource type="Script" path="res://scripts/components/blueprint_construction_slot_scheduler.gd" id="8_scheduler"]
+[ext_resource type="Script" path="res://scripts/components/blueprint_construction_readiness_coordinator.gd" id="9_coordinator"]
+[ext_resource type="Script" path="res://scripts/components/prototype_construction_power_allocator.gd" id="10_allocator"]
+[ext_resource type="Script" path="res://scripts/components/inventory_component.gd" id="11_inventory"]
+[ext_resource type="Script" path="res://scripts/ui/specialized_drone_logistics_e3d5c6f_b2.gd" id="12_b2"]
+[ext_resource type="Script" path="res://scripts/components/prototype_drone_storage_discovery.gd" id="13_discovery"]
+[ext_resource type="Script" path="res://scripts/components/prototype_drone_supplier_reservations.gd" id="14_supplier"]
+[ext_resource type="Script" path="res://scripts/ui/specialized_drone_builder_e3d5c6f_b3.gd" id="15_builder"]
+[ext_resource type="Script" path="res://scripts/components/construction_power_coverage_network.gd" id="16_network"]
+
+[node name="PlayableSpecializedDronesE3d5c6f" type="Node3D"]
+
+[node name="RoleContracts" type="Node" parent="."]
+script = ExtResource("1_contracts")
+enable_stage_a_contracts = true
+
+[node name="MainHub" parent="." instance=ExtResource("4_hub")]
+
+[node name="LogisticsDrone" type="Node3D" parent="."]
+position = Vector3(-0.65, 2, 0)
+script = ExtResource("3_drone")
+
+[node name="ConstructionDrone" type="Node3D" parent="."]
+position = Vector3(0.65, 2, 0)
+script = ExtResource("3_drone")
+
+[node name="PriorityQueue" type="Node" parent="."]
+script = ExtResource("5_queue")
+
+[node name="StagingRegistry" type="Node" parent="."]
+script = ExtResource("6_registry")
+
+[node name="MaterialEscrow" type="Node" parent="."]
+script = ExtResource("7_escrow")
+
+[node name="WorkerScheduler" type="Node" parent="."]
+script = ExtResource("8_scheduler")
+
+[node name="ReadinessCoordinator" type="Node" parent="."]
+script = ExtResource("9_coordinator")
+
+[node name="PowerAllocator" type="Node" parent="."]
+script = ExtResource("10_allocator")
+
+[node name="StarterInventory" type="Node" parent="."]
+script = ExtResource("11_inventory")
+max_capacity = 20
+
+[node name="SingleTickController" type="Node" parent="."]
+script = ExtResource("2_controller")
+enable_b1_controller = true
+
+[node name="StorageDiscovery" type="Node" parent="."]
+script = ExtResource("13_discovery")
+
+[node name="SupplierReservations" type="Node" parent="."]
+script = ExtResource("14_supplier")
+
+[node name="B2LogisticsController" type="Node" parent="."]
+script = ExtResource("12_b2")
+
+[node name="PowerNetwork" type="Node" parent="."]
+script = ExtResource("16_network")
+
+[node name="B3BuilderController" type="Node" parent="."]
+script = ExtResource("15_builder")

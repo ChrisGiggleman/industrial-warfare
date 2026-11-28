@@ -1,0 +1,87 @@
+extends Node3D
+## Provenance fixture uses established isolated staging/escrow services; it does
+## not simulate movement or grant worker readiness.
+const Scope := preload("res://scenes/core/playable_specialized_drones_e3d5c6f.tscn")
+const PRESS := preload("res://data/buildings/prototype_ammunition_press.tres")
+const INGOT := preload("res://data/items/test_ingot.tres")
+
+func _ready() -> void:
+	call_deferred("_checks")
+
+func _checks() -> void:
+	var scope := Scope.instantiate() as Node3D
+	add_child(scope)
+	var contracts := scope.get_node("RoleContracts") as SpecializedDroneRoleContractsE3d5c6f
+	var site := ConstructionSite.new()
+	assert(site.setup_with_definition_job(PRESS))
+	scope.add_child(site)
+	site.set_process(false)
+	var queue := BlueprintConstructionPriorityQueue.new()
+	var registry := BlueprintConstructionSiteStagingRegistry.new()
+	var escrow := BlueprintConstructionMaterialEscrow.new()
+	var source := InventoryComponent.new()
+	source.max_capacity = 20
+	var logistics := Node3D.new()
+	var builder := Node3D.new()
+	var second_builder := Node3D.new()
+	for service: Node in [queue, registry, escrow, source, logistics, builder, second_builder]:
+		scope.add_child(service)
+	registry.enable_isolated_site_registry = true
+	assert(source.add_item(INGOT, 5) == 5)
+	var staging := BlueprintConstructionMaterialStaging.new()
+	scope.add_child(staging)
+	staging.enable_isolated_staging = true
+	assert(staging.configure(source, PRESS, 5))
+	var port := BlueprintConstructionStagingInputPort.new()
+	scope.add_child(port)
+	port.enable_isolated_input = true
+	assert(port.bind_staging(staging))
+	assert(site.job.authorize())
+	assert(queue.register_queued_site(site))
+	assert(registry.claim_site(site, staging, port))
+	var buffer := staging.get_staged_inventory()
+	assert(source.get_amount(INGOT) == 5 and buffer.get_amount(INGOT) == 0)
+	print("PASS A: original authorized queued Press and pinned 5-ingot source")
+	var lease: int = contracts.claim_logistics(site, logistics, queue, registry, buffer)
+	assert(lease > 0 and contracts.lease_count() == 1)
+	assert(contracts.claim_logistics(site, logistics, queue, registry, buffer) == 0)
+	assert(contracts.seal_handoff(lease, escrow) == 0)
+	assert(not contracts.claim_builder(lease, builder))
+	print("PASS B: exclusive logistics lease; no early receipt or worker claim")
+	assert(staging.receive_item(INGOT, 4) == 4)
+	assert(escrow.reserve(site, buffer, {INGOT: 5}) == 0)
+	assert(contracts.seal_handoff(lease, escrow) == 0)
+	assert(source.get_amount(INGOT) == 1)
+	print("PASS C: incomplete escrow refuses receipt and preserves source count")
+	assert(staging.receive_item(INGOT, 1) == 1)
+	var escrow_id: int = registry.reserve_for_site(site, escrow)
+	assert(escrow_id > 0 and escrow.matches_site_source_bill(site, buffer))
+	assert(contracts.seal_handoff(lease, escrow) == lease)
+	assert(contracts.receipt_valid(lease))
+	assert(contracts.seal_handoff(lease, escrow) == 0)
+	assert(source.get_amount(INGOT) == 0 and buffer.get_total_amount() == 0 and escrow.held_count() == 1)
+	print("PASS D: exactly one provenance receipt with complete original held escrow")
+	assert(not contracts.claim_builder(lease, logistics))
+	assert(contracts.claim_builder(lease, builder))
+	assert(not contracts.claim_builder(lease, second_builder))
+	assert(contracts.builder_claim_valid(lease, builder))
+	assert(not contracts.builder_claim_valid(lease, logistics))
+	assert(site.job.get_progress() == 0.0 and site.job.state == ConstructionJob.State.QUEUED)
+	print("PASS E: distinct builder lease, no worker flag or timer advancement")
+	registry.enable_isolated_site_registry = false
+	assert(not contracts.receipt_valid(lease))
+	assert(not contracts.builder_claim_valid(lease, builder))
+	registry.enable_isolated_site_registry = true
+	assert(contracts.receipt_valid(lease))
+	assert(contracts.revoke(lease))
+	assert(not contracts.receipt_valid(lease) and not contracts.claim_builder(lease, second_builder))
+	assert(escrow.has_reservation(escrow_id))
+	print("PASS F: registry loss and revocation fail closed without editing escrow")
+	assert(site.job.cancel())
+	assert(not contracts.receipt_valid(lease) and not contracts.builder_claim_valid(lease, builder))
+	assert(not escrow.has_reservation(escrow_id))
+	assert(buffer.get_amount(INGOT) == 5 and source.get_amount(INGOT) == 0)
+	assert(site.job.get_progress() == 0.0)
+	print("PASS G: cancellation invalidates handoff; original escrow refunds only original staging")
+	scope.queue_free()
+	print("E3d5c6f Stage A handoff fixture: 7/7 sections passed")

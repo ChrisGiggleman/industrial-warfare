@@ -90,10 +90,13 @@ func find_pickup(drone: PrototypeConstructionWorkerDrone, site: ConstructionSite
 		if not dock.allow_pickup or inventory.get_unreserved_amount(item) - dock.minimum_retained < amount:
 			continue
 		var waypoints: Array[Vector3] = [dock.global_position, destination]
-		var energy: float = drone.estimate_route_energy(waypoints)
-		if energy < 0.0 or energy > drone.battery_units() + 0.00001:
+		var score: float = drone.route_score(waypoints)
+		if not drone.route_feasible(waypoints):
 			continue
-		candidate["energy_required"] = energy
+		if drone.c5p_automated_mode():
+			candidate["route_distance"] = score
+		else:
+			candidate["energy_required"] = score
 		candidate["distance_to_site"] = dock.global_position.distance_to(destination)
 		candidate["amount"] = amount
 		if best.is_empty() or _better_pickup(candidate, best):
@@ -116,10 +119,13 @@ func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, 
 		if not dock.allow_returns or (space >= 0 and space < amount):
 			continue
 		var waypoints: Array[Vector3] = [dock.global_position]
-		var energy: float = drone.estimate_route_energy(waypoints)
-		if energy < 0.0 or energy > drone.battery_units() + 0.00001:
+		var score: float = drone.route_score(waypoints)
+		if not drone.route_feasible(waypoints):
 			continue
-		candidate["energy_required"] = energy
+		if drone.c5p_automated_mode():
+			candidate["route_distance"] = score
+		else:
+			candidate["energy_required"] = score
 		candidate["distance_to_dock"] = drone.global_position.distance_to(dock.global_position)
 		candidate["amount"] = amount
 		if best.is_empty() or candidate["distance_to_dock"] < best["distance_to_dock"] - 0.00001:
@@ -128,8 +134,8 @@ func find_return(drone: PrototypeConstructionWorkerDrone, item: ItemDefinition, 
 
 
 func _better_pickup(a: Dictionary, b: Dictionary) -> bool:
-	var ea: float = a["energy_required"]
-	var eb: float = b["energy_required"]
+	var ea: float = a.get("route_distance", a.get("energy_required", INF))
+	var eb: float = b.get("route_distance", b.get("energy_required", INF))
 	if absf(ea - eb) > 0.00001:
 		return ea < eb
 	var da: float = a["distance_to_site"]

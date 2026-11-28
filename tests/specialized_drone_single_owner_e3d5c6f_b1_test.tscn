@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/specialized_drone_single_owner_e3d5c6f_b1_test.gd" id="1_test"]
+
+[node name="SpecializedDroneSingleOwnerE3d5c6fB1Test" type="Node3D"]
+script = ExtResource("1_test")
