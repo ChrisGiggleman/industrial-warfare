@@ -1,5 +1,7 @@
 # E3d5c6f C5P-B2b — Logistics suspension and resumption proposal
 
+2026-11-27: Developer confirmed C5P-B2b-1 isolated F6 all 12/12 labeled sections passed locally in Godot against expected runtime ba5d179cce1bf01a2580d16036183b29724920df; local HEAD/logs not independently inspected. Cumulative historical unique acceptance 76 suites / 1030 sections, not fresh full regression. Targeted compatibility 46 suites / 645 expected sections pending in 4 waves. B2b-2/B2b-3/B2c/B3 blocked pending acceptance and respective approval. No gameplay, existing tests, historical manifest or Main changes.
+
 2026-11-27: B2b-1 candidate follow-up guards require synchronous controller action for suspension, return and rearm; adds lost source dock, invalid delta and direct return bypass checks; allocator-loss return test exercises physical berth independently. New fixture now 12 labeled sections, UNRUN. Source loss releases unused claim and blocks stale pickup; automatic reassignment after invalid source identity is not implemented (quarantine/diagnostic). No new acceptance or later checkpoint implementation.
 
 2026-11-27: C5P-B2b-1 candidate implements opt-in empty suspension, exact claim release, original lease and physical berth, power-gated reserve/launch/advance/collect, stock retry and cancellation. New isolated F6 res://tests/specialized_drone_empty_suspension_e3d5c6f_c5p_b2b1_test.tscn: 11 labeled sections UNRUN. B2b-2 loaded suspension, B2b-3 handoff, B2c and B3 not implemented. Historical 75/1018 unchanged; Main and accepted tests preserved.
